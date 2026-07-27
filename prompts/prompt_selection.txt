@@ -1,0 +1,1 @@
+in this data structure course, for table of contents in week 1 day 2, discuss what would be most interesting to cybersecurity freshman. Currently options brainstormed are call stack, heap, and singly linked list. Mind that to be interesting to freshman, it should be easy and meaningful.
