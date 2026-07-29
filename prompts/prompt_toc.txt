@@ -1,4 +1,4 @@
-generate the table of contents for Advanced Caching and The LRU Architecture (Capstone 2)
+generate the table of contents for Week 2: Contiguous Memory & The Buffer Overflow (Static Arrays)
 
 , where,
 

@@ -1,6 +1,8 @@
 from pathlib import Path
 
-def amalgamate_markdown(input_dir=".", output_file="combined_output.txt"):
+week = '''Week 13: Graph Theory II (Traversal & Pathfinding)'''
+
+def amalgamate_markdown(input_dir=".", output_file="combined_output.txt", preamble_text = ""):
     source_path = Path(input_dir).resolve()
     output_path = Path(output_file).resolve()
     
@@ -21,6 +23,7 @@ def amalgamate_markdown(input_dir=".", output_file="combined_output.txt"):
             relative_path = file_path.relative_to(source_path)
             
             # Write a visual header separator for each file
+            outfile.write(preamble_text)
             outfile.write(f"\n\n<!-- BEGIN FILE: {relative_path} -->\n")
             outfile.write(f"# File: {relative_path}\n\n")
             
@@ -37,4 +40,20 @@ def amalgamate_markdown(input_dir=".", output_file="combined_output.txt"):
     print(f"\nFinished! Combined {file_count} Markdown file(s) into '{output_file}'.")
 
 if __name__ == "__main__":
-    amalgamate_markdown(input_dir=".", output_file="combined_output.txt")
+    amalgamate_markdown(input_dir=".", output_file="./prompt_toc.txt", preamble_text=f"""
+
+generate the table of contents for {week}
+
+, where,
+
+"""
+    )
+
+    amalgamate_markdown(input_dir=".", output_file="./prompt_text.txt", preamble_text=f"""
+
+generate the textbook contents for {week}
+
+, where,
+
+"""
+    )
