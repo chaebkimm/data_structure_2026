@@ -1,0 +1,31 @@
+# GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?= -Iinclude
+TEST_CPPFLAGS := $(CPPFLAGS) -DMST_TESTING
+BUILD_DIR := build
+STARTER_SOURCES := starter/prim.c starter/kruskal.c
+SUPPORT_SOURCES := support/dsu.c support/undirected_edge_list.c \
+	support/prim_frontier.c support/mst_support.c
+
+.PHONY: all starter-core starter-student-tests autopsy clean
+
+all: starter-core
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+starter-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCES) $(SUPPORT_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core
+	$(BUILD_DIR)/starter_core
+
+starter-student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCES) $(SUPPORT_SOURCES) tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
+	$(BUILD_DIR)/starter_student_tests
+
+autopsy: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_endpoint_cycle.c -o $(BUILD_DIR)/endpoint_cycle_autopsy
+	$(BUILD_DIR)/endpoint_cycle_autopsy
+
+clean:
+	$(RM) -r $(BUILD_DIR)

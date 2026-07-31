@@ -1,4 +1,0 @@
-generate the textbook contents for Week 2 – Contiguous Memory & The Buffer Overflow
-
-, where,
-

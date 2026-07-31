@@ -1,0 +1,30 @@
+# GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?= -Iinclude
+TEST_CPPFLAGS := $(CPPFLAGS) -DDIJKSTRA_TESTING
+BUILD_DIR := build
+STARTER_SOURCE := starter/dijkstra.c
+SUPPORT_SOURCES := support/weighted_graph.c support/dijkstra_frontier.c
+
+.PHONY: all starter-core starter-student-tests autopsy clean
+
+all: starter-core
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+starter-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCE) $(SUPPORT_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core
+	$(BUILD_DIR)/starter_core
+
+starter-student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(STARTER_SOURCE) $(SUPPORT_SOURCES) tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
+	$(BUILD_DIR)/starter_student_tests
+
+autopsy: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) autopsy/faulty_overflow.c -o $(BUILD_DIR)/dijkstra_overflow_autopsy
+	$(BUILD_DIR)/dijkstra_overflow_autopsy
+
+clean:
+	$(RM) -r $(BUILD_DIR)

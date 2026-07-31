@@ -1,0 +1,50 @@
+# GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
+# Override on the command line when needed: make CC=clang starter-core
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?= -Iinclude
+BUILD_DIR := build
+
+.PHONY: all solution-core solution-extension solution-allocation-failure \
+	starter-core starter-extension starter-student-tests \
+	starter-allocation-failure autopsy clean
+
+all: starter-core
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+solution-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) solution/int_list.c tests/test_core.c -o $(BUILD_DIR)/solution_core
+	$(BUILD_DIR)/solution_core
+
+solution-extension: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) solution/int_list.c tests/test_extension.c -o $(BUILD_DIR)/solution_extension
+	$(BUILD_DIR)/solution_extension
+
+solution-allocation-failure: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -DINT_LIST_TESTING solution/int_list.c tests/test_allocation_failure.c -o $(BUILD_DIR)/solution_allocation_failure
+	$(BUILD_DIR)/solution_allocation_failure
+
+starter-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/int_list.c tests/test_core.c -o $(BUILD_DIR)/starter_core
+	$(BUILD_DIR)/starter_core
+
+starter-extension: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/int_list.c tests/test_extension.c -o $(BUILD_DIR)/starter_extension
+	$(BUILD_DIR)/starter_extension
+
+starter-student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/int_list.c tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
+	$(BUILD_DIR)/starter_student_tests
+
+starter-allocation-failure: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -DINT_LIST_TESTING starter/int_list.c tests/test_allocation_failure.c -o $(BUILD_DIR)/starter_allocation_failure
+	$(BUILD_DIR)/starter_allocation_failure
+
+autopsy: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_append.c -o $(BUILD_DIR)/autopsy
+	@echo "Built $(BUILD_DIR)/autopsy; run it separately because it intentionally faults."
+
+clean:
+	$(RM) -r $(BUILD_DIR)

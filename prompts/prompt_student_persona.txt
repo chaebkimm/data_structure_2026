@@ -1,5 +1,0 @@
-discuss the cybersecurity freshman's persona.
-
-for your information, in high school no one learned anything about programming. in last semeter, they learned C programming language. However, They barely know the syntax. pointers and structures are still not familiar. 
-
-In addition, Freshmen entering a cybersecurity program are typically motivated by the "hacker ethos"—the desire to understand how systems break, how vulnerabilities are exploited, and how to defend against such attacks. However, as freshmen, their technical foundation is nascent. They possess high domain enthusiasm but low structural knowledge.
