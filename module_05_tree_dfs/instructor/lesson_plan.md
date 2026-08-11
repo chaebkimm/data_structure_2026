@@ -1,5 +1,31 @@
 # Instructor Lesson Plan - Module 5: Tree Depth-First Traversal
 
+## 14-week delivery override - Week 5 (180 minutes)
+
+Use this sequence for the required 14-week path. It keeps recursive tree DFS
+as the core and treats explicit-Stack tree traversal as an optional extension.
+The longer two-meeting plan below remains a resource, but its iterative TODOs
+and evidence are not required in Week 5. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Minutes | Required live work |
+|---:|---|
+| 0-12 | Retrieve the branch-return model and preserve the short Stage A response. |
+| 12-30 | Reveal the recursive base/case model and the three visit positions. |
+| 30-45 | Run the exactly-three-target pause and calibrate without erasing first work. |
+| 45-70 | Trace preorder, inorder, and postorder with active-call records; use only the matching Stage C prompts. |
+| 70-85 | Connect postorder to destruction, strict-BST search, and `O(n)` time/`O(h)` call-stack space. |
+| 85-90 | Exit check and release the scoped recursive lab materials. |
+| 90-102 | Retrieve one recursive trace and read the checked public contract. |
+| 102-132 | Implement and test the recursive traversal TODOs. |
+| 132-150 | Complete strict-BST search, inspect the supplied insertion baseline, and verify postorder cleanup. |
+| 150-166 | Add boundary/failure tests and preserve warning-enabled output. |
+| 166-176 | Complete the recursive autopsy and complexity explanation. |
+| 176-180 | Verify the Week 5 checklist and make the one ordinary submission. |
+
+Do not require the explicit-Stack implementation, its trace, or its autopsy
+evidence. Offer those files only after the recursive submission is complete.
+
 ## Purpose and limits
 
 This module returns to the binary-tree representation from Module 2 and the
@@ -42,7 +68,7 @@ By the end of the module, students should be able to:
 The lab uses only synthetic, in-memory trees. It does not inspect a real
 filesystem, follow real symbolic links, or decide a real security policy.
 Insertion is an instructor-supplied baseline. Students inspect and test it
-now; full insertion and balancing return in Module 14.
+now; full insertion and balancing return in Module 15.
 
 ## Beginner language sequence
 
@@ -362,7 +388,7 @@ A strict BST has no duplicate keys. Search compares once per examined node:
 On `TREE_DFS_NOT_FOUND` or another failure, the caller's output pointer remains
 unchanged. The supplied insertion baseline applies the same left/right rule,
 rejects duplicates with `TREE_DFS_DUPLICATE`, and preserves the tree on failure.
-Students inspect and test it; implementation returns in Module 14.
+Students inspect and test it; implementation returns in Module 15.
 
 Each successful constructor creates one individually allocated node. The
 receiving tree owns that node after successful insertion. A node not

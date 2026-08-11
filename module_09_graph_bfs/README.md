@@ -5,6 +5,19 @@
 This package is the Graph stage of the third
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This is the main lab for the combined **Week 8 BFS** unit. After the short
+Module 8 tree trace, students implement graph BFS with discovery state,
+distance, predecessor, and path reconstruction. Module 9 supplies the
+unit's **single combined submission**; there is no separate Module 8
+submission. The full package remains available for a longer treatment.
+
+Use the scoped release and 145-minute sequence in the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Where the full-package release order or submission list below is broader,
+the guide and this delivery-role note control the required path.
+
 ## Beginner-first rule
 
 Students are not expected to know graph breadth-first search, discovery

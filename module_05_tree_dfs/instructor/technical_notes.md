@@ -134,7 +134,7 @@ Keep the division of work explicit:
   strict-BST search decisions, and postorder whole-tree destruction using
   supplied `tree_node_release`; and
 - later return: student implementation of insertion and balancing in
-  Module 14.
+  Module 15.
 
 Do not describe supplied postorder traversal as supplied postorder
 destruction. They share visit/release placement, but destruction is one of
@@ -392,7 +392,7 @@ lose access to owned storage.
 Thus duplicate and allocation failures preserve the entire tree. Empty-tree
 insertion changes `*root` from `NULL` to the new leaf. The insertion baseline
 is inspected and tested here; students implement insertion and balancing in
-Module 14.
+Module 15.
 
 Module 2 used pointers into a caller-owned fixed arena; those nodes were not
 individually freed. Module 5 nodes are individually allocated, owned through

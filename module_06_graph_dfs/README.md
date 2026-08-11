@@ -5,6 +5,19 @@
 This package is the Graph stage of the second
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This is the required **Week 6** graph-search package. Iterative graph DFS
+with the typed vertex Stack is the core implementation; recursive graph DFS
+is an extension. **Practical 1 replaces the ordinary Module 6 lab and its
+submission**, so students receive only one assessed submission in Week 6.
+The complete recursive-and-iterative package remains an instructor resource.
+
+Use the exact 180-minute sequence in the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Where the full-package targets, release order, or submission list below are
+broader, the guide and this delivery-role note control the required path.
+
 ## Beginner-first rule
 
 Students are not expected to know graph depth-first search, visited state,

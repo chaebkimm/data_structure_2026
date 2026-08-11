@@ -118,4 +118,4 @@ Students submit:
   arenas, and global BST ordering.
 - **Previews:** graph relationships in Module 3, depth-first traversal in
   Module 5, breadth-first traversal in Module 8, and BST/AVL mastery in
-  Module 14.
+  Module 15.

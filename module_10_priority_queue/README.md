@@ -5,6 +5,21 @@
 This package is the Linear stage of the fourth
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This package supplies the contract and reference baseline for the combined
+**Week 9 Priority Queue → Binary Heap** unit. The instructor supplies the
+completed unsorted-array implementation; students trace it and compare its
+costs, but do not implement it as a separate project and do not submit a
+Module 10 assignment. The full package remains available as an instructor
+resource.
+
+See the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+for the 40-minute baseline block and handoff to Module 11. Where the targets,
+release order, or submission list below are broader, the guide and this
+delivery-role note control the required path.
+
 ## Beginner-first rule
 
 Students are not expected to know Priority Queue vocabulary, comparison

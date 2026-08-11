@@ -4,16 +4,18 @@
 
 ### Curriculum status and assumptions
 
-This document converts the course concept into an operational 15-module curriculum. It assumes:
+This document defines an operational **14-week curriculum supported by 16 teaching packages**. The package numbers preserve the full resource sequence; they are not a promise of sixteen lecture weeks or sixteen assignments. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
+
+Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
 
 - second-semester cybersecurity students;
 - prior experience with C variables, functions, arrays, loops, and conditionals;
 - limited fluency with pointers, dynamic allocation, and `struct`;
-- approximately 3 contact hours per module, delivered as two class meetings or an equivalent lecture/lab format; final capstone integration and defense use the institution’s scheduled final-assessment period;
+- approximately 3 contact hours per teaching week, delivered as two class meetings or an equivalent lecture/lab format; combined weeks selectively use two packages but still have one contact-time budget and one submission; capstone integration occurs in Week 14, while the defense or approved equivalent uses the institution’s scheduled final-assessment period;
 - synthetic, instructor-controlled cybersecurity datasets rather than live-system scanning or exploitation;
 - a C11-compatible compiler, strong compiler warnings, a debugger, automated tests, and memory/error sanitizers when the platform supports them.
 
-The course is not organized as five consecutive linear modules, followed by five tree modules, followed by five graph modules. It makes five increasingly sophisticated passes through:
+The resource library is not organized as five consecutive linear modules, followed by five tree modules, followed by five graph modules. It makes five increasingly sophisticated passes through, with one associative-index bridge between the fourth and fifth passes:
 
 > **Linear/supporting ADT → Tree application → Graph generalization**
 
@@ -25,14 +27,14 @@ Students therefore encounter the same ideas—representation, invariants, traver
 
 By the end of the course, students will be able to:
 
-1. Draw and explain the memory representation of array-backed, pointer-linked, tree, heap, and graph structures.
+1. Draw and explain the memory representation of array-backed, hash-table, pointer-linked, tree, heap, and graph structures.
 2. Specify an abstract data type independently of its underlying representation.
 3. Implement, test, and safely destroy core data structures in C.
 4. State and check the representation invariant that makes each structure correct.
-5. Implement and trace DFS and BFS on trees and graphs.
-6. Implement and analyze BST, AVL-tree, binary-heap, and disjoint-set operations.
-7. Implement Dijkstra and one complete minimum-spanning-tree algorithm, complete and test a scaffolded implementation of the other, and trace and compare both Prim and Kruskal under their required input assumptions.
-8. Analyze worst-case, average-case where appropriate, amortized, and representation-sensitive costs.
+5. Implement recursive tree DFS, iterative graph DFS, and graph BFS; trace tree BFS and the alternate graph-DFS form to explain how frontier control transfers between trees and graphs.
+6. Implement and analyze hash-table, BST, AVL-tree, binary-heap, and disjoint-set operations.
+7. Implement Dijkstra and one complete minimum-spanning-tree algorithm, finish and test bounded decision checkpoints in an instructor-supplied implementation of the other, and trace and compare both Prim and Kruskal under their required input assumptions.
+8. Analyze worst-case, expected/average-case where assumptions justify it, amortized, and representation-sensitive costs.
 9. Select a structure or algorithm from workload and correctness requirements rather than familiarity.
 10. Diagnose pointer, bounds, ownership, overflow, and invariant failures using diagrams, tests, warnings, sanitizers, and a debugger.
 11. Explain how representation choices can create reliability, performance, and security consequences.
@@ -40,7 +42,7 @@ By the end of the course, students will be able to:
 
 ---
 
-## 2. The five spirals
+## 2. The five spirals and resource-package map
 
 | Spiral | Linear/supporting module | Tree module | Graph module | Recurring idea |
 |---|---|---|---|---|
@@ -48,20 +50,23 @@ By the end of the course, students will be able to:
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
 | 3 | 7. Queue | 8. Tree BFS | 9. Graph BFS | FIFO-controlled exploration |
 | 4 | 10. Priority Queue ADT | 11. Binary Heap | 12. Dijkstra | Priority-controlled exploration |
-| 5 | 13. Linked-list retrieval and Union-Find | 14. BST-to-AVL synthesis | 15. Prim and Kruskal | Maintaining global invariants while optimizing |
+| 5 | 14. Linked-list retrieval and Union-Find | 15. BST-to-AVL synthesis | 16. Prim and Kruskal | Maintaining global invariants while optimizing |
 
 This map contains deliberate previews and returns:
 
-- Linked nodes are previewed in Module 1, used in early tree work, and retrieved through bounded implementation and repair in Module 13.
-- BST ordering is seeded in Module 2, used during tree traversals, and formally strengthened into AVL balance in Module 14.
+- The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Modules 8 and 9 form one breadth-first week, and Modules 10 and 11 form one priority/Heap week.
+- Module 13 is an associative-index bridge between Spirals 4 and 5. It returns to array growth, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
+- Linked nodes are previewed in Module 1, used in early tree work, and retrieved through bounded implementation and repair in Module 14.
+- BST ordering is seeded in Module 2, used during tree traversals, and formally strengthened into AVL balance in Module 15.
+- Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
-- Stack precedes DFS; Queue precedes BFS; Heap precedes Dijkstra and Prim; Union-Find precedes Kruskal.
+- Stack precedes DFS; Queue precedes BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find precedes Kruskal.
 
 ---
 
 ## 3. Recurring questions and learning routine
 
-Every module returns to seven anchor questions:
+Every teaching unit returns to seven anchor questions; each complete package also supports the same routine when used for extension or a longer calendar:
 
 1. What problem does the ADT solve?
 2. How is it represented in memory?
@@ -75,7 +80,7 @@ Every module returns to seven anchor questions:
 
 **Meeting A: model and reason**
 
-1. Retrieval prompt from the preceding modules
+1. Retrieval prompt from preceding teaching weeks or resource packages
 2. Syntax sandbox or prerequisite check
 3. Macro-Question
 4. Micro-Question deconstruction
@@ -163,7 +168,7 @@ The security emphasis is safe ingestion of an unpredictable event volume: bounds
 ### Spiral links
 
 **Revisits:** arrays, indexing, loops, ownership.  
-**Forward:** fixed node arenas in Module 2, graph matrices in Module 3, Stack backing storage in Module 4, and linked-list implementation/repair in Module 13.
+**Forward:** fixed node arenas in Module 2, graph matrices in Module 3, Stack backing storage in Module 4, Hash Table storage in Module 13, and linked-list implementation/repair in Module 14.
 
 ---
 
@@ -222,7 +227,7 @@ The lab distinguishes a local empty-slot check from global validation: preservin
 ### Spiral links
 
 **Revisits:** addresses, `NULL`, ownership, representation invariants.  
-**Forward:** graph generalization in Module 3, DFS in Module 5, BFS in Module 8, and BST/AVL mastery in Module 14.
+**Forward:** graph generalization in Module 3, DFS in Module 5, BFS in Module 8, and BST/AVL mastery in Module 15.
 
 ---
 
@@ -271,7 +276,7 @@ Implement:
 
 The lab models permitted communication in a synthetic network. An edge represents a modeled connection or policy permission, not proof of exploitability.
 
-Module 15 deliberately broadens the input contract to an edge-list representation that may contain parallel edges and self-loops; its algorithms handle or ignore those cases explicitly.
+Module 16 deliberately broadens the input contract to an edge-list representation that may contain parallel edges and self-loops; its algorithms handle or ignore those cases explicitly.
 
 ### Evidence of learning
 
@@ -325,7 +330,7 @@ Implement a character Stack and validate delimiters in simplified security-polic
 
 Malformed input must fail safely. The module explicitly distinguishes stack-buffer vulnerabilities, runtime call frames, and the Stack ADT.
 
-Because C has no automatic generic container, later modules receive separately typed `const TreeNode *` and vertex-ID Stack scaffolds with the same contract. Pointer-weak students are not required to design a `void *` generic Stack. A linked-node backend is an extension and an early retrieval opportunity for Module 13.
+Because C has no automatic generic container, later modules receive separately typed `const TreeNode *` and vertex-ID Stack scaffolds with the same contract. Pointer-weak students are not required to design a `void *` generic Stack. A linked-node backend is an extension and an early retrieval opportunity for Module 14.
 
 ### Evidence of learning
 
@@ -346,15 +351,18 @@ Because C has no automatic generic container, later modules receive separately t
 
 Production materials: [Module 5 teaching package](module_05_tree_dfs/README.md)
 
+**14-week role:** required Week 5 tree-DFS unit. Recursive traversal, BST-search tracing, and postorder cleanup are core. Explicit-stack tree traversal remains available in the package as an extension, not a second required implementation.
+
 ### Learning objectives
 
 Students will:
 
 - identify recursive base cases and saved state;
 - trace preorder, inorder, and postorder;
-- implement recursive and explicit-stack preorder traversal;
+- implement recursive preorder, inorder, and postorder traversal;
+- trace an explicit-stack preorder traversal and explain its correspondence to call frames;
 - trace and complete scaffolded BST search using the Module 2 ordering seed;
-- inspect and test an instructor-provided BST insertion baseline that returns in Module 14;
+- inspect and test an instructor-provided BST insertion baseline that returns in Module 15;
 - use postorder to destroy a dynamically allocated tree safely;
 - analyze traversal as `O(n)` time and `O(h)` auxiliary space.
 
@@ -375,8 +383,7 @@ Students will:
 Traverse a synthetic in-memory directory or policy tree:
 
 - report flagged nodes using recursive preorder;
-- reproduce the traversal with an instructor-provided typed
-  `const TreeNode *` Stack;
+- trace the frontier of an instructor-provided typed `const TreeNode *` Stack; implementing the explicit-stack traversal is an extension;
 - perform an inorder trace and complete scaffolded BST search;
 - destroy a heap-allocated test tree in postorder.
 
@@ -385,7 +392,7 @@ The instructor supplies the heap-building fixture and constructor so students do
 ### Evidence of learning
 
 - call-stack and explicit-stack traces;
-- recursive and iterative C implementations;
+- recursive C traversal and cleanup implementation;
 - empty, single-node, balanced, and skewed tests;
 - cleanup evidence;
 - time/space analysis using `n` and `h`.
@@ -401,12 +408,14 @@ The instructor supplies the heap-building fixture and constructor so students do
 
 Production materials: [Module 6 teaching package](module_06_graph_dfs/README.md)
 
+**14-week role:** required Week 6 graph-DFS unit and Practical 1. Iterative graph DFS is the required implementation; recursive graph DFS is traced and remains an extension. The practical replaces the ordinary Module 6 lab submission.
+
 ### Learning objectives
 
 Students will:
 
 - explain why graph DFS requires visited state;
-- implement recursive and iterative DFS;
+- implement iterative DFS with the Module 4 Stack and trace its recursive equivalent;
 - determine reachability and count connected components in an undirected graph;
 - trace frontier and visited state on cyclic and disconnected graphs;
 - distinguish matrix-based `O(V^2)` traversal from adjacency-list `O(V+E)` traversal.
@@ -425,14 +434,16 @@ Students will:
 
 ### C lab and cybersecurity context
 
-Using the Module 3 graph, implement recursive and iterative DFS, report all vertices reachable from a selected source, and count connected components only for an undirected graph. The iterative version uses an instructor-provided vertex-ID Stack with the Module 4 contract. Test a cycle, an isolated vertex, a disconnected graph, and a single vertex. A separate faulty-input test verifies that the simple-graph API rejects a self-loop.
+Using the Module 3 graph, implement iterative DFS, report all vertices reachable from a selected source, and count connected components only for an undirected graph. The implementation uses an instructor-provided vertex-ID Stack with the Module 4 contract. Students trace the equivalent recursive control flow; implementing that second form is an extension. Test a cycle, an isolated vertex, a disconnected graph, and a single vertex. A separate faulty-input test verifies that the simple-graph API rejects a self-loop.
+
+The Week 6 practical collects this implementation, trace, repair, and transfer evidence. There is no additional ordinary Module 6 submission in the 14-week path.
 
 The synthetic policy graph asks whether a modeled route reaches a protected zone. Reachability is not treated as exploitability.
 
 ### Evidence of learning
 
 - frontier/visited trace;
-- tested DFS implementations;
+- tested iterative DFS implementation and recursive-form trace;
 - component result;
 - tree-versus-graph DFS comparison;
 - representation-sensitive complexity analysis.
@@ -501,16 +512,18 @@ Students compare overflow policies for a log-ingestion or packet-buffering syste
 
 Production materials: [Module 8 teaching package](module_08_tree_bfs/README.md)
 
+**14-week role:** bridge portion of combined Week 8. Students complete a short tree level-order trace and inspect/run a supplied bounded scaffold before transferring the Queue model to graph BFS. Module 8 has no standalone submission; implementing tree BFS, its shallowest-match lab, autopsy, and extended width work are optional. Height and balance-factor work moves to Module 15.
+
 ### Learning objectives
 
 Students will:
 
 - explain how a Queue produces level-order traversal;
 - trace frontier contents and node depths;
-- implement level-order traversal and shallowest-match search;
+- inspect and run a supplied level-order traversal scaffold;
 - analyze `O(n)` time and `O(w)` auxiliary space, where `w` is maximum width;
 - compare DFS height cost with BFS width cost;
-- compute height and preview balance factors for later AVL work.
+- explain why tree traversal needs no discovered array while graph traversal does.
 
 ### Macro-Question
 
@@ -523,33 +536,32 @@ Students will:
 - When is BFS preferable to DFS?
 - Why does BFS space depend on width?
 - Why is visited state unnecessary for a valid tree?
-- How do height and left/right subtree heights expose imbalance?
+- What additional state will be required when branches can reconnect?
 
 ### C lab and cybersecurity context
 
-Implement level-order traversal and a shallowest-match query over a hierarchical policy or process tree. Test an empty tree, one node, balanced/skewed shapes, repeated target values, and a missing target.
+Trace level-order traversal over a small hierarchical policy or process tree, then inspect and run a supplied bounded traversal scaffold. Use the same Queue-state vocabulary immediately in Module 9. Implementing tree BFS, the complete shallowest-match implementation, and its autopsy remain in the package for extension or a longer calendar.
 
-Students also compute height and diagnose one skewed BST. They manually trace one instructor-provided rotation as an advance organizer; implementation waits until Module 14.
-
-The course uses edge height consistently: `height(NULL) = -1` and `height(leaf) = 0`. Therefore an `n`-node chain has height `n - 1`.
+Height, balance factors, and the rotation advance organizer are taught with AVL work in Module 15 rather than added to this combined week.
 
 ### Evidence of learning
 
-- Queue/depth trace;
-- tested tree BFS;
-- width-versus-height space comparison;
-- height and balance-factor worksheet.
+- Queue/depth trace included in the single Week 8 BFS submission;
+- annotated tree-to-graph transfer explanation;
+- width-versus-height space comparison.
 
 ### Spiral links
 
-**Revisits:** Queue, tree nodes, DFS, height.  
-**Forward:** graph BFS and AVL balance.
+**Revisits:** Queue, tree nodes, and DFS.  
+**Forward:** graph BFS.
 
 ---
 
 ## Module 9 — Graph: Breadth-first search
 
 Production materials: [Module 9 teaching package](module_09_graph_bfs/README.md)
+
+**14-week role:** main implementation portion of combined Week 8. Graph BFS, distance, predecessor state, and path reconstruction form the single required BFS lab; students do not also submit the complete Module 8 lab.
 
 ### Learning objectives
 
@@ -575,7 +587,9 @@ Students will:
 
 ### Learning sequence and representation spiral
 
-Students first run BFS on the known matrix representation. They then receive a scaffolded adjacency list implemented as an array of dynamic neighbor arrays. This revisits ArrayList without requiring full linked-list implementation yet. They compare both traversals and account for the different runtime bounds.
+Students implement BFS on the known matrix representation. They then inspect and run an instructor-supplied sorted adjacency-list implementation built as an array of dynamic neighbor arrays. This revisits ArrayList without requiring a second BFS implementation or full linked-list work. They compare both traversals and account for the different runtime bounds.
+
+The week opens with the short Module 8 tree trace, making the discovered array and cycle-safe enqueue rule explicit additions rather than introducing a second standalone traversal project.
 
 ### C lab and cybersecurity context
 
@@ -595,7 +609,8 @@ The context is hop-based blast-radius analysis. Students state that hop count al
 - Queue/distance/predecessor trace;
 - cycle-safe BFS;
 - reconstructed path as an output certificate;
-- matrix-versus-adjacency-list complexity analysis.
+- matrix-versus-adjacency-list complexity analysis;
+- the Module 8 tree-to-graph transfer trace, all in one combined submission.
 
 ### Spiral 3 synthesis
 
@@ -615,6 +630,8 @@ They explain why FIFO order, unit/unweighted edges, and marking vertices when en
 
 Production materials: [Module 10 teaching package](module_10_priority_queue/README.md)
 
+**14-week role:** contract-and-baseline portion of combined Week 9. The instructor supplies the completed, tested unsorted-array Priority Queue. Students inspect its contract, measure its comparison cost, and then replace its backend in Module 11. Module 10 has no separate programming project or submission.
+
 ### Learning objectives
 
 Students will:
@@ -622,7 +639,7 @@ Students will:
 - specify a minimum-priority Queue independently of its backend;
 - distinguish FIFO order from priority order;
 - define deterministic tie behavior;
-- implement an unsorted dynamic-array backend;
+- inspect and test a supplied unsorted dynamic-array reference backend;
 - compare sorted-array and unsorted-array costs;
 - identify starvation and mutable-priority hazards.
 
@@ -641,7 +658,7 @@ Students will:
 
 ### C lab and cybersecurity context
 
-Implement a stable, unsorted-array Priority Queue of alert records. Use an arrival-sequence field as the tie-breaker. Count comparisons for insert-heavy and removal-heavy workloads, and compare with a sorted-array design on paper.
+Run and inspect a supplied stable, unsorted-array Priority Queue of alert records. Use its arrival-sequence tie-breaker, count comparisons for insert-heavy and removal-heavy workloads, and compare with a sorted-array design on paper. Students preserve this reference implementation as the differential-test oracle for Module 11.
 
 SOC alert triage motivates the ADT while also exposing fairness, starvation, and poorly calibrated severity scores.
 
@@ -650,10 +667,8 @@ The canonical backend table is explicit: an unsorted dynamic array has amortized
 ### Evidence of learning
 
 - formal ADT contract and comparator;
-- tested linear backend;
-- operation-count experiment;
-- backend-selection memo;
-- fairness-risk explanation.
+- operation-count experiment against the supplied linear backend;
+- backend-selection and fairness-risk explanation included in the single Week 9 Heap submission.
 
 ### Spiral links
 
@@ -665,6 +680,8 @@ The canonical backend table is explicit: an unsorted dynamic array has amortized
 ## Module 11 — Tree: Binary Heap
 
 Production materials: [Module 11 teaching package](module_11_binary_heap/README.md)
+
+**14-week role:** main implementation portion of combined Week 9. Students implement the Heap backend, preserve the Module 10 contract, and compare it with the supplied linear reference. This is the week’s single required submission.
 
 ### Learning objectives
 
@@ -694,6 +711,8 @@ Students will:
 
 Replace the Module 10 backend with a minimum binary Heap while preserving the Priority Queue API. Implement `is_min_heap` before benchmarking. Test empty and singleton heaps, ascending/descending input, duplicate priorities, a missing right child, capacity growth, and randomized operations against a simple reference implementation.
 
+The reference implementation is supplied rather than assigned as an additional project. Contract inspection, linear-versus-Heap measurements, and the Heap lab form one combined submission.
+
 The stated `O(log n)` removal bound applies to `extract_min`, not to locating and deleting an arbitrary value. The `O(n)` invariant checker is debug/test instrumentation: students report instrumented and uninstrumented measurements separately and do not include full validation in the claimed per-operation bound.
 
 The invariant checker is treated as an integrity control: corrupt indexes or size fields can cause memory errors, while silent Heap-order corruption can misprioritize events.
@@ -709,13 +728,15 @@ The invariant checker is treated as an integrity control: corrupt indexes or siz
 ### Spiral links
 
 **Revisits:** ArrayList, complete trees, height, invariants, Priority Queue contract.  
-**Forward:** Dijkstra and Prim. Module 14 will contrast Heap partial order with AVL total search order.
+**Forward:** Dijkstra and Prim. Module 13 will add collision-aware exact lookup, and Module 15 will contrast Heap partial order with AVL total search order.
 
 ---
 
 ## Module 12 — Graph: Dijkstra’s shortest-path algorithm
 
 Production materials: [Module 12 teaching package](module_12_graph_dijkstra/README.md)
+
+**14-week role:** required Week 10 Dijkstra unit and Practical 2. Students complete and test the bounded relaxation/frontier core inside a supplied weighted-graph, Heap, and path-reconstruction scaffold. Practical 2 is the week’s only submission; the full standalone Stage E lab remains a longer-calendar resource.
 
 ### Learning objectives
 
@@ -743,7 +764,7 @@ Students will:
 
 ### C lab and cybersecurity context
 
-Extend the adjacency-list graph with nonnegative weights and implement Dijkstra using lazy duplicate Heap entries. Required tests include:
+Within Practical 2, complete the bounded Dijkstra core in a supplied weighted adjacency-list integration scaffold using lazy duplicate Heap entries. Required trace, repair, and tests include:
 
 - unreachable destinations;
 - zero-weight and equal-cost alternatives;
@@ -752,6 +773,8 @@ Extend the adjacency-list graph with nonnegative weights and implement Dijkstra 
 - invalid vertices;
 - overflow-safe candidate-distance calculation;
 - predecessor-based path reconstruction.
+
+The supplied code handles already-mastered parsing and Heap plumbing so the practical can assess relaxation, stale-entry handling, overflow safety, unreachable state, and path evidence within the Week 10 contact budget. There is no second Module 12 lab submission.
 
 Weights represent a clearly defined synthetic quantity such as latency or inspection cost. Students explain that the result is only as meaningful as the additive weight model.
 
@@ -767,23 +790,97 @@ With lazy duplicate entries, the Heap can hold `O(E)` snapshots. The full bound 
 - BFS-versus-Dijkstra comparison;
 - complexity matching the actual Heap strategy.
 
-### Spiral 4 synthesis
+### Spiral 4 synthesis within Practical 2
 
-On the same graph, students:
+As the practical’s comparison component, students use the same graph to:
 
 1. run BFS while ignoring weights;
-2. run Dijkstra with the linear Priority Queue;
+2. run the instructor-supplied Dijkstra/linear-Priority-Queue reference;
 3. run Dijkstra with the Heap backend;
 4. compare paths, operation counts, and API calls;
 5. identify which behavior belongs to the ADT and which belongs to its implementation.
 
 ---
 
+# Associative-Index Bridge — Sparse Keys and Collisions
+
+## Module 13 — Supporting ADT: Hash Table
+
+Production materials: [Module 13 teaching package](module_13_hash_table/README.md)
+
+**14-week role:** required Week 11 Hash Table core. Students implement bounded probing, lookup, insert/update, deletion, and tombstone reuse, then complete and test an instructor-scaffolded transactional rebuild. Additional adversarial and capacity-policy work in the complete package is extension material.
+
+### Learning objectives
+
+Students will:
+
+- distinguish a map's key-to-value contract from a particular table representation;
+- compute home slots and trace linear probing with wraparound;
+- explain why collisions are normal and how `EMPTY`, `OCCUPIED`, and `DELETED` states preserve probe-chain reachability;
+- implement exact lookup, insert-or-update, and deletion without duplicating a key;
+- maintain `size`, tombstone count, capacity, uniqueness, and reachability invariants;
+- complete and test a bounded transactional grow/compact scaffold that rehashes entries when capacity changes;
+- compare hash-table, direct-index-array, linked-chain, and AVL lookup trade-offs; and
+- qualify expected constant-time claims and explain collision-flooding risk precisely.
+
+### Macro-Question
+
+> When external indicator IDs are sparse and provide no search direction, how can we find a stored record without scanning every record—and what can collisions make that promise cost?
+
+### Micro-Questions
+
+- What is the difference between a key, a value, a hash value, and a home slot?
+- What happens when two keys have the same home slot?
+- Why must a probe wrap from the last slot to slot zero?
+- Why does lookup stop at `EMPTY` but continue through `DELETED`?
+- How can an insertion reuse a tombstone without creating a duplicate key later in the same cluster?
+- Why must every probe loop have a capacity-sized bound?
+- Why are all occupied entries rehashed rather than copied to the same indexes after growth?
+- Under what distribution and load assumptions is expected `O(1)` defensible?
+
+### Learning sequence
+
+Meeting A begins with sparse synthetic indicator IDs. Students compare an impractically large direct-index array with an eight-slot table, then place keys 10, 18, and 26. All three have home slot 2, so they occupy slots 2, 3, and 4. They delete 18 and discover that marking slot 3 `EMPTY` would make 26 falsely unreachable. A separate 7, 15, 23 trace forces wraparound through slots 7, 0, and 1.
+
+Meeting B makes the table dynamic while keeping the implementation bounded. Capacities follow `8 -> 16 -> 32 -> 64`. Before a new key would make live entries plus tombstones exceed three quarters of capacity, the table either compacts at the same capacity or grows. Rebuilding allocates fresh storage, rehashes only occupied entries, and commits only after the complete rebuild succeeds. Students complete the bounded decision/commit points in a supplied rebuild scaffold and run the instructor’s allocation-failure and maximum-capacity state-preservation tests.
+
+### C lab and cybersecurity context
+
+Implement a bounded `uint32_t`-to-`int` sparse-indicator map using open addressing and linear probing. Key zero is legal because occupancy is represented by a separate state field. The three implementation clusters cover:
+
+1. a capacity-bounded probe helper and exact lookup;
+2. insert-or-update, deletion, tombstone reuse, and exact probe evidence; and
+3. completion and testing of a supplied transactional compaction/growth and rehash scaffold.
+
+Students author three bounded test categories: collision/wraparound with exact probes; tombstone reachability, update, reuse, and duplicate prevention; and scaffolded growth/compaction with one forced maintenance-allocation failure and state preservation. They also run an instructor-supplied suite covering missing keys, key zero, additional allocation failures, maximum load, invalid arguments, validation, destruction, and long churn.
+
+The teaching hash is deliberately transparent: `home = key % capacity`. It is suitable for tracing this bounded mechanism, not a production security recommendation. Students describe a hash-flood algorithmic-complexity denial of service only when chosen colliding keys cause excessive work. They also state that a non-cryptographic table hash does not authenticate data, establish authorization, or provide cryptographic collision resistance.
+
+Let `n` be live entries and `m` be capacity. Expected lookup, insertion, and deletion are `O(1)` only when hashes are adequately distributed and load is controlled; each inspects at most `m` slots and is `O(m)` in the worst case (often written `O(n)` only when `m = Theta(n)`). Rebuilding scans `m` old slots and reinserts `n` entries, so it is expected `O(m)` under the same assumptions and worst-case `O(m + n^2)`, bounded by `O(m^2)`, when repeated placements collide. Insertion is amortized expected `O(1)` only under the stated assumptions.
+
+### Evidence of learning
+
+- collision, wraparound, and tombstone traces with exact inspected-slot counts;
+- tested `hash_table.h`/`hash_table.c` implementation;
+- scaffolded transactional-rehash and allocation-failure evidence;
+- three student-authored test categories covering the listed core cases;
+- Hash-Table Autopsy correction; and
+- a workload-based comparison with direct indexing, separate chaining, and AVL.
+
+### Bridge links
+
+**Revisits:** Module 1 contiguous storage and growth, modular indexing, failure preservation, and Module 12's dense internal vertex IDs.  
+**Forward:** Module 14 contrasts open-addressed slots with separately allocated nodes; Module 15 contrasts expected exact lookup with ordered `O(log n)` lookup; the capstone can map sparse external labels to validated dense graph IDs.
+
+---
+
 # Spiral 5 — Invariants and Minimum-Cost Connectivity
 
-## Module 13 — Linear: Linked-list retrieval clinic and Union-Find bridge
+## Module 14 — Linear: Linked-list retrieval clinic and Union-Find bridge
 
-Production materials: [Module 13 teaching package](module_13_linked_list_dsu/README.md)
+Production materials: [Module 14 teaching package](module_14_linked_list_dsu/README.md)
+
+**14-week role:** required Week 12 bounded ownership clinic plus DSU. Students trace supplied list operations, repair one ownership-sensitive operation, and implement/test DSU. Remaining list operations and linked Stack/Queue work are extensions; the edge-list builder and comparator are supplied for a brief instructor-led trace.
 
 ### Learning objectives
 
@@ -791,8 +888,7 @@ Students will:
 
 - trace safe singly linked-list insertion, deletion, traversal, and destruction;
 - state ownership and link invariants;
-- repair a bounded leak, dangling-pointer, or use-after-free defect in supplied code;
-- complete `push_front`, a bounded deletion operation, and `list_destroy` in a supplied list scaffold;
+- complete or repair one bounded ownership-sensitive operation in a supplied list scaffold, diagnosing its leak, dangling-pointer, or use-after-free failure;
 - implement `make_set`, `find`, and `union` over `parent[]` and `rank[]` or `size[]`;
 - apply path compression and union by rank/size;
 - use Union-Find for incremental connectivity and cycle detection.
@@ -813,11 +909,11 @@ Students will:
 
 ### Learning sequence
 
-Meeting A returns to the linked-node preview from Module 1 and, where assigned, linked Stack/Queue extensions. Students complete three bounded operations in a supplied list scaffold, then repair a linked-adjacency deletion defect. They are not required to design a complete list library from scratch in this module.
+Meeting A returns to the linked-node preview from Module 1. Students trace the supplied insertion, deletion, traversal, and destruction operations, then repair one selected list or linked-adjacency ownership defect. They do not complete three operations plus a second repair, and they are not required to design a complete list library from scratch.
 
 Meeting B treats Union-Find as a bridge: two linear arrays encode a forest. Students trace a deliberately tall parent forest, apply compression, and implement a bounds-checked interface. A two-pass iterative `find` avoids relying on deep recursion.
 
-At the close, students read and test an instructor-supplied undirected edge-list builder and safe `qsort` comparator interface. The builder emits one record per logical undirected edge, does not double-count mirrored adjacency entries, and preserves genuine parallel edges. This is a short Kruskal pre-lab, not another implementation assignment.
+At the close, the instructor demonstrates and runs an instructor-supplied undirected edge-list builder and safe `qsort` comparator interface. Students briefly trace why the builder emits one record per logical undirected edge, does not double-count mirrored adjacency entries, and preserves genuine parallel edges. This is a short Kruskal pre-lab, not another implementation or evidence assignment.
 
 ### C lab and cybersecurity context
 
@@ -833,7 +929,7 @@ The capstone continues using the array-of-dynamic-neighbor-arrays representation
 ### Evidence of learning
 
 - before/after linked-list ownership diagram;
-- sanitizer-clean list operations;
+- one sanitizer-clean repaired list operation;
 - parent-array trace before/after compression;
 - tested `dsu.h`/`dsu.c`;
 - amortized `O(alpha(n))` interpretation and one DSU limitation.
@@ -841,13 +937,15 @@ The capstone continues using the array-of-dynamic-neighbor-arrays representation
 ### Spiral links
 
 **Revisits:** ArrayList versus links, components, implicit trees, ownership.  
-**Forward:** Kruskal cycle checks in Module 15.
+**Forward:** Kruskal cycle checks in Module 16.
 
 ---
 
-## Module 14 — Tree: BST-to-AVL synthesis
+## Module 15 — Tree: BST-to-AVL synthesis
 
-Production materials: [Module 14 teaching package](module_14_bst_avl/README.md)
+Production materials: [Module 15 teaching package](module_15_bst_avl/README.md)
+
+**14-week role:** required Week 13 AVL unit and the formal home for height, balance factors, and rotations deferred from the BFS bridge. AVL insertion and validation are core, AVL deletion is extension, and the week produces one submission within the 180-minute budget.
 
 ### Learning objectives
 
@@ -876,6 +974,8 @@ Students will:
 
 ### C lab and cybersecurity context
 
+The course uses edge height consistently: `height(NULL) = -1` and `height(leaf) = 0`. Therefore an `n`-node chain has height `n - 1`.
+
 Build an adversarial asset or indicator index:
 
 1. use the tested baseline to insert ascending, descending, and deterministically shuffled keys into a BST;
@@ -900,14 +1000,16 @@ The security connection is algorithmic-complexity denial of service. Students di
 
 ### Spiral links
 
-**Revisits:** Module 2 BST seed, inorder DFS, height from BFS, Heap-order contrast.  
-**Forward:** final comparison of local and global invariants.
+**Revisits:** Module 2 BST seed, inorder DFS, tree-height reasoning, Heap-order contrast, and Module 13's sparse exact-match index.  
+**Forward:** compare AVL's ordered worst-case guarantee with hash lookup's expected exact-match cost, then compare local and global invariants.
 
 ---
 
-## Module 15 — Graph: Prim and Kruskal
+## Module 16 — Graph: Prim and Kruskal
 
-Production materials: [Module 15 teaching package](module_15_prim_kruskal/README.md)
+Production materials: [Module 16 teaching package](module_16_prim_kruskal/README.md)
+
+**14-week role:** required Week 14 MST and capstone-integration unit. One folded artifact combines the selected complete MST core, the scaffolded comparison, the embedded Spiral 5 individual check, and the capstone integration checkpoint. These are not separate programming submissions or additional contact blocks; the defense remains in the final-assessment period.
 
 ### Learning objectives
 
@@ -917,7 +1019,7 @@ Students will:
 - state the weighted, undirected input contract;
 - trace Prim’s frontier growth and Kruskal’s component merging;
 - explain the roles of Heap and Union-Find;
-- implement one complete MST core loop and complete/test a scaffolded implementation of the other;
+- implement one complete MST core loop and finish/test bounded decision checkpoints in a supplied implementation of the other;
 - validate a spanning tree or minimum spanning forest;
 - compare algorithm suitability by representation and density;
 - explain why minimum cost does not imply resilience.
@@ -939,10 +1041,10 @@ Students will:
 
 ### C lab and cybersecurity context
 
-Students reuse the tested graph parser, Module 11 Heap, and Module 13 DSU. They complete:
+Students reuse the tested graph parser, Module 11 Heap, and Module 14 DSU. They complete:
 
 - one selected algorithm—key-based Prim or Kruskal—from a bounded skeleton;
-- the other algorithm from a more complete scaffold;
+- bounded decision checkpoints in the supplied implementation of the other algorithm;
 - result validation;
 - total-weight comparison.
 
@@ -965,7 +1067,7 @@ A monitoring-backbone scenario illustrates the objective. Students must recommen
 ### Evidence of learning
 
 - side-by-side algorithm trace;
-- one tested complete implementation and one tested scaffolded implementation;
+- one tested complete implementation plus completed checkpoints and output from the supplied comparison implementation;
 - invariant-based result validation;
 - algorithm-selection memo;
 - cost-versus-resilience analysis.
@@ -974,13 +1076,15 @@ A monitoring-backbone scenario illustrates the objective. Students must recommen
 
 Given an adversarial insertion stream and a weighted graph, students:
 
-1. trace DSU unions and identify the first cycle-producing edge;
-2. draw the skewed BST created by hostile order;
-3. perform the required AVL repair;
-4. choose Prim or Kruskal for the supplied representation;
-5. distinguish MST, shortest-path, connectivity, and resilience objectives.
+1. trace a collision cluster and preserve lookup through a deletion marker;
+2. trace DSU unions and identify the first cycle-producing edge;
+3. draw the skewed BST created by hostile order;
+4. perform the required AVL repair;
+5. select a hash table or AVL index from exact-match, ordering, and worst-case requirements;
+6. choose Prim or Kruskal for the supplied graph representation; and
+7. distinguish exact lookup, MST, shortest-path, connectivity, and resilience objectives.
 
-This individual trace/coding check is submitted before the pair capstone defense. The capstone report absorbs the longer synthesis; the defense occurs in the scheduled final-assessment period rather than inside Module 15’s three contact hours.
+These prompts are embedded in the existing MST trace and the single folded Week 14 artifact; they are not a separate check, capstone program, or contact block. The capstone report absorbs the longer synthesis, and the defense occurs in the scheduled final-assessment period rather than inside Week 14’s three contact hours.
 
 ---
 
@@ -994,17 +1098,17 @@ Assessment mirrors the learning routine. Students are not asked only to reproduc
 2. **Build and test:** bounded C implementation, repair, or integration.
 3. **Audit and transfer:** complexity, failure mode, security consequence, and structure choice.
 
-Initial Cognitive Pause responses are evaluated for serious participation and subsequent correction rather than immediate perfection. Module labs permit one feedback-driven revision. Summative tasks use the same Macro/Micro architecture practiced in class, with less scaffolding.
+Initial Cognitive Pause responses are evaluated for serious participation and subsequent correction rather than immediate perfection. Required teaching-week labs permit one feedback-driven revision. Summative tasks use the same Macro/Micro architecture practiced in class, with less scaffolding.
 
 ## 2. Recommended grading plan
 
 | Component | Weight | Primary evidence |
 |---|---:|---|
 | Retrieval practice and corrected Cognitive Pauses | 10% | Short traces, diagrams, invariant questions, annotated corrections |
-| Thirteen ordinary module labs | 26% | C code, tests, tool output, memory models |
-| Five Linear→Tree→Graph synthesis checks | 15% | Transfer across each three-module spiral |
+| Twelve weekly lab artifacts, including combined Weeks 8–9 and the folded Week 14 checkpoint | 26% | C code, tests, tool output, and memory models; one artifact in each lab week |
+| Five embedded spiral synthesis checks | 15% | Transfer scored within the Week 3 lab, Practical 1, Week 8 combined lab, Practical 2, and Week 14 artifact; no separate submissions |
 | Segfault Autopsies and Micro-CTFs | 10% | One embedded debugging artifact per spiral |
-| Two cumulative practical assessments | 14% | Modules 6 and 12 implementation, trace, debug, repair, select, and justify |
+| Two cumulative practical assessments | 14% | Weeks 6 and 10 implementation, trace, debug, repair, select, and justify |
 | Individual synthesis portfolio | 10% | Revised artifacts, connection maps, test evidence, reflection |
 | Capstone | 15% | Integrated tool, report, individual evidence, and defense/equivalent |
 | **Total** | **100%** | |
@@ -1035,32 +1139,32 @@ Drawing quality, prose polish, and coding speed do not substitute for conceptual
 
 ## 4. Cumulative practical assessments
 
-### Practical 1 — After Module 6
+### Practical 1 — Week 6, with Module 6
 
 Students:
 
 - reconstruct an ArrayList, tree, and graph from memory representations;
 - repair one pointer or bounds defect;
-- trace Stack, tree DFS, and graph DFS;
-- complete or repair a bounded graph-DFS function and its cycle/disconnection tests;
+- compare one recursive tree-DFS trace with one Stack-backed iterative graph-DFS trace, identifying saved frontier and visited state;
+- complete or repair a bounded iterative graph-DFS function and its cycle/disconnection tests;
 - identify the invariant added at each generalization;
 - select a representation for a short scenario.
 
-### Practical 2 — After Module 12
+### Practical 2 — Week 10, with Module 12
 
 Students:
 
-- trace Queue/tree BFS/graph BFS;
+- interpret a short tree-level-order-to-graph-BFS transfer trace and complete graph distance/predecessor state;
 - repair a circular-buffer or visited-state defect;
 - trace Heap operations;
 - execute one Dijkstra relaxation round;
 - complete or repair a bounded Dijkstra core and its stale-entry, unreachable, and negative-input tests;
 - state the nonnegative-weight contract;
-- compare a linear and Heap-backed Priority Queue.
+- compare the supplied linear Priority Queue baseline with the Heap backend.
 
 Both practicals include an expert-model correction opportunity followed by a short transfer question. Corrections recover evidence of learning, not all points automatically.
 
-Each practical replaces that module’s ordinary lab rather than adding another assignment to the same week.
+Each practical replaces that teaching week’s ordinary lab rather than adding another assignment. Combined Weeks 8 and 9 likewise produce one submission each: the graph-BFS lab absorbs the tree-BFS bridge evidence, and the Heap lab absorbs the supplied Priority Queue baseline comparison.
 
 ---
 
@@ -1100,17 +1204,20 @@ The portfolio is a technical communication artifact, not a scrapbook. Students m
 
 ## 2. Capstone — Defensive Network Analysis Toolkit in C
 
-The capstone is built incrementally so Module 15 is integration rather than a new project.
+The capstone is built incrementally so Week 14 is integration rather than a new project.
 
-| Milestone | Capability added |
+| Delivery milestone | Capability added |
 |---|---|
-| Spiral 1 | Validated records and graph representation |
-| Spiral 2 | Stack-backed DFS and reachability |
-| Spiral 3 | Queue-backed BFS and unweighted paths |
-| Spiral 4 | Heap-backed Dijkstra |
-| Module 13 | Reusable DSU; linked-adjacency repair remains a standalone clinic |
-| Module 14 | AVL-backed asset/indicator index |
-| Module 15 | Prim, Kruskal, cross-validation, and comparative report |
+| Week 3 / Module 3 | Validated records, graph representation, and capstone skeleton |
+| Week 6 / Module 6 | Stack-backed DFS and reachability |
+| Week 8 / Modules 8–9 | Queue-backed BFS and unweighted paths |
+| Week 10 / Module 12 | Heap-backed Dijkstra |
+| Week 11 / Module 13 | Hash-backed sparse external-label-to-dense-ID index |
+| Week 12 / Module 14 | Reusable DSU; linked-adjacency repair remains a standalone clinic |
+| Week 13 / Module 15 | AVL-backed ordered asset/indicator index and backend-selection comparison |
+| Week 14 / Module 16 | Prim, Kruskal, cross-validation, and comparative report |
+
+Each milestone contributes evidence inside that week’s lab or practical; it is not a second weekly submission. The Week 14 lab grade covers the bounded MST implementation and comparison, while the capstone grade covers cross-module integration, the cumulative report, and the defense. The same code is not scored twice for the same criterion.
 
 The final toolkit must:
 
@@ -1119,6 +1226,8 @@ The final toolkit must:
 - traverse the model with DFS and BFS;
 - reconstruct unweighted and weighted paths;
 - reject negative edge weights for Dijkstra;
+- map sparse external labels to validated dense internal IDs without confusing a hash with authentication;
+- select hash-backed exact lookup or AVL-backed ordered lookup from the stated workload and worst-case requirements;
 - compute an MST or minimum spanning forest with one complete and one scaffolded algorithm;
 - cross-check Prim and Kruskal totals when both are enabled;
 - validate important structure invariants;
@@ -1182,6 +1291,8 @@ All submitted implementations use a consistent engineering contract:
 - validate external indexes before array access;
 - define empty/error behavior in the API;
 - use `size_t` for sizes and indexes where appropriate;
+- define hash-key ownership and update policy explicitly;
+- bound every probe loop, check load-factor arithmetic, and rehash transactionally;
 - check capacity arithmetic and weighted-path arithmetic for overflow;
 - document ownership transfer;
 - pair every successful allocation with a defined cleanup path;
@@ -1199,52 +1310,61 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Dependency | First formal placement | Used later by |
 |---|---|---|
 | Pointers, `struct`, allocation, ownership | Module 1 syntax sandbox | Entire course |
-| Linked-node mental model | Module 1 preview; Module 13 retrieval clinic | Trees, linked adjacency, DSU bridge |
+| Linked-node mental model | Module 1 preview; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
 | Tree representation and BST-order preview | Module 2 | DFS, BFS, AVL |
 | Graph representation | Module 3 | All graph algorithms |
 | Stack | Module 4 | Tree and graph DFS |
-| Recursion and explicit call frames | Module 5 | Tree algorithms and cleanup |
+| Recursion and explicit call frames | Module 5 recursive core; explicit-stack tree traversal as extension | Tree algorithms and cleanup |
 | Queue | Module 7 | Tree and graph BFS |
-| Height and balance preview | Module 8 | AVL |
-| Adjacency list and predecessors | Module 9 | Dijkstra and Prim |
-| Priority Queue ADT | Module 10 | Dijkstra and Prim |
-| Binary Heap | Module 11 | Dijkstra and Prim |
+| Tree level-order transfer | Module 8 bridge in combined Week 8 | Graph BFS |
+| Height and balance | Module 15 | AVL validation and rotation |
+| Adjacency list and predecessors | Module 9 main lab in combined Week 8 | Dijkstra and Prim |
+| Priority Queue ADT and linear reference | Module 10 baseline in combined Week 9 | Heap comparison, Dijkstra, and Prim |
+| Binary Heap | Module 11 main lab in combined Week 9 | Dijkstra and Prim |
 | Weighted relaxation | Module 12 | Dijkstra; comparison with Prim |
-| Union-Find with compression/rank | Module 13 | Kruskal |
-| BST operations and AVL rotations | Seeded Modules 2/5/8; mastered Module 14 | Ordered-index capstone |
-| Edge-list construction and safe sorting/comparator | Module 13 Kruskal pre-lab | Kruskal |
+| Hash Table, linear probing, and tombstones | Module 13 | Sparse external-label index; comparison with AVL |
+| Union-Find with compression/rank | Module 14 | Kruskal |
+| BST operations and AVL rotations | BST operations seeded in Modules 2/5; height, balance, and rotations mastered in Module 15 | Ordered-index capstone; comparison with hashing |
+| Edge-list construction and safe sorting/comparator | Module 14 Kruskal pre-lab | Kruskal |
 
 Scope controls:
 
+- Every teaching week has a hard 180-minute contact budget. A complete package may contain extension, make-up, or longer-calendar materials beyond that budget.
+- Module 5 requires recursive tree DFS; explicit-stack tree traversal is an extension. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
+- Modules 8 and 9 share one Week 8 submission. The Module 8 core is a short level-order trace and supplied-code inspection; graph BFS, predecessor state, and path reconstruction are the main implementation.
+- Modules 10 and 11 share one Week 9 submission. The Module 10 unsorted-array implementation is supplied; the Heap backend and comparison are the main implementation.
+- Module 13 uses a scaffolded transactional rebuild, and Module 14 requires one bounded list repair plus DSU; their complete package menus are not assigned as hidden homework.
 - AVL insertion is core; AVL deletion is an extension.
-- Module 15 reuses tested graph, Heap, and DSU libraries.
-- Prim and Kruskal are both traced and compared; local calendar constraints may allow students to implement one fully and complete the other from a scaffold.
-- Hash tables and advanced sorting are outside the required topic list. A boolean/indexed visited array is used when vertex IDs are dense.
+- Module 16 reuses tested graph, Heap, and DSU libraries.
+- Prim and Kruskal are both traced and compared; the default 14-week path implements Kruskal fully and finishes/tests bounded decision checkpoints in a supplied Prim implementation.
+- Hash tables provide the sparse external-key index. Boolean/indexed visited arrays remain the simpler representation when vertex IDs are already dense.
+- The required hash-table backend uses open addressing with linear probing; separate chaining and cryptographic hash design are extensions. Advanced general-purpose sorting remains outside the required topic list.
 - Algorithms operate only on synthetic, authorized datasets.
 
 ---
 
-# Suggested 15-Module Calendar
+# Required 14-Week Calendar
 
-| Module | Primary topic | Spiral checkpoint or major artifact |
+| Week | Primary topic | Package use and major artifact |
 |---:|---|---|
-| 1 | ArrayList and linked-node preview | Safe growth lab |
-| 2 | Binary-tree foundations and BST seed | Representation translation |
-| 3 | Graph fundamentals | Spiral 1 representation synthesis |
-| 4 | Stack | Nested-input Micro-CTF |
-| 5 | Tree DFS | Recursive/iterative comparison |
-| 6 | Graph DFS | Spiral 2 depth synthesis; Practical 1 |
-| 7 | Queue | Circular-buffer incident analysis |
-| 8 | Tree BFS | Width/height comparison |
-| 9 | Graph BFS | Spiral 3 breadth synthesis |
-| 10 | Priority Queue ADT | Backend-selection experiment |
-| 11 | Binary Heap | Invariant-driven implementation |
-| 12 | Dijkstra | Spiral 4 priority synthesis; Practical 2 |
-| 13 | Linked-list retrieval and Union-Find | Ownership repair and DSU |
-| 14 | BST-to-AVL | Adversarial-input experiment |
-| 15 | Prim and Kruskal | Spiral 5 synthesis and capstone integration; defense in final period |
+| 1 | ArrayList and linked-node preview | Module 1; safe growth lab |
+| 2 | Binary-tree foundations and BST seed | Module 2; representation translation |
+| 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
+| 4 | Stack | Module 4; nested-input Micro-CTF |
+| 5 | Tree DFS | Module 5 recursive core; explicit-stack implementation is extension |
+| 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
+| 7 | Queue | Module 7; circular-buffer incident analysis |
+| 8 | BFS from trees to graphs | Module 8 trace and supplied-code inspection + Module 9 graph-BFS lab; one combined submission |
+| 9 | Priority Queue contract to Binary Heap | Supplied Module 10 baseline + Module 11 Heap lab; one combined submission |
+| 10 | Dijkstra | Module 12; Spiral 4 synthesis and Practical 2 replace the ordinary lab |
+| 11 | Hash Table | Module 13; linear probing, tombstones, and scaffolded transactional-rehash experiment |
+| 12 | Linked-list retrieval and Union-Find | Module 14; one bounded ownership repair and DSU |
+| 13 | BST-to-AVL | Module 15; height/balance, adversarial-input, and index-selection experiment |
+| 14 | Prim and Kruskal | Module 16; one folded MST, embedded Spiral 5 check, and capstone-integration artifact |
 
-If the institution reserves the final instructional week entirely for examinations, start the capstone earlier and place Module 15 across the preceding graph-algorithm meetings. Do not compress the entire MST implementation and capstone assembly into a single final class.
+The capstone begins with the Week 3 skeleton and receives the milestones listed above; it is not introduced in Week 14. The Module 16 individual check and integration checkpoint are embedded in the week’s single artifact, while the capstone defense uses the scheduled final-assessment period. If that period is unavailable, move the defense to an institutionally approved assessment slot rather than adding it to Week 14’s 180-minute plan.
+
+The 16 full packages remain useful for extensions, make-up work, or a longer calendar. In the 14-week path, do not release both complete Stage E labs in a combined week as required work. Week 11 Hash Table and Week 12 List/DSU must likewise use their bounded 180-minute cores rather than their complete package menus. Use the exact selections in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md), and do not turn omitted implementations into uncounted homework.
 
 ---
 

@@ -100,7 +100,7 @@ Text equivalent:
 | 1 | node at address `Q` | `22` | address `R` |
 | 2 | node at address `R` | `33` | `NULL` |
 
-Linked nodes need not be physically adjacent. They avoid moving all later elements during a local link change, but they give up direct index arithmetic and add pointer/ownership risks. Full linked-list implementation returns in Module 13.
+Linked nodes need not be physically adjacent. They avoid moving all later elements during a local link change, but they give up direct index arithmetic and add pointer/ownership risks. Full linked-list implementation returns in Module 14.
 
 ## 7. Representation invariant
 

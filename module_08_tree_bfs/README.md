@@ -5,6 +5,21 @@
 This package is the Tree stage of the third
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This package supplies the short tree-to-graph bridge at the start of the
+combined **Week 8 BFS** unit. Require only a level-order Queue trace and the
+provided tree-BFS scaffold; do not assign a standalone Module 8 submission.
+Shallowest-tree-search work and the Tree BFS Autopsy are optional. Move
+height and balance-factor instruction to Module 15. The full package remains
+available as an instructor resource, but it is not a second Week 8 lab.
+
+See the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+for the 35-minute bridge and the handoff to Module 9. Where the targets,
+release order, or submission list below are broader, the guide and this
+delivery-role note control the required path.
+
 ## Beginner-first rule
 
 Students are not expected to know breadth-first search vocabulary, tree
@@ -148,4 +163,4 @@ balance-and-rotation preview.
 - **Introduces:** frontier records, level order, shallowest-match search,
   maximum width, and balance-factor preview.
 - **Forwards:** graph BFS with visited state in Module 9 and AVL balancing in
-  Module 14.
+  Module 15.

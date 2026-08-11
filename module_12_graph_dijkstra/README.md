@@ -2,6 +2,22 @@
 
 ## Dijkstra with a Lazy-Duplicate Minimum Frontier
 
+## 14-week delivery role - Week 10 Practical 2
+
+This package supplies the **sole Week 10 submission** in the 14-week course.
+Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+The required contact block is capped at 180 minutes and is one integrated
+Practical 2 artifact, not a Dijkstra lab followed by a second practical.
+
+For that bounded release, supply the validated text-weight parser, weighted-
+graph setup, cleanup and integration scaffold, and Heap-backed frontier.
+Students complete the Dijkstra run loop and bounded path reconstruction,
+then place the BFS/linear-Priority-Queue/Heap comparison inside the same
+practical evidence record. The supplied suite owns parser, allocation,
+capacity, and validator coverage; students add one focused core regression
+test. The complete Stage E archive remains an instructor resource and must
+not become a separate lab or hidden asynchronous assignment.
+
 This package is the Graph stage of the fourth
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
@@ -167,24 +183,27 @@ created.
 7. Keep `instructor/`, `code/solution/`, and
    `code/tests/test_extension.c` instructor-only until revisions close.
 
-## Core submission
+## Week 10 Practical 2 submission
 
-Students submit:
+Students submit one integrated artifact containing:
 
-- completed `code/starter/dijkstra.c`;
-- completed `code/tests/test_student.c`;
-- saved output from supplied and student-authored tests;
-- exactly three original tests in the required categories;
+- the bounded `code/starter/dijkstra.c` run-loop and reconstruction work;
+- one focused student-authored core regression test plus saved output from
+  the supplied suite;
 - a complete canonical distance/predecessor/frontier trace;
 - the reconstructed A-to-E path and independently checked cost;
 - evidence for negative, unreachable, stale, and cost-range boundaries;
 - a same-graph BFS, linear-Priority-Queue Dijkstra, and Heap-Dijkstra
   comparison, including call counts, API roles, and ADT-versus-implementation
   distinctions;
-- completed evidence record and Dijkstra Autopsy; and
+- the completed Practical 2 evidence record; and
 - corrected Cognitive Pause.
 
-## Exactly three implementation TODO concepts
+The parser, Heap frontier, weighted-graph ownership, integration setup, and
+their boundary tests are supplied in the Week 10 scaffold. The full autopsy
+and additional Stage E tests are optional resources after the practical.
+
+## Full-package TODO inventory
 
 1. Parse and validate one textual weight before unsigned conversion.
 2. Run Dijkstra with strict relaxation, guarded addition, lazy duplicate
@@ -192,6 +211,10 @@ Students submit:
 3. Reconstruct a bounded predecessor path.
 
 Weighted-graph ownership and the typed frontier are supplied.
+
+For the 14-week path, TODO 1 is supplied complete, and setup/cleanup around
+TODOs 2 and 3 is scaffolded. Students implement only the bounded algorithm
+core and reconstruction described in the Week 10 submission above.
 
 ## Fixed course conventions
 

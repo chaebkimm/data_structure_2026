@@ -1,5 +1,31 @@
 # Instructor Lesson Plan - Module 11 Binary Heap
 
+## 14-week delivery override - Week 9 main lab (140 of 180 minutes)
+
+Run this block after the 40-minute Module 10 contract/baseline block. Module
+11 provides the combined week's only submission. The longer two-meeting plan
+below remains an optional resource. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Combined-week minutes | Required live work |
+|---:|---|
+| 40-52 | Map the complete tree to an array and derive parent/child indexes. |
+| 52-65 | Distinguish Heap order from sorted/BST order and trace sift-up/down. |
+| 65-75 | Run the exactly-three-target pause and calibrate both traces. |
+| 75-85 | Reuse the Module 10 contract and introduce the Heap checker. |
+| 85-105 | Implement and test the invariant checker. |
+| 105-125 | Implement and test insertion with sift-up. |
+| 125-147 | Implement and test extraction with sift-down, including a left-only child. |
+| 147-160 | Run three test categories, including stable ties, against the supplied reference baseline. |
+| 160-170 | Compare measured Heap work with the Module 10 scan baseline. |
+| 170-177 | Correct one sift trace and the combined evidence without erasing first work. |
+| 177-180 | Verify one combined checklist and submit once for Week 9. |
+
+The required submission contains Heap code, three focused tests, sift traces,
+and the backend comparison. Treat the extended randomized differential run,
+the bounded autopsy, and the rest of the full-package evidence as optional
+after the core passes; do not create a separate Module 10 assignment.
+
 ## Module question
 
 > Can a compact array avoid scanning every alert while still returning the

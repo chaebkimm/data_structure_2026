@@ -1,5 +1,27 @@
 # Instructor Lesson Plan - Module 10 Priority Queue
 
+## 14-week delivery override - Week 9 baseline (40 of 180 minutes)
+
+Use this package only to establish the service contract and a simple cost
+baseline before the 140-minute Module 11 Heap block. Supply the completed
+unsorted-array implementation; do not assign its starter as a project and do
+not collect a Module 10 submission. The longer plan below remains an optional
+resource. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Minutes | Required live work |
+|---:|---|
+| 0-8 | Contrast FIFO arrival order with the alert-priority scenario. |
+| 8-18 | Fix the stable comparator and minimum-Priority-Queue public contract. |
+| 18-30 | Trace insert, inspect-minimum, and extract-minimum in the supplied unsorted-array baseline. |
+| 30-38 | Count work for insert-heavy and removal-heavy use and identify the linear scan. |
+| 38-40 | Preserve the comparison table and hand the unchanged contract to Module 11. |
+
+Use only selected inquiry/reveal/reference materials needed by this block;
+do not compress by assigning the full five-gate lab asynchronously. The
+single Week 9 submission comes from Module 11 and compares its Heap backend
+with this supplied baseline.
+
 ## Module question
 
 > If urgent alerts should be processed before routine alerts, what replaces

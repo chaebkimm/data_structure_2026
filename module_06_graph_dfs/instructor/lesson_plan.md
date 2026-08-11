@@ -1,5 +1,29 @@
 # Instructor Lesson Plan — Module 6: Graph Depth-First Search
 
+## 14-week delivery override - Week 6 (180 minutes)
+
+Use iterative graph DFS as the required implementation and keep recursive
+graph DFS as an extension. Practical 1 replaces the ordinary Module 6 lab
+and submission; do not collect both. The longer plan below remains a
+resource. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Minutes | Required live work |
+|---:|---|
+| 0-12 | Retrieve the adjacency matrix, Stack rule, and tree-to-graph transfer question. |
+| 12-28 | Reveal discovered/visited state and the mark-on-successful-push invariant. |
+| 28-45 | Trace iterative DFS through the canonical cycle and explain the isolated vertex. |
+| 45-55 | Run the exactly-three-target pause and calibrate the trace. |
+| 55-70 | Read the iterative public contract, error promises, and neighbor-order rule. |
+| 70-90 | Complete a guided iterative DFS core and run the cycle/reachability tests. |
+| 90-100 | Brief Practical 1 and identify the evidence it replaces. |
+| 100-170 | Run Practical 1 as the Week 6 assessed implementation/reasoning task. |
+| 170-180 | Preserve test output, complete the practical checklist, and make one submission. |
+
+Recursive DFS code, recursive call traces, and a separate Module 6 Stage E
+submission are extensions. Connected-component reasoning may appear in the
+practical, but a second implementation is not added outside its scope.
+
 ## Purpose and limits
 
 This module completes the second Linear → Tree → Graph spiral. It retrieves:

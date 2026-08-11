@@ -1,5 +1,34 @@
 # Instructor Lesson Plan - Module 12 Dijkstra
 
+## 14-week delivery override - Week 10 Practical 2 (180 minutes)
+
+This is the authoritative required sequence for the 14-week course; see the
+[delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Practical 2 is the sole Week 10 submission. Prepare a bounded release in
+which the weight parser, weighted-graph setup/cleanup and integration frame,
+Heap frontier, and their boundary tests are supplied. Do not assign the
+untouched Stage E package, its autopsy, or its extra tests as separate work.
+
+| Required contact activity | Minutes |
+|---|---:|
+| Retrieve BFS versus weighted-cost objectives | 12 |
+| Trace the canonical tentative-distance and predecessor states | 18 |
+| Formalize strict relaxation, stale entries, and the nonnegative rule | 15 |
+| Cognitive Pause and immediate calibration | 10 |
+| Read the supplied parser/frontier/integration contracts | 10 |
+| Complete the bounded Dijkstra run loop | 30 |
+| Complete bounded path reconstruction | 18 |
+| Break and build reset | 10 |
+| Run supplied boundary tests and author one focused core regression | 22 |
+| Compare BFS, linear-Priority-Queue Dijkstra, and Heap Dijkstra | 20 |
+| Assemble range, preservation, complexity, and scope evidence | 10 |
+| Submit the single Practical 2 artifact and exit check | 5 |
+| **Total** | **180** |
+
+The comparison synthesis belongs inside Practical 2. The fuller two-meeting
+sequence retained below is an optional instructor resource only; it neither
+extends the contact budget nor creates asynchronous student requirements.
+
 ## Module question
 
 > BFS minimizes the number of edges. How can we minimize total cost when
@@ -26,7 +55,7 @@ Do not display answers, formal state names, or code before their gate.
 - Arrange typed, dictated, tactile, verbal, and drawing-equivalent response
   options.
 
-## Meeting A - Discover and formalize
+## Optional full-package resource sequence - Meeting A
 
 ### 1. Gate A retrieval - 8 minutes
 
@@ -133,13 +162,13 @@ Prompt:
 > Why does equality cause no update, and why does a stale snapshot cause no
 > edge scan?
 
-## Between meetings
+## Optional full-package resource sequence - Between meetings
 
 Students preserve Sections A through F. Review work for the objective,
 tentative/finalized distinction, strict comparison, stale test, and numeric
 guard. Do not grade drawing quality.
 
-## Meeting B - Implement and verify
+## Optional full-package resource sequence - Meeting B
 
 ### 1. Gate D retrieval - 12 minutes
 
@@ -321,15 +350,18 @@ Use only after core correctness:
 
 ## Submission check
 
-Require:
+For the 14-week path, require only the single Practical 2 artifact:
 
 - preserved Stage A and Cognitive Pause;
 - canonical BFS/Dijkstra contrast;
 - exact arrays, trace, and seven counters;
-- three TODOs and exactly three tests;
+- bounded Dijkstra loop and path reconstruction;
+- one focused student core regression plus the supplied suite output;
 - negative/range/output-preservation evidence;
 - E/A/F reconstruction evidence;
 - linear/Heap actual complexity;
-- 241-versus-64 explanation;
-- completed autopsy; and
+- 241-versus-64 explanation; and
 - bounded integrity/security claims.
+
+The parser implementation, full autopsy, and additional Stage E tests are
+optional resources and are not a second submission.

@@ -1,5 +1,26 @@
 # Instructor Lesson Plan — Module 8: Tree Breadth-First Traversal
 
+## 14-week delivery override - Week 8 bridge (35 of 180 minutes)
+
+Use only this short bridge before the 145-minute Module 9 graph-BFS block.
+There is no standalone Module 8 lab or submission in the 14-week path. The
+full plan below remains an optional instructor resource. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Minutes | Required live work |
+|---:|---|
+| 0-5 | Retrieve FIFO Queue behavior from Module 7. |
+| 5-12 | Display the canonical tree and read the supplied node-and-depth Queue scaffold. |
+| 12-25 | Trace left-first level order, recording Queue contents and nondecreasing depths. |
+| 25-32 | Contrast a tree's unique parent route with a graph's need for discovered state. |
+| 32-35 | Preserve the trace as formative evidence and hand off directly to Module 9. |
+
+Do not release the full Stage E starter as required work. Shallowest-match
+search and the Tree BFS Autopsy are optional; width analysis is optional;
+height and balance-factor work moves to Module 15. The Week 8 submission is
+the single combined Module 9 submission, which includes the in-class tree
+trace but no Module 8 code TODO.
+
 ## Purpose and limits
 
 This module is the Tree stage of the third
@@ -633,7 +654,7 @@ balance factors are 0, and inorder remains `10, 20, 30`.
 
 Do not assign rotation code. Do not introduce LL, RR, LR, or RL labels,
 double rotations, stored-height maintenance, rotation-selection rules, AVL
-insertion, or deletion. Those belong to Module 14. Do not imply that every
+insertion, or deletion. Those belong to Module 15. Do not imply that every
 imbalance is repaired by this one rotation.
 
 ## Safe autopsy

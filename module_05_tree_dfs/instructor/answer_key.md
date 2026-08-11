@@ -636,7 +636,7 @@ TreeDfsStatus tree_bst_insert(
 It goes left for lower, right for higher, rejects equality, and allocates
 only after an empty link is found. Duplicate and allocation failures leave
 the tree unchanged. This is an inspect-and-test baseline; student insertion
-implementation returns in Module 14.
+implementation returns in Module 15.
 
 ### Traversals
 

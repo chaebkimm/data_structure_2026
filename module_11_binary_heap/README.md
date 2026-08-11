@@ -5,6 +5,20 @@
 This package is the Tree stage of the fourth
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This is the implementation lab for the combined **Week 9 Priority Queue →
+Binary Heap** unit. Students preserve the supplied Module 10 service
+contract, implement the Heap backend, and compare it with the supplied
+unsorted-array reference. Module 11 supplies the unit's **single combined
+submission**; there is no separate Module 10 submission. The complete
+package remains available for a longer treatment.
+
+Use the scoped release and 140-minute sequence in the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Where the full-package release order or submission list below is broader,
+the guide and this delivery-role note control the required path.
+
 ## Beginner-first rule
 
 Students are not expected to know binary Heap vocabulary, complete-tree
@@ -172,5 +186,5 @@ Students submit:
   Heap keeps only parent-to-child order and does not globally sort records.
 - **Introduces:** array/tree index translation, sift-up, sift-down, a
   Heap-order checker, and instrumented-versus-uninstrumented evidence.
-- **Forwards:** Dijkstra and Prim use a minimum Heap; Module 14 contrasts Heap
+- **Forwards:** Dijkstra and Prim use a minimum Heap; Module 15 contrasts Heap
   partial order with AVL search order.

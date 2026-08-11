@@ -1,5 +1,31 @@
 # Instructor Lesson Plan — Module 9 Graph BFS
 
+## 14-week delivery override - Week 8 main lab (145 of 180 minutes)
+
+Run this block immediately after the 35-minute Module 8 level-order bridge.
+Module 9 provides the combined week's only submission. The longer plan below
+remains an optional resource. See the
+[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+
+| Combined-week minutes | Required live work |
+|---:|---|
+| 35-45 | Transfer the tree frontier trace to a directed graph and retrieve the Queue rule. |
+| 45-55 | Reveal discovery-on-successful-enqueue, distance, predecessor, and visit state. |
+| 55-70 | Trace the canonical graph, including a cycle, a merge, and an unreachable vertex. |
+| 70-80 | Run the exactly-three-target pause and calibrate the trace. |
+| 80-90 | Read the checked result/path contracts and failure-preservation rules. |
+| 90-120 | Implement and test matrix graph BFS. |
+| 120-138 | Implement and test predecessor-based path reconstruction. |
+| 138-150 | Add tests for cycle/merge handling, unreachable state, and deterministic ties. |
+| 150-160 | Compare matrix and supplied sorted-list behavior and costs; list BFS code is extension work. |
+| 160-168 | Run the bounded frontier autopsy and state the enqueue-time marking fix. |
+| 168-176 | Correct the combined evidence and state the tree-to-graph transfer. |
+| 176-180 | Verify one combined checklist and submit once for Week 8. |
+
+The single submission contains graph-BFS code/tests/path evidence and may
+include the tree trace completed during the first 35 minutes. Do not require
+a second Module 8 submission or a required adjacency-list implementation.
+
 ## Module question
 
 > Which system is reachable in the fewest communication hops when

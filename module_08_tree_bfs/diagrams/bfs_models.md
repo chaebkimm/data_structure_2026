@@ -339,7 +339,7 @@ Numbered equivalent:
 5. The new root height is 1 and every balance factor is 0.
 6. **Inorder** visits everything below the left child, the node, then
    everything below the right child; it remains `10, 20, 30`.
-7. Rotation implementation waits until Module 14.
+7. Rotation implementation waits until Module 15.
 
 ## 10. Tree boundary and graph forward link
 

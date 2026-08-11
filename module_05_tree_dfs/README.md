@@ -5,6 +5,20 @@
 This package is the Tree stage of the second
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 14-week delivery role
+
+This is the required **Week 5** package in the 14-week path. Recursive tree
+DFS is the core: students trace preorder, inorder, and postorder, reason
+about active calls and `O(h)` call-stack space, implement the recursive
+traversals, and use postorder for cleanup. Explicit-Stack tree traversal is
+an extension and is not required evidence or a required TODO. The complete
+package remains available for instructors who want the longer version.
+
+Use the exact live-session scope in the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Where the full-package targets or submission list below are broader, the
+guide and this delivery-role note control the required 14-week path.
+
 ## Beginner-first rule
 
 Students are not expected to know traversal orders, recursion, call frames,
@@ -128,4 +142,4 @@ builds and tests submitted code.
 - **Introduces:** recursive and explicit-stack DFS, three traversal orders,
   active call frames, and postorder destruction.
 - **Forwards:** visited-aware graph DFS in Module 6, BST operations in
-  Module 14, and AVL height reasoning.
+  Module 15, and AVL height reasoning.

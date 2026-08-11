@@ -156,7 +156,7 @@ height(left child) - height(right child)
 ```
 
 The root's factor is 0 because its left and right child heights are both 2.
-Balance factors preview Module 14; they do not change BFS order.
+Balance factors preview Module 15; they do not change BFS order.
 
 ## 7. Output types and contracts
 
@@ -265,7 +265,7 @@ right child 30. Height becomes 1 and all balance factors become 0.
 **Inorder** visits everything below the left child, then the node, then
 everything below the right child; its result remains `10, 20, 30`.
 
-Rotation selection and implementation wait until Module 14.
+Rotation selection and implementation wait until Module 15.
 
 ## 10. Safe input boundary
 
