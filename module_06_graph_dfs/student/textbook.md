@@ -1,267 +1,231 @@
-# Student Notes — Remembering Where a Graph Has Been
+# Chapter 6. Exploring Maps Without Going in Circles
 
-## Essential question
+## Thinking Logically
 
-> Tree branches do not reconnect. What must change when a route can lead
-> back to a vertex already reached?
+### What changes if we follow one path like in a tree?
 
-## 1. The graph problem
-
-A **graph** stores items and their direct relationships. One item is a
-**vertex**. One direct relationship is an **edge**. A **directed edge** works
-in one direction, so `0 → 1` does not also mean `1 → 0`.
-
-```text
-0 Gateway   1 Web   2 Admin
-3 Database  4 Monitor  5 Archive
-```
-
-Edges:
+In a tree, there is only one straight, downward path to reach a specific item. But in a free-flowing map, multiple connections can lead to the exact same item, and paths can even loop all the way back to an item you have already visited.
 
 ```text
 0 → 1   0 → 2   1 → 3
 2 → 3   3 → 4   4 → 1
+5 is not connected to any item.
+
 ```
 
-Neighbor lists:
+We can still use our strategy of following one path all the way to a dead end. But if we don't remember the items we have already visited, we might loop around the `1 → 3 → 4 → 1` path forever, or accidentally process item 3 twice.
+
+### When should we leave a mark to avoid checking an item again?
+
+We keep a simple true/false checklist for each item. If an item is marked "true", it means we have already found it and reserved its turn to be checked.
+
+We must check off an item **the exact moment we drop it into our waiting container**, not later when we finally take it out. This completely stops other connections from trying to shove the exact same item into the container again while it is already waiting patiently inside.
+
+We only leave a checkmark if it successfully goes into the container. If the container is full and fails to take the item, but we mark it as "true" anyway, it won't actually be in the container, and we will accidentally skip checking it forever!
+
+### In what order should we add neighbors to visit smaller numbers first?
+
+In our tall waiting container, the last item dropped in is always the first one to come out. So, if we look at our current item's neighbors and drop them in starting from the *largest* number, the *smallest* number will go in last—meaning it will pop out first!
 
 ```text
-0:[1,2]  1:[3]  2:[3]  3:[4]  4:[1]  5:[]
+Drop the starting item 0 in and mark it.
+
+Repeat until the container is empty:
+    Take out an item and write it down in the final list.
+    Check its neighbors starting from the largest number.
+    Drop a neighbor into the container if it is not marked yet.
+    If it successfully goes in, mark it as true.
+
 ```
 
-An **out-neighbor** is the destination of an edge leaving the current
-vertex. A **route** is a sequence that follows stated edges. The route
-`1 → 3 → 4 → 1` is a **cycle**, a route that returns to an earlier vertex.
+In the example map above, if we start from 0, the container changes like this. The container is written from bottom to top.
 
-**Depth-first search (DFS)** follows one available route deeply before
-returning to an unfinished choice. A **source** is its chosen starting
-vertex. A vertex is **reachable** when a directed route leads to it from the
-source. A source reaches itself.
+| Processed Item | Inside the Container | Final Visit Order |
+| --- | --- | --- |
+| Before start | `0` | Empty |
+| 0 | `2, 1` | `0` |
+| 1 | `2, 3` | `0, 1` |
+| 3 | `2, 4` | `0, 1, 3` |
+| 4 | `2` | `0, 1, 3, 4` |
+| 2 | Empty | `0, 1, 3, 4, 2` |
 
-From source 0, vertices 0 through 4 are reachable. Vertex 5 is not.
+Item 5 is not in the final list because there is no path leading to it from 0. The starting item is always included in the final list.
 
-## 2. The essential addition: visited state
+### Can we find the same items using repeating instructions?
 
-A **Boolean** value is either `true` or `false`. A **visited array** stores
-one Boolean for every vertex.
+Yes! When we arrive at an item, we mark it, write it down, and then simply tell the computer to run the exact same instructions for all unvisited neighbors, starting from the smallest number. The exact order we visit them might be slightly different than using the container, but the final group of items we reach will be exactly the same.
 
-Course rule:
+The repeating instructions use the computer's hidden background memory. The container method uses our own custom-built container to hold the item numbers.
 
-> `visited[v]` becomes true when vertex `v` is discovered and scheduled.
+### How do we find items we can't reach from our starting point?
 
-To **discover** means to reach for the first time. To **schedule** means to
-arrange for the vertex's work to happen. To **mark** means to change a
-visited value to true. To **record** means to append the vertex number to
-the output. A marked vertex may not yet be recorded.
+A single search only finds the items you can actually reach from where you started. If we want to find everything, we can scan the entire map. Every time we see an unmarked item, we start a brand-new search. This lets us count completely separate, independent groups (like islands) one by one.
 
-When an edge leads to a marked vertex, DFS skips that destination. Thus edge
-`4 → 1` does not restart work at 1. The same check also prevents two routes
-to vertex 3 from recording it twice.
+If we make all the connections in our example two-way streets, items 0 to 4 form one connected group, and the lonely item 5 forms a second independent group. So, there are 2 groups in total. A completely empty map has 0 groups.
 
-## 3. Recursive graph DFS
+In a one-way map, just because you can go down a connection doesn't mean you can come back. Because of this, our group-counting tool will safely reject one-way maps.
 
-A **function** is a named group of instructions. **Recursion** means a
-function calls itself. A **call frame** saves one active call's unfinished
-work.
+### How do we protect the result if the search fails?
 
-Recursive DFS marks and records a vertex when its call begins. The course
-checks possible destinations from lower number to higher number.
+Before searching, we make sure the map grid from Chapter 3 is valid. The starting item must actually exist, and our container is strictly limited to 16 items.
 
-```text
-DFS at vertex u:
-    mark u
-    record u
-    for v from 0 through V - 1:
-        if edge u → v exists and v is not marked:
-            DFS at v
-    return
-```
+We build the final visit list in a temporary workspace first. If the map is broken, or if we hit the container limit or run out of memory, we throw away the workspace and do not change the user's existing list. We only copy the finished list when everything succeeds perfectly.
 
-`V` means active vertex count; active means included in the current graph. A
-**pointer** stores a memory address. `NULL` is C's pointer value meaning
-“points to no object.” Unlike tree DFS, this method receives no `NULL` child
-pointer. It makes no call for a marked destination and returns after
-checking all possible destinations.
+## Calculating Efficiency
 
-The course recursive trace from source 0 is:
+### How long does it take to process one item in a grid map?
 
-```text
-enter 0
-enter 1
-enter 3
-enter 4; skip 4 → 1
-return to 0 and enter 2; skip 2 → 3
-```
+To find neighbors in our grid map, we must check all `V` possible destination boxes in that item's row. Because we eventually check every item, checking all `V` rows takes an amount of work that grows very rapidly, like the square of the items: `O(V^2)`.
 
-Recorded order: `0, 1, 3, 4, 2`. The final visited set is
-`{0, 1, 2, 3, 4}`; vertex 5 remains false.
+### How long does it take if we use a different map style?
 
-## 4. Iterative graph DFS
+If we stored our map as a simple list of connected paths instead of a giant grid, we would only check the actual paths that exist. This takes `O(V + E)` time, where `E` is the number of connections. Even for the exact same search, the time it takes changes depending on how the map is stored!
 
-An **iterative algorithm** uses a loop instead of recursive calls. A
-**loop** repeats instructions while its condition holds. A **Stack** is a
-last-in, first-out collection: the newest item is removed first. `push` adds
-one item; `pop` removes the newest item.
+### How much extra space is needed during the search?
 
-An **explicit vertex-ID Stack** is a program-operated Stack of vertex
-numbers. It differs from the runtime call stack used for function calls.
+Because the true/false checklist and the waiting container can hold up to the total number of items, it requires a steady amount of extra space proportional to the total items, `O(V)`.
 
-The **frontier** contains marked vertices still waiting to be processed.
-The explicit Stack stores it.
+### How long does it take to count independent groups?
 
-```text
-push source
-if push succeeds, mark source
+Every item is marked exactly once. Because we have to check all the rows in our grid map to find connections, it still takes `O(V^2)`. (If it were a list of connected paths, it would be `O(V + E)`).
 
-while the Stack is not empty:
-    pop u
-    record u
-    check v from V - 1 down through 0
-    for each edge u → v whose v is unmarked:
-        push v
-        if push succeeds, mark v
-```
+## Glossary
 
-Mark only after a successful push; otherwise later work could skip a vertex
-that was never scheduled.
+### Depth-First Search (DFS)
 
-Check destinations high to low so the later lower-numbered push leaves
-first. Stack items below are bottom to top.
+A search method that follows one branch all the way to the end before returning to check the remaining branches.
 
-| Completed processing | Visited vertices | Frontier Stack | Output |
-|---|---|---|---|
-| none | `{0}` | `0` | empty |
-| 0 | `{0,1,2}` | `2,1` | `0` |
-| 1 | `{0,1,2,3}` | `2,3` | `0,1` |
-| 3 | `{0,1,2,3,4}` | `2,4` | `0,1,3` |
-| 4 | `{0,1,2,3,4}` | `2` | `0,1,3,4` |
-| 2 | `{0,1,2,3,4}` | empty | `0,1,3,4,2` |
+### Visited Mark
 
-Linear equivalent: begin with 0 waiting. Processing 0 leaves 2 then 1
-waiting; processing 1 leaves 2 then 3; processing 3 leaves 2 then 4;
-processing 4 leaves only 2; processing 2 empties the Stack.
+A value that remembers whether each vertex has already been found to prevent processing it again.
 
-Here both methods match. Even with both course order rules fixed, another
-graph's links between routes can produce different valid recursive and
-iterative orders. Their reachable sets must still match.
+### Reachability
 
-The course traversal needs at most two simultaneous Stack items. A Stack
-limit of 2 succeeds. Limit 1 fails while the two choices from vertex 0 are
-being scheduled, and the caller's old output remains unchanged.
+The ability to reach another vertex by following the edges from a starting vertex.
 
-## 5. Reachability and connected components
+### Cycle
 
-To cover an entire graph, check each vertex and start another search at
-every still-unmarked vertex.
+A path that follows edges and loops back to the vertex where it started.
 
-An **undirected edge** connects both ways. A **connected component** is one
-separate undirected group whose vertices have routes to one another. An
-**isolated vertex** has no edge and forms a component of one.
+### Connected Component
 
-Now use a separate undirected practice graph with the same six pairs of
-vertex numbers. Vertices 0 through 4 form one component; isolated vertex 5
-forms another. The component count is 2.
+The largest group of vertices in an undirected graph that can all reach each other.
 
-With increasing neighbor checks, the recursive whole-graph order is:
+## Coding Plan
 
-```text
-0, 1, 3, 2, 4 | 5
-```
+### Searching with Recursion (Repeating Instructions)
 
-With the explicit Stack rule, the order is:
+* **Mark:** Change the checklist to `true` the exact moment you enter a vertex.
+* **Record:** Add the current vertex to the visit result.
+* **Progress:** Check outgoing edges starting from the smallest number, and call the instructions again for unvisited neighbors.
+* **Complete:** Copy the temporary workspace to the final output only after the whole process is fully built.
 
-```text
-0, 1, 3, 4, 2 | 5
-```
+### Searching with a Stack (Waiting Container)
 
-The vertical line separates components. Both orders identify the same
-groups. Use “connected component” only for undirected graphs; for a directed
-graph, state the source and reachable vertices.
+* **Start:** Push the starting vertex into the stack, then immediately mark it as `true`.
+* **Visit:** Pop the vertex out and record it in the result.
+* **Reserve:** Check neighbors starting from the largest number. Only mark the vertices that were successfully pushed into the stack.
+* **Clean up:** Free the stack's memory whether the search succeeds or fails.
 
-## 6. Public C contract
+### Counting Connected Components
 
-An **API** is the public types and functions other code may use. A
-**contract** states what a function accepts, changes, reports, and
-preserves. A **caller** is code that requests a function. An **output
-parameter** is caller-provided storage in which a function writes an answer.
+* **Check:** Make sure the graph is a two-way (undirected) graph.
+* **Search:** Look at all the vertices starting from 0, and start a brand-new DFS whenever you find an unmarked vertex.
+* **Calculate:** Increase the connected component count by 1 every time you trigger a new DFS.
+* **Finish:** Output the final calculated count after checking all vertices.
+
+### Protecting the Output on Failure
+
+* **Inspect:** First, check the graph, the starting vertex, the output address, and the stack limits.
+* **Build:** Create the visiting order and the component count entirely inside temporary variables.
+* **Apply:** Update the user's actual output variables only when all tasks succeed completely.
+
+## C Code
+
+### How does the recursive search continue?
 
 ```c
-typedef struct {
-    size_t vertices[GRAPH_MAX_VERTICES];
-    size_t count;
-} GraphDfsOrder;
+static void recursive_visit(
+    const Graph *graph,
+    size_t vertex,
+    bool seen[GRAPH_MAX_VERTICES],
+    GraphDfsOrder *order
+)
+{
+    size_t neighbor;
+
+    seen[vertex] = true;
+    order->vertices[order->count] = vertex;
+    order->count += 1U;
+
+    for (neighbor = 0U; neighbor < graph->vertex_count; ++neighbor) {
+        if (graph->adjacency[vertex][neighbor] && !seen[neighbor]) {
+            recursive_visit(graph, neighbor, seen, order);
+        }
+    }
+}
+
 ```
 
-`size_t` is a nonnegative whole-number type for counts and indexes. The
-output holds at most 16 vertices.
+The public function first checks the graph and the starting vertex. It fills `seen` and the temporary `GraphDfsOrder` with zeros, runs this function, and then copies only the perfectly finished order to the output.
+
+### When do we leave a mark in the iterative (stack) search?
 
 ```c
-GraphDfsStatus graph_dfs_recursive(
-    const Graph *graph, size_t start_vertex,
-    GraphDfsOrder *out_order);
+stack_status = vertex_stack_push(&stack, start_vertex);
+if (stack_status == VERTEX_STACK_OK) {
+    seen[start_vertex] = true;
+}
 
-GraphDfsStatus graph_dfs_iterative(
-    const Graph *graph, size_t start_vertex,
-    size_t stack_limit, GraphDfsOrder *out_order);
+while (status == GRAPH_DFS_OK) {
+    size_t vertex;
+    size_t cursor;
 
-GraphDfsStatus graph_count_connected_components(
-    const Graph *graph, size_t *out_component_count);
+    stack_status = vertex_stack_pop(&stack, &vertex);
+    if (stack_status == VERTEX_STACK_UNDERFLOW) {
+        break;
+    }
+    if (stack_status != VERTEX_STACK_OK) {
+        status = map_stack_failure(stack_status);
+        break;
+    }
 
-const char *graph_dfs_status_name(GraphDfsStatus status);
+    candidate.vertices[candidate.count] = vertex;
+    candidate.count += 1U;
+
+    for (cursor = graph->vertex_count; cursor > 0U; --cursor) {
+        size_t neighbor = cursor - 1U;
+
+        if (graph->adjacency[vertex][neighbor] && !seen[neighbor]) {
+            stack_status = vertex_stack_push(&stack, neighbor);
+            if (stack_status != VERTEX_STACK_OK) {
+                status = map_stack_failure(stack_status);
+                break;
+            }
+            seen[neighbor] = true;
+        }
+    }
+}
+
 ```
 
-`const Graph *` permits inspection but not change through that pointer.
-**Validation** checks whether stored graph rules hold. After required
-pointers are checked, each operation validates the entire active stored
-graph before using a source or Stack limit. Component counting accepts only
-an undirected graph. An empty undirected graph has zero components.
+The `map_stack_failure` helper changes stack limit errors and memory allocation failures into `GRAPH_DFS_LIMIT` and `GRAPH_DFS_ALLOCATION` error codes. When the loop ends, it safely destroys the stack and outputs the `candidate` workspace only if `status` is a perfect success.
 
-A **status code** is a named result. An **allocation** is storage requested
-while a program runs.
+### How do we count connected components?
 
-```text
-GRAPH_DFS_OK                    success
-GRAPH_DFS_INVALID_ARGUMENT      a required pointer is NULL
-GRAPH_DFS_OUT_OF_RANGE          source is not an active vertex
-GRAPH_DFS_INVALID_GRAPH         graph rules are broken
-GRAPH_DFS_REQUIRES_UNDIRECTED   component input is directed
-GRAPH_DFS_LIMIT                 Stack limit, or maximum, cannot be met
-GRAPH_DFS_ALLOCATION            temporary Stack storage unavailable
+```c
+size_t component_count = 0U;
+size_t vertex;
+
+for (vertex = 0U; vertex < graph->vertex_count; ++vertex) {
+    if (!seen[vertex]) {
+        component_count += 1U;
+        recursive_visit(graph, vertex, seen, &all_vertices);
+    }
+}
+
+*out_component_count = component_count;
+
 ```
 
-Every output changes only on `GRAPH_DFS_OK`; failure leaves the old output
-unchanged. This is **failure preservation**. The Stack owns its temporary
-allocation. To destroy it means to release that memory and reset its stored
-values. Iterative DFS does so after success or later failure.
-
-## 7. Costs depend on storage
-
-**Time complexity** describes how work grows. **Big-O notation** writes that
-growth as `O(...)`. Let `V` mean vertex count and `E` mean edge count.
-**Auxiliary space** is temporary working storage separate from the graph and
-output.
-
-An adjacency matrix is a `V`-by-`V` grid. Full DFS scans one row of `V`
-possible destinations for each vertex, so its time is `O(V²)`.
-
-An **adjacency list** stores only each vertex's outgoing neighbors. Full DFS
-then takes `O(V+E)` time: work grows with vertices plus stored edges.
-
-Both versions use `O(V)` auxiliary space for the visited array and active
-calls or frontier Stack.
-
-## 8. Tree-to-graph transfer and safe scope
-
-| Tree DFS | Graph DFS |
-|---|---|
-| current tree node | current graph vertex |
-| left and right children | outgoing neighbors |
-| fixed root | chosen source |
-| no route repeats in a valid tree | sharing and cycles may repeat routes |
-| no visited array needed | one visited Boolean per vertex |
-| root covers the tree | one source may cover only part of the graph |
-
-The service graph is synthetic—invented for safe practice. A recorded route
-proves only that the route exists in this invented graph. It does not prove
-that real communication occurred or access is possible. Do not connect this
-lab to real-use services or private data.
+This code runs only after confirming that the graph is a valid, undirected (two-way) graph. For directed maps, it will safely reject the request and return `GRAPH_DFS_REQUIRES_UNDIRECTED`.

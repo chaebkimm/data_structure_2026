@@ -1,211 +1,306 @@
-# Student Textbook — Priority Queue
+# Chapter 10. Picking the Next Data by Urgency and Arrival Order
 
-## Essential question
+## Thinking Logically
 
-> If urgent alerts should be processed before routine alerts, what replaces
-> arrival order, and what does that choice cost?
+### Is the first item to arrive always the first one to come out?
 
-## 1. The service problem
+A regular waiting line always takes out the item that arrived first. But if we want to process urgent notifications immediately, just looking at who arrived first isn't enough.
 
-A **security alert** is a stored notice that a system may need attention.
-Our alerts are **synthetic**, meaning invented for safe study. An alert ID
-identifies a record; it does not measure urgency.
+Instead, we can attach an "urgency number" to each notification, and agree to always process the one with the smallest number first. In this chapter's code, a smaller number strictly means it gets processed earlier. In the real world, a smaller number doesn't always automatically mean higher urgency, but that is the exact rule we are setting here.
 
-Module 7's Queue used **first-in, first-out (FIFO)** order: the earliest
-arrival left first. A **priority** is a number used to rank service. Here a
-smaller priority leaves first; it is not proof of real danger.
+### If urgencies are exactly the same, which one do we pick first?
 
-## 2. The public behavior
+If we only look at the urgency number, we won't know who should go first among notifications that have the exact same urgency. In this chapter, if the urgencies tie, we break the tie by picking the notification that arrived earlier.
 
-A **data structure** organizes information. An **abstract data type (ADT)**
-states public operations and rules without choosing storage.
+To do this, every time a notification successfully enters our storage, we secretly attach an "arrival ticket" number that starts from 0 and keeps growing by 1. If two urgency numbers match, the notification with the smaller ticket number goes first.
 
-A **Priority Queue ADT** reports or removes the item ranked first. This
-course uses a **minimum-priority Queue**, so the smallest priority is first.
+### How do we compare the order of two notifications?
 
-- `insert` adds one alert.
-- `peek-min` reports the first alert without removing it.
-- `extract-min` removes and reports the first alert.
+Each notification package holds three important numbers:
 
-A **tie** occurs when priorities are equal. **Stable tie behavior** means
-tied alerts leave in arrival order. The Priority Queue assigns an
-**arrival sequence**, an increasing number, at each successful insertion.
+* `alert_id`: A simple ID number so we can tell the notifications apart.
+* `priority`: The main urgency number.
+* `arrival_sequence`: The secret arrival ticket number we attached.
 
-A **comparator** decides which of two records comes first. Below, `a` and
-`b` name records, and a dot selects one field:
+The order between two packages `a` and `b` is decided simply:
 
 ```text
-a comes before b when
-a.priority < b.priority
-or priorities tie and a.arrival_sequence < b.arrival_sequence
+If a's urgency is smaller than b's urgency, 'a' goes first.
+If the urgencies tie, and a's ticket is smaller than b's ticket, 'a' goes first.
+
 ```
 
-The symbol `<` means “is smaller than.” Alert ID is never compared.
+The `alert_id` and the physical spot the package sits in the computer's memory do absolutely nothing to change the processing order. A storage system that always hands you the "first" package based on these rules instead of just arrival time is what we are building!
 
-## 3. One array backend
+### Should we keep the packages perfectly sorted in memory?
 
-A **record** groups named values called **fields**:
+In this chapter, we just drop the packages into a completely unsorted, messy array. When a new package arrives, we just stick it into the very next empty slot at the end. Because of this, whenever we actually need to pull out the most important package, we are forced to search through the entire messy array to find it.
 
-```c
-typedef struct {
-    int alert_id;
-    size_t priority;
-    size_t arrival_sequence;
-} AlertRecord;
-```
-
-`int` is a C whole-number type. `size_t` is C's nonnegative type for sizes,
-indexes, and sequences.
-
-A **backend** is one storage method used to provide ADT behavior. This
-module uses an **unsorted dynamic array**. An array is a numbered row. An
-**allocation** is a storage block obtained while a program runs; a dynamic
-array may replace it with a larger one. Unsorted means physical order, the
-actual index order, may differ from logical service order, the promised
-removal order.
-
-The object stores:
+The array doesn't start with 64 empty slots right away. It starts with exactly 4 slots on the very first insertion, and only expands when it gets completely full, following this exact pattern:
 
 ```text
-data, size, capacity, next_sequence, comparison_count
+0 -> 4 -> 8 -> 16 -> 32 -> 64
+
 ```
 
-`data` points to the owned record array. A **pointer** stores a memory
-address. `size` counts live records. `capacity` counts allocated positions.
-`next_sequence` is assigned to the next successful insertion.
-`comparison_count` records comparator calls.
+If the computer fails to give us a bigger array, the new package and its ticket are simply rejected, and the existing packages stay perfectly safe.
 
-Initialization creates all-zero state. Valid capacities are exactly 0, 4,
-8, 16, 32, and 64; growth follows that order.
+### How do we find the most important notification?
 
-## 4. Insert and scan
+We grab the package sitting at the first slot (index 0) and declare it our current "winner". Then, we compare it with every single package from slot 1 all the way to the end. If we find a package that should go earlier based on our rules, we swap it out and make that one our new winner.
 
-Insertion appends at physical index `size`. An **index** is a numbered array
-position beginning at 0. Growth happens before the write. The record
-receives `next_sequence`; then size and sequence advance. A failed growth or
-exhausted sequence leaves the earlier object unchanged.
+If there are `n` total packages, we compare our first winner against the other `n - 1` packages. You can choose to simply look at the winner we found, or you can actually pull that winning package completely out of the storage.
 
-To peek or extract, scan indexes 0 through `size - 1`. A **scan** inspects
-positions one at a time. Start with index 0 as the **candidate minimum**,
-the best record found so far. Replace it only when a later record comes
-before it under the complete comparator.
+### How do we fill the empty space if we pull out a package from the middle?
 
-With current size `n`, a scan makes `n - 1` comparisons. The count
-**saturates** at `SIZE_MAX`: it stays at that largest
-`size_t` value instead of wrapping to zero.
+If the winning package happens to be sitting right in the middle of our messy array, pulling it out leaves a gap. To fix this instantly, we simply grab the very last living package at the end of the array and drop it directly into that empty gap! Then we decrease our total size count by 1.
 
-Extraction copies the selected record, moves the last live record into its
-position, and decreases size. This is **swap-with-last removal**. Physical
-order may change, but stored sequences still settle ties correctly.
+This scrambles the physical order in the array, but it doesn't matter at all. The processing order stays perfectly safe because the next time we need a winner, we will just compare all the urgencies and tickets all over again anyway!
 
-## 5. Canonical trace
+### If we put in these exact notifications, what order do they come out?
 
-The canonical, or shared course, insertions are:
+Let's put seven notifications in. `p` is the urgency, and `s` is the arrival ticket.
 
 ```text
-71/p3/s0, 88/p1/s1, 42/p2/s2, 17/p1/s3,
-26/p4/s4, 9/p2/s5, 63/p1/s6
+71(p3, s0), 88(p1, s1), 42(p2, s2), 17(p1, s3),
+26(p4, s4), 9(p2, s5), 63(p1, s6)
+
 ```
 
-`p` labels priority and `s` labels arrival sequence. Capacity is 8, size is
-7, and `next_sequence` is 7.
-
-Logical service order is:
+The processing order will perfectly be:
 
 ```text
 88, 17, 63, 42, 9, 71, 26
+
 ```
 
-The first extraction replaces 88 with the last record, 63:
+For urgency 1, it perfectly follows the tickets: 1, 3, 6. For urgency 2, 42 got its ticket before 9, so it comes out first.
+
+The very first time we look for a winner among 7 items, we have to make 6 comparisons. If we pull out all seven values one by one, the total number of comparisons we make adds up like this:
 
 ```text
-71, 63, 42, 17, 26, 9
+6 + 5 + 4 + 3 + 2 + 1 + 0 = 21
+
 ```
 
-The next scan selects 17 because sequence 3 precedes 6. Seven extractions
-use `6 + 5 + 4 + 3 + 2 + 1 + 0 = 21` comparisons.
+### What if the storage is completely empty or completely full?
 
-After the final extraction, size and `next_sequence` reset to 0. Capacity
-and the allocation remain for reuse. Former array positions are inactive,
-not logical alerts.
+If you try to look at or pull a package from a completely empty storage, it politely refuses and returns an `ALERT_PRIORITY_QUEUE_EMPTY` error. If the storage already holds 64 items, it strictly refuses to add more and returns an `ALERT_PRIORITY_QUEUE_FULL` error.
 
-## 6. Valid state and failures
+It will also strictly refuse to insert a new package if the secret ticket number hits its absolute maximum limit (`SIZE_MAX`) and can't count any higher. However, if you pull out the very last package so the storage becomes completely empty again, we safely reset the ticket machine back to 0 so we can start fresh!
 
-An **invariant** is a rule true in every valid completed state:
+A failed request leaves your storage and your output variables completely untouched. If our comparison counter hits its maximum limit, it doesn't wrap around and break; it just safely freezes at the maximum.
 
-1. Capacity is exactly 0, 4, 8, 16, 32, or 64, and size does not exceed it.
-2. Capacity 0 has every field zero or `NULL`; `NULL` means “points to no
-   object.”
-3. Positive capacity has non-NULL owned storage.
-4. Live records occupy indexes below size.
-5. Live sequences are unique and below `next_sequence`.
-6. Empty state has `next_sequence == 0`.
-7. Physical order need not be sorted.
+Our code also has a simple reset tool that only resets the comparison counter back to 0. It absolutely does not touch the packages, the array size, or the ticket machine.
 
-`alert_priority_queue_validate` is a constant-time shape check.
-**Constant-time** means its work does not grow with size. It checks fields,
-not every record. A pointer value alone cannot prove that an allocation is
-live, large enough, uniquely owned, or filled with valid records.
+### Will low-urgency notifications ever get processed?
 
-**Failure preservation** means a failed call leaves protected state and
-output unchanged. A **caller** is code requesting the operation. Empty
-access does not overwrite its output. Other failures do not change logical
-contents.
+If highly urgent notifications keep arriving forever, a poor low-urgency notification might get pushed to the back forever. Our storage tool doesn't fix this problem by itself. You would need a separate, outside rule to artificially boost the urgency of a notification if it has been waiting too long.
 
-Records are returned by copy. An output address must not point inside the
-owned array. Do not shallow-copy the owning struct: copying its fields
-would create two apparent owners of one allocation.
+---
 
-## 7. Costs and backend choice
+## Calculating Efficiency
 
-**Time complexity** describes how work grows. `O(1)`, read “order one,”
-means bounded work. `O(n)` means work may grow with `n` live records.
-**Amortized `O(1)`** means average constant work across many insertions,
-including occasional array growth.
+### Efficiency of putting a notification in?
 
-| Unsorted-array operation | Cost |
-|---|---:|
-| insert | amortized `O(1)` |
-| peek-min | `O(n)` |
-| extract-min | `O(n)` |
+Because we just stick the new package at the very end of the messy array, it is instantly fast, taking $O(1)$ time. If the array gets full and we have to expand it, moving the $n$ existing items takes $O(n)$ time. However, because we double the size every time we expand, this heavy moving happens very rarely. Averaged out over many insertions, it still acts like a super-fast $O(1)$.
 
-A paper-only **sorted array** can store worst records first and the minimum
-at the removable right end. Insertion then finds a position and shifts
-records, so it is `O(n)`. Peek and extraction are `O(1)`. If the minimum
-were at index 0, extraction would shift remaining records and become
-`O(n)`.
+### Efficiency of peeking at the most important notification?
 
-For 32 chosen sorted insertions that each cross earlier records,
-`0 + 1 + ... + 31 = 496` comparisons. Unsorted append uses zero. Extracting
-32 unsorted records uses 496; right-end sorted removal uses zero. A
-**workload** is a chosen operation mixture.
+Because the array is completely messy, we are forced to check absolutely every single package to find the winner. If there are $n$ packages, this search always takes $O(n)$ time.
 
-## 8. Policy hazards
+### Efficiency of pulling out the most important notification?
 
-**Starvation** means an item waits indefinitely because other items keep
-ranking ahead. Stable ties do not help a priority-4 alert when priority-1
-alerts never stop arriving. Fairness requires a separate policy, such as
-aging a waiting score or reserving service time.
+Searching for the winner takes $O(n)$ time. Plugging the empty gap with the very last package is instantly fast, $O(1)$. So, the total time is still $O(n)$.
 
-A **mutable priority** may change while a record waits. Clients must not
-edit owned records directly. A future ordered backend could silently
-lose its ordering rule.
+### Would it be faster if we kept the array perfectly sorted?
 
-**Decrease-key** explicitly lowers one priority and repairs the backend. It
-is not implemented. Another strategy inserts a newer copy. The old
-**stale entry** must be recognized using an ID plus an increasing update
-number or current-best record.
+If we forced the array to stay sorted so the winner is always waiting at the very end, peeking and pulling would be instantly fast, $O(1)$. However, *inserting* a new package would suddenly become slow, $O(n)$, because we would have to slide lots of packages around just to make room for it in the perfect spot.
 
-## 9. Forward and safe interpretation
+The best method really changes depending on whether you insert things more often or pull things out more often. In Chapter 11, we will learn a clever new storage method that handles *both* actions very quickly!
 
-A **binary Heap** is an array-backed tree with a minimum at a known
-position. It preserves the Priority Queue rule with less scanning.
-Dijkstra's algorithm, a path-finding procedure, ranks unfinished graph work
-by smallest known cost instead of FIFO.
+### How much memory does it use?
 
-This lab models one in-memory operation at a time. It does not
-prove that real alerts are authentic, complete, timely, severe, durable, or
-fairly handled. It must not process live operational alerts.
+If there are $n$ packages, the storage space needed grows steadily with the packages, taking $O(n)$ space. Our specific practice code strictly caps the capacity at 64 items.
 
-**Key sentence:** priority and arrival sequence define service order;
-backend choice determines its cost.
+---
+
+## Glossary
+
+### Priority Queue
+
+A data structure that picks the next data based on a specific comparison rule, not just the arrival order.
+
+### Minimum Priority Queue
+
+A priority queue that returns the record with the smallest value according to the comparison rule first.
+
+### Priority
+
+A value attached to a record to determine its processing order.
+
+### Arrival Sequence
+
+A number assigned by the queue in the exact order that insertions succeed.
+
+### Record
+
+A single item that bundles several related values together.
+
+### Comparator
+
+The rule that decides which of two records should go first.
+
+### Stable Tie-Breaking
+
+The rule that picks the data that arrived earlier when the main comparison values are exactly the same.
+
+### Starvation
+
+A situation where a task is never selected for a long time because tasks with higher priority keep coming in.
+
+---
+
+## Coding Plan
+
+### Initializing the Priority Queue
+
+* **Check initial state:** Make sure all fields are completely clean (`0` or `NULL`).
+* **Use lazy allocation:** Do not grab an array right away. Wait and ask the computer for exactly 4 slots only when the very first insertion happens.
+
+### Comparing Record Order
+
+* **Compare priority:** If the two urgency numbers are different, the smaller one wins.
+* **Compare arrival sequence:** If the urgencies tie exactly, the smaller ticket number wins.
+* **Exclude ID:** Absolutely do not use `alert_id` to decide the winner.
+
+### Inserting a Notification
+
+* **Check limits:** Check if the storage is completely full (64 items) or if the ticket machine is maxed out.
+* **Expand space:** If the array is full, double the space.
+* **Write record:** Save the ID, urgency, and current ticket number into the next empty slot at the end.
+* **Update numbers:** Increase `size` and the ticket machine by 1.
+
+### Finding the Front-Most Position
+
+* **Set first candidate:** Pick the package at index 0 as the very first candidate.
+* **Scan array:** Compare this candidate against every single package from index 1 to the end.
+* **Count comparisons:** Every time you compare, carefully increase the comparison counter, but freeze it safely if it hits its maximum limit (`SIZE_MAX`).
+* **Update candidate:** If you find a package that wins the comparison, remember its exact index.
+
+### Peeking or Extracting the Front-Most Notification
+
+* **Check empty queue:** If the storage is completely empty, safely return an `ALERT_PRIORITY_QUEUE_EMPTY` error.
+* **Find minimum:** Scan the array to find the exact index of the winning package.
+* **Peek:** If just peeking, copy the winning package to the user's output.
+* **Extract:** If pulling out, plug the empty gap using the very last package in the array, and decrease `size`.
+* **Clean up empty state:** If you just pulled out the very last package, safely reset the ticket machine to 0.
+
+---
+
+## C Code
+
+### Making the Comparison Rule
+
+```c
+#include "alert_priority_queue.h"
+#include <stdbool.h>
+
+static bool record_precedes(
+        const AlertRecord *left,
+        const AlertRecord *right)
+{
+        if (left->priority != right->priority) {
+                return left->priority < right->priority;
+        }
+
+        return left->arrival_sequence < right->arrival_sequence;
+}
+
+
+```
+
+### Finding the Front-Most Record
+
+```c
+#include <stdint.h>
+
+static size_t find_minimum_index(AlertPriorityQueue *queue)
+{
+        size_t minimum_index = 0U;
+
+        for (size_t i = 1U; i < queue->size; i = i + 1U) {
+                if (queue->comparison_count < SIZE_MAX) {
+                        queue->comparison_count =
+                                queue->comparison_count + 1U;
+                }
+
+                if (record_precedes(
+                        &queue->data[i],
+                        &queue->data[minimum_index])) {
+                        minimum_index = i;
+                }
+        }
+
+        return minimum_index;
+}
+
+
+```
+
+### Using the Priority Queue
+
+```c
+AlertPriorityQueue queue = {0};
+AlertRecord next = {0};
+
+if (alert_priority_queue_init(&queue) ==
+    ALERT_PRIORITY_QUEUE_OK) {
+        alert_priority_queue_insert(&queue, 71, 3U);
+        alert_priority_queue_insert(&queue, 88, 1U);
+        alert_priority_queue_insert(&queue, 42, 2U);
+        alert_priority_queue_insert(&queue, 17, 1U);
+
+        if (alert_priority_queue_peek_min(&queue, &next) ==
+            ALERT_PRIORITY_QUEUE_OK) {
+                /* next.alert_id is 88 and it is still in the queue. */
+        }
+
+        if (alert_priority_queue_extract_min(&queue, &next) ==
+            ALERT_PRIORITY_QUEUE_OK) {
+                /* next.alert_id is 88 and the next winner is 17. */
+        }
+
+        alert_priority_queue_destroy(&queue);
+}
+
+
+```
+
+### Filling the Extracted Spot
+
+```c
+static AlertRecord remove_minimum_at(
+        AlertPriorityQueue *queue,
+        size_t minimum_index)
+{
+        size_t final_index = queue->size - 1U;
+        AlertRecord result = queue->data[minimum_index];
+
+        if (minimum_index != final_index) {
+                queue->data[minimum_index] =
+                        queue->data[final_index];
+        }
+
+        queue->size = final_index;
+        if (queue->size == 0U) {
+                queue->next_sequence = 0U;
+        }
+
+        return result;
+}
+
+
+```
+
+The real `extract-min` function first completely checks if the storage is not empty and that the output address is perfectly correct. Then it finds the winning index, runs this instant swap, and only actually gives the winning record to the user at the very end.

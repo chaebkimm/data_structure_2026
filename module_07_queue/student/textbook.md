@@ -1,228 +1,211 @@
-# Keeping Arrival Order Without Shifting
+# Chapter 7. Taking Out the First-In Data First
 
-## Essential question
+## Thinking Logically
 
-> How can a security-event collector process events in arrival order without
-> shifting all remaining events after every removal?
+### Why do we remember the arrival order?
 
-## 1. The service promise
+Imagine event numbers arrived in the order `31`, `8`, `47`, `19`. If you want to process the event that came first, you need to take them out in that exact same order. You do not sort them by how big or small the numbers are.
 
-A **program** is a group of instructions a computer can run. Its **state**
-is the information it currently remembers. A **security event** is a stored
-report about something a system noticed. Our integer event codes are
-synthetic, meaning invented for safe practice.
+The simple rule of taking out the data that was put in first is exactly how a waiting line works. The first person to join the line is the first person to be served. A storage system that manages information using this strict rule helps us process things in the exact order they happened.
 
-Suppose codes arrive as `31, 8, 47, 19`. If the promise is arrival order,
-the removal order must also be `31, 8, 47, 19`. The code values identify
-events; they do not state importance. Removing 8 first would sort by number
-and break the promise.
+### What happens if we take out data from the front of an array?
 
-## 2. The Queue rule
+We could put all our items in a straight array. When we take out the item at the very front (index 0), we could pull every single remaining item one step forward to fill the empty space. The order stays perfectly correct, but every time we take out just one item, we have to do a lot of heavy lifting to shift everything else.
 
-A **data structure** is a planned way to organize information. An
-**abstract data type (ADT)** describes a collection through its operations
-and rules without requiring one storage method.
+To avoid all that moving, we can simply leave the items exactly where they are. Instead of shifting the items forward, we just move our "starting point" marker to the next slot when we take out the oldest item. We store this starting position in a variable called `head`.
 
-A **Queue ADT** uses **first-in, first-out (FIFO)** order: the item added
-earliest is removed first.
+### How do we reuse the empty spaces at the front?
 
-- The **front** is the oldest item.
-- The **back** is the newest item.
-- `enqueue` adds one item at the back.
-- `peek` reports the front item without removing it.
-- `dequeue` removes and reports the front item.
+If we keep dropping new items in, we will eventually reach the very last slot of our array. But because we already took out some older items earlier, there are empty, unused slots sitting at the very front of the array!
 
-An empty Queue has no items. **Underflow** is an attempted `peek` or
-`dequeue` on an empty Queue. A full Queue has reached its capacity, its
-fixed item limit. **Overflow** means an attempted addition cannot fit under
-the chosen rule.
+To reuse these empty spaces, we can simply jump the "next empty spot" all the way back to the very first slot. This clever trick treats a straight array as if its ends are connected in a continuous circle. The physical array isn't actually shaped like a circle; only the position calculation loops back to the start when it hits the end.
 
-Module 4's Stack used **last-in, first-out (LIFO)** order: its newest item
-left first. For the same arrivals, a Stack would remove `19, 47, 8, 31`.
-A Queue and Stack organize access; neither rule sorts numeric values.
+Our waiting line remembers four important pieces of information:
 
-## 3. One circular representation
+* `data`: The actual memory array holding the event numbers.
+* `capacity`: The total number of slots we have in the array.
+* `head`: The exact position marker of the oldest item.
+* `size`: The exact count of how many items are currently waiting in line.
 
-An **array** is a numbered row of same-type values. An index is one numbered
-position, beginning at 0 in C. A **buffer** is bounded temporary storage. A
-**circular buffer** reuses array positions at the beginning after reaching
-the physical end. Memory does not bend into a circle; an index calculation
-wraps.
-
-The course type is:
-
-```c
-typedef struct {
-    int *data;
-    size_t capacity;
-    size_t head;
-    size_t size;
-} EventQueue;
-```
-
-A **struct** is a C type grouping named values called fields. `int` stores a
-whole number. A **pointer** stores a memory address; `int *data` points to
-the event array. `size_t` is a nonnegative whole-number type for counts and
-indexes.
-
-- `capacity` is the fixed number of physical positions.
-- `head` is the physical index of the front when the Queue is nonempty.
-- `size` counts current logical items.
-- Tail is the next physical insertion index. It is derived, or calculated,
-  rather than stored as another field.
-
-A **physical position** is one array index. **Logical order** is FIFO order.
-The two orders can differ after wrap-around.
-
-## 4. Derive every live position
-
-The `%` operator gives the remainder after whole-number division. For
-example, `6 % 4` is 2. For a valid Queue with positive capacity:
+We don't need to permanently save the next empty spot; we just calculate it quickly whenever we need it:
 
 ```text
 tail = (head + size) % capacity
-physical index of logical item k = (head + k) % capacity
+
 ```
 
-Offset `k` counts items after the front, so `k == 0` means the front. Never
-evaluate these expressions when capacity is zero, because division by zero
-has no valid result.
+Thanks to the remainder math trick (`%`), the calculated spot safely loops around and always points to a valid slot between `0` and `capacity - 1`. If our `capacity` is `0`, we simply skip this math.
 
-A `LIVE` value currently belongs to the Queue. A `STALE` value remains in a
-slot after its logical item was removed. `UNUSED` means no event has yet
-been stored there. The implementation need not erase removed values:
-`head`, `size`, and the mapping decide what is live.
+### Is the order we see in the array the actual processing order?
 
-## 5. Trace capacity four
+Let's say we have an array with 4 slots. We put in `31`, `8`, `47`, `19`, take out the oldest two items, and then put in `62`, `5`. The physical slots in the computer's memory look like this:
 
-A **trace** is a step-by-step record of changing state. Each physical row
-lists indexes 0 through 3.
+```text
+Physical array    [62, 5, 47, 19]
+head              2
+size              4
+Processing order  47, 19, 62, 5
 
-| Completed request | Physical row | `head` | `size` | tail | Logical order or result |
-|---|---|---:|---:|---:|---|
-| initialize | `UNUSED, UNUSED, UNUSED, UNUSED` | 0 | 0 | 0 | empty |
-| enqueue 31, 8, 47, 19 | `31 LIVE, 8 LIVE, 47 LIVE, 19 LIVE` | 0 | 4 | 0 | `31, 8, 47, 19` |
-| dequeue | `31 STALE, 8 LIVE, 47 LIVE, 19 LIVE` | 1 | 3 | 0 | reports 31 |
-| dequeue | `31 STALE, 8 STALE, 47 LIVE, 19 LIVE` | 2 | 2 | 0 | reports 8 |
-| enqueue 62 | `62 LIVE, 8 STALE, 47 LIVE, 19 LIVE` | 2 | 3 | 1 | `47, 19, 62` |
-| enqueue 5 | `62 LIVE, 5 LIVE, 47 LIVE, 19 LIVE` | 2 | 4 | 2 | `47, 19, 62, 5` |
-| attempt enqueue 90 | unchanged | 2 | 4 | 2 | `EVENT_QUEUE_FULL` |
+```
 
-The physical row is now `[62, 5, 47, 19]`, but FIFO order is
-`47, 19, 62, 5`. The full Queue rejects event 90 and preserves every field
-and slot.
+The physical order the numbers sit in the array and the actual processing order can look completely different! The real order always starts exactly at the `head` marker and reads forward in a looping circular motion based on the `size`.
 
-Four successful dequeues report `47`, then `19`, then `62`, then `5`.
-Removing the last item returns the empty state to its required form:
-`head == 0` and `size == 0`. Old numbers may remain physically stale.
+### If the starting point and the next spot are the same, is it empty?
 
-## 6. The invariant
+Because the position loops around in a circle, both a completely empty line and a completely full line can have the `head` (starting point) and the next empty spot pointing to the exact same slot! This is exactly why we must keep a separate `size` count of how many items are actually waiting.
 
-`NULL` means that a pointer points to no object. An **invariant** is a rule
-true in every valid completed state:
+* If `size == 0`, the line is completely empty.
+* If `size == capacity`, the line is completely full.
 
-1. `size <= capacity <= EVENT_QUEUE_MAX_CAPACITY`, and the maximum is 64.
-2. If `capacity == 0`, then `data == NULL`, `head == 0`, and `size == 0`.
-3. If `capacity > 0`, then `data != NULL` and `head < capacity`.
-4. If `size == 0`, then `head == 0`.
-5. Logical item `k` is at `(head + k) % capacity`.
-6. Tail is derived; it is not stored.
+When we finally take out the very last remaining item, we cleanly reset both the `head` and the `size` back to `0`. Even if old numbers are still physically sitting inside the array, the computer logically ignores them because the line is officially empty.
 
-A capacity-zero Queue is valid and empty. Its enqueue reports
-`EVENT_QUEUE_FULL`; its peek and dequeue report `EVENT_QUEUE_EMPTY`.
+### What if it is completely full or empty?
 
-When a Queue is empty, `head` and derived tail can both be 0. When it is
-full, head and tail can also be equal. `size` distinguishes the states.
-This remains true at capacity 1.
+The waiting line in this chapter does not automatically ask for more slots when it gets full. If we try to squeeze an item into a completely full line, it politely refuses, returns an `EVENT_QUEUE_FULL` error, and keeps the existing items perfectly safe. If we try to look at or take out an item from a completely empty line, it returns an `EVENT_QUEUE_EMPTY` error.
 
-## 7. The public contract
+A line built with a capacity of `0` is also considered a perfectly valid, permanently empty line. We obviously can't put items into it, but our clever code safely skips any math that would cause a divide-by-zero crash.
 
-A **function** is a named block of instructions performing one task. An
-**API**, or application programming interface, is the set of functions
-other program parts may call. A **contract** states what a function accepts,
-changes, reports, and preserves.
+## Calculating Efficiency
+
+### Efficiency of putting data in
+
+We calculate the next looping position just once and drop a value into one single slot. The amount of work is always exactly the same, no matter how long the line is. It is `O(1)`.
+
+### Efficiency of looking at or taking out data
+
+Looking simply reads the slot at the `head` point. Taking out reads that same slot and updates our marker numbers. Because neither action shifts the other data around, both are instantly fast, taking `O(1)`.
+
+### How different is it from an array that shifts values forward?
+
+If we forced everything to slide forward every time we took out the front item, the worst-case scenario for `n` items would require moving `n` items, which takes `O(n)` time. Because our looping calculation doesn't move the actual values around at all, it stays incredibly fast at `O(1)`.
+
+### How much memory does it use?
+
+When we first build the line, we reserve space for the `capacity` number of slots just once. Even if we use fewer items, this space stays exactly the same. Our specific code in this chapter accepts a maximum of 64 slots.
+
+## Glossary
+
+### Queue
+
+A data structure that manages information by taking out the first-in data first.
+
+### First-In, First-Out (FIFO)
+
+The rule where the data that came in first is the very first to go out.
+
+### Enqueue
+
+The specific action of adding new data to the back of the queue.
+
+### Dequeue
+
+The specific action of taking out the oldest data from the front of the queue.
+
+### Peek
+
+The action of looking at the front data without actually removing it from the queue.
+
+### Circular Array
+
+A storage method that treats the position after the end of the array as index 0, allowing us to easily loop around and reuse empty spaces at the front without moving data.
+
+### Logical Order
+
+The true order in which data will actually be taken out of the queue, which may differ from the physical order it sits in the array.
+
+## Coding Plan
+
+### Initializing the Queue
+
+* **Check status:** Make sure all fields of the structure are completely clean (`0` or `NULL`).
+* **Check capacity:** Make sure the requested total capacity is 64 or less.
+* **Reserve space:** If the capacity is a positive number, grab memory for an `int` array.
+* **Save state:** Update the `data` address and `capacity` only after successfully getting the memory space.
+
+### Enqueuing Data
+
+* **Check status:** Make sure the queue's fields are valid.
+* **Check empty space:** If `size == capacity`, safely return an `EVENT_QUEUE_FULL` error.
+* **Calculate position:** Find the next insert spot using `(head + size) % capacity`.
+* **Save value:** Write the event code to that calculated slot and increase `size` by 1.
+
+### Peeking the Front Data
+
+* **Check if empty:** If `size == 0`, safely return an `EVENT_QUEUE_EMPTY` error.
+* **Prepare value:** Copy the value sitting at `data[head]` into a safe local variable.
+* **Save result:** Write to the user's output variable only after all checks are successfully done.
+
+### Dequeuing the Front Data
+
+* **Keep value:** First, safely copy the value at `data[head]` into a local variable.
+* **Decrease count:** Decrease `size` by 1.
+* **Move front position:** If values still remain, move `head` forward to the next slot using `(head + 1) % capacity`. If the queue just became completely empty, cleanly reset `head` to `0`.
+* **Save result:** Write the saved value to the user's output variable only after all state changes are totally complete.
+
+### Destroying the Queue
+
+* **Return space:** Give the array memory pointed to by `data` back to the computer.
+* **Reset status:** Turn all `data`, `capacity`, `head`, and `size` fields completely back to `0` or `NULL`.
+
+## C Code
+
+### Creating and Using the Queue
 
 ```c
-EventQueueStatus event_queue_init(EventQueue *queue, size_t capacity);
-EventQueueStatus event_queue_validate(const EventQueue *queue);
-EventQueueStatus event_queue_enqueue(EventQueue *queue, int event_code);
-EventQueueStatus event_queue_dequeue(EventQueue *queue, int *out_event_code);
-EventQueueStatus event_queue_peek(const EventQueue *queue, int *out_event_code);
-void event_queue_destroy(EventQueue *queue);
-const char *event_queue_status_name(EventQueueStatus status);
+#include "event_queue.h"
+
+EventQueue queue = {0};
+int event_code = 0;
+
+if (event_queue_init(&queue, 4U) == EVENT_QUEUE_OK) {
+        event_queue_enqueue(&queue, 31);
+        event_queue_enqueue(&queue, 8);
+        event_queue_enqueue(&queue, 47);
+
+        if (event_queue_peek(&queue, &event_code) == EVENT_QUEUE_OK) {
+                /* event_code is 31. 31 is still in the queue. */
+        }
+
+        if (event_queue_dequeue(&queue, &event_code) == EVENT_QUEUE_OK) {
+                /* event_code is 31. The next front value is 8. */
+        }
+
+        event_queue_destroy(&queue);
+}
+
 ```
 
-A **status code** is a named result:
+### Calculating the Next Insert Position
 
-- `EVENT_QUEUE_OK`: success;
-- `EVENT_QUEUE_INVALID_ARGUMENT`: a required Queue or output is invalid;
-- `EVENT_QUEUE_LIMIT`: requested capacity is above 64;
-- `EVENT_QUEUE_FULL`: a valid Queue cannot accept another item;
-- `EVENT_QUEUE_EMPTY`: a valid Queue has no item to report;
-- `EVENT_QUEUE_ALLOCATION`: storage could not be obtained; and
-- `EVENT_QUEUE_INVALID_STATE`: visible fields break the invariant.
+```c
+if (queue.size < queue.capacity) {
+        size_t tail = (queue.head + queue.size) % queue.capacity;
 
-The **caller** is the program part requesting a function. An **output
-location** is caller-provided storage where a function writes a result.
-Peek and dequeue change the output only on success. That output must not
-point inside the Queue's own array.
+        queue.data[tail] = 62;
+        queue.size = queue.size + 1U;
+}
 
-`event_queue_validate` checks visible field relationships but cannot prove
-from a pointer value alone that storage is still usable, large enough, or
-belongs only to this Queue. Students complete `validate`, `enqueue`, and
-`dequeue`.
-Initialization, peek, destruction, and status text are supplied.
+```
 
-**Failure preservation** means a failed operation leaves the prior state
-unchanged. Full enqueue preserves all fields and slots. Empty peek or
-dequeue preserves both Queue and output. Enqueue writes the item before
-increasing size. Dequeue saves the result before changing head and size,
-then writes the output last.
+Since we check `size < capacity` first, we know for sure that `capacity` is not `0`. Therefore, the remainder calculation is completely safe from a divide-by-zero error.
 
-## 8. Storage lifetime
+### Dequeuing the Front Data
 
-An **allocation** is a storage block obtained while a program runs.
-**Ownership** means responsibility for releasing it.
+```c
+if (queue.size > 0U) {
+        int result = queue.data[queue.head];
+        size_t new_size = queue.size - 1U;
+        size_t new_head;
 
-The caller begins with a Queue variable whose fields are all zero, or with
-one that was destroyed. Capacity 0 succeeds without allocation. Positive
-capacity from 1 through 64 obtains exactly one allocation, and the Queue
-never grows. A request above 64, a failed allocation, or an attempt to
-initialize an already initialized Queue leaves the Queue variable unchanged.
+        if (new_size == 0U) {
+                new_head = 0U;
+        } else {
+                new_head = (queue.head + 1U) % queue.capacity;
+        }
 
-`event_queue_destroy` releases storage and resets every field. A `NULL`
-pointer does nothing; every other argument must be initialized or already
-destroyed. Do not make a **shallow copy** of a positive-capacity Queue: it
-duplicates the fields and owning pointer, not the allocation.
+        queue.head = new_head;
+        queue.size = new_size;
+        event_code = result;
+}
 
-## 9. Costs and alternatives
-
-**Time complexity** describes how work grows: `O(1)` means fixed work; `O(n)` means work may grow with `n` items.
-
-| Representation | Enqueue | Dequeue | Trade-off |
-|---|---:|---:|---|
-| shifting array Queue | `O(1)` when space remains | `O(n)` | removal moves remaining items |
-| fixed circular Queue | `O(1)` | `O(1)` | fixed capacity may become full |
-| linked Queue with front/back pointers | `O(1)` | `O(1)` | one node allocation and link per item |
-
-A linked Queue stores separately allocated **nodes**, objects containing an
-item and a pointer to another node. It can grow until another boundary
-fails, but pointer and allocation rules add risk. Releasing all linked nodes
-takes `O(n)` work; releasing this one-allocation circular Queue takes
-`O(1)`.
-
-Full storage needs a **retention policy**, a rule stating which information
-is kept. **Reject newest** preserves the current Queue. **Discard oldest**
-sacrifices the longest-waiting event. **Backpressure** asks the source to slow or stop.
-Different systems may choose differently, but silent event loss is never an
-acceptable hidden behavior.
-
-## 10. Forward link
-
-An **algorithm** is a precise step-by-step method. **Breadth-first search
-(BFS)** is a later algorithm that explores shallower levels before deeper
-levels. A FIFO Queue can keep found work in the order it was found. The
-procedure and trace wait for a later module.
-
-**Key sentence:** a circular Queue preserves FIFO order with `head`, `size`,
-and wrapped indexes, so successful removal needs no shifting.
+```

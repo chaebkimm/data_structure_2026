@@ -1,234 +1,319 @@
-# Student Textbook — Graph Breadth-First Search
+# Chapter 9. Finding the Route with the Fewest Steps
 
-## Essential question
+## Thinking Logically
 
-> Which system is reachable in the fewest communication hops when
-> relationships may branch, merge, and cycle?
+### Can we check a map the exact same way we check a top-down structure?
 
-## 1. The problem
+In a top-down structure (like a tree), there is only one downward path to reach any place. But on a free-flowing map, multiple roads can lead to the exact same location, and paths can even loop back around to places you have already visited.
 
-A **graph** stores items called vertices and direct relationships called
-edges. A **source** is the selected starting vertex. A **hop** follows one
-edge. In an **unweighted graph**, every edge contributes one hop.
+If you just drop all connected neighbors into a waiting line like you do with a tree, the exact same location will get put in multiple times. The search might never finish, or you might just run around in circles repeating the exact same work. You must keep a strict checklist of whether a location has already been put into the line for the very first time.
 
-Graphs can merge or cycle, so copying tree traversal can schedule the same
-work repeatedly.
+### How do we visit closer locations first?
 
-**Breadth-first search (BFS)** processes vertices in nondecreasing hop
-count, meaning the count never gets smaller as work proceeds. It answers
-minimum-hop questions on an unweighted graph.
+First, put your starting location into the waiting line. Every time you take a location out, put all its reachable neighbors at the very back of the line. Because the locations you found first are taken out first, you naturally check all the places that are fewer steps away before you start checking the places that are farther away.
 
-## 2. The four pieces of state
+### What do we need to record to rebuild the route later?
 
-A **Queue** removes the earliest-added item first. This is **FIFO**, meaning
-first in, first out. The **frontier** is the Queue of reached vertices still
-waiting to be processed.
+To perfectly remember our journey, we track three pieces of information for every single location `v`:
 
-A vertex is **discovered** after its first successful enqueue. It is
-**processed** after dequeue, when its ID enters visit order. A discovered
-vertex can still be pending.
+* `discovered[v]`: A simple true/false check showing if location `v` has ever been put into the waiting line.
+* `distance[v]`: The absolute minimum number of steps (connections) needed to travel from the starting point to location `v`.
+* `predecessor[v]`: The specific location we stepped on right before arriving at `v` on our chosen route.
 
-Three arrays and one output sequence record the search:
+The locations we actually take out of the line and finish checking are written down in order on a final `visit_order` list. Because a "discovered" location might still be patiently sitting inside the waiting line, the exact moment we discover a place and the moment we actually finish checking it are kept completely separate.
 
-An **ID** is an identifying number. In `discovered[v]`, the letter `v`
-stands for one vertex ID and square brackets select that array position.
+### When do we change the discovery checkmark?
 
-- `discovered[v]` says whether vertex `v` was successfully enqueued;
-- `distance[v]` stores its minimum hop count from the source;
-- `predecessor[v]` stores the previous vertex on the first fixed route; and
-- `visit_order` stores dequeue order.
+We try putting a brand-new, undiscovered neighbor into the waiting line. The exact moment it successfully goes in, we check off `discovered` as true.
 
-The package supports IDs 0 through 15. It uses sentinel 16 for no distance
-or no predecessor. A **sentinel** is a stored value chosen to mean a special
-case.
+If you mark it *before* putting it in, a location that failed to enter (because the line was full) would falsely look like it was already waiting in line. If you delay marking it until it finally *comes out* of the line, another road might mistakenly try to shove that exact same location into the line again while it is still waiting!
 
 ```text
-source:      discovered true,  distance 0,  predecessor 16
-unreachable: discovered false, distance 16, predecessor 16
+If neighbor v is not discovered yet:
+    Put v into the waiting line.
+    If putting it in succeeds:
+        discovered[v] = true
+        distance[v] = distance[current place] + 1
+        predecessor[v] = current place
 ```
 
-## 3. The exact procedure
+After a location is discovered for the very first time, we lock it in and never change these three pieces of information again.
 
-Inspect outgoing neighbors from lower ID to higher ID. In the procedure,
-`u` means the current vertex and `v` means one neighbor. To **validate**
-means to check that stored fields obey their rules.
+### How do we mark locations we cannot reach yet?
+
+In this practice code, our map has a strict maximum of 16 locations, simply numbered from 0 to 15. The number 16 cannot be a real location number. Also, the maximum number of steps you can take without walking in circles is 15.
+
+Therefore, we cleverly use the number 16 as a special code word meaning "no location" and "no distance".
 
 ```text
-validate the request and graph
-prepare a temporary result filled with sentinels
-
-enqueue the source
-after success, discover it at distance 0
-
-while dequeue succeeds:
-    remove vertex u
-    append u to visit order
-
-    for each outgoing neighbor v in ascending order:
-        if v is not discovered:
-            enqueue v
-            after success:
-                discover v
-                distance[v] = distance[u] + 1
-                predecessor[v] = u
-
-publish the temporary result
+NO_LOCATION = 16
+NO_DISTANCE = 16
 ```
 
-Mark after successful enqueue. Marking earlier records failed work; marking
-only at dequeue permits duplicate pending work.
+The starting point is exactly 0 steps away from itself and has no previous location. After the whole search ends, any locations that were never discovered at all will also be left marked with "no distance" and "no location".
 
-## 4. Canonical example
+### How does the actual search happen?
 
-**Canonical** means the shared course example used for later checks.
-The notation `0:[1,2]` means edges `0 -> 1` and `0 -> 2` exist. Brackets
-list outgoing neighbor IDs.
+Let's say our starting location is 0. We check each location's neighbors starting from the smallest number.
 
 ```text
-0:[1,2]  1:[3,4]  2:[4,5]  3:[6]
-4:[6]    5:[4]    6:[1]    7:[]
+0 connects to: [1,2]  1 connects to: [3,4]  2 connects to: [4,5]  3 connects to: [6]
+4 connects to: [6]    5 connects to: [4]    6 connects to: [1]    7 connects to: []
+
+
 ```
 
-Queue states are front to back:
+The waiting line changes like this:
 
 ```text
-initial [0]
-after 0 [1,2]
-after 1 [2,3,4]
-after 2 [3,4,5]
-after 3 [4,5,6]
-after 4 [5,6]
-after 5 [6]
-after 6 []
+Start             [0]
+After checking 0  [1,2]
+After checking 1  [2,3,4]
+After checking 2  [3,4,5]
+After checking 3  [4,5,6]
+After checking 4  [5,6]
+After checking 5  [6]
+After checking 6  []
 ```
 
-The result is:
+Notice that even when location 2 sees location 4 as a neighbor, it doesn't put 4 in the line again! Location 4 was already discovered when we checked location 1.
 
 ```text
-visit order  0,1,2,3,4,5,6
-discovered   T,T,T,T,T,T,T,F
+visit_order  0,1,2,3,4,5,6
 distance     0,1,1,2,2,2,3,16
 predecessor  16,0,0,1,1,2,3,16
 ```
 
-`T` means true and `F` means false. Vertex 7 is unreachable from source 0.
+Even though we completely failed to reach location 7, the search process itself is considered a perfect success.
 
-The rule skips `2 -> 4`, `4 -> 6`, `5 -> 4`, and `6 -> 1` because each
-destination is already discovered. Stored state is not overwritten.
+### Why is the very first distance found guaranteed to be the shortest?
 
-## 5. Why the hop counts are minimum
+The starting point (distance 0) is checked first. Its neighbors drop into the line getting a distance of 1. Because of how the line works, *all* locations with a distance of 1 will be completely checked *before* we ever touch a location with a distance of 2. This exact rule perfectly repeats for every step.
 
-The guarantee uses three facts together:
+If there was a secretly shorter route to location `v`, the previous location on that shorter route would have been checked earlier. If that happened, `v` would have been discovered earlier too! Therefore, the very first time a location drops into the line, its distance is absolutely guaranteed to be the minimum number of steps.
 
-1. each edge adds exactly one hop;
-2. FIFO processes smaller distances before larger distances; and
-3. first discovery is permanent.
+*(Note: This magic only works if every single connection takes the exact same amount of effort. If some roads are longer or cost more money to travel, our simple waiting line won't notice, and it won't guarantee the cheapest route.)*
 
-Let `d` stand for the current distance. Suppose a distance-`d` vertex first
-reaches unseen neighbor `v`. The new
-route has `d + 1` hops. A shorter route cannot appear later because every
-smaller-distance vertex was already ahead in the Queue.
+### How do we rebuild the route using previous locations?
 
-FIFO alone does not solve unequal edge costs. Weighted shortest paths need
-a different rule later in the course.
-
-## 6. Reconstruct a path
-
-A **path** is a route that does not repeat a vertex. To **reconstruct**
-means to build a forward path from predecessor records.
-Start at the destination and follow backward:
+Start from your destination (6) and simply follow the `predecessor` (previous location) backwards!
 
 ```text
 6 <- 3 <- 1 <- 0
 ```
 
-Reverse the sequence:
+If you carefully flip this backward list, you get the perfect, shortest route from the start to the destination.
 
 ```text
 0 -> 1 -> 3 -> 6
 ```
 
-The path has three hops, equal to `distance[6]`. A **path certificate** is
-checkable evidence: confirm both endpoints, every consecutive graph edge,
-and the hop count.
+The route to the starting point itself is just the starting point, taking 0 steps. If you ask for a route to an undiscovered, unreachable location (like 7), the tool safely returns an "unreachable" error.
 
-Other three-hop paths to 6 exist. Ascending neighbor order selects one
-**deterministic** route, meaning the same input and rule choose it again; it
-does not make that route unique.
+Our safety tool checks if the relationship between the distances and previous locations makes mathematical sense. However, because this tool doesn't look at the map itself, you must check the original map separately if you want to prove real roads actually existed between those locations.
 
-A path from source 0 to itself is `[0]` and has zero hops. A request for
-unreachable vertex 7 reports unreachable and leaves the program's previous
-output path unchanged.
+### Does the answer change if we store the map differently?
 
-## 7. Disconnected graphs
+A grid-style map checks every single possible slot in a row to find connections. A list-style map only reads the specific connections that actually exist. The way they hold information is totally different, but as long as both methods check the neighbors in the exact same order (smallest to largest), the final search result is perfectly identical!
 
-A one-source search may finish while other vertices remain undiscovered.
-That is a successful result, not a traversal error.
+This chapter provides code tools for both a grid map and a list map. Both tools create the exact same final result package without changing your original map at all.
 
-A **BFS forest** repeats the search from each still-undiscovered vertex
-while keeping one shared discovered array.
-For an undirected graph, each resulting tree identifies one **connected
-component**, or separate group whose vertices have undirected routes to one
-another.
+### What if the waiting line becomes full during the search?
 
-For directed graphs, call the result a traversal forest. “Weak” connection
-ignores edge directions; “strong” connection requires directed routes both
-ways. The forest alone proves neither. Forest code is not required here.
+You can choose exactly how many locations are allowed to wait in the line at the same time (between 0 and 16). If the required line size ever goes over your chosen limit, the process safely stops and returns a limit error.
 
-## 8. Matrix and adjacency-list storage
+The search result and the rebuilt route are strictly created inside a temporary, hidden workspace first. They are only copied to your actual output variables when the entire process finishes flawlessly. If it hits a limit or breaks halfway, your old information stays perfectly safe.
 
-An **adjacency matrix** is a square table. Cell `[u][v]` says whether edge
-`u -> v` exists. Processing one matrix vertex scans all `V` possible
-destinations. `V` means vertices currently in the graph.
+## Calculating Efficiency
 
-An **adjacency list** stores only existing outgoing neighbors. This package
-uses one dynamic array per source vertex. A **dynamic array** uses adjacent
-memory slots in an **allocation**, a storage block obtained while a program
-runs.
+### Efficiency of checking a grid-style map?
 
-Each neighbor row stores:
+If there are `V` total locations, processing just one location forces you to check all `V` possible slots in its row. Because you eventually process all locations, the total work grows very rapidly like a square, taking $O(V^2)$ work. The memory needed to build the grid is also $O(V^2)$.
 
-```text
-data      address of its owned destination storage
-size      currently stored destination count
-capacity  allocated destination slots
+### Efficiency of checking a list-style map?
+
+It processes each location exactly once and only checks the actual connections that exist. If there are `V` locations and `E` connections, the work is simply $O(V+E)$. The memory needed to build the list is also exactly $O(V+E)$.
+
+### How much extra memory is needed during the search?
+
+The discovery checklists, the recorded distances, the previous locations, the final visit order, and the waiting line all need one slot per location. This means the extra memory needed grows steadily with the number of locations, taking $O(V)$ space.
+
+### Efficiency of rebuilding the route?
+
+First, it quickly verifies the full array of search results, taking $O(V)$ work. After that, it simply follows the previous locations backward exactly once. If the route length is `L`, this tracking takes $O(L)$ time. Because a route can never be longer than the total number of locations, rebuilding the whole route is incredibly fast, taking at most $O(V)$ time.
+
+## Glossary
+
+### Hop
+
+One step moving from one vertex to another across a single edge.
+
+### Unweighted Graph
+
+A graph where all edges are treated equally as one hop.
+
+### Graph BFS (Breadth-First Search)
+
+A search method that uses a queue to visit vertices starting from those with the fewest hops from the starting point.
+
+### Discovery
+
+The state of marking a vertex when it is first put into the queue so it is not put in again.
+
+### Distance
+
+In this chapter, it means the minimum number of edges passed from the starting point to a specific vertex.
+
+### Predecessor
+
+The vertex immediately before the current vertex on the chosen path.
+
+### Reachable
+
+The state where a vertex can be reached by following edges from the starting point.
+
+### Adjacency Matrix
+
+A way of storing whether an edge exists between every possible pair of vertices using grid slots.
+
+### Adjacency List
+
+A way of storing only the actual connected neighbors specifically for each vertex.
+
+## Coding Plan
+
+### Preparing the BFS Result
+
+* **Fill default values:** Set all discovery marks to `false`, and set distances and predecessors to 16.
+* **Put starting point in:** Put the starting point into the queue, change its discovery mark to `true`, and set its distance to 0.
+* **Use temporary result:** Do not change the caller's result before the search successfully finishes.
+
+### Searching the Graph
+
+* **Take out vertex:** Take the front vertex out of the queue and write it in `visit_order`.
+* **Check neighbors:** Look at outgoing neighbors starting from the smallest vertex number.
+* **Put new vertex in:** Put undiscovered neighbors into the queue.
+* **Save path info:** If pushing succeeds, record the discovery mark, distance, and predecessor.
+* **Confirm result:** Copy the temporary result to the output only after the queue is empty.
+
+### Rebuilding the Path
+
+* **Check result:** Inspect the number of BFS results and the relationship between distances and predecessors.
+* **Check reachability:** If the destination was never discovered, return `GRAPH_BFS_UNREACHABLE`.
+* **Save backwards:** Follow the predecessors backwards from the destination and put them in a temporary array.
+* **Flip order:** Read the temporary array backwards to save the path from the starting point to the destination.
+* **Confirm path:** Copy the finished temporary path to the output.
+
+### Using Both Storage Methods
+
+* **Matrix search:** In `graph_bfs_matrix`, check all destination slots in one row.
+* **List search:** In `graph_bfs_list`, check only the saved neighbors of the current vertex.
+* **Unify order:** Both methods must process neighbors starting from the smallest number.
+
+## C Code
+
+### Searching an Adjacency Matrix Graph
+
+```c
+#include "graph_bfs.h"
+
+Graph graph = {0};
+GraphBfsResult result = {0};
+GraphBfsPath path = {0};
+
+graph_init(&graph, 8U, GRAPH_DIRECTED);
+graph_add_edge(&graph, 0U, 1U);
+graph_add_edge(&graph, 0U, 2U);
+graph_add_edge(&graph, 1U, 3U);
+graph_add_edge(&graph, 1U, 4U);
+graph_add_edge(&graph, 2U, 4U);
+graph_add_edge(&graph, 2U, 5U);
+graph_add_edge(&graph, 3U, 6U);
+graph_add_edge(&graph, 4U, 6U);
+graph_add_edge(&graph, 5U, 4U);
+graph_add_edge(&graph, 6U, 1U);
+
+if (graph_bfs_matrix(&graph, 0U, 3U, &result) ==
+    GRAPH_BFS_OK) {
+        /* result.distance[6] is 3. */
+
+        if (graph_bfs_reconstruct_path(&result, 6U, &path) ==
+            GRAPH_BFS_OK) {
+                /* path.vertices[0..3] are 0, 1, 3, 6. */
+        }
+}
 ```
 
-**Ownership** is responsibility for releasing storage. Supplied operations
-handle growth, ordered insertion, checking, and cleanup. Students do
-not implement that memory management.
+### Recording After a Successful Discovery
 
-Let `E` mean edge count. `O(x)`, read “order x,” means growth is bounded in
-proportion to `x`.
+```c
+#include "graph_bfs.h"
+#include "vertex_queue.h"
 
-| Question | Matrix | Adjacency list |
-|---|---:|---:|
-| Representation storage | `O(V²)` | `O(V+E)` |
-| Public BFS time | `O(V²)` | `O(V+E)` |
-| BFS auxiliary space | `O(V)` | `O(V)` |
+static GraphBfsStatus discover_vertex(
+        VertexQueue *queue,
+        size_t from_vertex,
+        size_t to_vertex,
+        GraphBfsResult *result)
+{
+        VertexQueueStatus status;
 
-The raised 2 in `V²` means `V` multiplied by `V`. **Auxiliary space** is
-temporary working storage separate from the graph and returned result.
+        status = vertex_queue_enqueue(queue, to_vertex);
+        if (status == VERTEX_QUEUE_LIMIT) {
+                return GRAPH_BFS_LIMIT;
+        }
+        if (status != VERTEX_QUEUE_OK) {
+                return GRAPH_BFS_INVALID_ARGUMENT;
+        }
 
-Construction is separate from traversal. Converting a matrix by scanning
-all its cells costs `O(V²)` even if later list searches cost `O(V+E)`.
-Queue enqueue and dequeue remain `O(1)`, meaning constant time, under a
-**valid-state precondition**, a required assumption that Queue rules
-already hold. They do not run a full Queue scan each time.
+        result->discovered[to_vertex] = true;
+        result->distance[to_vertex] =
+                result->distance[from_vertex] + 1U;
+        result->predecessor[to_vertex] = from_vertex;
+        return GRAPH_BFS_OK;
+}
+```
 
-## 9. Contracts and safe interpretation
+The result is not changed until the queue successfully accepts the vertex.
 
-A **contract** states accepted inputs, results, changes, and preserved
-state. A **caller** is code asking a function to run. Both BFS operations
-validate the complete graph and build a temporary **candidate**, or
-possible result. They **commit** it to caller output only
-after full success. Path reconstruction follows the same rule.
+### Searching an Adjacency List Graph
 
-**Malformed** means breaking stored rules. Test empty, cyclic, converging,
-disconnected, unreachable, malformed, and Queue-limit cases. All named
-matrix and sorted-list result values must match.
+```c
+GraphAdjList list = {0};
+GraphBfsResult list_result = {0};
 
-The synthetic communication graph is only a model. Minimum modeled hops
-does not prove real communication, permission to act, the presence or
-usability of a flaw, an actual takeover, its chance, or its danger. Do not
-use this lab to scan a live system.
+if (graph_adj_list_init(&list, 4U, GRAPH_DIRECTED) ==
+    GRAPH_ADJ_LIST_OK) {
+        graph_adj_list_add_edge(&list, 0U, 1U);
+        graph_adj_list_add_edge(&list, 0U, 2U);
+        graph_adj_list_add_edge(&list, 1U, 3U);
+        graph_adj_list_add_edge(&list, 2U, 3U);
+
+        graph_bfs_list(&list, 0U, 2U, &list_result);
+        graph_adj_list_destroy(&list);
+}
+```
+
+### Following Predecessors Backwards
+
+```c
+size_t reverse[GRAPH_MAX_VERTICES];
+size_t reverse_count = 0U;
+size_t current = 6U;
+
+for (;;) {
+        reverse[reverse_count] = current;
+        reverse_count = reverse_count + 1U;
+
+        if (current == result.source) {
+                break;
+        }
+
+        current = result.predecessor[current];
+}
+
+for (size_t i = 0U; i < reverse_count; i = i + 1U) {
+        path.vertices[i] = reverse[reverse_count - i - 1U];
+}
+path.count = reverse_count;
+```

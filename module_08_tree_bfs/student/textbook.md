@@ -1,282 +1,235 @@
-# Nearer Nodes First
+# Chapter 8. Visiting Items Starting from the Closest to the Top
 
-## Essential question
+## Thinking Logically
 
-> How can we guarantee that every node close to the root is inspected before
-> any deeper node?
+### Why is following one path to the end not enough?
 
-## 1. The problem
+The search method we used before follows one branch all the way down to a dead end. Even if there are items right near the top sitting on other branches, that method will ignore them and visit much deeper items first.
 
-A **tree** is a hierarchy of connected objects. Each object is a **node**,
-and the one starting node is the **root**. A node directly below another is
-its **child**. A **binary tree** gives each node at most two child
-positions, named left and right.
+This time, we want to look at all the items exactly one step away from the top before we look at any items two steps away. We can make this order happen if we simply process the tasks in the exact order we discovered them.
 
-A **synthetic** tree is invented for study. If it repeats a
-value, following one branch deeply can return a farther match first.
+### How do we check the closest items first?
 
-## 2. Breadth-first order
+We put the top item into a waiting line. Every time we take an item out of the line, we put its left child and right child at the very back of the line. Because the items that were already waiting in the line will come out before the newly added children, a deeper item can never jump ahead of a shallower item.
 
-An **algorithm** is a precise, repeatable set of steps. A **traversal** is an
-algorithm that visits tree nodes in a stated order.
+This naturally lets us sweep across the tree level by level, from top to bottom.
 
-**Breadth-first search (BFS)** visits nodes nearer the root before nodes
-farther from it. **Depth** is the number of child links from the root to a
-node. The root has depth 0, its children have depth 1, and their children
-have depth 2.
+### How do we remember the distance as well?
 
-A **level** contains all nodes at one depth. Tree BFS is also called
-**level-order traversal** because it completes smaller depths before larger
-depths. This course visits a left child before a right child when both have
-the same depth.
+The distance (or depth) is simply the number of connections you have to pass through from the top to reach a specific item. The distance of the top item itself is exactly 0.
 
-## 3. The Queue holds unfinished work
-
-A **Queue** is a collection with **first-in, first-out (FIFO)** access: the
-earliest-added waiting item leaves first. `enqueue` adds at the back, and
-`dequeue` removes the front.
-
-A node is **discovered** when it is reached and placed in the waiting Queue.
-The **frontier** is the discovered work still waiting to be visited. One
-**work record** pairs a node pointer with its depth. A **pointer** identifies
-an object's memory location.
+If we only put the item's location into our waiting line, it's very hard to figure out its distance again when we take it out. Because of this, the waiting line in this chapter holds a package containing both the item's location and its exact distance.
 
 ```text
-enqueue (root, 0) if the root exists
+Put (top item, distance 0) in.
 
-while the Queue is not empty:
-    dequeue (node, depth)
-    visit node
-    enqueue a non-NULL left child at depth + 1
-    enqueue a non-NULL right child at depth + 1
+Repeat until the waiting line is empty:
+    Take out the front package (current item, distance).
+    Write down the current item and its distance in the final list.
+    If there is a left child, put (left child, distance + 1) in.
+    If there is a right child, put (right child, distance + 1) in.
 ```
 
-`NULL` is the pointer value meaning “no node.” Children enter behind every
-record already waiting. A larger-depth child therefore cannot pass a
-smaller-depth record. Left enters before right, so it also leaves first.
+### How do we decide the order for items at the same distance?
 
-The supplied typed Queue stores at most 64 records in an array directly
-inside a local Queue object. An **array** is a numbered row of same-type
-values. This Queue requests no separate storage and needs no destruction.
-It stores node pointers temporarily but does not own or change the nodes.
+We strictly put the left child into the waiting line before the right child. This guarantees that two children sharing the same parent are always checked from left to right. Because the parents themselves are also checked from left to right, the entire order for everyone at the exact same distance is perfectly fixed from left to right.
 
-## 4. Trace the course tree
-
-Labels distinguish objects. Parentheses contain key and flag. A **key** is a
-stored whole number used for search. A **flag** is a stored yes-or-no marker.
-Repeated keys are deliberate.
+The following tree is checked in the exact order: `42, 17, 68, 23, 17`. Even though the number 17 appears in two different places, they are completely separate items.
 
 ```text
-C0(42,F)
-├─ C1(17,T)
-│  ├─ C3(23,F)
-│  └─ C4(91,T)
-│     └─ C7(44,T)
-└─ C2(68,F)
-   ├─ C5(17,T)
-   └─ C6(5,F)
-      └─ C8(44,F)
+        42
+       /  \
+     17    68
+    /      /
+   23     17
 ```
 
-Numeric order controls neither its links nor BFS visits.
+Their distances are `0, 1, 1, 2, 2`. Notice that while the process is running, the distance never goes down.
 
-| Completed visit | Frontier from front to back |
-|---|---|
-| none | `C0@0` |
-| `C0` | `C1@1, C2@1` |
-| `C1` | `C2@1, C3@2, C4@2` |
-| `C2` | `C3@2, C4@2, C5@2, C6@2` |
-| `C3` | `C4@2, C5@2, C6@2` |
-| `C4` | `C5@2, C6@2, C7@3` |
-| `C5` | `C6@2, C7@3` |
-| `C6` | `C7@3, C8@3` |
-| `C7` | `C8@3` |
-| `C8` | empty |
+### Do we need "discovered" checkmarks like we do for free-flowing maps?
 
-The complete key order is:
+In a properly built tree, there is only one downward path to reach any item. Two parents never point downward to the exact same item, and the paths never loop back up. Therefore, as we follow the children downward, we will never accidentally put the exact same item into the waiting line twice. We don't need a separate true/false checklist to mark what we've already found!
 
-```text
-42, 17, 68, 23, 91, 17, 5, 44, 44
-```
+Connections that break these rules simply do not make a tree. The tool in this chapter does not check for or fix loops, so you must give it a perfectly valid tree from the start.
 
-The depths are:
+### If there are multiple identical numbers, how do we find the closest one?
 
-```text
-0, 1, 1, 2, 2, 2, 2, 3, 3
-```
+In a basic tree, the exact same number can appear multiple times. Because our waiting line naturally checks the closest items first, if we check the number the exact moment we take it out of the line, the very first match we find is absolutely guaranteed to be the closest one to the top!
 
-The largest Queue count in this trace is 4.
+If two matching numbers are at the exact same distance, our strict rule of putting the left child in first decides the winner. Our search tool gives back the location and the distance of the item it found. The location points to the actual item inside your tree, so you cannot use it if you delete the tree later.
 
-## 5. Shallowest match
+### How do we find the total height of the tree?
 
-A **shallowest match** has the smallest depth among matching nodes.
-`tree_find_shallowest` checks each node immediately after removing its work
-record.
+Because we check items level by level, the distance of the very last item taken out of the waiting line is the total height of the tree. The height of a completely empty tree is mathematically considered -1, and the height of a tree with exactly one item is 0. Our height calculating tool simply tracks this value.
 
-For target 17, `C1` is removed at depth 1 before `C5` at depth 2. For target
-44, both matches have depth 3, but `C7` was discovered first under the
-left-before-right rule. It is returned before `C8`.
+### What if our waiting line runs out of space?
 
-Target 99 is absent. The procedure visits all nine nodes and reports
-`TREE_BFS_NOT_FOUND`. The previous match output remains unchanged.
+Our code stores waiting tasks in a fixed-size line that holds up to 64 items. You get to choose the exact number of slots you want to use. If the number of waiting tasks tries to go over your chosen limit at any moment, the process safely fails and returns an error.
 
-This guarantee depends on first-in, first-out work. An ordinary
-depth-first search (DFS), which follows one branch before returning, does
-not guarantee that its first match has minimum depth.
+The final list of checked items is also strictly limited to a maximum of 64. Even if your waiting line has empty space left, arriving at a 65th item will instantly fail with an error.
 
-## 6. Width and edge height
+A completely empty tree will successfully return an empty list even if your line limit is set to 0. However, if there is even one single item, you cannot start with a limit of 0. Whenever a failure happens, your old results are perfectly protected and never changed.
 
-The **width** of a level is its node count. The course tree has widths:
+## Calculating Efficiency
 
-```text
-depth 0: 1
-depth 1: 2
-depth 2: 4
-depth 3: 2
-```
+### Efficiency of checking items level by level?
 
-Its **maximum width**, written `w`, is 4.
+If there are `n` items, we put each item into the waiting line exactly once and take it out exactly once. The total amount of work is proportional to the number of items, $O(n)$.
 
-The **edge height** of a node is the greatest downward-link count from that
-node to a leaf. This course uses:
+### Efficiency of finding the closest matching number?
 
-```text
-height(NULL) = -1
-height(leaf) = 0
-height(node) = 1 + greater child height
-```
+If you find the number right away at the very top, it finishes instantly. But if the number doesn't exist at all, or is sitting at the very bottom right, you have to look at absolutely every single item. The worst-case work is $O(n)$.
 
-The course root has height 3. An `n`-node one-child chain has height
-`n - 1`.
+### Efficiency of calculating the tree's height?
 
-A **balance factor** is:
+To find the very last distance, you are forced to visit absolutely every item. The amount of work is $O(n)$.
 
-```text
-height(left child) - height(right child)
-```
+### How much extra space is needed for the waiting line?
 
-The root's factor is 0 because its left and right child heights are both 2.
-Balance factors preview Module 15; they do not change BFS order.
+At any given moment, the waiting line is mostly filled with items that are sitting at the exact same distance from the top. The temporary space needed depends on how wide the tree gets. If the maximum width of the tree is `w`, the typical space needed is $O(w)$. Our specific code here strictly limits this space to a maximum of 64 slots.
 
-## 7. Output types and contracts
+## Glossary
 
-A **struct** is a C type that groups named fields. `int` is C's whole-number
-type. `bool` is C's yes-or-no type. `size_t` is a nonnegative whole-number
-type.
+### Depth
+
+The number of child connections you pass through from the root to reach a specific node.
+
+### Level
+
+A group of nodes that all share the exact same depth.
+
+### Breadth-First Search (BFS)
+
+A search method that visits items in order, starting from those closest to the starting point.
+
+### Level-Order Traversal
+
+A Breadth-First Search that visits a tree in order from the smallest depth to the largest.
+
+### Work Item
+
+A package containing a node's address and its depth, waiting in the queue because it hasn't been visited yet.
+
+### Height
+
+The number of connections going down from a node to its farthest leaf. In this chapter, the height of the tree means the height of its root.
+
+## Coding Plan
+
+### Traversing Level by Level
+
+* **Prepare result:** Build the visit result strictly in a temporary, hidden workspace, not directly in the user's output variable.
+* **Put top item in:** If there is a top item, put `(root, 0)` into the waiting line.
+* **Take item out:** Take the front package from the line and write its key, true/false tag, and distance into the temporary workspace.
+* **Put children in:** Put the left child in first, and the right child in second.
+* **Confirm result:** Keep going until the waiting line is completely empty. If it fully succeeds, cleanly copy the temporary workspace to the user's output.
+
+### Finding the Closest Matching Key
+
+* **Start search:** Put the top item and distance 0 into the waiting line.
+* **Compare keys:** Compare the target key with the current item's key the exact moment you take the package out of the line.
+* **Save result:** Write the location and distance of the very first matching item to the output.
+* **Report missing:** If the line completely empties without a match, safely return a `TREE_BFS_NOT_FOUND` error.
+
+### Calculating the Tree's Height
+
+* **Set starting value:** Set the temporary height answer exactly to -1 so it works correctly for an empty tree.
+* **Update distance:** Every single time you take out an item, save its distance as the new height answer.
+* **Save result:** When the search finishes completely, write the very last saved distance to the output.
+
+### Protecting the Result on Failure
+
+* **Check limit:** First, make sure the requested limit is 64 or less.
+* **Use temporary result:** Do not ever change the caller's result while the search is running halfway.
+* **Copy after success:** Only update the final output structure after absolutely all tasks finish perfectly.
+
+## C Code
+
+### Making an Example Tree
 
 ```c
-typedef struct TreeNode {
-    int key;
-    bool flagged;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
+#include "tree_bfs.h"
 
-typedef struct {
-    int key;
-    bool flagged;
-    size_t depth;
-} TreeBfsVisit;
-
-typedef struct {
-    TreeBfsVisit items[TREE_BFS_MAX_NODES];
-    size_t count;
-} TreeBfsOrder;
-
-typedef struct {
-    const TreeNode *node;
-    size_t depth;
-} TreeBfsMatch;
+TreeNode left_left = {
+        .key = 23, .flagged = false,
+        .left = NULL, .right = NULL
+};
+TreeNode right_left = {
+        .key = 17, .flagged = true,
+        .left = NULL, .right = NULL
+};
+TreeNode left = {
+        .key = 17, .flagged = false,
+        .left = &left_left, .right = NULL
+};
+TreeNode right = {
+        .key = 68, .flagged = false,
+        .left = &right_left, .right = NULL
+};
+TreeNode root = {
+        .key = 42, .flagged = false,
+        .left = &left, .right = &right
+};
 ```
 
-`TreeBfsVisit` copies one key, flag, and depth. `TreeBfsOrder` stores up to
-64 visits. `TreeBfsMatch` points to one existing node; it does not own it.
+These example items are simply created briefly as normal variables. Because the cleanup tool `tree_destroy_postorder` from Chapter 5 only frees items built by the computer's memory allocator, do not use it on these specific variables!
 
-A **contract** states what a function accepts, changes, reports, and
-preserves.
+### Getting the Level-Order Result
 
 ```c
-TreeBfsStatus tree_level_order(
-    const TreeNode *root, size_t queue_limit, TreeBfsOrder *out_order);
-TreeBfsStatus tree_find_shallowest(
-    const TreeNode *root, int target, size_t queue_limit,
-    TreeBfsMatch *out_match);
-TreeBfsStatus tree_height_bfs(
-    const TreeNode *root, size_t queue_limit, int *out_height);
+TreeBfsOrder order = {0};
+TreeBfsStatus status;
+
+status = tree_level_order(&root, 2U, &order);
+
+if (status == TREE_BFS_OK) {
+        /* key: 42, 17, 68, 23, 17 */
+        /* depth: 0, 1, 1, 2, 2 */
+}
 ```
 
-Students complete these three operations. `const TreeNode *` permits
-inspection but not change through that pointer. `queue_limit` may be 0
-through 64. A larger value reports `TREE_BFS_LIMIT`.
+### Finding the Closest Node and Height
 
-A **caller** is code requesting a function. An **allocation** is storage
-requested while a program runs. A **status code** is a named result:
+```c
+TreeBfsMatch match = {0};
+int height = -1;
 
-```text
-TREE_BFS_OK                 success
-TREE_BFS_INVALID_ARGUMENT   a required output pointer is NULL
-TREE_BFS_LIMIT              Queue or 64-node limit reached
-TREE_BFS_ALLOCATION         supplied node construction failed
-TREE_BFS_DUPLICATE          strict-BST insertion found an equal key
-TREE_BFS_NOT_FOUND          search target absent
+if (tree_find_shallowest(&root, 17, 2U, &match) ==
+    TREE_BFS_OK) {
+        /* match.node points exactly to 'left', and match.depth is 1. */
+}
+
+if (tree_height_bfs(&root, 2U, &height) == TREE_BFS_OK) {
+        /* height is 2. */
+}
 ```
 
-A `NULL` root is a valid empty tree. Level order succeeds with count 0.
-Height succeeds with `-1`. Search reports `TREE_BFS_NOT_FOUND` and preserves
-the old match. A nonempty tree with limit 0 reports `TREE_BFS_LIMIT`.
+### The Order for Putting Children in the Waiting Line
 
-Canonical full level order and height succeed with limit 4 but fail with
-limit 3, preserving output. Searches for 44 or 99 also need 4; early target
-17 succeeds with 2. **Failure preservation** means a failed operation leaves
-the caller's previous output unchanged. Build a local candidate and copy it
-to the output only after the required result is known.
+```c
+#include "tree_work_queue.h"
 
-The three BFS operations themselves request no allocation.
+TreeWorkQueue queue = {0};
+TreeWorkItem item = {&root, 0U};
+size_t child_depth = item.depth + 1U;
 
-## 8. Cost and the DFS comparison
+tree_work_queue_init(&queue, 2U);
 
-**Time complexity** describes how work grows. Let `n` be the node count. A
-complete BFS visits each node once, so its time is `O(n)`, read “order n”:
-work grows in proportion to `n`.
+if (item.node->left != NULL) {
+        TreeWorkItem left_item = {
+                item.node->left,
+                child_depth
+        };
+        tree_work_queue_enqueue(&queue, left_item);
+}
 
-**Auxiliary space** is temporary working storage separate from the tree and
-returned output. BFS needs `O(w)`, read “order w,” auxiliary space: working
-storage grows in proportion to maximum width `w`. DFS needs `O(h)`, read
-“order h”: its working storage grows in proportion to height `h`.
+if (item.node->right != NULL) {
+        TreeWorkItem right_item = {
+                item.node->right,
+                child_depth
+        };
+        tree_work_queue_enqueue(&queue, right_item);
+}
+```
 
-`O(w)` does not mean peak Queue count always equals one level's width.
-During a transition, the Queue can contain unvisited nodes from one depth
-and discovered children from the next. The bound means Queue need grows in
-proportion to width.
-
-BFS may use more working space on a wide shallow tree. DFS may use more on a
-long one-child chain.
-
-## 9. Balance preview
-
-Consider the strict **binary search tree (BST)** `30 ← 20 ← 10`. A BST keeps
-every key below a left child lower and every key below a right child higher.
-**Strict** means equal keys are not allowed. Its root height is 2 and root
-balance factor is 2.
-
-A **rotation** is a small link rearrangement that preserves binary-search
-order. One supplied right rotation makes 20 the root, with left child 10 and
-right child 30. Height becomes 1 and all balance factors become 0.
-**Inorder** visits everything below the left child, then the node, then
-everything below the right child; its result remains `10, 20, 30`.
-
-Rotation selection and implementation wait until Module 15.
-
-## 10. Safe input boundary
-
-These operations require a valid, acyclic, unshared tree. **Acyclic** means
-no child-link route returns to an earlier node. **Unshared** means every
-nonroot node has one parent.
-
-A **graph** is a general network that may provide several routes to one item
-or a route back. Graph BFS therefore uses a **visited record**, a stored mark
-showing that an item was reached before. Graph BFS and unweighted paths are
-the next spiral step.
-
-**Key sentence:** FIFO work records make BFS process nondecreasing depth, so
-the first left-first match is shallowest.
+The actual internal code strictly checks the success of every single attempt to add an item to the line. If dropping the left child in fails because the line is full, it immediately stops, does not attempt to put the right child in, and safely throws away the temporary workspace.

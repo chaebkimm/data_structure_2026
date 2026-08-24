@@ -1,283 +1,243 @@
-# Student Notes — Graphs and Their Representations
+# Chapter 3. Storing Relationships in Multiple Directions
 
-## Essential question
+## Thinking Logically
 
-> How can a computer store relationships that may cross, point backward, or
-> return to where they began?
+### How do we show relationships a tree can't hold?
 
-## 1. The problem
+In a tree, an item has only one parent directly above it. Real-world relationships are much freer. Two different items can connect to the exact same item, and a connection can even loop all the way back to a previous item.
 
-Imagine six services. A service is a computer program that performs a task
-for another program. A program is a set of instructions a computer can run.
-A communication permission says which service may contact another.
+To show these free-flowing, messy relationships, we use a map made up of items (like dots) and the direct connections between them (like lines or roads).
 
-More than one service may contact the same destination. A permission may
-also point back toward an earlier service. A tree cannot represent these
-facts without breaking its one-parent or no-cycle rules.
+### Why do arrow directions matter?
 
-A graph represents objects and their relationships:
+Sometimes a connection is like a one-way street. Going from item 0 to item 1 doesn't automatically mean you can go backward from 1 to 0.
 
-- a vertex is one object;
-- an edge is one direct relationship.
+Other times, a relationship works both ways without caring about direction. This is like a two-way street, where a single connection between item 0 and item 1 lets you easily travel back and forth.
 
-A directed edge works one way. The arrow `0 → 1` starts at vertex 0 and ends
-at vertex 1. It does not also mean `1 → 0`. A directed graph uses directed
-edges.
+### How do we count relationships around one item?
 
-## 2. One graph, four views
+If we are looking at one-way streets, we count the number of paths leaving an item and the number of paths coming into it separately. In a map of two-way streets, we simply count how many total lines touch that item.
 
-A representation is a way to show or store information. Two representations
-are equivalent when they preserve the same facts.
+Any item you can reach directly by following just one line is considered a neighbor. In a one-way map, we separate neighbors you can travel *to* from neighbors that can travel *to you*.
 
-The six vertices are:
+### What can we learn by following multiple lines?
 
-```text
-0 Gateway   1 Web   2 Admin   3 Database   4 Monitor   5 Archive
-```
+When you travel from item to item by following the connected lines, you create a route. Sometimes, a route circles all the way back to the exact item where you started without visiting any other item twice.
 
-Each vertex represents one service.
+In a map of two-way streets, you might find a large group of items that can all reach each other. Even a single, completely lonely item with zero connections counts as its own little independent group.
 
-The companion graph-model file shows the diagram. Its exact arrow
-description is:
+### How should we store this map in code?
+
+There are a few ways to remember all these connections. We could write down a simple list of every single line. Or, for each item, we could collect a list of its specific neighbors. Another clever way is to draw a grid (like a multiplication table) for every possible pair of items, checking a box if a connection exists.
+
+If we only use a simple list of lines, it's very hard to notice if there is a lonely item with no connections. Because of this, we also need to keep a separate count of the total number of items.
+
+This chapter will use a fixed grid to store a maximum of 16 items.
 
 ```text
-0 → 1   0 → 2   1 → 3   2 → 3   3 → 4   4 → 1
+grid[start][end] == true   (Connection exists)
+grid[start][end] == false  (Connection does not exist)
+
 ```
 
-Vertex 5 is isolated: no edge enters or leaves it.
+### Why do two-way streets use two spaces in the grid?
 
-### Edge set
+A two-way connection must be easy to find no matter which side you start from. If we connect item 2 and item 4, we must mark "true" for the path from 2 to 4, *and* mark "true" for the path from 4 to 2. This creates a perfectly mirrored grid, where the top right side is an exact reflection of the bottom left side.
 
-A set is a collection in which an item appears at most once. For a directed
-edge, an ordered pair records the start first and the end second.
+### What kinds of lines do we reject?
 
-```text
-{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 1)}
-```
+The map in this chapter will not allow an item to draw a line directly back to itself. We also won't allow drawing the exact same line twice. If you want to delete a line, you must make sure that line actually exists first.
 
-For example, `(2, 3)` records `2 → 3`. The braces above form a mathematical
-edge set, whose written order does not matter. An edge-list representation
-uses numbered storage for the same pairs. It also stores the vertex count 6,
-because isolated vertex 5 appears in no edge pair.
+Finally, we are not storing how long the paths are or how much they cost to travel. We are only storing a simple "yes" or "no" for whether a line exists.
 
-### Adjacency list
+## Calculating Efficiency
 
-Adjacent vertices are directly joined by an edge. Adjacency records these
-direct connections. Because direction matters here, each adjacency list
-below stores out-neighbors: the destinations of edges leaving one vertex.
+### Efficiency of adding or removing a connection
 
-```text
-0:[1, 2]   1:[3]   2:[3]   3:[4]   4:[1]   5:[]
-```
+We change one box in the grid for a one-way street, or two boxes for a two-way street. Because we can jump straight to the exact box, this takes the exact same tiny amount of time regardless of how many items there are.
 
-The empty list `[]` preserves vertex 5 even though it has no outgoing edge.
+### Efficiency of checking one connection
 
-### Adjacency matrix
+We instantly read one box in the grid using the starting and ending numbers. This is instantly fast.
 
-A matrix is a grid of rows and columns. A cell is one position in the grid.
-An adjacency matrix uses one row and one column for every vertex:
+### Efficiency of counting connections or finding neighbors
 
-```text
-adjacency[from][to]
-```
+To find neighbors, we have to scan every single box in one entire row or column. This means the amount of work grows steadily in proportion to the total number of items we currently have.
 
-The row is the source, where the edge starts. The column is the destination,
-where it ends. Each cell holds a Boolean value: `true` or `false`. The table
-uses `1` for `true` and `0` for `false`.
+### Efficiency of checking the whole map
 
-| from \ to | 0 | 1 | 2 | 3 | 4 | 5 |
-|---:|---:|---:|---:|---:|---:|---:|
-| 0 | 0 | 1 | 1 | 0 | 0 | 0 |
-| 1 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 2 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 3 | 0 | 0 | 0 | 0 | 1 | 0 |
-| 4 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 5 | 0 | 0 | 0 | 0 | 0 | 0 |
+We have to look at every single box in the entire grid that is currently in use. Because the grid size is items multiplied by items, the amount of work increases very rapidly, like the square of the data.
 
-- Cell `[0][2]` is `1`, so `0 → 2` exists.
-- Cell `[2][0]` is `0`, so the reverse edge does not exist.
-- Row and column 5 contain only zeroes, so vertex 5 is isolated.
+### Memory efficiency
 
-## 3. Reading the graph
+Even if there are very few connections, we still have to build a giant grid with boxes for every possible pair of items. The memory space needed grows based on the total items squared. The code in this chapter locks in a 16 × 16 space from the beginning, so it takes up a fixed amount of memory even if we use fewer items.
 
-Direction gives us precise words:
+## Glossary
 
-- an out-neighbor is reached by an edge leaving the selected vertex;
-- an in-neighbor has an edge entering the selected vertex;
-- out-degree counts leaving edges;
-- in-degree counts entering edges.
+### Graph
 
-Database (3) has in-neighbors 1 and 2 and out-neighbor 4. Its in-degree is 2
-and its out-degree is 1.
+A structure showing vertices and the edges that connect them.
 
-A path follows available edges without repeating a vertex:
+### Vertex (Plural: Vertices)
 
-```text
-0 → 1 → 3 → 4
-```
+Each individual item that makes up a graph.
 
-A cycle follows edges back to its starting vertex without repeating any
-other vertex:
+### Edge
 
-```text
-1 → 3 → 4 → 1
-```
+A direct connection between two vertices.
 
-A vertex is reachable from a stated start when a path can lead to it.
-Starting at 0, vertices 0, 1, 2, 3, and 4 are reachable. Vertex 5 is not.
-The starting vertex is reachable from itself without using an edge.
+### Directed Graph
 
-An undirected edge works both ways. In an undirected graph, degree counts all
-edges touching a vertex. In a connected component, every vertex is joined to
-every other by an undirected path, and no outside vertex can be added while
-keeping that true. For example, edges `{0, 1}`, `{1, 2}`, and `{3, 4}`
-produce components `{0, 1, 2}`, `{3, 4}`, and the isolated component `{5}`.
+A graph where edges have a specific starting and ending direction.
 
-Use connected-component language only for undirected graphs in this module.
-For a directed graph, name the starting vertex and use reachable.
+### Undirected Graph
 
-An algorithm is a precise step-by-step method. Depth-first search (DFS) and
-breadth-first search (BFS) are later algorithms for exploring reachable
-vertices. This module reads only small examples by hand.
+A graph that doesn't distinguish between the start and end of an edge.
 
-## 4. Representation invariant
+### Degree
 
-The course lab stores at most 16 vertices. It uses a simple, unweighted
-graph:
+The number of edges touching a single vertex.
 
-- simple means no self-loops or repeated copies of an edge;
-- a self-loop is an edge from a vertex to itself;
-- unweighted means an edge stores only present or absent.
+### Out-degree and In-degree
 
-A weight is a number attached to an edge, such as cost or travel time. A
-weighted graph stores that number; this lab does not.
+In a directed graph, the number of edges going out from, or coming into, a single vertex.
 
-For the undirected edge `{2, 4}`, both `[2][4]` and `[4][2]` are `true`.
-These are mirror cells because the row and column trade places. An
-undirected matrix is symmetric: every cell equals its mirror. Its diagonal,
-made of cells such as `[0][0]`, remains `false` because self-loops are
-rejected.
+### Path
 
-An invariant is a rule that must be true in every valid completed graph:
+A sequence of vertices connected by following the edges.
 
-1. `vertex_count` is from 0 through 16.
-2. The graph is directed or undirected.
-3. Active indexes run from 0 through `vertex_count - 1`.
-4. Every active diagonal cell is `false`.
-5. Every active mirror pair agrees in an undirected graph.
+### Cycle
 
-If `vertex_count` is 6, indexes 0 through 5 are active and index 6 is
-inactive. If `vertex_count` is 0, there are no active indexes. Each Boolean
-cell says only absent or present, so the lab rejects an attempt to add an
-edge that is already present.
+A path that returns to its starting vertex without repeating any other vertices along the way.
 
-## 5. C representation and contracts
+### Edge List
 
-Read this code for the field meanings. You do not need to memorize its syntax
-yet.
+A list that simply saves the graph's edges one by one.
+
+### Adjacency List
+
+A list that collects and saves the neighbors specifically for each vertex.
+
+### Adjacency Matrix
+
+A grid (table) using rows and columns to save whether an edge exists between every possible pair of vertices.
+
+### Connected Component
+
+The largest group of vertices that can all reach each other by following undirected edges.
+
+### Isolated Vertex
+
+A completely lonely vertex with zero edges connecting it to anything else.
+
+### Unweighted Graph
+
+A graph that only stores whether an edge exists or not, without storing distances or travel costs.
+
+### Symmetric Matrix
+
+A grid where the values are perfectly mirrored across the diagonal line (used for undirected graphs).
+
+## Coding Plan
+
+### Preparing the Map
+
+* **Check bounds:** Make sure the number of items is between 0 and 16.
+* **Check type:** Make sure it is either a one-way or two-way map.
+* **Initialize grid:** Set all 16 × 16 boxes to `false`, even the unused ones.
+* **Save state:** Store the number of items and the map type.
+
+### Adding a Connection
+
+* **Check numbers:** See if the two items are within the range we are currently using.
+* **Reject loops:** Fail if the two item numbers are exactly the same.
+* **Reject duplicates:** Do not add a connection if its box is already `true`.
+* **Set boxes:** Make `[from][to]` `true` for one-way maps. For two-way maps, also make the mirrored box `true`.
+
+### Deleting a Connection
+
+* **Check numbers:** Look at the range of the two items.
+* **Check existence:** Fail if the connection doesn't exist.
+* **Clear boxes:** Make the target box (and the mirrored box if needed) `false`.
+
+### Checking Connections and Counting
+
+* **Check connection:** Read `[from][to]` and use it as the result.
+* **Count outgoing:** Count the `true` boxes in that item's row.
+* **Count incoming:** Count the `true` boxes in that item's column.
+* **Save neighbors:** Find the `true` destination items in the row, starting from the smallest number, and put them in the result.
+
+### Checking the Whole Map
+
+* **Check size:** Make sure the item count is not over 16.
+* **Check loops:** Make sure all diagonal boxes where an item connects to itself are `false`.
+* **Check symmetry:** In a two-way map, make sure `[a][b]` and `[b][a]` have the exact same value.
+* **Determine completion:** If even one rule is broken, trigger an error.
+
+## C Code
+
+### Making the Adjacency Matrix
 
 ```c
+#define GRAPH_MAX_VERTICES 16U
+
+typedef enum {
+        GRAPH_DIRECTED = 0,
+        GRAPH_UNDIRECTED
+} GraphKind;
+
 typedef struct {
-    size_t vertex_count;
-    GraphKind kind;
-    bool adjacency[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
+        size_t vertex_count;
+        GraphKind kind;
+        bool adjacency[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
 } Graph;
 ```
 
-A `struct` groups named fields:
+### Adding and Checking Edges
 
-- `typedef struct ... Graph` tells C to call this grouped value a `Graph`;
-- `vertex_count` uses `size_t`, a nonnegative whole-number type for counts
-  and indexes;
-- `GraphKind` names a choice that is either directed or undirected, and
-  `kind` stores that choice;
-- `adjacency` is a two-dimensional array, meaning an array of rows;
-- `bool` is C's Boolean type, so every matrix cell is `true` or `false`;
-- `GRAPH_MAX_VERTICES` is the named constant for the fixed limit of 16.
+```c
+Graph graph;
+bool has_edge = false;
 
-A function is a named block of code that performs one task. Its contract
-states what it accepts, changes, reports, and preserves. An output is an
-answer written into a variable supplied by the calling code.
+if (graph_init(&graph, 6U, GRAPH_DIRECTED) != GRAPH_OK) {
+        return 1;
+}
 
-| Function | Successful effect | Failure promise |
-|---|---|---|
-| `graph_init` | Creates the requested 0–16 vertices with no edges | Leaves the supplied graph unchanged |
-| `graph_validate` | Confirms the complete active matrix obeys the rules | Does not change the graph |
-| `graph_add_edge` | Sets one directed cell or two undirected cells | Leaves the graph unchanged |
-| `graph_remove_edge` | Clears one directed cell or two undirected cells | Leaves the graph unchanged |
-| `graph_has_edge` | Reports whether one edge exists | Leaves its output unchanged |
-| `graph_in_degree`, `graph_out_degree` | Report an incoming or outgoing count | Leave their output unchanged |
-| `graph_out_neighbors` | Reports out-neighbors in increasing index order | Leaves its output unchanged |
+if (graph_add_edge(&graph, 0U, 1U) != GRAPH_OK ||
+    graph_add_edge(&graph, 0U, 2U) != GRAPH_OK ||
+    graph_add_edge(&graph, 1U, 3U) != GRAPH_OK ||
+    graph_has_edge(&graph, 0U, 2U, &has_edge) != GRAPH_OK) {
+        return 1;
+}
+```
 
-A status code is a named result such as success, out of range, self-loop,
-edge already present, edge absent, or invalid graph. Adding rejects a vertex
-number outside the active range, a self-loop, or an existing edge. Removing
-rejects an absent edge. These checks occur before a change, so failure
-preserves the previous graph and output.
+### Finding Degrees and Neighbors
 
-`graph_validate` checks the whole active matrix. Edge operations check only
-their selected cells; degree and neighbor operations check only their
-relevant row or column. These are bounded checks because they never inspect
-more than the fixed limit or active vertex count.
+```c
+size_t in_degree = 0U;
+size_t out_degree = 0U;
+GraphNeighbors neighbors;
 
-The `GraphNeighbors` output has a `count` field and a `vertices` array. The
-function `graph_status_name` changes a status code into readable text.
+if (graph_in_degree(&graph, 3U, &in_degree) != GRAPH_OK ||
+    graph_out_degree(&graph, 0U, &out_degree) != GRAPH_OK ||
+    graph_out_neighbors(&graph, 0U, &neighbors) != GRAPH_OK) {
+        return 1;
+}
+```
 
-## 6. Costs and choices
+### Checking an Undirected Graph
 
-Big-O notation describes how work grows. Let `V` mean the active vertex
-count:
+```c
+Graph undirected;
 
-- `O(1)` means the same amount of work;
-- `O(V)` means work grows with the vertex count;
-- `O(V²)` means rows times columns.
+if (graph_init(&undirected, 5U, GRAPH_UNDIRECTED) != GRAPH_OK ||
+    graph_add_edge(&undirected, 2U, 4U) != GRAPH_OK) {
+        return 1;
+}
 
-| Operation | Cost | Reason |
-|---|---:|---|
-| Add, remove, or ask about one edge | `O(1)` | A fixed number of cells is checked |
-| Report degree or out-neighbors | `O(V)` | One row or column is scanned |
-| Validate the active graph | `O(V²)` | Up to `V × V` cells are checked |
-
-The lab always reserves `16 × 16 = 256` cells. Only the active `V × V`
-square describes edges.
-
-| Representation | Useful strength | Main cost |
-|---|---|---|
-| Adjacency matrix | One cell answers whether an edge exists | Reserves cells for missing edges |
-| Edge list | Simple when processing every edge | One-edge lookup may scan all pairs |
-| Adjacency list | Direct access to a vertex's out-neighbors | Its C storage is more involved |
-
-When only a few possible edges exist, an edge list or adjacency list may use
-less memory. No representation is always best; choose from the operations
-the program needs.
-
-## 7. Spiral connection and modeling limit
-
-| Need | Choose | Reason |
-|---|---|---|
-| Items in one numbered order | ArrayList | The main fact is position |
-| One-parent hierarchy | Tree | Each non-root item has one parent |
-| Relationships that may cross or return | Graph | General edges are allowed |
-
-The example uses synthetic data, meaning invented data used for safe
-teaching. A permission edge proves only what this small model records. It
-does not prove that communication occurred, that a real route works, or that
-a vulnerability exists, an exploit works, or an attack succeeded. A
-vulnerability is a system weakness; an exploit is a method that uses a
-weakness; an attack is an action intended to gain access or cause harm.
-
-## 8. Vocabulary
-
-- **graph:** objects plus their relationships;
-- **vertex:** one object in a graph;
-- **edge:** one direct relationship;
-- **adjacency matrix:** a row-and-column table of possible edges;
-- **path:** vertices joined by edges without a repeated vertex;
-- **cycle:** edges that return to their start without another repeated vertex;
-- **reachable:** able to be reached from a stated starting vertex;
-- **connected component:** a connected group that cannot include another
-  vertex while remaining connected;
-- **invariant:** a rule every valid completed structure must satisfy.
-
-**Key sentence:** a graph separates the objects from the relationship facts,
-and its representation determines how those facts are stored and checked.
+if (undirected.adjacency[2][4] &&
+    undirected.adjacency[4][2] &&
+    graph_validate(&undirected) == GRAPH_OK) {
+        /* Both mirrored boxes are the same. */
+}
+```

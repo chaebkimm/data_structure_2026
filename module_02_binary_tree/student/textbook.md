@@ -1,258 +1,271 @@
-# Student Notes — Storing Items Above and Below Other Items
+# Chapter 2. Organizing Data
 
-## Essential question
+## Thinking Logically
 
-> How can one stored item identify items below it, and what rules keep those
-> relationships organized?
+### What does data in a hierarchy look like?
 
-## 1. One hierarchy
+Think about the folders and files on your computer. Inside the very top folder (called the "root"), there are other folders or files. Inside those folders, there can be even more folders or files.
 
-Suppose five numbered items must be arranged in levels. A hierarchy places
-items above or below other items. One stored item in our hierarchy is a node,
-and its stored number is its key.
+### What do we need to store to keep this hierarchy?
 
-```text
-50
-├─ left: 30
-│  ├─ left: 20
-│  └─ right: 40
-└─ right: 70
-```
+We need to package and store not just the data itself, but also the information about how it connects (or links) to other pieces of data.
 
-The companion tree-model file contains a diagram and an exact text
-equivalent.
+### The Simplest Method
 
-A nonempty tree has one starting node called the root. Here, key 50 is the
-root. A parent is directly above a node, and a child is directly below one.
-Key 30 is the parent of keys 20 and 40. A leaf has no children, so keys 20,
-40, and 70 are leaves.
+We set up empty spots for each piece of data so that it can connect to a maximum of just two other pieces of data.
 
-A binary tree gives every node at most two child positions: left and right.
-The positions have different names even when a node has only one child.
+### How do we add data?
 
-## 2. Reading the tree
+We connect the new data to an existing piece of data that still has an empty spot available.
 
-A path is a list of nodes joined by child links. One path is:
+### How do we delete data?
 
-```text
-50 → 30 → 40
-```
+If the data you want to delete has nothing else connected to it, you simply cut the connection to it.
 
-Depth counts links from the root to a node. Key 40 has depth 2. Height counts
-the greatest number of downward links from a node to a leaf. The root has
-height 2.
+If the data you want to delete *does* have other data attached to it, you cut the connection to the data you are removing, and then you take the leftover attached data and add it back in.
 
-An ancestor is a node above another node on a path. Keys 50 and 30 are
-ancestors of key 40. A subtree is one node together with every node below it.
-The subtree starting at key 30 contains keys 30, 20, and 40.
+When a node with two children is deleted, the right child takes its place. The left child is then dragged all the way down to the bottom-left corner of the right child's family line so the numbers stay in the correct order.
 
-## 3. The same tree in memory
+### How do we delete data with two children?
 
-An array is a numbered row of matching items. An index is one array
-position; C begins with index 0. Suppose C stores this array under the name
-`nodes`.
+First, we promote one branch so that the grandparent bypasses the target and grabs onto that branch. This leaves the second branch orphaned, meaning we need to find it a new home on the tree. We scout for a valid empty spot, attach the orphaned branch there, and finally, clean up the memory of the old target node.
 
-| Index | Key | Left-child index | Right-child index |
-|---:|---:|---:|---:|
-| 0 | 50 | 1 | 2 |
-| 1 | 30 | 3 | 4 |
-| 2 | 70 | none | none |
-| 3 | 20 | none | none |
-| 4 | 40 | none | none |
+## Measuring Efficiency
 
-An address identifies a location in memory. A pointer stores an address.
-`NULL` is a special pointer value meaning “no stored item.”
+### Memory Efficiency
 
-The root pointer stores `&nodes[0]`. Read that expression as “the address of
-the node at index 0.” A field is one named part of a stored node. The root's
-left and right fields store `&nodes[1]` and `&nodes[2]`. Every missing child
-field stores `NULL`.
+Unlike an array that sets aside a huge chunk of space in advance, here we only ask for new memory space exactly when we add a new piece of data. However, each piece of data uses a bit more memory because it also has to store the "connection links" (up to two extra spots) to point to other data.
 
-Read the following C code for its field meanings. You do not need to memorize
-the syntax yet.
+### Efficiency of Adding Data
+
+To add new data, you simply start at the top and travel down the connections to find an empty spot. Because you don't have to push or shift a massive row of existing data backward, adding data is very fast. The amount of work depends on how deep the layers go, rather than the total amount of data.
+
+### Efficiency of Deleting Data
+
+Just like adding data, you don't need to shift everything around. If the data you want to delete is at the very bottom (with nothing connected to it), you just erase the connection instantly. If it has other data connected below it, you simply do a little extra work to reconnect the leftover data so nothing gets lost.
+
+### Efficiency of Finding Data
+
+Since the data is connected in layers, you don't have to check every single item one by one. You just follow the connections starting from the top. 
+
+## Helpful Terms
+
+### Node
+
+A single package or "box" that holds your actual data, along with the connection spots (links) to attach to other data.
+
+### Tree
+
+A data structure that organizes data in a hierarchy. It is called a tree because if you draw it, it branches out downwards from a single starting point, looking exactly like an upside-down tree.
+
+### Binary Tree
+
+A special kind of tree structure where each node can connect to a maximum of exactly **two** other nodes (usually called a "left" connection and a "right" connection).
+
+### Root Node
+
+The very first, topmost piece of data in the tree. Every search or journey starts from this point.
+
+### Leaf Node
+
+A piece of data at the very bottom of the tree that has empty connection spots (meaning nothing is connected below it).
+
+### Pointer (or Link)
+
+The hidden information inside a node that tells the computer exactly where the next connected piece of data is saved in the memory. If a spot is empty, programmers usually call it **NULL**.
+
+## Coding Plan
+
+### Designing a Data Package (Node)
+
+* **Blueprint:** Create a blueprint that has one spot for the data, one spot for a left connection, and one spot for a right connection.
+
+### Creating New Data
+
+* **Allocate Memory:** Get exactly enough memory space from the computer to hold one single node.
+* **Save Data:** Put your data into the node's data spot.
+* **Empty Connections:** Set both the left and right connections to "empty" since the package isn't connected to the tree yet.
+
+### Connecting Data Together
+
+* **Find a Parent:** Choose an existing node in the tree that still has an empty connection spot.
+* **Attach Child:** Link the existing node's empty left or right connection spot directly to your newly created node.
+
+### Deleting Data (Cutting a Connection)
+
+* **Find Target:** Find the parent of the data you want to delete.
+* **Cut Link:** Change the parent's connection from the target data to "empty".
+* **Clean Up:** Give the memory space used by the deleted data back to the computer.
+
+## New C Syntax Explained
+
+### `struct` (Structures)
+
+In Chapter 1, we stored simple numbers using standard types like `int`. However, a tree node needs to hold three things at once: the data, a left connection, and a right connection. A `struct` allows you to design your own custom package or "blueprint" that groups these different pieces of information together into one single unit.
+
+### `*` (Pointers and Structures)
+
+When you connect nodes together, you don't physically place one entire node inside another. Instead, you use a pointer. By placing an asterisk (`*`) next to a data type (like `struct Node *`), you tell the computer that this variable won't hold actual data. Instead, it holds the exact memory address (the physical location) of where another piece of data is stored. In our tree, the left and right connection spots are pointers acting as signposts guiding the computer to the next connected node.
+
+### `->` (The Arrow Operator)
+
+When you have a normal package of data, you can look inside it easily. But when you only have a pointer (the map to the package), you need a special tool to reach inside it. The arrow operator (`->`) tells the computer: "Follow this pointer to the actual memory address, and once you are there, access this specific spot inside the package." For example, `new_node->data = 100` means "go to the new node's location and set its data spot to 100."
+
+### `NULL`
+
+When you create a pointer, it needs to point somewhere. If a node doesn't have any other data connected to it yet (like a newly created node or a leaf at the bottom of the tree), you must explicitly set its connection to NULL. NULL is a special programming keyword that means "empty" or "nowhere." It serves as a safe dead end, telling the computer to stop looking because there is no further data down this path.
+
+## C Code
+
+### Designing a Data Package (Node)
 
 ```c
-typedef struct TreeNode {
-    int key;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
+/* Blueprint for a Node */
+struct Node {
+        int data;               /* Spot for the data */
+        struct Node *left;      /* Spot for the left connection */
+        struct Node *right;     /* Spot for the right connection */
+};
 
-typedef struct {
-    TreeNode *nodes;
-    size_t count;
-    TreeNode *root;
-} TreeArena;
 ```
 
-A `struct` groups named fields. A type describes the kind of value C stores.
-The words `typedef ... TreeNode` tell C to use `TreeNode` as this type's
-short name.
+### Creating New Data
 
-- `int key` stores a whole number.
-- The `*` in `TreeNode *` marks a pointer. `left` and `right` store child
-  addresses, not complete child nodes.
-- An arena is prepared storage for items. `nodes` points to the first node
-  in this module's fixed array.
-- `size_t` is a nonnegative whole-number type. `count` records how many
-  array nodes belong to the arena.
-- `root` stores the starting node's address, or `NULL` for an empty tree.
+```c
+#include <stdlib.h>
 
-The fixed array does not resize. Its node addresses therefore remain stable
-while the array exists.
+/* Allocate Memory */
+struct Node *new_node = malloc(sizeof(struct Node));
 
-The array order does not create tree relationships. The stored child
-pointers do. For example, indexes 3 and 4 are next to each other in memory,
-but neither is the other's parent.
+if (new_node != NULL) {
+        
+        /* Save Data */
+        new_node->data = 100;
 
-## 4. Representation invariant
+        /* Empty Connections (NULL means empty) */
+        new_node->left = NULL;
+        new_node->right = NULL;
+}
 
-When `count` is greater than zero, an active node is any element from
-`nodes[0]` through `nodes[count - 1]`. When `count` is zero, there are no
-active nodes. A node is reachable when starting at the root and following
-child pointers can arrive at it. A cycle is a path that returns to a node
-already on that path.
+```
 
-An invariant is a rule that must be true in every valid completed tree.
+### Connecting Data Together
 
-The empty tree has `nodes == NULL`, `count == 0`, and `root == NULL`. A valid
-nonempty course tree satisfies:
+```c
+/* Imagine we already have a top node called 'root_node' */
+/* and we want to attach our 'new_node' to its left side */
 
-1. `nodes` is not `NULL`, and `root` points to exactly one active node.
-2. The root has no parent.
-3. Every other active node has exactly one parent.
-4. Every child field is `NULL` or exactly equals `&nodes[i]` for an active
-   index `i`.
-5. Every active node is reachable from the root.
-6. No path contains a cycle.
-7. Every node has at most two children, stored in `left` and `right`.
-8. One node's left and right fields do not point to the same child.
+/* Find Parent's empty spot and Attach Child */
+root_node->left = new_node;
 
-The five-node example passes every rule. Small changes show why whole-tree
-rules matter:
+```
 
-In `nodes[3].left`, the dot selects the `left` field of the node at index 3.
+### Deleting Data (Cutting a Connection)
 
-- `nodes[3].left = &nodes[0]` creates the cycle
-  `50 → 30 → 20 → 50` and gives the root a parent.
-- Pointing both key 30 and key 70 to key 40 gives key 40 two parents.
-- Clearing the link from key 30 to key 40 leaves active node 40 unreachable.
+```c
+/* If we want to delete a child node that has nothing else connected below it */
 
-A candidate is a structure still being built and not yet approved. A
-candidate may temporarily have unreachable nodes. Validate it before calling
-it a completed tree.
+/* Cut Link */
+root_node->left = NULL;
 
-## 5. Local operations and whole-tree checks
+/* Clean Up Memory */
+free(new_node);
 
-A function is a named block of code that performs one task. A validator is a
-function that checks stated rules. A contract states what a function accepts,
-changes, reports, and preserves. An output is an answer written into a
-variable supplied by the caller—the code that asked the function to run.
+```
 
-`TreeSide` names the left and right choices. `TreeStatus` names success or a
-kind of failure. A status code is one of these named results.
-`TREE_NO_INDEX` means that a requested parent or child is absent.
+```c
+/* If we want to delete a child node that has only left node connected below it */
 
-| Function | Successful effect | Failure promise |
-|---|---|---|
-| `tree_arena_init` | Copies keys, clears child links, and selects the root | Leaves the arena and storage unchanged |
-| `tree_node_is_leaf` | Reports whether both child fields are `NULL` | Leaves its output unchanged |
-| `tree_node_child_count` | Reports 0, 1, or 2 non-`NULL` children | Leaves its output unchanged |
-| `tree_assign_child` | Fills one empty left or right child field | Leaves the arena unchanged |
-| `tree_immediate_family` | Reports parent, left-child, and right-child indexes | Leaves its output unchanged |
-| `tree_validate_structure` | Reports whether every tree invariant holds | Does not change the tree |
-| `tree_validate_bst` | Reports whether structure and key ordering both hold | Does not change the tree |
-| `tree_status_name` | Returns readable text for a status code | Returns readable text for an unknown status value |
+/* Cut Link */
+root_node->left = new_node->left;
 
-`tree_assign_child` performs a local check: it checks that the arena and root
-are usable, then checks the requested indexes, side, empty child position,
-and whether a node would become its own child before changing one pointer.
-Success does not prove that the child lacks another parent or that a longer
-cycle is absent.
+/* Clean Up Memory */
+free(new_node);
 
-`tree_validate_structure` performs a whole-tree check. Students call this
-supplied validator after assigning all links; they do not implement its
-node-visiting steps in this module. `tree_immediate_family` also requires a
-valid tree. Nodes store no parent pointer, so the function examines arena
-links to find the parent. For index 1 in the running example, it reports
-parent index 0, left-child index 3, and right-child index 4.
+```
 
-## 6. Binary search tree seed
+```c
+/* If we want to delete a child node that has only right node connected below it */
 
-A binary search tree, shortened to BST, adds a global key-ordering rule.
-Global means that the rule applies to entire subtrees:
+/* Cut Link */
+root_node->left = new_node->right;
 
-- every key in a node's entire left subtree is lower than that node's key;
-- every key in its entire right subtree is higher.
+/* Clean Up Memory */
+free(new_node);
 
-The five-node example is a BST. Key 40 is higher than 30 and, because it is
-inside key 50's left subtree, also lower than 50.
+```
 
-Changing key 40 to 60 passes the immediate comparison with parent 30 but
-breaks the limit inherited from root 50. Changing it to 50 creates a
-duplicate key. The course uses strict ordering, so equal keys are rejected.
+```c
+/* If we want to delete a child node that has both left and right node connected below it */
 
-Tree shape and BST ordering are separate:
+/* Cut Link */
+root_node->left = new_node->right;
 
-- `TREE_ERR_INVALID_STRUCTURE` means the links do not form a valid tree.
-- `TREE_ERR_NOT_BST` means the links form a valid tree, but a key breaks the
-  ordering rule.
+/* save left node */
+struct Node *new_parent = new_node->right;
 
-The supplied BST validator carries lower and upper limits through the tree.
-Students trace those limits, but formal traversal—a planned procedure for
-visiting nodes—waits for a later module. Students recognize and validate BSTs
-here. Later modules teach procedures for visiting nodes, finding keys, adding
-nodes, and reorganizing uneven trees.
+while (new_parent->left != NULL)
+        new_parent = new_parent->left;
 
-## 7. Operation costs
+new_parent->left = new_node->left;
 
-Time complexity describes how work grows. Let `n` mean the active node count:
+/* Clean Up Memory */
+free(new_node);
 
-- `O(1)` means a fixed amount of work;
-- `O(n)` means work may grow with the node count;
-- `O(n²)` means up to `n × n` work.
+```
 
-| Operation in the supplied code | Cost | Reason |
-|---|---:|---|
-| Leaf or child-count query | `O(1)` | Reads two child fields |
-| Arena initialization | `O(n)` | Copies keys and clears links |
-| Local child assignment | `O(n)` | Checking that the root is an exact array element may scan the array |
-| Structural validation | `O(n²)` | Child-address checks may each scan the array |
-| Immediate-family or BST validation | `O(n²)` | Each first validates the structure |
+### Complete, Working Example of Tree
 
-The fixed limit of 32 nodes keeps these scans bounded, meaning they never
-exceed the stated maximum. The growth categories still help us compare
-designs.
+```c
+#include <stdio.h>
+#include <stdlib.h>
 
-## 8. Arena safety and tree-to-graph connection
+/* 1. The Blueprint */
+struct Node {
+        int data;
+        struct Node *left;
+        struct Node *right;
+};
 
-The caller creates the fixed node array. `TreeArena` borrows it; it does not
-own it. The node addresses remain stable only while that array exists.
+/* 2. A helper function to build a new package (node) safely */
+struct Node* create_node(int data) 
+{
+        /* Allocate exact memory for one node */
+        struct Node *new_node = malloc(sizeof(struct Node));
 
-This module does not use `malloc` to request a memory block, `realloc` to
-resize such a block, or `free` to release it. Never pass one element address
-such as `&nodes[2]` to `free`.
+        /* Make sure the computer actually gave us the memory */
+        if (new_node != NULL) {
+                new_node->data = data;
+                new_node->left = NULL;  /* Set empty connections */
+                new_node->right = NULL; 
+        }
 
-A graph is a more general collection of items and relationships. Its items
-are called vertices and its direct relationships are called edges.
-Two vertices linking to the same vertex, or a link returning to an earlier
-vertex, breaks the course tree invariant, but a graph may allow both.
+        return new_node;
+}
 
-The numbers in this example are synthetic, meaning invented for safe
-teaching. They do not describe a live computer hierarchy.
+int main() 
+{
+        /* 3. Create the Root Node */
+        struct Node *root = create_node(50);
 
-## 9. Vocabulary
+        /* 4. Attach Children using the "Smart Rule" */
+        /* 25 is smaller than 50, so it goes left */
+        root->left = create_node(25);
 
-- **binary tree:** a hierarchy with at most two child positions per node;
-- **root:** the one starting node in a nonempty tree;
-- **leaf:** a node with no children;
-- **pointer:** a value that stores a memory address;
-- **arena:** prepared fixed storage for this module's nodes;
-- **reachable:** able to be reached from the root by following child links;
-- **cycle:** a path that returns to a node already on that path;
-- **invariant:** a rule every valid completed structure must satisfy;
-- **BST:** a binary tree with strict lower-left and higher-right key order;
-- **validator:** a function that checks stated rules.
+        /* 75 is bigger than 50, so it goes right */
+        root->right = create_node(75);
 
-**Key sentence:** child pointers create the shape, but only whole-tree rules
-prove that the shape is a valid tree.
+        /* 5. Prove it works by printing the data */
+        printf("Root node: %d\n", root->data);
+        printf("Left child: %d\n", root->left->data);
+        printf("Right child: %d\n", root->right->data);
+
+        /* 6. The Safety Check: Clean up memory! */
+        /* Always free the bottom leaves first, then the root */
+        free(root->left);
+        free(root->right);
+        free(root);
+
+        return 0;
+}
+```

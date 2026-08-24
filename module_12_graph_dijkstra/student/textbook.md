@@ -1,211 +1,311 @@
-# Student Textbook - Dijkstra's Algorithm
+# Chapter 12. Finding the Route with the Lowest Total Cost
 
-## 1. Same routes, different goal
+## Thinking Logically
 
-A **synthetic** example is invented. A **graph** stores
-**vertices** (items) and **edges** (connections). A **directed** edge works
-only in its stated direction.
+### Is a route always cheaper if it has fewer steps?
 
-**Breadth-first search (BFS)** uses a first-in, first-out **Queue** to process
-edge-count layers and find a path with the fewest edges. A **path** follows
-edges.
+Our previous search method found the route with the fewest steps (connections). That route is only guaranteed to be the cheapest if every single step costs exactly the same amount of money.
 
-An edge's **weight** is its numeric cost. The direct path A to E has
-one edge and weight 14. Path A,C,D,E has three edges and total weight 6.
-BFS answers the edge-count question, not the least-total-weight question.
-
-A **weighted directed graph** stores a weight with every directed edge.
-**Path cost** is the sum of its edge weights. An **adjacency list** stores
-each vertex's outgoing destination/weight pairs together, allowing
-inspection of only its edges.
-
-## 2. Dijkstra's promise
-
-An **algorithm** is a precise, finite procedure. **Dijkstra's algorithm**
-finds least total path costs from one **source**, or starting vertex. It
-requires **nonnegative** weights, meaning every weight is zero or greater.
-
-Here **distance** means modeled total path cost, not physical separation. A
-**tentative distance** is the best cost known so far and can improve. A
-distance becomes **finalized** when its current smallest value is removed
-for processing.
-
-This is safe because later extensions add zero or more and cannot lower the
-smallest current value. A negative edge breaks that reasoning.
-
-The loop is:
-
-1. set the source to 0 and every other distance to not yet known;
-2. remove the smallest saved vertex/distance record;
-3. skip it if its saved value is out of date;
-4. otherwise finalize its vertex;
-5. scan that vertex's outgoing edges; and
-6. save a new record whenever a smaller value is found.
-
-Stop when no saved record remains. A vertex without a known distance was
-never finalized.
-
-## 3. Stored path facts
-
-An **array** is a numbered row. `dist[v]` means the current distance for
-vertex `v`; brackets select its array position. A **predecessor** is the
-previous vertex on the recorded path, stored in `pred[v]`.
-
-`INF` is a **sentinel**, or named marker, meaning no finite path cost that
-fits in storage is currently known. Here:
+If different roads have different toll costs, the answer changes completely! Let's compare these two routes:
 
 ```text
-INF = SIZE_MAX
+A -> E            Total Cost: 14
+A -> C -> D -> E  Total Cost: 2 + 2 + 2 = 6
 ```
 
-`size_t` is C's nonnegative whole-number type for sizes. `SIZE_MAX` is its
-largest value. The source starts at 0 with no predecessor; all others start
-at `INF`.
+The first route has only one step, but it is extremely expensive. Now, we must compare the *sum* of the road costs, not just the number of steps.
 
-The **caller** is code that requests work; **output** stores its answer. An
-**allocation** reserves storage, and **capacity** is its entry limit. Build
-in temporary storage. Failure leaves caller output
-unchanged and releases it; **ownership** means responsibility for that
-release.
+### What should we remember to compare?
 
-## 4. Edge test
-
-To **relax** directed edge `u->v` is to test whether going through `u`
-improves `v`; `->` means from left to right. The **candidate distance** is
-the current distance to `u` plus the edge weight.
-
-Here `<` means smaller than.
+We need a place to write down the absolutely lowest cost we have found so far to travel from our starting point to every other location. We save this number in a list called `distance`. If we haven't found a route to a location yet, we write down a special "Infinity" mark meaning "too far to reach right now." In our code, this mark is exactly the absolute maximum number the computer can hold (`SIZE_MAX`).
 
 ```text
-if candidate < dist[v]:
-    save v with candidate for later
-    dist[v] = candidate
-    pred[v] = u
+distance[starting point] = 0
+distance[everywhere else] = Infinity
 ```
 
-This is **strict relaxation** because equality changes nothing. C first
-gives D cost 4; B later proposes equal cost `4+0`.
-D keeps predecessor C, and no new work is saved. Either path may be correct;
-strictness keeps the first found. Change distance and predecessor only after
-saving the improved record succeeds.
+We also keep a `predecessor` list, where we write down the location we stepped on right before arriving at our destination on our chosen cheap route. If we suddenly discover a cheaper route, we erase our old notes and update *both* the new cost and the new previous location together!
 
-## 5. Saved Heap records
+### How do we calculate the new candidate cost?
 
-The **frontier** is pending work not yet finalized. A **Priority Queue**
-removes its first-ranked record. The Module 11 minimum **Heap**, a
-tree-shaped Priority Queue, removes the smallest saved distance.
-
-A **snapshot** saves a vertex and distance; `B/9` means vertex B, distance 9.
-This version uses **lazy duplicates**: when B improves to 4, it inserts
-`B/4` without editing `B/9`. Editing an existing priority is
-**decrease-key**, which this version does not use.
-
-A snapshot is **stale** when its saved distance differs from current
-`dist`. On a **pop**, or removal, compare first; `!=` means not equal:
+Imagine we are currently standing at location `u`, and we see a road leading to location `v` that costs `weight`. The new candidate cost to travel to `v` by passing through our current spot is simple math:
 
 ```text
-if popped_distance != dist[u]:
-    skip u
+candidate cost = distance[u] + weight
 ```
 
-Stale work never scans outgoing edges. A current pop finalizes the vertex.
-The Queue is **stable**: earlier equal entries leave first.
-
-## 6. Canonical trace
-
-Use number labels, or **IDs**, `A=0` through `F=5` and edges:
+We only accept this new candidate route if it is strictly *cheaper* than the old cost we had already written down. If the cost is exactly the same, we just stick with our old record.
 
 ```text
-A->B 9   A->C 2   A->E 14
-B->D 0   B->E 8
-C->B 2   C->D 2
-D->E 2
+Is candidate cost < distance[v] ?
 ```
 
-No path reaches F from A. Trace:
+This simple action of updating our notes with a better price is incredibly important. However, we only officially erase our old notes after we successfully drop this new, better candidate into our waiting line. This safely prevents a disaster where we update our notes but fail to actually queue the candidate up for checking!
+
+### Which location should we process first?
+
+Among all the candidate routes currently waiting in line, we must *always* take out the one with the smallest total cost first. If we use the clever, self-sorting tree (Min-Heap) from Chapter 11, it will naturally hand us the cheapest candidate instantly!
+
+If two candidates happen to have the exact same total cost, the one that got into the line first comes out first. The location numbers themselves do not change this order.
+
+### What do we do with old records if we find a cheaper route later?
+
+Imagine we drop a candidate into the line saying it costs 9 to reach location B. But later, we discover a brilliant new shortcut that only costs 4! Instead of wasting time digging through the waiting line to find and fix the old `B/9` ticket, we just write a brand-new `B/4` ticket and drop it into the line too.
 
 ```text
-pop A/0: B=9, C=2, E=14
-pop C/2: B=4, D=4
-pop B/4: D proposal 4 is equal; E=12
-pop D/4: E=6
-pop E/6: no outgoing edge
-pop B/9: stale
-pop E/12: stale
-pop E/14: stale
+Inside the waiting line: B/4, B/9
+Our official notes: distance[B] = 4
 ```
 
-Final distances are `0,4,2,4,6,INF`. Predecessors are
-`-,C,A,C,D,-`. The run makes 8 relaxation attempts, 7 successful
-relaxations, 8 snapshot insertions including A, 8 pops, 3 stale skips, and
-reaches peak frontier size 4. Heap work makes 17 record comparisons.
+Because our line sorts by cheapest price, `B/4` will pop out first. We process it normally. Much later, when the old `B/9` ticket finally pops out, we compare it against our official notes. Because 9 doesn't match our official cost of 4, we instantly know it is an old, outdated ticket! We simply throw it straight in the trash without checking any of its roads.
 
-Finalized order is A,C,B,D,E. B's predecessor changes A to C; E's changes A
-to B to D. D stays C on B's equal proposal.
+Leaving old tickets in the line and throwing them away when they pop out saves us from writing incredibly complicated code to edit random spots inside the waiting line.
 
-## 7. Reject unsafe numbers
+### When can we lock in the final cost?
 
-A **parser** converts input text into stored values. It must reject negative
-text before an **unsigned conversion**, or conversion to a type that cannot
-represent negative values.
+When we pull the absolute cheapest candidate out of the line (and it's not an outdated ticket), we officially lock in the cost for that location. Because all future roads cost 0 or more, it is mathematically impossible to find a cheaper route to this location later!
 
-**Overflow** means an arithmetic result exceeds its type's range. Never add
-from `INF`. Before addition, require the weight to be no greater than
-`INF-dist[u]`. If the sum would overflow or equal the reserved `INF` marker,
-return `DIJKSTRA_COST_RANGE`. Preserve caller output. Silently calling that
-vertex unreachable would confuse a cost too large to store with no path.
+*(Note: This logic completely shatters if roads can have negative costs, like a road that pays you -7 to travel on it! If a -7 road appears later, it could suddenly make a locked-in cost cheaper. Because of this, the tool in this chapter strictly refuses to work on maps with negative costs).*
 
-Zero-weight edges are valid. Negative edges are not. For example, edges
-`S->X 2`, `S->Y 5`, and `Y->X -10` make the true X cost -5 after X might
-already have been finalized at 2.
+### In what order do the numbers change in a real example?
 
-## 8. Recover and check
-
-To **reconstruct** a path is to follow predecessors backward, then reverse
-them. For E:
+Let's use locations `A=0` to `F=5`. The roads and their costs are:
 
 ```text
-backward E,D,C,A
-forward  A,C,D,E
-cost     2+2+2 = 6
+A->B (9)   A->C (2)   A->E (14)
+B->D (0)   B->E (8)
+C->B (2)   C->D (2)
+D->E (2)
 ```
 
-Follow at most `V` vertices, where `V` means active vertex count. That bound
-detects a malformed **cycle**, a chain returning to an earlier vertex.
-Verify that every predecessor edge exists and that its weights add to the
-reported distance. This supports the result but does not prove the input
-describes reality.
+There are no roads leading to F. As we pull candidates from the line and update prices, the process goes exactly like this:
 
-`dijkstra_result_validate` checks visible array, count, sentinel, and trace
-relationships without receiving the graph. It cannot prove a claimed
-predecessor edge existed. A test receiving the graph must look up every
-consecutive edge and independently add its weight. The source-to-source path
-is `[A]` with cost 0. Requesting F returns `DIJKSTRA_UNREACHABLE` while
-preserving path output.
+```text
+Take A/0: Found B=9, C=2, E=14
+Take C/2: Updated B=4, D=4
+Take B/4: D's candidate 4 ties (kept old), Updated E=12
+Take D/4: Updated E=6
+Take E/6: No roads going out
+Take B/9: Threw away old outdated ticket!
+Take E/12: Threw away old outdated ticket!
+Take E/14: Threw away old outdated ticket!
+```
 
-## 9. Cost and scope
+The locked-in, final cheapest costs from A to F are `0, 4, 2, 4, 6, Infinity`. The order we locked them in was `A, C, B, D, E`. In this search, we attempted to update prices 8 times and succeeded 7 times. We dropped 8 tickets into the line (including the start) and pulled exactly 8 tickets out.
 
-Let `E` mean directed-edge count. `O(n)` means work may grow with all `n`
-items. `O(log n)` grows with Heap height. Lazy duplicates permit at most one
-successful relaxation per edge, so Heap time is
-`O(V + E log(E + 1))`.
+### How do we rebuild the route we found?
 
-**Auxiliary state** is extra storage beyond input. Arrays use `O(V)` and
-snapshots use `O(E)`, totaling `O(V+E)`. A **parallel edge** repeats a
-start/end pair; a **self-loop** returns to its starting vertex. A **simple
-graph** has neither, giving `O(V + E log V)`. A **backend** is a collection's
-storage method. Module 10's linear backend can take `O(V+E^2)`. Do not claim
-a decrease-key bound.
+To get the exact route to E, we just follow our "previous location" notes backwards starting from E: `E, D, C, A`. If we flip that list around, we get our perfect route: `A, C, D, E`.
 
-With 16 vertices, a simple directed graph can have 240 edges and 241
-snapshot insertions. Module 11 capacity 64 cannot guarantee fit. Return an
-explicit limit failure; never drop pending work.
+```text
+A -> C -> D -> E
+2 + 2 + 2 = 6
+```
 
-Graph building/validation adds `O(V+E)` here; its fixed 16-by-16 checking
-table is constant. If generalized, a `V`-by-`V` table adds work proportional
-to `V` times `V`.
+If we try to follow the previous locations but end up taking more steps than there are total locations on the map, it means there is an infinite loop (a cycle) broken in our notes! Also, because our rebuilding tool doesn't look at the actual map, you must check the map yourself to prove those roads actually existed.
 
-Weights assume costs are known, **static** (unchanging), and **additive**
-(combined by addition). It cannot prove input authenticity, future
-conditions, parallel effects, fairness, severity, or security. `INF` for F
-describes only the stored directed model.
+The route to the starting point is just the starting point, costing 0. If you ask for a route to an unreachable place like F, the tool returns an "unreachable" error and doesn't ruin your old route variables.
+
+### Are "unreachable" and "too expensive" the same thing?
+
+We specifically reserved the massive number `SIZE_MAX` to mean "there is no route." It is absolutely not allowed to be used as a real road cost.
+
+Our tool that reads costs written as text strictly only accepts positive numbers (or zero). It allows spaces and a single `+` sign.
+
+| Input Text | Result |
+| --- | --- |
+| `"0"`, `"  +42\t"` | Perfectly accepted as 0 and 42 |
+| `"-1"` | Rejected instantly because it is negative |
+| `""`, `"+"`, `"12x"`, `"1 2"` | Rejected because it is not a clean, single number |
+| A number `SIZE_MAX` or bigger | Rejected for being too massive to hold |
+
+Right before we add two costs together, we double-check the math. If adding them causes the number to overflow the computer's limits or exactly hit our special "Infinity" mark, it returns a "cost range" error. This brilliantly separates the idea of "there is no route" from "the route is too expensive for the computer to calculate."
+
+## Calculating Efficiency
+
+### Efficiency of preparing the map?
+
+If there are `V` locations and `E` roads, writing down the starting notes and checking the saved roads takes `O(V+E)` work.
+
+### Efficiency of checking the roads?
+
+We only check the roads leaving a location when we officially lock it in. Because we eventually try to update the price for every single road, this checking part takes `O(E)` work.
+
+### Efficiency of using the waiting line?
+
+A single road can trigger a successful price update at most exactly once. So, counting the starting point, the absolute maximum number of tickets dropped into the line is `E+1`. Dropping or pulling one ticket takes `O(log(E+1))` work.
+
+Adding it all together, the total running time is `O(V + E log(E+1))`. Our specific practice code handles up to 16 locations, 240 roads, and limits the waiting line to 241 tickets.
+
+### Efficiency of rebuilding the route?
+
+Because we just follow the previous locations backward, taking at most `V` steps, it takes an incredibly fast `O(V)` work.
+
+### How much extra memory is used?
+
+We need `O(V)` space to hold our official notes (costs and previous locations). We need `O(E)` space for the waiting line (including all the outdated tickets). The total extra space needed is `O(V+E)`.
+
+## Glossary
+
+### Weighted Graph
+
+A graph where values like cost or distance are attached to each edge.
+
+### Tentative Distance
+
+The smallest cost found so far from the starting point to a vertex.
+
+### Relaxation
+
+The process of updating the distance and predecessor if the candidate cost going through the current vertex is smaller.
+
+### Frontier
+
+A collection of candidate records waiting to be processed in the heap.
+
+### Stale Entry
+
+A heap record that no longer matches the current distance because a cheaper value was saved later.
+
+### Dijkstra's Algorithm
+
+An algorithm that finds the lowest-cost path from one starting point in a graph with no negative edges.
+
+### INF (Infinity)
+
+A special value excluded from actual costs to show that a path hasn't been found yet.
+
+## Coding Plan
+
+### Reading a String Cost
+
+* **Check input:** Make sure the text string and output variable exist.
+* **Skip spaces:** Skip leading spaces and a single `+` sign.
+* **Reject negatives:** Return `WEIGHTED_GRAPH_NEGATIVE_WEIGHT` if it starts with `-`.
+* **Check range:** Make sure the math won't exceed the `size_t` limit before attaching a new digit.
+* **Check end:** Reject if there are any weird characters after the number (other than trailing spaces).
+* **Check reserved value:** If the final result equals `SIZE_MAX`, reject it so it isn't saved as a real cost.
+
+### Preparing the Shortest Path Result
+
+* **Create temporary result:** Fill all distance and predecessor notes with the special "Infinity" mark.
+* **Set starting point:** Change the starting point's distance note to 0.
+* **Prepare heap:** Set the line limit to the total number of roads plus one (for the starting ticket).
+* **Put first record:** Drop `(starting point, cost 0)` into the line.
+
+### Processing the Cheapest Record
+
+* **Take minimum record:** Pull the cheapest ticket out of the line.
+* **Filter old records:** Instantly skip it if the ticket's cost doesn't match our official distance note.
+* **Finalize vertex:** Officially mark the location as locked-in and record the finalization order.
+* **Check addition:** Double-check that adding the new cost won't overflow `size_t` or hit `DIJKSTRA_INF`.
+* **Update (Relax):** If the new candidate cost is strictly smaller, update the official notes *only after* successfully dropping the new ticket into the line.
+* **Confirm result:** Copy the temporary workspace to the user's `DijkstraResult` only after the entire search finishes flawlessly.
+
+### Reconstructing the Path
+
+* **Check result:** Verify the mathematical relationships inside the result package using `dijkstra_result_validate`.
+* **Check destination:** Distinguish between location numbers that don't exist and locations that are simply unreachable.
+* **Save backwards:** Follow the predecessors backwards from the destination and put them into a temporary list.
+* **Prevent cycles:** If it loops backwards more times than there are locations, trigger an invalid result error.
+* **Flip order:** Copy the final list to `DijkstraPath` so it perfectly reads from start to destination.
+
+## C Code
+
+### Appending a Digit to the Cost String
+
+```c
+size_t digit = (size_t)(*cursor - '0');
+
+if (candidate > (SIZE_MAX - digit) / 10U) {
+        return WEIGHTED_GRAPH_WEIGHT_OUT_OF_RANGE;
+}
+
+candidate = candidate * 10U + digit;
+```
+
+### Skipping Outdated Heap Records
+
+```c
+DijkstraFrontierEntry entry;
+
+frontier_status = dijkstra_frontier_pop(&frontier, &entry);
+if (frontier_status != DIJKSTRA_FRONTIER_OK) {
+        return fail_after_frontier(
+                &frontier,
+                map_frontier_failure(frontier_status)
+        );
+}
+
+if (entry.distance != candidate.distance[entry.vertex]) {
+        candidate.stale_pop_count =
+                candidate.stale_pop_count + 1U;
+        continue;
+}
+```
+
+### Checking Cost Range and Updating (Relaxation)
+
+```c
+if (candidate.distance[entry.vertex] == DIJKSTRA_INF ||
+        edge->weight >
+                DIJKSTRA_INF - candidate.distance[entry.vertex]) {
+        return fail_after_frontier(
+                &frontier,
+                DIJKSTRA_COST_RANGE
+        );
+}
+
+size_t relaxed_distance =
+        candidate.distance[entry.vertex] + edge->weight;
+
+if (relaxed_distance == DIJKSTRA_INF) {
+        return fail_after_frontier(
+                &frontier,
+                DIJKSTRA_COST_RANGE
+        );
+}
+
+if (relaxed_distance < candidate.distance[edge->to]) {
+        frontier_status = dijkstra_frontier_push(
+                &frontier,
+                edge->to,
+                relaxed_distance
+        );
+
+        if (frontier_status != DIJKSTRA_FRONTIER_OK) {
+                return fail_after_frontier(
+                        &frontier,
+                        map_frontier_failure(frontier_status)
+                );
+        }
+
+        candidate.distance[edge->to] = relaxed_distance;
+        candidate.predecessor[edge->to] = entry.vertex;
+}
+```
+
+### Gathering Previous Locations Backwards
+
+```c
+size_t current = destination_vertex;
+size_t reverse_count = 0U;
+
+for (;;) {
+        if (reverse_count >= result->vertex_count) {
+                return DIJKSTRA_INVALID_RESULT;
+        }
+
+        reverse_vertices[reverse_count] = current;
+        reverse_count = reverse_count + 1U;
+
+        if (current == result->source) {
+                break;
+        }
+
+        current = result->predecessor[current];
+        if (current >= result->vertex_count) {
+                return DIJKSTRA_INVALID_RESULT;
+        }
+}
+```

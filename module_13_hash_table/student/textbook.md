@@ -1,212 +1,302 @@
-# Student Textbook - Sparse Lookup with a Hash Table
+# Chapter 13. Finding a Specific ID in a Small Array
 
-## 1. Begin with map behavior
+## Thinking Logically
 
-A key-to-value **map** answers a narrow question: given one key, is there a
-record for it, and if so, what value belongs to it? This module uses
-synthetic `uint32_t` indicator keys and `int` values.
+### Can we just use large ID numbers directly as array positions?
 
-The key is an identifier, not an array position promised by the public
-interface. `put(18,-4)` associates key 18 with value -4. A later
-`put(18,70)` updates that association. A valid map never contains two live
-entries with key 18.
+When we mapped out graph locations, our numbers simply went in order starting from 0. Even if we used the location number itself directly as the array slot position, almost every single slot was filled.
 
-A map does not by itself promise sorted traversal, range queries, oldest-
-first service, or smallest-value selection. Those are different contracts.
+This time, we are dealing with random ID numbers decided completely outside our program. We might connect a data value of `-4` to an ID number `18`, and later change the value at that exact same ID to `70`.
 
-## 2. Compress a sparse key universe
+Because the ID number can represent massive numbers larger than 4 billion, if we only have a few actual data records to save but we force the computer to create an array slot for *absolutely every possible* ID number, almost all of our computer memory will sit completely empty and wasted. We absolutely must find a way to crunch these big ID numbers down mathematically to calculate a starting position inside a much smaller array.
 
-Direct indexing uses the key itself as an array index. It is excellent when
-keys are dense and have a small known maximum. A Boolean visited array for
-graph vertex IDs 0 through 63 is a good example.
+### How many values do we connect to one ID?
 
-The largest `uint32_t` key is much greater than four billion. Reserving one
-slot for each possible key is wasteful when only a few indicators are live.
-A hash table owns a smaller array and calculates a starting location, called
-the **home slot**.
-
-The course calculation is:
+We strictly connect exactly one value to one ID, and we never allow duplicate copies of the exact same ID to stay alive in our storage at the same time.
 
 ```text
-home = key % capacity
+put(18, -4)  Put in a brand new record for ID 18.
+put(18, 70)  Change the already existing value to 70.
+get(18)      Look up the value and find 70.
 ```
 
-At capacity 8, `10 % 8`, `18 % 8`, and `26 % 8` all equal 2. Mapping a large
-key universe to a small array means different keys can have the same home.
-That **collision** is normal and requires a repeatable resolution rule.
+Our single tool handles both dropping in a new ID and updating an old ID. If its final report says it successfully added a new one, it was a brand new ID. If not, it simply updated the old value.
 
-## 3. Probe one array with wraparound
+### How do we choose the very first slot to check?
 
-In **open addressing**, all live entries stay in the table's main array.
-This module uses **linear probing**. Start at home. If the key is not there,
-inspect the next slot. After the final index, wrap to 0.
-
-Insert 10, 18, and 26 into a new capacity-8 table:
+Let's call the total number of slots we have our `capacity`, and the very first slot the ID wants to visit its `home`. In this chapter, we use this simple math trick to crunch the massive number down:
 
 ```text
-10 examines 2 and occupies 2
-18 examines 2,3 and occupies 3
-26 examines 2,3,4 and occupies 4
+home = ID % capacity
 ```
 
-For a requested key `k`, a convenient bounded index expression is:
+If our capacity is exactly 8, the starting slot for IDs `10`, `18`, and `26` is always exactly `2`. Notice that completely different IDs can easily bump into each other by getting the exact same starting slot!
+
+### What if the starting slot is already full?
+
+If the spot you want is already full, just start from that slot and check the next slots one by one to the right. If you hit the very end of the array, simply loop all the way back around to slot 0 and keep looking.
 
 ```text
-(home + step) % capacity
+index = (home + steps taken) % capacity
 ```
 
-where `step` ranges from 0 through `capacity - 1`. The bound matters. A
-malformed or unusually occupied table must not trap the program in an
-infinite loop.
-
-Keys 7, 15, and 23 show wraparound. All have home 7 at capacity 8, so they
-occupy 7, 0, and 1. No access uses index 8.
-
-## 4. Stop only when the state supplies evidence
-
-Each slot has one state:
-
-- `EMPTY`: never occupied since the most recent rehash;
-- `OCCUPIED`: contains one live key/value pair; or
-- `DELETED`: held a record earlier but no longer does.
-
-To get a key, inspect up to capacity slots:
-
-1. An occupied matching key means found.
-2. An empty slot means missing.
-3. An occupied different key or a deleted slot means continue.
-4. Reaching the capacity bound means missing.
-
-In the 10, 18, 26 cluster, get 26 examines 2, 3, 4. Missing get 34 examines
-2, 3, 4, 5, including the empty slot that proves absence.
-
-The result struct records the outcome, value, and number of inspected slots.
-A successful miss has `found == false`, value 0, and its real probe count.
-A non-`OK` status is different: the caller's entire result struct remains
-unchanged.
-
-## 5. Delete without cutting a route
-
-Suppose removing key 18 changed index 3 to empty. A later get 26 would inspect
-index 2, see empty index 3, and stop before reaching 26 at index 4. Every
-access would be in bounds, but the answer would be wrong.
-
-Correct removal changes occupied to deleted. It also clears the inactive
-key/value fields to their canonical zeros, decreases size once, and increases
-tombstones once. Get 26 then walks through the deleted marker.
-
-A tombstone is a search instruction, not a live record. It preserves what
-the slot history implies: some key may have passed this position during
-insertion.
-
-## 6. Search completely before reusing a tombstone
-
-Insertion must support both new keys and updates. During a probe, remember
-the first deleted slot, but do not commit there immediately.
-
-With key 10 at 2, deleted at 3, key 26 at 4, and empty at 5:
-
-- `put(26,999)` examines 2, 3, 4 and updates index 4. It reports
-  `inserted == false`. Size and tombstones do not change.
-- `put(34,340)` examines 2, 3, 4, 5. Empty 5 proves 34 absent, so the
-  remembered index 3 may be reused. It reports `inserted == true`; size
-  increases and tombstones decreases.
-
-If the table has no empty slot, the probe still stops after capacity
-inspections. It may use a remembered tombstone. If no insertion position
-exists in a supposedly valid active table, the implementation reports an
-invalid state rather than indexing an invalid position.
-
-## 7. Control effective occupancy
-
-Long clusters increase work. The table maintains nonempty-state count at no
-more than three quarters of capacity:
+If we put in IDs `10`, `18`, and `26` in that exact order, it looks exactly like this:
 
 ```text
-size + tombstones <= 3 * capacity / 4
+10: Checks 2 and saves perfectly at 2.      (Checked 1 time)
+18: Checks 2, 3 and saves safely at 3.      (Checked 2 times)
+26: Checks 2, 3, 4 and saves safely at 4.   (Checked 3 times)
+
+Position   0  1  2   3   4   5  6  7
+ID Tag           10  18  26
 ```
 
-After searching for a new key, consider the selected insertion slot.
-Reusing deleted changes one deleted slot to occupied, so the sum does not
-grow. Inserting into empty would increase the sum by one. If that proposal
-exceeds the bound, maintenance occurs first.
+Every search strictly refuses to repeat more times than our total `capacity`. For IDs `7`, `15`, and `23` that all mathematically start at slot 7, they perfectly wrap around and are placed at 7, 0, and 1. We cleverly never try to read slot 8, which is completely outside our array!
 
-When tombstones exist, rebuilding at the same capacity is enough because
-only live entries return. This **compaction** clears all deleted markers. If
-there are no tombstones, grow 8 to 16, 16 to 32, or 32 to 64. At capacity 64,
-a distinct key that would cross the bound reports full. Searching happens
-first, so an existing-key update is still allowed at the boundary.
+### When can we safely stop searching if we see an empty slot?
 
-## 8. Rehash transactionally
+If you check a slot and see that it is completely pristine and has *never* been used before, you can safely stop searching. An ID that started its journey before this blank slot could never have magically skipped over it to be saved further down the line!
 
-Changing capacity changes homes. Moving the old array bytes without
-recalculating would break lookup. A rehash must:
+However, an empty slot where an old record was *deleted* is completely different. Let's say IDs `10`, `18`, and `26` are sitting at slots 2, 3, and 4, and we suddenly delete `18`. If we stop searching the moment we see the empty hole at slot 3, we will completely miss the `26` sitting just past it at slot 4!
 
-1. allocate a zeroed replacement array;
-2. scan old indexes in order;
-3. internally insert each occupied entry using the new capacity;
-4. insert the requested new record when maintenance belongs to a put;
-5. commit pointer, size, tombstones, and capacity only after every bounded
-   placement succeeds; and
-6. release the old allocation after commit.
+To fix this, we strictly save one of three distinct states for every single slot:
 
-Deleted slots are not copied. Internal placements are maintenance work and
-do not add to the requested key's caller-visible probe count.
+```text
+EMPTY       A completely pristine slot that has never been used.
+OCCUPIED    A slot holding a living ID and value.
+DELETED     A slot where the record was deleted, but the search must NOT stop.
+```
 
-If allocation fails, the old allocation remains the only committed table.
-The public result is unchanged. Do not free or overwrite the old array before
-the replacement is complete.
+The `DELETED` state acts exactly like a placeholder marker. The deleted ID and value are erased back to 0, but its state is absolutely not changed back to `EMPTY`. Because an ID of `0` is a perfectly legal number, we never try to guess if a slot is empty just by looking at the numbers inside it! We strictly look at the state.
 
-## 9. Separate shallow checks from full diagnosis
+### Should we drop a new ID in as soon as we see a deleted placeholder?
 
-Ordinary put, get, and remove first perform constant-time shape checks: a
-nonnull slot pointer, supported capacity, and counts within the maintained
-bound. They do not run an expensive complete scan before every operation.
+While searching for a spot to put a new ID, you must carefully remember the physical position of the very first deleted placeholder you walk past. But do not stop! Keep searching until you either find the exact same ID already living in the array, or you hit a pristine `EMPTY` slot.
 
-`hash_table_validate` is an explicit diagnostic. It checks:
+```text
+Slot 2: ID 10
+Slot 3: Deleted placeholder (Old ID 18)
+Slot 4: ID 26
+Slot 5: Pristine EMPTY slot
+```
 
-- canonical all-zero destroyed state or a supported active shape;
-- exact occupied and deleted counts;
-- zero key/value fields in inactive slots;
-- valid slot-state values;
-- unique occupied keys; and
-- reachability of every occupied slot from its home without crossing empty.
+If we try to update `26` to `999`, it must walk past the placeholder to change the living value currently at slot 4. If you blindly dropped it into the placeholder at slot 3 right away, you would accidentally create two duplicate copies of ID 26!
 
-The straightforward course validator may compare entries and probe routes
-with quadratic worst-case work. That does not change the expected cost of an
-ordinary operation because the validator is called separately in tests and
-debugging.
+If we try to add a brand new ID `34`, it keeps searching until it checks the pristine `EMPTY` slot 5. Once it confirms `34` is truly not living anywhere in the array, *only then* does it go back and cleverly reuse the deleted placeholder at slot 3 that it remembered walking past earlier. When this finally happens, our total count of living items goes up by one, and our placeholder count goes down by one.
 
-## 10. Make conditional cost and security claims
+### What do we do if the array is cluttered with too many deleted placeholders?
 
-Let `n` mean live entries and `m` mean capacity. With adequately distributed
-keys and the occupancy bound, get, put, and remove use expected `O(1)`
-requested-key probes. A cluster can make one route inspect `O(m)` slots.
-Because the table does not shrink and may retain deleted markers, `m` is not
-always proportional to current live `n`.
+If there are too many living records and deleted placeholders cluttering the array, it will take a miserably long time to finally hit a pristine `EMPTY` slot. To keep things fast, our code strictly forces the sum of both living records and deleted placeholders to stay at or below 3/4 (75%) of the total capacity.
 
-Rehash scans `m` old slots and reinserts `n` live entries. It is expected
-`O(m)`, worst `O(m + n^2)`, and therefore bounded by `O(m^2)`. At a growth
-event `m = Theta(n)`, meaning capacity and live count differ only by constant
-factors, so that becomes expected `O(n)` and worst `O(n^2)`.
-Doubling spreads expected growth work across an insertion-only sequence,
-producing expected amortized `O(1)` there under the same distribution
-assumptions. Repeated deletion/insertion churn can trigger same-capacity
-compaction repeatedly, so it has no unconditional constant amortized claim.
+If dropping a new ID into an `EMPTY` slot would break this strict limit, we pause and completely rebuild the array first.
 
-Compare alternatives:
+* If there are only a few living records but the array is cluttered with deleted placeholders, we rebuild it using the exact same capacity just to sweep away the placeholders.
+* If there are too many living records, we double the capacity following the pattern: `8, 16, 32, 64`.
+* We *never* rebuild when we are simply reusing an existing placeholder or updating an already living ID!
 
-- direct array: worst-case constant indexing, but space follows the key
-  universe;
-- open-addressed table: expected constant exact lookup and compact storage,
-  but no sorted-order promise and linear worst case;
-- AVL tree: worst-case logarithmic exact lookup plus sorted and range work;
-- separate chaining: collision collections outside the main array, often
-  linked nodes, with different allocation and locality costs.
+When the capacity number changes, the math crunch (`ID % capacity`) changes completely! Because of this, we must throw every single living ID back into the math machine and find its brand-new starting slot. If you lazily copied them into the exact same physical slot numbers as before, the search paths would be completely shattered!
 
-If an attacker can choose many colliding keys, the resulting work can become
-hash-flood algorithmic-complexity denial of service. The classroom trace is a
-bounded demonstration, not proof that a resource has been exhausted. The
-remainder calculation is intentionally transparent and non-cryptographic.
-Neither it nor the validator authenticates indicators, proves authorization,
-ensures availability, or establishes overall security.
+### Can we keep adding items forever?
+
+At our strict maximum capacity of 64, the combined limit of living records and deleted placeholders is strictly capped at 48. If there are deleted placeholders cluttering the space, we can easily clear them out by rebuilding at the same capacity of 64.
+
+But if there are absolutely zero deleted placeholders and exactly 48 living records packed in, a 49th brand-new ID will demand a bigger array. Since we strictly refuse to exceed 64, we safely reject the new ID and return a "full" error. However, because updating an already living ID's value uses zero extra space, you can keep doing that freely forever!
+
+### What if the computer fails to build the new array?
+
+If we excitedly throw away our old array first, and then the computer fails to give us memory for the new array, we will permanently lose absolutely every single record! We must follow this ultra-safe order:
+
+```text
+1. Ask the computer for a brand-new empty array.
+2. Carefully move only the living records from the old array into the new one.
+3. Drop the brand-new ID into the new array too.
+4. If absolutely everything succeeds, smoothly swap the old array for the new one.
+5. Only then, safely throw the old array in the trash.
+```
+
+If it fails halfway through, we simply throw the unfinished new array in the trash. The old array, the size counts, the capacities, and the user's output variables remain perfectly untouched and safe.
+
+Trying to find or delete an ID that doesn't actually exist is completely normal and not an error. We simply report that it wasn't found or removed, and hand back a value of 0. We strictly only protect the user's output variables when the tool genuinely fails due to limits or memory issues!
+
+## Calculating Efficiency
+
+### Efficiency of calculating the starting slot?
+
+Because we crunch the starting slot using a single fast math operation, it takes instantly fast $O(1)$ time.
+
+### Efficiency of searching, inserting, and deleting IDs?
+
+If IDs are mathematically spread out nicely across the starting slots and we strictly limit how cluttered the array gets, the average number of slots we have to check stays incredibly small. Because of this, the typical expected work to find, drop, or remove an ID is amazingly fast, $O(1)$.
+
+*(Note: "Expected cost" is a mathematical average across many possible ID mixtures. This is a different idea from the "amortized cost" we learned earlier, which spreads a rare but heavy task over a long timeline of guaranteed calls).*
+
+### What happens if the IDs all crash into one spot?
+
+If our capacity is `m` and absolutely all IDs magically end up getting the exact same starting slot, a single simple request might be forced to check the entire array. This worst-case scenario takes $O(m)$ work.
+
+A clever attacker outside your program could intentionally slow your computer down by deliberately choosing IDs that they know will crash into the exact same slot! The simple math we use in this chapter is just to easily show how the basic idea works.
+
+### Efficiency of rebuilding the array?
+
+Because we must carefully check the entire old array to find and move every single living record to the new array, it takes $O(m)$ work. We only do this heavy lifting when we absolutely must clear deleted placeholders or expand the space.
+
+### Efficiency of double-checking the entire system?
+
+Our safety diagnostic tool checks if the status counts match the real numbers, hunts for duplicate IDs, and verifies the exact search path for every single ID! Because our current code might recheck the exact same paths from every single living slot, the worst-case scenario takes massive $O(m^2)$ work. We normally never run this heavy, exhausting diagnostic during regular, everyday actions!
+
+## Glossary
+
+### Key
+
+An identification value used to find its connected value.
+
+### Value
+
+The data that is connected to a key and stored.
+
+### Map
+
+A data structure that connects exactly one value to one key, and provides actions to find or change it.
+
+### Hash Function
+
+A calculation that turns a key into the starting slot of an array.
+
+### Hash Table
+
+A data structure that uses a hash function to find starting slots and stores keys and values in an array.
+
+### Collision
+
+When completely different keys happen to get the exact same starting slot.
+
+### Linear Probing
+
+A method that handles a collision by simply checking the next array slots one by one.
+
+### Tombstone
+
+A state showing that a slot was deleted, without breaking the search path for other keys that follow it.
+
+### Rehashing
+
+The process of recalculating the starting slot for every key using a new capacity and placing them again.
+
+### Expected Cost
+
+The amount of work calculated as an average across many possible situations, based on assumptions about how the keys are arranged.
+
+## Coding Plan
+
+### Creating the Array Table
+
+* **Check initial state:** Make sure every single field in the table structure is completely clean (`0`).
+* **Create minimum array:** Use the `calloc` tool to grab exactly 8 perfectly pristine slots where all states start at `0` (`HASH_SLOT_EMPTY`).
+* **Record fields:** Update the `slots` memory address and `capacity`, leaving `size` and `tombstones` safely at `0`.
+
+### Probing (Walking) for an ID
+
+* **Calculate starting slot:** Crunch the math `key % capacity`.
+* **Remember tombstone:** Save the exact physical position of the very first `HASH_SLOT_DELETED` placeholder you walk past.
+* **Check exact match:** If you see an `OCCUPIED` slot and the key matches perfectly, return that exact position.
+* **Check empty:** If you hit an `EMPTY` slot, you are absolutely certain the key does not exist.
+* **Decide insert position:** If you remembered a deleted placeholder earlier, pick that slot to safely reuse. If not, pick the `EMPTY` slot.
+* **Limit repetition:** Absolutely never check more times than the total `capacity`.
+
+### Putting an ID and Value
+
+* **Update existing key:** If you found the key, change only its connected value, and securely report `inserted=false`.
+* **Decide maintenance:** If adding a brand-new key breaks our 3/4 clutter limit, either rebuild the array to clear placeholders or double the capacity to make room.
+* **Finish new array:** Only swap the old array for the new array after every living record and the brand-new key are perfectly placed inside the new memory.
+* **Use empty slot:** Write the new key and value into the chosen slot, and permanently change its state directly to `OCCUPIED`.
+* **Update counts:** If you cleverly reused a placeholder, decrease the tombstone count by 1. Always increase the `size` count by 1.
+
+### Finding an ID
+
+* **Run probe:** Keep checking slots until you hit the exact matching key or a pristine `EMPTY` slot.
+* **Make success result:** If found, report `found=true` and hand back the value. If not found, report `found=false` and hand back `0`.
+* **Record probe count:** Save the exact number of slots you checked into `probe_count` so the user can see how fast it was.
+
+### Deleting an ID
+
+* **Find key:** Find the exact slot holding the key using the same bumping rules.
+* **Record deleted state:** Completely erase the key and value to `0`, and switch the state officially to `HASH_SLOT_DELETED`.
+* **Update counts:** Decrease the `size` count by 1, and increase the `tombstones` count by 1.
+* **Handle missing key:** If the key didn't exist, do absolutely nothing to the table, and just calmly report `removed=false`.
+
+## C Code
+
+### Representing One Slot in the Table
+
+```c
+typedef enum {
+        HASH_SLOT_EMPTY = 0,
+        HASH_SLOT_OCCUPIED,
+        HASH_SLOT_DELETED
+} HashSlotState;
+
+typedef struct {
+        uint32_t key;
+        int value;
+        HashSlotState state;
+} HashSlot;
+
+```
+
+### Walking Around the End of the Array
+
+```c
+size_t home = (size_t)key % table->capacity;
+size_t first_deleted = SIZE_MAX;
+size_t found_index = SIZE_MAX;
+size_t insertion_index = SIZE_MAX;
+bool found = false;
+
+for (size_t step = 0U; step < table->capacity; step = step + 1U) {
+        size_t index = (home + step) % table->capacity;
+        const HashSlot *slot = &table->slots[index];
+
+        if (slot->state == HASH_SLOT_OCCUPIED && slot->key == key) {
+                found_index = index;
+                found = true;
+                break;
+        }
+
+        if (slot->state == HASH_SLOT_DELETED &&
+                first_deleted == SIZE_MAX) {
+                first_deleted = index;
+        }
+
+        if (slot->state == HASH_SLOT_EMPTY) {
+                insertion_index = first_deleted == SIZE_MAX
+                        ? index
+                        : first_deleted;
+                break;
+        }
+}
+```
+
+### Changing a Found Record into a Deleted Placeholder
+
+```c
+HashSlot *slot = &table->slots[found_index];
+
+slot->key = 0U;
+slot->value = 0;
+slot->state = HASH_SLOT_DELETED;
+table->size = table->size - 1U;
+table->tombstones = table->tombstones + 1U;
+```
+
+### Swapping After the New Array is Finished Perfectly
+
+```c
+HashSlot *old_slots = table->slots;
+
+table->slots = new_slots;
+table->size = table->size + 1U;
+table->tombstones = 0U;
+table->capacity = new_capacity;
+
+free(old_slots);
+```

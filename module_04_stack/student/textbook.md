@@ -1,86 +1,58 @@
-# Student Notes — Remembering Unfinished Work
+# Chapter 4. Taking Out the Last Value First
 
-## Essential question
+## Thinking Logically
 
-> If the most recently opened task must be completed first, what access rule
-> should a program enforce?
+### How do we remember the most recently opened symbol?
 
-## 1. The problem
-
-A program is a group of instructions a computer can run. Its state is
-the information it currently remembers.
-
-Suppose a program reads this expression, a sequence of symbols:
+Read the following text from left to right.
 
 ```text
 A(B[C]{D})
 ```
 
-The marks `(`, `[`, and `{` begin groups. The marks `)`, `]`, and `}` end
-groups. A mark with this job is a delimiter.
+When you read `]`, you must pair it with the most recently opened `[`. You should not pair it with the earlier opened `(`. We need a special storage space to remember the unclosed opening symbols in the exact order we found them.
 
-When `]` arrives, the program must remember that `[` is the opening still
-waiting to be completed. It must not match `]` with the earlier `(`.
-One variable is not enough because several openings may be unresolved at
-once.
+### Which side should we use to put in and take out values?
 
-## 2. One access rule
+If you put items in and take them out from only one single end, the very last item you put in will always be the very first one to come out. Think of it like a tall container for plates—you always place a new plate on the very top, and when you need a plate, you take the one sitting right on top.
 
-A data structure is a planned way to organize information. An abstract data
-type, shortened to ADT, describes a collection through its allowed operations
-and rules. It does not require one particular storage method.
+We have three main actions we can do at this top opening:
 
-A **Stack ADT** gives access at one end only. That end is the **top**.
-The rule is **last in, first out (LIFO)**: the item added most recently is
-the first item that may be removed.
+* **Add** a new item directly onto the top.
+* **Look** at the top item to see what it is, without removing it.
+* **Remove** the top item completely.
 
-Three operations, or tasks supplied by the structure, define the basic
-behavior:
+An empty container has absolutely nothing on top. So, if you try to look at or remove an item from an empty container, it should stop and trigger an error without giving you any value.
 
-- `push` adds one item at the top;
-- `peek` reports the top item without removing it; and
-- `pop` removes and reports the top item.
+### In what order do we check grouping symbols?
 
-An empty Stack has no items and no top. **Underflow** means attempting
-`peek` or `pop` while empty. Checked operations report this condition rather
-than reading a nonexistent item.
+Characters that open and close groups, like `(`, `[`, and `{`, act like matching pairs. As we read the text, we follow these simple rules:
 
-## 3. Trace the expression
+1. Put every opening symbol into the container.
+2. When you meet a closing symbol, look at the symbol currently sitting on top of the container. Check if they are a perfect match.
+3. If they match perfectly, remove that opening symbol from the container.
+4. When you finish reading the entire text, the container must be completely empty (meaning every pair was perfectly matched and closed).
 
-A trace is a step-by-step record of changing state. The table lists Stack
-items from bottom to top. Ordinary letters do not change the Stack.
+Normal letters do not affect this matching process at all, so we completely ignore them.
 
-| Symbol | Action | State from bottom to top |
-|---|---|---|
-| start | none | empty |
-| `A` | ignore | empty |
-| `(` | `push('(')` | `(` |
-| `B` | ignore | `(` |
-| `[` | `push('[')` | `(`, `[` |
-| `C` | ignore | `(`, `[` |
-| `]` | matching `peek`, then `pop` | `(` |
-| `{` | `push('{')` | `(`, `{` |
-| `D` | ignore | `(`, `{` |
-| `}` | matching `peek`, then `pop` | `(` |
-| `)` | matching `peek`, then `pop` | empty |
+| Read Character | Action | Inside the Container (Bottom to Top) |
+| --- | --- | --- |
+| `(` | Add | `(` |
+| `[` | Add | `(`, `[` |
+| `]` | Check and Remove | `(` |
+| `{` | Add | `(`, `{` |
+| `}` | Check and Remove | `(` |
+| `)` | Check and Remove | Empty |
 
-The greatest size is 2. The final Stack is empty. Therefore
-`A(B[C]{D})` has complete, correctly nested delimiters.
+### Where do wrong inputs show up?
 
-Notice the LIFO pattern. `[` was added after `(`, so `[` had to be removed
-first. Later, `{` was added above `(` and removed before `(`.
+If you read a closing symbol but the container is completely empty, it means you have a closing symbol that has no opening partner. If the closing symbol is a different shape than the one on top of the container, it is a mismatched pair. If you reach the very end of the text but there are still symbols sitting inside, it means some groups were never closed.
 
-## 4. Store the Stack in an ArrayList
+We set a strict limit on how deeply these groups can be placed inside one another (how many can be open at the exact same time). If a new opening symbol breaks this limit, we stop checking right at that spot. An empty text, or a text with only normal letters, is considered perfectly fine, even if our limit is set to zero.
 
-A character is one symbol. C is the programming language used in this
-course, and its `char` type stores a character.
+### Where do we store the container's values?
 
-An **ArrayList** is a resizable numbered sequence. A backend is the
-lower-level storage used to implement an ADT. This module uses an
-ArrayList-backed character Stack.
-
-Read this C only for the field meanings. You do not need to memorize its
-punctuation or wording yet.
+We line the characters up in a continuous row in the computer's memory. If the row gets completely filled up, we get a new, larger row and move the characters over. To manage this, our container needs to remember four things: where the row starts, exactly how many characters are currently in it, the total size of the current row, and the absolute maximum size the row is legally allowed to grow to.
 
 ```c
 typedef struct {
@@ -91,232 +63,159 @@ typedef struct {
 } CharStack;
 ```
 
-A struct groups named values called fields. A type tells C what
-kind of value is stored. `typedef` creates the short type name `CharStack`.
+When there is at least one character in the row, the top character is always the very last one currently sitting in the row (`data[size - 1]`). The current size must never exceed the current total capacity, and the capacity must never exceed the strict limit. In our code, the maximum limit is 1024.
 
-An address identifies a location in computer memory. A pointer stores
-an address, so `char *data` points to the character storage. `NULL` is a
-pointer value meaning “no storage address.”
+When we first need space, we make a row that fits 4 characters. Every time it gets full, we double its size. However, this new doubled size can never go over the maximum limit. If the computer fails to give us a bigger row, we safely keep the old row, its old characters, and its old sizes exactly as they were.
 
-An index is a numbered position; C begins at zero. `size_t` is a
-nonnegative whole-number type used for counts and indexes.
+This memory row belongs to one container and one container only. You should only run the setup process on a brand-new container that hasn't been used yet, or one that has been officially cleaned up and destroyed. If you blindly copy a container that is currently in use, or try to run the setup process on it again, you will scramble the memory.
 
-- `size` counts characters currently in the Stack.
-- An allocation is a block of computer memory obtained for a program.
-  `capacity` counts character slots in the current allocation.
-- `limit` is the greatest Stack size permitted for this task.
+## Calculating Efficiency
 
-When `size > 0`, the top item is exactly:
+### How long does it take to look at or remove the top value?
 
-```text
-data[size - 1]
-```
+Looking at or removing the top item only ever deals with one single spot—the very end of the row (`data[size - 1]`). Because the computer jumps straight to it, both actions take an instant amount of time, written as `O(1)`.
 
-For example, when the stored items are `(`, `[`, the size is 2 and the top
-is `data[1]`, which stores `[`.
+### How long does it take to add a value?
 
-## 5. The invariant and contracts
+If there is empty space left in the row, we just drop the character into the next empty spot, taking an instant `O(1)`. If the row is full and we have to expand it, we must carefully move all `n` existing characters to the new row, which takes time proportional to the amount of items, `O(n)`. However, because we double the size every time, this moving process happens very rarely. When you average it out over many additions, the cost is basically an instant `O(1)` per item.
 
-An **invariant** is a rule true in every valid completed state. A valid
-course `CharStack` satisfies:
+### How long does it take to check the symbols?
 
-1. `size <= capacity <= limit <= 1024`.
-2. If `capacity == 0`, then `data == NULL` and `size == 0`.
-3. If `capacity > 0`, `data` identifies storage for at least `capacity`
-   characters.
-4. When `size > 0`, current items occupy exactly indexes 0 through
-   `size - 1`. When `size == 0`, no index is occupied.
-5. If `size > 0`, `data[size - 1]` is the top.
-6. If `size == 0`, there is no top.
+Because we check each character of a text of length `m` exactly once from left to right, it takes an amount of time proportional to the text length, `O(m)`. If there are `d` symbols open at the exact same time, we need `O(d)` memory space. We know `d` will never grow larger than our strict depth limit.
 
-A **contract** states what an operation accepts, changes, reports, and
-preserves. A function is a named block of instructions that performs one
-task. The caller is the part of the program asking it to run. An output
-location is caller-provided storage where a function writes a result. The
-output location for `peek` or `pop` must be separate from the Stack's own
-character storage.
+## Glossary
 
-| Operation | Successful effect | Failure promise |
-|---|---|---|
-| `char_stack_init` | creates an empty Stack with the stated limit | leaves the supplied object unchanged |
-| `char_stack_validate` | reports that the visible invariant holds | does not change the Stack |
-| `char_stack_push` | adds one item; increases `size` by 1 | leaves the whole prior Stack unchanged |
-| `char_stack_peek` | copies the top to its output | leaves the Stack and output unchanged |
-| `char_stack_pop` | copies the top to its output; decreases `size` by 1 | leaves the Stack and output unchanged |
-| `char_stack_destroy` | releases owned storage and resets all fields | a missing Stack pointer is a safe no-op |
-| `stack_status_name` | returns readable text for a Stack status | returns readable text for an unknown status |
+### Stack
 
-A status code is a named result reporting success or one failure:
+A data structure where you put in and take out values from only one end.
 
-- `STACK_OK`: success;
-- `STACK_INVALID_ARGUMENT`: a required Stack or output location is invalid;
-- `STACK_LIMIT`: `push` would exceed the explicit limit, or initialization
-  requested a limit above 1024;
-- `STACK_UNDERFLOW`: `peek` or `pop` was requested while empty;
-- `STACK_ALLOCATION`: needed ArrayList storage could not be obtained; and
-- `STACK_INVALID_STATE`: the stored fields break the Stack invariant.
+### Last-In, First-Out (LIFO)
 
-`char_stack_validate` checks the visible field relationships above. C cannot
-prove from an arbitrary pointer value alone that storage is still usable,
-large enough, or owned by only this object.
+The order where the last value put in is the first one taken out.
 
-**Failure atomicity** means a failed operation leaves the entire prior valid
-state unchanged. A failed push must not lose old items or change `size`,
-`capacity`, or `data`.
+### Top
 
-Ownership means responsibility for eventually releasing requested storage.
-`CharStack` owns the allocation identified by `data`, so
-`char_stack_destroy` must release it once. Copying only the four struct fields
-would duplicate the pointer, not the owned allocation; such a shallow copy
-must not be destroyed as an independent Stack.
+The end of the stack where the next value is put in or taken out.
 
-Clients—the program parts using the Stack—must call its operations instead of
-indexing `data` directly. This preserves LIFO behavior and keeps backend
-details inside the Stack implementation.
+### Push
 
-## 6. Validate nested delimiters
+Putting a new value on the top of the stack.
 
-A validator is a function that checks stated rules. It reads input from
-left to right:
+### Peek
 
-1. Ignore ordinary characters.
-2. Push each opening delimiter.
-3. For a closing delimiter, request `peek`. If it reports
-   `STACK_UNDERFLOW`, reject the unmatched closing delimiter.
-4. Otherwise, reject if the closing mark does not match the opening at the
-   top.
-5. Pop only after a match.
-6. After all characters, accept only if the Stack is empty.
+Reading the top value without removing it.
 
-The matching pairs are `()`, `[]`, and `{}`.
+### Pop
 
-Use an explicit **nesting limit**, the maximum number of unresolved openings
-allowed at once. With limit 2, the running expression is accepted because
-its greatest size is 2.
+Reading and removing the top value completely.
 
-An interface states what other program parts may call. The course interface
-is:
+### Underflow
+
+The error state when you try to read or remove a value from an empty stack.
+
+### Delimiter
+
+A character that shows the start or end of a group, like `(` and `)`.
+
+### Nesting Depth
+
+The number of opening symbols that have not been closed yet.
+
+### Depth Limit
+
+The maximum number of delimiters that can be open at the same time.
+
+## Coding Plan
+
+### Making an Empty Stack
+
+* **Check:** Make sure the stack's memory address exists and the limit is 1024 or less.
+* **Setup:** Set the data row to empty (`NULL`), set the current size and total capacity to 0, and record the requested limit.
+* **Fail:** If the request breaks the rules, do not change the structure at all.
+
+### Pushing a Value
+
+* **Check:** Make sure the fields are correct and the current size is strictly smaller than the limit.
+* **Expand:** If there is no empty space left, grab space for 4 characters. If it gets full again, double it, but never go past the limit.
+* **Write:** Put the new character into the next empty spot (`data[size]`) and increase the size by 1.
+* **Fail:** If it hits the limit or the computer runs out of memory, leave the stack exactly as it was.
+
+### Reading and Popping the Top Value
+
+* **Check:** Make sure the stack and the output addresses are correct, and the size is not 0 (not empty).
+* **Read:** Copy the character at `data[size - 1]` into the output variable.
+* **Remove:** If taking the item completely (popping), decrease the size count by 1. Do not shrink the total capacity of the row.
+* **Fail:** If the stack is empty, do not change the output variable or the stack.
+
+### Checking Delimiters
+
+* **Open:** Check the depth limit before putting a new opening symbol into the stack.
+* **Close:** Check if the stack is completely empty. If not, check if the symbol matches the one on top.
+* **Finish:** It is a perfect success if the stack is completely empty at the end. If symbols are still left inside, record the total length of the string as the location of the error.
+* **Clean up:** Give the temporary stack's memory back to the computer, regardless of whether the check succeeded or failed halfway through.
+
+### Destroying the Stack
+
+* **Free:** Give the array memory owned by the stack back to the computer.
+* **Reset:** Turn all the numbers back to 0 and set the data address back to empty (`NULL`).
+
+## C Code
+
+### How do we use the stack?
 
 ```c
-DelimiterStatus delimiter_validate(
-    const char *text,
-    size_t depth_limit,
-    size_t *out_error_index
-);
+CharStack stack;
+char value;
+
+if (char_stack_init(&stack, 6U) != STACK_OK) {
+    return 1;
+}
+
+if (char_stack_push(&stack, '(') != STACK_OK ||
+    char_stack_push(&stack, '[') != STACK_OK) {
+    char_stack_destroy(&stack);
+    return 1;
+}
+
+if (char_stack_peek(&stack, &value) == STACK_OK) {
+    printf("top: %c\n", value);   /* [ */
+}
+
+if (char_stack_pop(&stack, &value) != STACK_OK) {
+    char_stack_destroy(&stack);
+    return 1;
+}
+char_stack_destroy(&stack);
 ```
 
-A `DelimiterStatus` is the named C type for one validator result, such as
-success, mismatch, or depth-limit failure.
+### How do we check matches?
 
-A C string is a character sequence ending with a special zero character.
-`text` points to that sequence. `const` promises that this function does not
-change the input characters. The accepted `depth_limit` range is 0 through
-1024.
+```c
+static bool delimiters_match(char open, char close)
+{
+    return (open == '(' && close == ')') ||
+           (open == '[' && close == ']') ||
+           (open == '{' && close == '}');
+}
+```
 
-An error index is the numbered input position at which a problem is
-reported. `out_error_index` points to the caller's output location.
-Successful validation writes `SIZE_MAX`, the greatest value `size_t` can
-hold, used here to mean “no error index.” An unmatched closing, mismatch, or
-depth-limit result writes the responsible delimiter's index. An unclosed
-opening writes the string length, which marks the end of the input. Invalid
-arguments and allocation failure leave the output unchanged.
+When you meet a closing symbol, always check the top value first, and only remove it if they match perfectly. If you remove it *before* checking, you might permanently lose an opening symbol you actually needed, even if you just found a wrong match.
 
-Four small failures show why every check matters:
+### How do we get the location of the check result?
 
-| Input | Error index | Status |
-|---|---:|---|
-| `A(B[C]{D})` | `SIZE_MAX` | `DELIMITER_OK` |
-| `A)B` | `1` | `DELIMITER_UNMATCHED_CLOSE` |
-| `A(B]` | `3` | `DELIMITER_MISMATCH` |
-| `A(B` | `3` | `DELIMITER_UNCLOSED_OPEN` |
-| `A([B{C}])`, limit 2 | `4` | `DELIMITER_DEPTH_LIMIT` |
+```c
+size_t error_index = 0U;
+DelimiterStatus status = delimiter_validate(
+    "A(B[C]{D})",
+    2U,
+    &error_index
+);
 
-An empty string or a string containing only ordinary characters is valid for
-any allowed limit, including zero. It needs no push and ends with an empty
-Stack.
+if (status == DELIMITER_OK) {
+    printf("valid\n");            /* error_index == SIZE_MAX */
+} else {
+    printf("error at %zu\n", error_index);
+}
+```
 
-The depth-limit push fails before changing the state. At that moment the
-Stack remains `(`, `[` from bottom to top.
-
-Malformed input breaks the stated form rules. Rejecting it at the first
-known failure avoids continuing with unreliable state. The temporary Stack
-created by the validator must still be destroyed so its owned storage is
-released.
-
-## 7. Cost
-
-Time complexity describes how work grows. Let `n` be Stack size and `m`
-be expression length.
-
-- `O(1)` means a fixed amount of work.
-- `O(n)` means work may grow with `n`.
-- Amortized `O(1)` means constant average work across a long sequence,
-  although an occasional operation is more expensive.
-
-Geometric growth increases capacity by a fixed factor, such as doubling.
-
-| Task | Cost | Reason |
-|---|---:|---|
-| `peek` | `O(1)` | reads `data[size - 1]` |
-| `pop` | `O(1)` | reads one item and decreases `size` |
-| push with spare capacity | `O(1)` | writes one item |
-| one push that grows storage | `O(n)` | existing characters may be copied |
-| long sequence of geometrically growing pushes | amortized `O(1)` each | occasional copying is spread across the sequence |
-| delimiter validation | `O(m)` | each input character is handled once |
-
-Course growth begins at capacity 4 and then doubles. It is clipped—reduced
-when necessary—to the explicit limit. Thus, limit 2 produces the capacity
-sequence `0 → 2`, while limit 6 produces `0 → 4 → 6`.
-
-## 8. Four different uses of “stack”
-
-These phrases share a word but do not name the same thing.
-
-- The Stack ADT is the collection we design and use through `push`,
-  `peek`, and `pop`.
-- A **runtime call stack** is bookkeeping commonly used by the tools that
-  execute C to manage function calls that have begun but not finished.
-- A call frame is saved information for one such unfinished function call.
-- Stack memory is an informal name for a memory region many
-  systems use for call information and local variables. A local variable is
-  named storage belonging to one function call. C does not require every
-  system to arrange memory identically.
-- A buffer is a bounded area that stores a sequence of values. A
-  **stack-buffer overflow** is a write past the permitted end of such a
-  buffer in the commonly named stack-memory region.
-
-Calling `push` may itself involve a normal function call, but a `CharStack`
-item is not a call frame. A correct Stack ADT also does not automatically
-prevent unrelated buffer mistakes elsewhere in a program.
-
-Recursion occurs when a function calls itself directly or through other
-functions. Recursive calls commonly use runtime call frames. An explicit
-Stack ADT can also remember unfinished work, but it is a separate data
-structure controlled by the program.
-
-## 9. Forward link: depth-first exploration
-
-An algorithm is a precise, step-by-step method. **Depth-first search
-(DFS)** is a later algorithm for exploring tree nodes or graph vertices. A
-tree node is one stored tree item. A graph vertex is one stored graph item.
-
-DFS can use LIFO storage for unfinished work. Later modules provide a Stack
-whose item type is `TreeNode *` and another whose item type is a vertex ID,
-a small number naming one graph vertex.
-
-Only the connection belongs here: the LIFO contract transfers, while the
-stored item type changes. The DFS steps and trace wait for Modules 5 and 6.
-
-## 10. Reliability boundary
-
-The nesting limit is a **resource boundary**, a stated limit on time or
-storage use. It prevents deeply nested input from consuming unbounded Stack
-storage. Running out of permitted storage is resource exhaustion.
-
-The training expressions are synthetic, meaning invented for safe
-practice. Correct delimiters prove only that grouping marks are well formed.
-They do not prove that a real security policy grants intended permissions or
-is safe.
-
-**Key sentence:** a Stack exposes only its most recently added item; checked
-operations and an explicit limit make that rule safe to use.
+If there is a closing symbol with no opening partner or a mismatched pair, the code leaves behind the exact position of that bad closing symbol. If there are unclosed opening symbols left over at the end, it leaves behind the total length of the string. If a symbol tries to go over the maximum depth limit, it leaves behind the exact position of that opening symbol.
