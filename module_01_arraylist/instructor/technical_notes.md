@@ -1,5 +1,9 @@
 # Instructor Technical Notes — Module 1
 
+These notes document the lab implementation. They intentionally go beyond the
+frozen textbook's introductory scope. Use them during Meeting B and for code
+review; do not make these API details prerequisites for the textbook lesson.
+
 ## Canonical API decisions
 
 The package uses a status enum rather than `bool` so students can distinguish invalid arguments, range errors, allocation failure, and overflow. No integer sentinel represents failure.

@@ -46,7 +46,7 @@ By the end of the course, students will be able to:
 
 | Spiral | Linear/supporting module | Tree module | Graph module | Recurring idea |
 |---|---|---|---|---|
-| 1 | 1. ArrayList and linked-node preview | 2. Binary-tree foundations and BST seed | 3. Graph models and representations | Representing relationships in memory |
+| 1 | 1. Keeping ordered data together with an ArrayList | 2. Binary-tree foundations and BST seed | 3. Graph models and representations | Representing relationships in memory |
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
 | 3 | 7. Queue | 8. Tree BFS | 9. Graph BFS | FIFO-controlled exploration |
 | 4 | 10. Priority Queue ADT | 11. Binary Heap | 12. Dijkstra | Priority-controlled exploration |
@@ -106,7 +106,7 @@ The Cognitive Pause is retrieval and construction time, not a compliance exercis
 
 # Spiral 1 — Representation and Relationships
 
-## Module 1 — Linear: ArrayList and linked-node preview
+## Module 1 — Linear: Keeping data together with an ArrayList
 
 Production materials: [Module 1 teaching package](module_01_arraylist/README.md)
 
@@ -114,36 +114,38 @@ Production materials: [Module 1 teaching package](module_01_arraylist/README.md)
 
 Students will:
 
-- draw the relationship among `data`, `size`, `capacity`, and allocated storage;
-- verify initialization/cleanup, complete and explain the checked reserve/growth
-  scaffold, and implement checked access and append;
-- trace scaffolded insertion and removal, with independent implementation as an extension;
-- explain constant-time indexing, linear shifting, and amortized constant-time append;
-- identify bounds errors, failed allocation, stale interior pointers, and ownership mistakes;
-- distinguish contiguous ArrayList storage from a previewed chain of linked nodes.
+- explain why neighboring memory positions support direct indexed access;
+- compare direct index lookup with value-by-value search;
+- preserve the no-gap, index-0 rule during insertion and deletion;
+- describe how a full array moves to a larger memory space;
+- explain why doubling reduces repeated copying across many additions;
+- connect `sizeof`, pointers, `malloc`, `NULL`, and `free` to dynamic-array growth.
 
 ### Macro-Question
 
-> How can a fixed block of C memory behave like a collection that grows, and what trade-offs change when elements are stored in separately allocated nodes?
+> How can we keep ordered data together, preserve its order when items are added or deleted, and continue when the original memory space becomes full?
 
 ### Micro-Questions
 
-- What state must be stored in addition to the elements?
-- What must be true about `size`, `capacity`, storage ownership, and allocation extent before and after every operation?
-- Why should a `realloc` result be checked through a temporary pointer?
-- Which operations shift elements?
-- Which pointers may become invalid after a resize?
-- What does a node store when it refers to another node?
+- Why can an index locate an item directly?
+- Why can finding an item by value require checking every item?
+- Which direction must items move during insertion and deletion?
+- What condition means the current memory space is full?
+- In what order should data move to a larger space?
+- Why does doubling make complete copies happen less often?
 
 ### Learning sequence
 
-Meeting A begins with array indexing and a full four-slot event buffer. Students derive the invariant `size <= capacity`; when `capacity > 0`, `data` owns storage for at least `capacity` elements. They draw pre-resize and post-resize states and compare contiguous storage with a two-node pointer chain. The linked chain is a brief diagrammatic preview, not yet a linked-list implementation.
+Meeting A follows the frozen textbook. Students use the values 10, 50, 20,
+30, and 99 to trace indexed access, value search, deletion, insertion, and
+movement from a full four-slot space to an eight-slot space. They state the
+rule that stored items begin at index 0 without gaps and explain the average
+work of repeated additions in plain language.
 
-Meeting B uses a syntax sandbox covering `struct`, `size_t`, pointers,
-`sizeof *ptr`, `malloc`, `realloc`, and `free`. Students complete and explain
-the reserve scaffold, implement checked access and append, run boundary tests,
-and repair an unsafe resize. The core traces insert/remove contracts;
-independent implementation remains an extension.
+Meeting B maps the textbook's starting address and tracking numbers to the
+repository's `IntList` fields. The lab then adds checked access, allocation
+failure handling, arithmetic limits, tests, and cleanup contracts as
+implementation-level engineering requirements.
 
 ### C lab and cybersecurity context
 
@@ -157,18 +159,21 @@ The security emphasis is safe ingestion of an unpredictable event volume: bounds
 
 ### Evidence of learning
 
-- before/after memory diagram;
+- insertion, deletion, and expansion traces;
 - tested C implementation plus three nonduplicate student-authored
   contract/property tests;
 - operation-cost table;
 - annotated memory defect and repair;
-- short comparison of contiguous storage and linked-node storage;
+- explanation connecting the textbook model to the `IntList` lab;
 - bounded-ingestion or backpressure policy distinct from representation safety.
 
 ### Spiral links
 
-**Revisits:** arrays, indexing, loops, ownership.  
-**Forward:** fixed node arenas in Module 2, graph matrices in Module 3, Stack backing storage in Module 4, Hash Table storage in Module 13, and linked-list implementation/repair in Module 14.
+**Revisits:** arrays, indexing, loops, pointers, allocation, and release.
+
+**Forward:** fixed node arenas in Module 2, graph matrices in Module 3, Stack
+backing storage in Module 4, Hash Table storage in Module 13, and linked-list
+implementation/repair in Module 14.
 
 ---
 
@@ -200,7 +205,12 @@ Students will:
 
 ### Learning sequence
 
-Meeting A generalizes the linked-node preview into a binary tree. Students reconstruct trees from child-index tables, identify cycle and duplicate-parent violations, and compare logical position with physical address. BST order is introduced globally: every left-subtree key is lower and every right-subtree key is higher under the course’s stated “reject duplicate keys” policy. Rotations and balancing are deferred.
+Meeting A contrasts Chapter 1's contiguous row with separately connected tree
+nodes. Students reconstruct trees from child-index tables, identify cycle and
+duplicate-parent violations, and compare logical position with physical
+address. BST order is introduced globally: every left-subtree key is lower
+and every right-subtree key is higher under the course’s stated “reject
+duplicate keys” policy. Rotations and balancing are deferred.
 
 Meeting B provides a syntax sandbox for self-referential `struct`, `TreeNode *`, `->`, `&nodes[i]`, and `NULL`. Students build a tree in a fixed, non-resizing node arena and query only immediate relationships. Formal traversal waits until Stack and DFS.
 
@@ -909,7 +919,7 @@ Students will:
 
 ### Learning sequence
 
-Meeting A returns to the linked-node preview from Module 1. Students trace the supplied insertion, deletion, traversal, and destruction operations, then repair one selected list or linked-adjacency ownership defect. They do not complete three operations plus a second repair, and they are not required to design a complete list library from scratch.
+Meeting A contrasts linked nodes with Module 1's contiguous storage. Students trace the supplied insertion, deletion, traversal, and destruction operations, then repair one selected list or linked-adjacency ownership defect. They do not complete three operations plus a second repair, and they are not required to design a complete list library from scratch.
 
 Meeting B treats Union-Find as a bridge: two linear arrays encode a forest. Students trace a deliberately tall parent forest, apply compression, and implement a bounds-checked interface. A two-pass iterative `find` avoids relying on deep recursion.
 
@@ -1309,8 +1319,9 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 
 | Dependency | First formal placement | Used later by |
 |---|---|---|
-| Pointers, `struct`, allocation, ownership | Module 1 syntax sandbox | Entire course |
-| Linked-node mental model | Module 1 preview; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
+| Pointers and allocated memory | Module 1 textbook | Entire course |
+| `struct` and detailed ownership contracts | Module 1 lab extension | Entire course |
+| Linked-node mental model | Module 2 tree representation; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
 | Tree representation and BST-order preview | Module 2 | DFS, BFS, AVL |
 | Graph representation | Module 3 | All graph algorithms |
 | Stack | Module 4 | Tree and graph DFS |
@@ -1347,7 +1358,7 @@ Scope controls:
 
 | Week | Primary topic | Package use and major artifact |
 |---:|---|---|
-| 1 | ArrayList and linked-node preview | Module 1; safe growth lab |
+| 1 | Keeping data together with an ArrayList | Module 1; safe growth lab |
 | 2 | Binary-tree foundations and BST seed | Module 2; representation translation |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
 | 4 | Stack | Module 4; nested-input Micro-CTF |

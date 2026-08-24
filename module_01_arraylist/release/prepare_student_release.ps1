@@ -32,7 +32,7 @@ $stages = @(
         )
     },
     @{
-        Name = "module_01_stage_b_representation_pause.zip"
+        Name = "module_01_stage_b_memory_model_pause.zip"
         Entries = @(
             @{
                 Source = "release\stage_b_README.md"
@@ -75,6 +75,10 @@ $stages = @(
             @{
                 Source = "student\notes.md"
                 Entry = "notes.md"
+            },
+            @{
+                Source = "student\textbook.md"
+                Entry = "textbook.md"
             },
             @{
                 Source = "diagrams\memory_models.md"

@@ -1,24 +1,28 @@
 # Module 1 Teaching Package
 
-## ArrayList and Linked-Node Preview
+## Keeping Data Together in One Place
 
 This package is the production template for the remaining modules in **Data Structures Course 2026**. It implements the first Linear → Tree → Graph spiral’s linear stage.
 
 ### Module question
 
-> How can a fixed block of C memory behave like a collection that grows, and what trade-offs change when elements are stored in separately allocated nodes?
+> How can we keep ordered data together, preserve its order when items are added or deleted, and continue when the original memory space becomes full?
 
 ### Core learning targets
 
 Students will be able to:
 
-1. Draw the relationship among an `IntList`, its allocation, `size`, and `capacity`.
-2. State and check the representation invariant.
-3. Verify initialization/cleanup, complete and explain the safe growth
-   scaffold, and implement checked access and append.
-4. Explain `O(1)` indexing, `O(n)` shifting, and amortized `O(1)` append.
-5. Diagnose bounds, allocation, overflow, ownership, and stale-pointer defects.
-6. Compare contiguous storage with a brief linked-node preview.
+1. Explain why an ordered collection keeps its active items together.
+2. Find an item directly by index and search for an item by value.
+3. Trace the shifts required for insertion and deletion.
+4. Explain why a full array must move to a larger memory space.
+5. Compare the work required by indexing, searching, shifting, and expansion.
+6. Use `sizeof`, pointers, `malloc`, `NULL`, and `free` in a small dynamic-array example.
+
+The textbook defines the conceptual core. The lab maps the same ideas to the
+repository's `IntList` API and adds implementation-level checks. Those checks
+support safe C programming, but they are not prerequisites for understanding
+the textbook.
 
 Insertion and removal are scaffolded extensions. They are not required for the core three-hour module.
 
@@ -45,6 +49,7 @@ module_01_arraylist/
 │   ├── representation_reveal.md
 │   ├── rubric.md
 │   ├── segfault_autopsy.md
+│   ├── textbook.md
 │   └── vocabulary.md
 ├── release/
 │   ├── release_manifest.md
@@ -77,12 +82,12 @@ module_01_arraylist/
    described in `release/release_manifest.md`.
 2. Before Meeting A, release Stage A only. Offer the standard or linear
    accessible initial prompt and optional vocabulary support.
-3. Let students propose the representation, then release Stage B for the
-   representation reveal and timed Cognitive Pause.
-4. After expert growth calibration, release Stage C for the invariant,
-   operations, complexity, and forward-transfer investigation.
-5. Release Stage D notes and diagrams only after Meeting A reasoning is
-   complete.
+3. Let students predict insertion, deletion, and full-array behavior, then
+   release Stage B for the memory-model reveal and timed Cognitive Pause.
+4. After the growth trace, release Stage C for the invariant, operations, and
+   efficiency investigation.
+5. Release the Stage D textbook, notes, and diagrams only after Meeting A
+   reasoning is complete.
 6. Before Meeting B, release Stage E with the starter, supplied tests,
    student-test template, and solution-independent autopsy.
 7. Assess the submission with `student/rubric.md`.
@@ -106,5 +111,8 @@ The extension submission adds `int_list_insert` and `int_list_remove` plus the e
 ## Relationship to the course spiral
 
 - **Revisits:** C arrays, indexing, loops, functions, address-of, and dereference.
-- **Introduces:** ADT versus representation, ownership, dynamic growth, failure atomicity, amortized reasoning, and invariants.
-- **Previews:** linked nodes, pointer stability, tree nodes, adjacency lists, and array-backed Stack.
+- **Introduces:** contiguous storage, ArrayLists, dynamic arrays, indexes,
+  elements, shifting, dynamic growth, and invariants.
+- **Lab extension:** an `IntList` implementation with checked access,
+  allocation errors, arithmetic limits, and cleanup contracts.
+- **Previews:** array-backed Stack.

@@ -1,13 +1,10 @@
 # Initial Inquiry — Linear Accessible Format
 
-## How to use this version
+This version has the same questions as the standard initial inquiry. It is
+suitable for screen readers, keyboard navigation, speech input, or a
+plain-text response.
 
-This version has the same targets as the standard initial inquiry without
-response tables or long blank lines. It is suitable for screen readers,
-keyboard navigation, speech input, or a plain-text response.
-
-Preserve each initial answer. Add a labeled correction later instead of
-replacing it. Do not open later-stage materials yet.
+Preserve each initial answer. Add a labeled correction later.
 
 ## Student information
 
@@ -15,76 +12,66 @@ Name:
 
 Date:
 
-## A. Retrieval warm-up
+## A. Start with one memory space
 
-Given:
+Starting state: index 0 contains 10, index 1 contains 50, index 2 contains 20,
+index 3 contains 30, and index 4 is empty.
 
-```c
-int events[4] = {17, 23, 31, 46};
-```
+### A1. Index 2
 
-### A1. Valid indexes
-
-What are the valid indexes?
+Which value is stored at index 2?
 
 Response:
 
-### A2. Third value
+### A2. Stored indexes
 
-Write the expression that accesses the third value.
-
-Response:
-
-### A3. Logical use
-
-What information does C store automatically about how many array elements the
-program considers in use?
+Which indexes currently contain stored data?
 
 Response:
 
-### A4. One-past-the-end write
+### A3. Direct access
 
-What would `events[4] = 52;` attempt to do?
-
-Response:
-
-## B. Macro-Question
-
-How can a fixed block of C memory behave like a collection that grows, and
-what trade-offs change when elements are stored in separately allocated
-nodes?
-
-Initial model:
-
-## C. Derive the minimum state
-
-### C1. First fact
-
-A fifth event arrives after all four slots are occupied. Without naming C
-fields yet, give the first fact a reusable collection must remember.
+How could you find the value at index 3 without checking earlier indexes?
 
 Response:
 
-### C2. Second fact
+## B. Keep the data packed together
 
-Give the second fact.
+### B1. Delete 50
 
-Response:
-
-### C3. Third fact
-
-Give the third fact.
+After removing 50, where is the gap?
 
 Response:
 
-### C4. Missing-state risks
+### B2. Close the gap
 
-For each fact, explain what could go wrong if it were missing.
+What must move so the remaining values stay together?
 
 Response:
 
-### C5. Open question
+### B3. Insert 99
 
-What question does your initial model not yet answer?
+Starting from 10, 20, 30 followed by two empty slots, insert 99 between 20
+and 30. Which value must move first, and why?
+
+Response:
+
+## C. When the memory space becomes full
+
+### C1. Unsafe write
+
+Why is writing beyond the final allocated slot unsafe?
+
+Response:
+
+### C2. Continue safely
+
+Describe how the program can continue without losing the existing order.
+
+Response:
+
+### C3. Old memory
+
+What should happen to the old memory after every value has been copied?
 
 Response:

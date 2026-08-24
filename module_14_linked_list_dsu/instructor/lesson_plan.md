@@ -34,7 +34,7 @@ required 14-week path.
 ## Module identity
 
 **Linked-List Retrieval Clinic and Union-Find Bridge** is the Linear stage
-of Spiral 5. It returns to Module 1's linked-node preview and prepares DSU
+of Spiral 5. It contrasts linked nodes with Module 1's contiguous storage and prepares DSU
 for Kruskal without changing the capstone graph representation.
 
 ## Module question

@@ -20,7 +20,7 @@ become extra homework. The required contact path is capped at 180 minutes.
 
 This package is the Linear stage of the fifth
 Linear -> Tree -> Graph spiral in **Data Structures Course 2026**. It returns
-to the linked-node preview from Module 1, then uses two fixed arrays to prepare
+to Module 1's contrast between contiguous and separately stored data, then uses two fixed arrays to prepare
 for Kruskal's cycle checks in Module 16.
 
 ## Beginner-first rule
@@ -333,7 +333,7 @@ also cannot remove an old relationship or reconstruct the relationship path.
 
 ## Relationship to the course spiral
 
-- **Revisits:** Module 1 linked-node diagrams, ownership, allocation,
+- **Revisits:** Module 1 contiguous storage, pointers, allocation,
   components, bounds checks, implicit trees, and Module 13's open-addressed
   table slots.
 - **Contrasts:** an ArrayList owns one contiguous block; a linked list owns

@@ -2,8 +2,15 @@
 
 ## Purpose
 
-Implement checked access and append, finish the scaffolded growth path, and
-preserve bounds, ownership, arithmetic, and failure invariants.
+Translate the textbook's dynamic-array model into the supplied `IntList`
+interface. Implement checked access and append, finish the scaffolded growth
+path, and verify the result with tests.
+
+The textbook supplies the conceptual model: stored items occupy consecutive
+positions from index 0, additions grow the memory space before an out-of-range
+write, and old values keep their order. This lab adds API-specific safety
+contracts needed by the repository implementation. Treat those contracts as
+engineering extensions, not as missing prerequisites from the textbook.
 
 The values represent synthetic authentication-event codes. No live systems or sensitive data are used.
 

@@ -26,14 +26,14 @@ before requesting help.
 ## Course-wide and consolidated question lists
 
 - [Course-wide, C engineering, tools, assessment, access, and capstone questions](student_question_bank/00_coursewide_questions.md) — 247 questions
-- [Consolidated Weeks 1–7 question view](student_question_bank/01_weeks_01_07_questions.md) — 280 questions, duplicated on the weekly pages for convenient bulk searching
+- [Consolidated Weeks 1–7 question view](student_question_bank/01_weeks_01_07_questions.md) — 266 questions, duplicated on the weekly pages for convenient bulk searching
 - [Consolidated Weeks 8–14 question view](student_question_bank/02_weeks_08_14_questions.md) — 335 questions, duplicated on the weekly pages for convenient bulk searching
 
 ## Weekly vocabulary and question pages
 
 | Week | Required focus | Required vocabulary | Optional vocabulary | Questions | Weekly page |
 |---:|---|---:|---:|---:|---|
-| 1 | ArrayList and linked-node preview | 28 | 0 | 40 | [Week 1](student_question_bank/week_01_arraylist.md) |
+| 1 | Keeping data together with an ArrayList | 13 | 0 | 26 | [Week 1](student_question_bank/week_01_arraylist.md) |
 | 2 | Binary-tree foundations and BST seed | 36 | 0 | 40 | [Week 2](student_question_bank/week_02_binary_tree.md) |
 | 3 | Graph representations | 50 | 0 | 40 | [Week 3](student_question_bank/week_03_graph_representations.md) |
 | 4 | Stack | 44 | 0 | 40 | [Week 4](student_question_bank/week_04_stack.md) |
@@ -47,7 +47,7 @@ before requesting help.
 | 12 | Linked-list ownership repair and DSU | 56 | 4 | 48 | [Week 12](student_question_bank/week_12_linked_list_dsu.md) |
 | 13 | BST-to-AVL | 45 | 3 | 47 | [Week 13](student_question_bank/week_13_avl.md) |
 | 14 | Kruskal, supplied Prim checkpoints, and capstone integration | 57 | 4 | 55 | [Week 14](student_question_bank/week_14_mst_capstone.md) |
-| **Total** | | **651** | **41** | **615** | |
+| **Total** | | **636** | **41** | **601** | |
 
 The separate final-assessment period uses the Week 14 and course-wide pages
 for capstone-defense questions; it does not add a fifteenth vocabulary week.

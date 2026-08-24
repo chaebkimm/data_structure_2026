@@ -1,12 +1,13 @@
 # Module 1 Evidence Record
 
-Name: ____________________________  
-Toolchain: _______________________  
+Name: ____________________________
+Toolchain: _______________________
 Core or extension submission: _______________________
 
-## 1. Memory model
+## 1. Textbook-to-code mapping
 
-Attach or reproduce your diagram, structured table, tactile-model description, or verbal transcript.
+Explain how the textbook's starting address, number of stored items, and
+number of available slots map to the three `IntList` fields.
 
 ____________________________________________________________________
 
@@ -95,13 +96,13 @@ ____________________________________________________________________
 - Repair:
 - Regression test:
 
-## 7. Representation decision
+## 7. Textbook connection
 
-A workload favoring an ArrayList:
+Which lab operation implements the textbook's expansion sequence?
 
 ____________________________________________________________________
 
-A workload favoring linked nodes:
+How does the implementation preserve the textbook's no-gap rule?
 
 ____________________________________________________________________
 

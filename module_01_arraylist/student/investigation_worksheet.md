@@ -1,110 +1,100 @@
-# Investigation Worksheet — Invariants, Operations, and Trade-offs
+# Investigation Worksheet — Operations and Efficiency
 
-Name: ____________________________  
+Name: ____________________________
 Date: ____________________________
 
-Open this file after completing and preserving the Cognitive Pause.
+Open this file after completing the Cognitive Pause.
 
-## D. Valid and invalid states
+## D. Keep the invariant
 
-For this table only, assume address `A` is live, uniquely owned, and points to
-an allocation large enough for the stated capacity. For each state, mark valid
-or invalid and explain.
+The allocated space contains:
 
-| `data` | `size` | `capacity` | Valid? | Reason |
-|---|---:|---:|---|---|
-| `NULL` | 0 | 0 | | |
-| `NULL` | 1 | 1 | | |
-| address `A` | 3 | 4 | | |
-| address `A` | 5 | 4 | | |
-| address `A` | 0 | 4 | | |
-
-Without the assumption above, what facts about address `A` cannot be proven
-from the three field values alone?
-
-____________________________________________________________________
-
-Write the full invariant:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-## E. Operation contracts
-
-| Operation | Valid index/request | State changed | Work as list grows | Failure behavior |
-|---|---|---|---|---|
-| `get` | | | | |
-| append with spare capacity | — | | | |
-| append requiring growth | — | | | |
-| insert | | | | |
-| remove | | | | |
-
-## F. Growth ordering
-
-Number these append steps in a safe order:
-
-___ increment `size`  
-___ ensure capacity  
-___ write the value at the old `size`  
-___ validate the list/request
-
-What must stay unchanged when growth fails?
-
-____________________________________________________________________
-
-Why is a temporary pointer used with `realloc`?
-
-____________________________________________________________________
-
-## G. Complexity
-
-| Operation | Worst-case cost | Explanation |
-|---|---:|---|
-| `get` | | |
-| append with spare capacity | | |
-| one append that grows | | |
-| geometric-growth append, amortized | | |
-| insert at front | | |
-| remove at front | | |
-
-In one sentence, explain why “amortized `O(1)`” does not mean “every append is
-`O(1)`.”
-
-____________________________________________________________________
-
-## H. Linked-node preview
-
-Complete:
-
-```c
-typedef struct Node {
-    int value;
-    struct Node *____________;
-} Node;
+```text
+[10] [50] [20] [30] [ ] [ ]
 ```
 
-| Comparison | ArrayList | Linked nodes |
-|---|---|---|
-| Physical layout | | |
-| Indexed access | | |
-| Local insertion after a known position | | |
-| Major pointer risk | | |
-
-## I. Exit ticket
-
-1. A valid element access requires `index __________________________`.
-2. After successful moving growth, a saved pointer into the old allocation is
-   __________________________.
-3. A failed reserve operation must preserve _________________________.
-4. One append can cost __________, while append is amortized __________ under
-   geometric growth.
-5. An ArrayList uses one contiguous block. Explain how separately linked
-   objects can represent a hierarchy now and arbitrary graph relationships
-   later:
+1. State the golden rule for where stored items belong.
 
    _________________________________________________________________
 
-6. One question you still have:
+2. Delete the item at index 1. Draw the final packed state.
 
-____________________________________________________________________
+   _________________________________________________________________
+
+3. Why must deletion move later items to the left?
+
+   _________________________________________________________________
+
+4. Insert `99` at index 2. In what direction must existing items move?
+
+   _________________________________________________________________
+
+5. Why must insertion move items from the back toward the target position?
+
+   _________________________________________________________________
+
+## E. Compare operations
+
+Complete each explanation without using timing symbols.
+
+| Operation | Amount of work as stored data grows | Why? |
+|---|---|---|
+| Find by index | | |
+| Find by value | | |
+| Add at the end when space remains | | |
+| Insert at the front | | |
+| Delete at the end | | |
+| Delete at the front | | |
+| Expand the memory space | | |
+
+## F. Explain doubling
+
+1. Why would adding only one new slot cause repeated copying?
+
+   _________________________________________________________________
+
+2. Why does doubling make expansion happen less often?
+
+   _________________________________________________________________
+
+3. Across many additions, what happens to the average work for one addition?
+
+   _________________________________________________________________
+
+## G. Connect the idea to C
+
+Match each C feature to its job.
+
+| C feature | Job |
+|---|---|
+| `sizeof` | |
+| pointer | |
+| `malloc` | |
+| `NULL` | |
+| `free` | |
+
+Put these expansion actions in order:
+
+___ copy every stored item in the same order
+___ obtain a larger memory space
+___ release the old memory space
+___ start using the new memory space
+___ add the new item
+
+## H. Exit ticket
+
+1. Why can an index locate an item directly?
+
+   _________________________________________________________________
+
+2. Why does searching by value require checking items one by one?
+
+   _________________________________________________________________
+
+3. What condition means that expansion is required?
+
+   _________________________________________________________________
+
+4. What must happen before the old memory space is freed?
+
+   _________________________________________________________________

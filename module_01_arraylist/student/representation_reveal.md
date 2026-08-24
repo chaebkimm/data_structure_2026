@@ -1,58 +1,38 @@
-# Representation Reveal — Label Before Growth
+# Memory-Space Reveal — Label Before Expansion
 
-Open this file only when the instructor releases the representation.
+Open this file only when the instructor releases it.
 
-## 1. Label the fields
-
-```c
-typedef struct {
-    int *data;        // _____________________________________________
-    size_t size;      // _____________________________________________
-    size_t capacity;  // _____________________________________________
-} IntList;
-```
-
-Match each field to one fact in your initial model. If your model used a
-different fact, preserve it and add a correction.
-
-## 2. Interpret two states
-
-### State E
+## 1. Label the state
 
 ```text
-data = NULL
-size = 0
-capacity = 0
+allocated memory = [10] [50] [20] [30] [ ]
+stored items = 4
+available slots = 5
 ```
 
-Describe the allocation and logical elements:
+Which positions belong to the ordered collection? ___________________
 
-____________________________________________________________________
+Which position is allocated but not yet part of the collection? _____
 
-### State A
+What condition tells us that the memory space is full? ______________
+
+## 2. State the golden rule
+
+Complete the sentence:
+
+> The stored items begin at index ______ and follow one another with no
+> ____________________________.
+
+## 3. Prepare for expansion
+
+Suppose the allocated memory is now full:
 
 ```text
-data = address A
-size = 3
-capacity = 4
-allocation A = [11, 22, 33, unused]
+[10] [50] [20] [30]
 ```
 
-Which slots are logical elements? ___________________________________
+Predict the three major actions needed before adding another item:
 
-Which slot is owned but not a logical element? ______________________
-
-Which field sets the valid-index boundary for clients? ______________
-
-## 3. Prepare for the Cognitive Pause
-
-Add this alias to State A:
-
-```c
-int *alias = &list.data[1];
-```
-
-Record what `alias` refers to now. Do not predict growth until the Cognitive
-Pause is released.
-
-____________________________________________________________________
+1. _________________________________________________________________
+2. _________________________________________________________________
+3. _________________________________________________________________

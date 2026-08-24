@@ -4,77 +4,48 @@
 > including vocabulary and required-scope notes, are linked from the
 > [all-week bank index](../Data_Structures_Course_2026_Student_Question_Bank.md).
 
-## Week 1 — ArrayList and Linked-Node Preview
+## Week 1 — Keeping Data Together in One Place
 
-### Meaning and mental model
+### Memory and access
 
-- What exactly is an ArrayList, and how is it different from an ordinary C array?
-- If the elements remain in one block of memory, what part of the list actually “grows”?
-- What is the difference between the list’s logical size and its physical capacity?
-- Why should we describe the ArrayList behavior separately from the `IntList` representation?
+- Why can an item be found directly when its index is known?
+- Why can searching for a value require checking every stored item?
+- Which positions belong to the collection when unused allocated slots remain?
+- Why do stored items begin at index 0 in this design?
 
-### Representation and invariants
+### Insertion and deletion
 
-- Which `data`, `size`, and `capacity` combinations form the canonical empty state?
-- Why must `size` never be greater than `capacity`?
-- When may `data` legally be `NULL`, and what other fields must agree with it?
-- What important facts about liveness, allocation extent, initialized elements, and unique ownership can `int_list_is_valid` not prove?
+- After deleting the item at index 1, which items must move?
+- Why does insertion shift items from back to front?
+- How much work can insertion at the front require?
+- How much work can deletion at the end require?
 
-### Operations, C API, and ownership
+### Expansion
 
-- When is it legal to call `int_list_init`, and what happens if the object already owns storage?
-- Why does `int_list_reserve` promise not to shrink the list or change its size?
-- Why must `int_list_get` reject an output pointer that points inside the list’s own allocation?
-- After a failed append or reserve, which pointer, size, capacity, and existing values must remain unchanged?
+- What condition means that a new memory space is required?
+- In what order should the old items be copied?
+- When may the old memory space be released?
+- Why would growing by only one slot cause repeated copying?
+- Why does doubling make copying happen less often?
+- Across many additions, why does the average work per addition remain small?
 
-### Tracing
+### C connection
 
-- Starting from `{NULL, 0, 0}`, how do the fields and memory contents change across several appends that trigger growth?
-- What should a trace show when an append fits within the existing capacity?
-- What should a trace show when `realloc` returns a different address from the original allocation?
-- What happens to the original allocation and list state when a forced growth allocation fails?
+- What does `sizeof(int)` report?
+- What information does a pointer store?
+- What does `malloc` return when it cannot provide the requested space?
+- Why must allocated memory eventually be passed to `free`?
+- Why is the pointer reset to `NULL` after the final `free`?
 
-### Tests and debugging
+### Lab extension
 
-- Which empty-list, singleton, exact-capacity, and first-growth tests reveal different defects?
-- How can a test prove that allocation failure preserves every part of the old list?
-- What warning, sanitizer, or debugger evidence would help distinguish an out-of-bounds write from a stale-pointer use?
-- In the Segfault Autopsy, why is assigning `realloc` directly to the owned pointer dangerous?
-
-### Complexity
-
-- Why is checked indexing `O(1)` even though the list may contain many elements?
-- Why is one growth append `O(n)` while append is still described as amortized `O(1)`?
-- What sequence of copied element counts supports the geometric-growth argument?
-- How do contiguous storage and separately allocated linked nodes differ for indexing, insertion, cache locality, and pointer stability?
-
-### Cybersecurity and interpretation
-
-- How could an untrusted element count cause integer overflow before an allocation request?
-- How could a stale interior pointer become a security or reliability problem after growth?
-- Could repeated requests for enormous capacity become a denial-of-service concern even if memory access remains in bounds?
-- Why does safe storage of synthetic event codes not prove that the codes themselves are trustworthy?
-
-### Assignment and evidence
-
-- Which functions are required in the Week 1 core, and which functions are not required?
-- Why must each student-authored test add evidence beyond the supplied tests instead of renaming one?
-- What must the saved test, warning, and sanitizer or debugger evidence demonstrate?
-- If my program passes the happy-path tests but leaks memory on an error path, which rubric criteria are still unmet?
-
-### Transfer and prerequisites
-
-- Which C pointer, array, `struct`, and allocation ideas should I review before this lab?
-- How will the `size`/`capacity` invariant return when we implement a Stack?
-- Why does the linked-node preview matter before we study trees?
-- When would stable node addresses matter more than constant-time indexing?
-
-### Extension questions — optional
-
-- Is `int_list_insert` at index `size` equivalent to append, and which boundary indexes must it reject?
-- Why does `int_list_remove` shift later elements but leave capacity unchanged?
-- How should insertion remain failure-atomic if growth is needed before shifting?
-- Are insertion and removal required for the Week 1 submission or only for optional extension credit?
+- How does the textbook model map to `IntList`?
+- Why does checked access compare an index with the number of stored items?
+- How does `int_list_reserve` implement the textbook's expansion step?
+- What must the lab implementation preserve if allocation fails?
+- Why does the lab reject an allocation size that cannot be represented?
+- Which tests demonstrate append, access, expansion, and cleanup?
+- How do insertion and removal preserve the textbook's no-gap invariant?
 
 ## Week 2 — Binary-Tree Foundations and BST Seed
 

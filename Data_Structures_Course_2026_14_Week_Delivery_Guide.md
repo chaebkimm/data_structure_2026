@@ -40,7 +40,7 @@ issued as a second weekly programming submission.
 
 | Week | Required focus and package use | Required graded work | Extension only | Weekly vocabulary and questions |
 |---:|---|---|---|---|
-| 1 | ArrayList and linked-node preview — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1 | Package extensions | [Week 1 page](student_question_bank/week_01_arraylist.md) |
+| 1 | Keeping data together with an ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1 | Checked `IntList` engineering extensions | [Week 1 page](student_question_bank/week_01_arraylist.md) |
 | 2 | Binary-tree foundations and BST seed — [Module 2](module_02_binary_tree/README.md) core | Ordinary lab 2 | Package extensions | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
 | 3 | Graph representations — [Module 3](module_03_graph/README.md) core | Ordinary lab 3 | Package extensions | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
 | 4 | Stack — [Module 4](module_04_stack/README.md) core | Ordinary lab 4 | Package extensions | [Week 4 page](student_question_bank/week_04_stack.md) |

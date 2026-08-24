@@ -1,216 +1,159 @@
 # Investigation Worksheet — Linear Accessible Format
 
-## How to use this version
+This version has the same targets as the standard worksheet without a response
+table. It is suitable for screen readers, keyboard navigation, speech input,
+or a plain-text response.
 
-This version has the same targets as the standard investigation without
-response tables or long blank lines. Open it after completing and preserving
-the Cognitive Pause.
+## D. Keep the invariant
 
-## D. Valid and invalid states
+Starting state: indexes 0 through 3 contain 10, 50, 20, and 30. Indexes 4 and
+5 are empty.
 
-For address `A` below, assume `A` is live, uniquely owned, and points to an
-allocation large enough for the stated capacity.
+### D1. Golden rule
 
-### D1. Canonical empty state
-
-`data` is `NULL`; `size` is 0; `capacity` is 0.
-
-Classification and reason:
-
-### D2. Missing storage
-
-`data` is `NULL`; `size` is 1; `capacity` is 1.
-
-Classification and reason:
-
-### D3. Partially occupied allocation
-
-`data` is address `A`; `size` is 3; `capacity` is 4.
-
-Classification and reason:
-
-### D4. Too many logical elements
-
-`data` is address `A`; `size` is 5; `capacity` is 4.
-
-Classification and reason:
-
-### D5. Reserved empty list
-
-`data` is address `A`; `size` is 0; `capacity` is 4.
-
-Classification and reason:
-
-### D6. Limits of field inspection
-
-Without the assumption above, what facts about address `A` cannot be proven
-from the three field values alone?
+State the golden rule for where stored items belong.
 
 Response:
 
-### D7. Full invariant
+### D2. Delete
 
-State the full representation invariant.
-
-Response:
-
-## E. Operation contracts
-
-For each operation, give the valid request, state change, cost as the list
-grows, and failure behavior.
-
-### E1. Get
+Delete the item at index 1. Describe the final packed state.
 
 Response:
 
-### E2. Append with spare capacity
+### D3. Deletion direction
+
+Why must deletion move later items to the left?
 
 Response:
 
-### E3. Append requiring growth
+### D4. Insert
+
+Insert 99 at index 2. In what direction must existing items move?
 
 Response:
 
-### E4. Insert
+### D5. Safe insertion order
+
+Why must insertion move items from the back toward the target position?
 
 Response:
 
-### E5. Remove
+## E. Compare operations
+
+For each operation, describe how its work changes as the amount of stored data
+grows and explain why.
+
+### E1. Find by index
 
 Response:
 
-## F. Growth ordering
-
-### F1. Safe append order
-
-Put these actions in a safe order: increment size; ensure capacity; write at
-the old size; validate the list and request.
+### E2. Find by value
 
 Response:
 
-### F2. Failed growth
-
-What must stay unchanged when growth fails?
+### E3. Add at the end when space remains
 
 Response:
 
-### F3. Temporary allocator pointer
-
-Why is a temporary pointer used with `realloc`?
+### E4. Insert at the front
 
 Response:
 
-## G. Complexity
-
-Give the cost and a brief reason for each operation.
-
-### G1. Get
+### E5. Delete at the end
 
 Response:
 
-### G2. Append with spare capacity
+### E6. Delete at the front
 
 Response:
 
-### G3. One append that grows
+### E7. Expand the memory space
 
 Response:
 
-### G4. Geometric-growth append, amortized
+## F. Explain doubling
+
+### F1. One-slot growth
+
+Why would adding only one new slot cause repeated copying?
 
 Response:
 
-### G5. Insert at the front
+### F2. Doubling
+
+Why does doubling make expansion happen less often?
 
 Response:
 
-### G6. Remove at the front
+### F3. Average work
+
+Across many additions, what happens to the average work for one addition?
 
 Response:
 
-### G7. Meaning of amortized
+## G. Connect the idea to C
 
-In one sentence, explain why amortized `O(1)` does not mean every append is
-`O(1)`.
+### G1. sizeof
 
-Response:
-
-## H. Linked-node preview
-
-### H1. Missing field name
-
-Complete the field name:
-
-```c
-typedef struct Node {
-    int value;
-    struct Node *____________;
-} Node;
-```
+What job does `sizeof` perform?
 
 Response:
 
-### H2. Physical layout
+### G2. Pointer
 
-Compare ArrayList and linked-node physical layout.
-
-Response:
-
-### H3. Indexed access
-
-Compare indexed-access cost.
+What does a pointer store?
 
 Response:
 
-### H4. Local insertion
+### G3. malloc
 
-Compare local insertion after a known position.
-
-Response:
-
-### H5. Pointer risks
-
-Give a major pointer risk for each representation.
+What job does `malloc` perform?
 
 Response:
 
-## I. Exit ticket
+### G4. NULL
 
-### I1. Valid access
-
-What condition must a valid element index satisfy?
+What does `NULL` tell the program after a memory request?
 
 Response:
 
-### I2. Alias after moving growth
+### G5. free
 
-After successful moving growth, what is the status of a saved pointer into the
-old allocation?
-
-Response:
-
-### I3. Failure preservation
-
-What must a failed reserve operation preserve?
+What job does `free` perform?
 
 Response:
 
-### I4. Append costs
+### G6. Expansion order
 
-Give the worst-case cost of one append and the amortized cost under geometric
-growth.
-
-Response:
-
-### I5. Forward transfer
-
-An ArrayList uses one contiguous block. Explain how separately linked objects
-can represent a hierarchy now and arbitrary graph relationships later.
+Place these actions in order: copy every stored item; obtain a larger memory
+space; release the old memory space; start using the new memory space; add the
+new item.
 
 Response:
 
-### I6. Open question
+## H. Exit ticket
 
-What question do you still have?
+### H1. Direct indexing
+
+Why can an index locate an item directly?
+
+Response:
+
+### H2. Value search
+
+Why does searching by value require checking items one by one?
+
+Response:
+
+### H3. Expansion condition
+
+What condition means expansion is required?
+
+Response:
+
+### H4. Safe release
+
+What must happen before the old memory space is freed?
 
 Response:

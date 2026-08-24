@@ -1,113 +1,72 @@
 # Module 1 Memory Models
 
-Every visual below has a text equivalent so students may use a diagram, structured table, tactile representation, or verbal description.
+These diagrams use the same values and operations as the Chapter 1 textbook.
+Each diagram includes a text equivalent.
 
-## 1. Empty valid list
+## 1. Stored items and unused space
 
 ```mermaid
 flowchart LR
-    L["IntList<br/>data = NULL<br/>size = 0<br/>capacity = 0"]
+    I0["index 0<br/>10"] --- I1["index 1<br/>50"] --- I2["index 2<br/>20"] --- I3["index 3<br/>30"] --- I4["index 4<br/>unused"]
+```
+
+Text equivalent: Five contiguous slots are allocated. Indexes 0 through 3
+contain 10, 50, 20, and 30. Index 4 is unused.
+
+## 2. Delete and close the gap
+
+```text
+before: [10] [50] [20] [30] [ ]
+remove: [10] [ ]  [20] [30] [ ]
+after:  [10] [20] [30] [ ]  [ ]
+```
+
+The later items move left. The active items still begin at index 0 and contain
+no gap.
+
+## 3. Insert without overwriting
+
+```text
+before: [10] [20] [30] [ ]  [ ]
+shift:  [10] [20] [ ]  [30] [ ]
+after:  [10] [20] [99] [30] [ ]
+```
+
+Move values from back to front. Moving front to back would overwrite a value
+before that value had been copied.
+
+## 4. Expand a full memory space
+
+```mermaid
+flowchart LR
+    O["old four-slot space<br/>10 | 50 | 20 | 30"] --> N["new eight-slot space<br/>10 | 50 | 20 | 30 | 99 | _ | _ | _"]
+    N --> F["release old space<br/>continue with new address"]
 ```
 
 Text equivalent:
 
-| Object | Field | Value | Meaning |
-|---|---|---:|---|
-| `IntList` | `data` | `NULL` | No allocation is owned |
-| `IntList` | `size` | `0` | No logical elements |
-| `IntList` | `capacity` | `0` | No allocated element slots |
+1. The old four-slot space is full.
+2. Obtain a new eight-slot space.
+3. Copy 10, 50, 20, and 30 in the same order.
+4. Add 99 after 30.
+5. Release the old four-slot space.
+6. Continue using the new starting address.
 
-## 2. Partially occupied allocation
+## 5. Why doubling helps
 
-```mermaid
-flowchart LR
-    L["IntList<br/>data = A<br/>size = 3<br/>capacity = 4"] --> A["one contiguous allocation A<br/>[0]=11 | [1]=22 | [2]=33 | [3]=unused"]
+With one-slot growth, additions repeatedly trigger copying. With doubling,
+each expansion creates room for several later additions. Expansions become
+farther apart as the array grows. Across many additions, the average work for
+one addition remains small.
+
+## 6. Release the final dynamic array
+
+```c
+free(arrayList);
+arrayList = NULL;
+arrayList_size = 0;
+arrayList_capacity = 0;
 ```
 
-Text equivalent:
-
-| Index | `0` | `1` | `2` | `3` |
-|---|---:|---:|---:|---|
-| Slot | `11` | `22` | `33` | unused |
-| Logical element? | yes | yes | yes | no |
-
-Valid indexes are `0` through `size - 1`. Capacity describes allocated slots, not initialized logical elements.
-
-## 3. Full list before growth
-
-```mermaid
-flowchart LR
-    L["IntList<br/>data = A<br/>size = 4<br/>capacity = 4"] --> A["one contiguous allocation A<br/>[0]=11 | [1]=22 | [2]=33 | [3]=44"]
-```
-
-An append cannot write index `4` yet. Index `4` is one past the four-slot allocation.
-
-## 4. Failure-atomic growth
-
-```mermaid
-flowchart TD
-    S["Old valid state<br/>data = A, size = 4, capacity = 4"]
-    C["Compute checked new capacity and byte count"]
-    R["candidate = realloc(A, bytes)"]
-    F{"candidate == NULL?"}
-    K["Keep A, size, capacity, and contents unchanged<br/>return allocation error"]
-    M["Commit data = candidate<br/>commit capacity = 8"]
-    W["Write value at data[4]<br/>then set size = 5"]
-    S --> C --> R --> F
-    F -- yes --> K
-    F -- no --> M --> W
-```
-
-The important idea is **commit after success**. A failed append must leave the previous valid list usable.
-
-## 5. Successful moving growth
-
-Before:
-
-| Field | Value |
-|---|---|
-| `data` | address `A` |
-| `size` | `4` |
-| `capacity` | `4` |
-| elements | `[11, 22, 33, 44]` |
-
-After appending `55`, if allocation moves:
-
-| Field | Value |
-|---|---|
-| `data` | new address `B` |
-| `size` | `5` |
-| `capacity` | at least `5`; course policy normally produces `8` |
-| elements | `[11, 22, 33, 44, 55, unused, unused, unused]` |
-
-An alias such as `int *alias = &list.data[1]` pointed inside allocation `A`. If growth moves storage to `B`, `alias` is stale and must not be dereferenced. Reacquire the location as `&list.data[1]`.
-
-## 6. Linked-node preview
-
-```mermaid
-flowchart LR
-    H["head"] --> N1["Node<br/>value = 11"]
-    N1 --> N2["Node<br/>value = 22"]
-    N2 --> N3["Node<br/>value = 33"]
-    N3 --> X["NULL"]
-```
-
-Text equivalent:
-
-| Logical position | Object | Stored value | Link |
-|---:|---|---:|---|
-| 0 | node at address `P` | `11` | address `Q` |
-| 1 | node at address `Q` | `22` | address `R` |
-| 2 | node at address `R` | `33` | `NULL` |
-
-Linked nodes need not be physically adjacent. They avoid moving all later elements during a local link change, but they give up direct index arithmetic and add pointer/ownership risks. Full linked-list implementation returns in Module 14.
-
-## 7. Representation invariant
-
-A valid course `IntList` satisfies all of the following:
-
-1. `size <= capacity`.
-2. If `capacity == 0`, then `data == NULL` and `size == 0`.
-3. If `capacity > 0`, then `data != NULL` and owns storage for at least `capacity` integers.
-4. Logical elements occupy exactly indexes `[0, size)`.
-5. The list has one cleanup responsibility for the owned allocation.
+The allocation is returned, and the tracking variables no longer describe
+released memory.

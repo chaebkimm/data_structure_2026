@@ -7,5 +7,5 @@ Pause and expert growth calibration.
 - `investigation_worksheet_linear.md` has the same targets in a linear,
   screen-reader-friendly format.
 
-These prompts guide invariant, operation, complexity, linked-node, and
-forward-transfer reasoning without supplying the answers.
+These prompts guide invariant, operation, efficiency, doubling, and C-memory
+reasoning without supplying the answers.

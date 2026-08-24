@@ -1,153 +1,148 @@
 # Instructor Answer Key — Module 1
 
-## Macro-Question expert synthesis
+The frozen textbook defines the conceptual answers. The final section records
+the additional contracts required by the implementation lab.
 
-An ArrayList stores a pointer to contiguous owned storage plus `size` and `capacity`. When append finds `size == capacity`, it computes a representable larger capacity, requests enough bytes, and commits the returned pointer and capacity only after successful allocation. Existing logical values are preserved, but the allocation may move, invalidating saved pointers into the old block. It then writes at the old `size` and increments `size`.
+## Initial Inquiry
 
-If contiguous growth is undesirable or unavailable, a linked representation stores values in separately allocated nodes connected by addresses. This avoids relocating one element block for local insertion, but adds link/allocation overhead, pointer ownership risks, weaker locality, and linear indexed access.
+### A. Start with one memory space
 
-## Staged inquiry and investigation answers
+1. Index 2 contains `20`.
+2. Indexes 0 through 3 contain stored items.
+3. The computer calculates the address from the starting address, the index,
+   and the size of one element.
 
-### A. Retrieval
+### B. Keep the data packed together
 
-1. Valid indexes: `0`, `1`, `2`, `3`.
-2. Third value: `events[2]`.
-3. C does not automatically track how many slots the program considers logically occupied.
-4. `events[4] = 52` attempts a one-past-the-end write and has undefined behavior.
+After removing `50`, index 1 is empty. Move `20` from index 2 to index 1,
+then move `30` from index 3 to index 2.
 
-### C. Representation
+To insert `99` between `20` and `30`, move `30` right first. Moving
+from the back prevents an unmoved value from being overwritten.
 
-Minimum state:
+### C. When the memory space becomes full
 
-1. address of element storage;
-2. logical element count;
-3. allocated element capacity.
+Writing beyond the final allocated slot accesses memory outside the array.
+Obtain a larger contiguous space, copy the values in order, add the new value,
+release the old space, and continue using the new address.
 
-Labels:
+## Memory-Space Reveal
 
-- `data`: owning pointer to contiguous element storage;
-- `size`: logical element count;
-- `capacity`: allocated element slots.
+- The ordered collection occupies indexes 0 through 3.
+- Index 4 is allocated but unused.
+- The space is full when the number of stored items equals the number of
+  available slots.
+- Golden rule: stored items begin at index 0 and follow without gaps.
+- Expansion actions: obtain a larger space, copy in order, then release the old
+  space after the new state is ready.
 
-### D. Valid states
+## Cognitive Pause
 
-| `data` | `size` | `capacity` | Valid? | Reason |
-|---|---:|---:|---|---|
-| `NULL` | 0 | 0 | yes | Canonical empty state |
-| `NULL` | 1 | 1 | no | Positive capacity/size without storage |
-| address `A` | 3 | 4 | yes, assuming adequate owned allocation | `size <= capacity` |
-| address `A` | 5 | 4 | no | More logical elements than slots |
-| address `A` | 0 | 4 | yes, assuming adequate owned allocation | Empty logical list with reserved storage |
+Expected new state:
 
-The fields alone cannot prove that `A` is live, suitably aligned, large
-enough, uniquely owned, or that slots in `[0, size)` contain initialized
-logical values.
+```text
+[10] [50] [20] [30] [99] [ ] [ ] [ ]
+```
 
-Invariant:
+The old four-slot allocation is released after the four old values and the
+new value are safely stored in the new space.
+
+Growing by one slot would make the next addition trigger another complete
+copy. Doubling leaves several empty slots, so complete copies happen less
+often.
+
+## Investigation Worksheet
+
+### D. Invariant and shifts
+
+- Golden rule: stored items begin at index 0 and have no empty gaps.
+- After deleting index 1: `[10] [20] [30] [ ] [ ] [ ]`.
+- Later items move left to close the gap.
+- Insertion moves existing items right.
+- Items move from back to front to avoid overwriting an item before it moves.
+
+### E. Operation work
+
+| Operation | Expected explanation |
+|---|---|
+| Find by index | Calculate one position directly |
+| Find by value | Check items one by one; possibly all of them |
+| Add at end with space | Write one item |
+| Insert at front | Move every existing item right |
+| Delete at end | No later item moves |
+| Delete at front | Move every later item left |
+| Expand | Copy every stored item |
+
+### F. Doubling
+
+One-slot growth immediately becomes full again. Doubling creates several
+empty slots and spreads expansions farther apart. Across many additions, the
+total copying grows in proportion to the number of items added, so the
+average work per addition stays small.
+
+### G. C connection
+
+| Feature | Job |
+|---|---|
+| `sizeof` | Report the byte size of a type or value |
+| pointer | Store a memory address |
+| `malloc` | Request a contiguous memory block |
+| `NULL` | Report that no usable address was returned |
+| `free` | Release an allocated memory block |
+
+Expansion order:
+
+1. obtain a larger memory space;
+2. copy every stored item in order;
+3. add the new item;
+4. start using the new memory space;
+5. release the old memory space.
+
+Accept steps 4 and 5 in the opposite order only when the student's description
+clearly preserves the new address before freeing the old allocation.
+
+## Lab implementation extension
+
+The lab uses:
+
+```c
+typedef struct {
+    int *data;
+    size_t size;
+    size_t capacity;
+} IntList;
+```
+
+This maps the textbook model into one C object:
+
+- `data` is the starting address;
+- `size` tracks stored items;
+- `capacity` tracks allocated slots.
+
+Required lab conditions:
 
 - `size <= capacity`;
-- zero capacity implies `data == NULL` and zero size under the course representation;
-- positive capacity implies adequate uniquely owned storage;
-- logical elements occupy `[0, size)`.
+- zero capacity uses the reset state `{NULL, 0, 0}`;
+- logical elements occupy `[0, size)`;
+- checked access requires `index < size`;
+- append obtains enough space before writing;
+- failed operations preserve the previous valid list;
+- destruction releases the allocation and resets the fields.
 
-### E. Operation contracts
+The reference implementation uses `realloc` rather than the textbook's
+explicit `malloc`–copy–`free` sequence. Both express the same conceptual
+move. The lab adds a temporary result, arithmetic checks, and status values
+because production C code must report failure without corrupting the list.
 
-| Operation | Valid request | State change | Cost | Failure |
-|---|---|---|---:|---|
-| `get` | `index < size`, output nonnull | Output only | `O(1)` | List/output unchanged |
-| append, spare capacity | Valid list | Writes then increments size | `O(1)` | List unchanged |
-| append, growth | Valid/representable request | May move data; capacity and size grow | `O(n)` worst case | Entire list unchanged |
-| insert | `index <= size` | May grow; shifts suffix right | `O(n)` | Entire list unchanged |
-| remove | `index < size` | Shifts suffix left; decrements size | `O(n)` | Entire list/output unchanged |
-
-### F. Safe ordering
-
-1. validate;
-2. ensure capacity;
-3. write at old `size`;
-4. increment `size`.
-
-Failure must preserve `data`, all logical values, `size`, and `capacity`. A temporary pointer prevents loss of the old allocation address when `realloc` returns `NULL`.
-
-### G. Costs
+Expected implementation costs:
 
 | Operation | Cost |
 |---|---:|
-| `get` | `O(1)` |
-| append with space | `O(1)` |
-| one growth append | `O(n)` |
-| append amortized under geometric growth | `O(1)` |
-| insert/remove at front | `O(n)` |
+| Checked indexed access | `O(1)` |
+| Append when space remains | `O(1)` |
+| One append that expands | `O(n)` |
+| Long sequence of doubling appends | amortized `O(1)` |
+| Insert or remove near the front | `O(n)` |
 
-Amortized `O(1)` describes average cost over a long sequence; some individual growth appends copy `n` elements.
-
-### H. Linked preview
-
-Field: `next`.
-
-| Comparison | ArrayList | Linked nodes |
-|---|---|---|
-| Layout | Contiguous block | Separate linked objects |
-| Indexed access | `O(1)` | `O(n)` |
-| Local insert after known position | Shifts later elements | Link change can be `O(1)` |
-| Pointer risk | Stale aliases after growth | Broken links, leaks, dangling pointers |
-
-## Cognitive Pause calibration
-
-Starting state: `A`, size `3`, capacity `4`, `[11,22,33,_]`.
-
-After `44`:
-
-- address `A`;
-- size `4`;
-- capacity `4`;
-- values `[11,22,33,44]`;
-- `alias` still refers to live allocation `A`.
-
-Before appending `55`:
-
-- `size == capacity`, so growth is required;
-- no out-of-bounds write has occurred.
-
-After successful moving growth:
-
-- address `B`;
-- capacity `8` under doubling;
-- values `[11,22,33,44,55]` followed by spare slots;
-- size `5`;
-- old `alias` must not be dereferenced.
-
-If growth fails:
-
-- address remains `A`;
-- size remains `4`;
-- capacity remains `4`;
-- values remain `[11,22,33,44]`;
-- original aliases remain valid because the old allocation remains live.
-
-The invariant holds at entry and every return/externally visible state. Internal candidate state is not committed until success.
-
-## Segfault Autopsy criteria
-
-A complete response identifies:
-
-- direct assignment can discard the only old pointer when a `realloc`-style call returns `NULL`;
-- capacity is updated despite failed allocation;
-- the subsequent write dereferences `NULL` or invalid storage;
-- doubling zero remains zero;
-- capacity and byte multiplication may overflow;
-- post-increment can change `size` despite a failed/invalid write;
-- the repair computes checked capacity/bytes, uses a temporary pointer, commits only after success, writes only after reserve, and increments size last;
-- regression tests include forced allocation failure and zero/near-limit capacity behavior.
-
-## Exit-ticket answers
-
-1. Valid access: `index < size`.
-2. Successful moving growth may invalidate old `data` and every address
-   inside its former allocation.
-3. Failed growth preserves pointer, logical values, size, and capacity.
-4. Append worst case: `O(n)`; amortized with geometric growth: `O(1)`.
-5. A node can store addresses of child objects to express hierarchy; allowing
-   several relationship records per vertex generalizes the idea to graph
-   adjacency independent of physical location.
-6. Open questions vary and should be used for Module 2 entry support.
+These symbols are lab terminology attached to the work already counted in the
+textbook; they are not required in the initial conceptual inquiry.

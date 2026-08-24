@@ -1,57 +1,52 @@
-# Initial Inquiry — A Collection That Must Grow
+# Initial Inquiry — Keeping Ordered Data Together
 
-Name: ____________________________  
+Name: ____________________________
 Date: ____________________________
 
-Preserve your initial answers. Add corrections later rather than erasing the
-original reasoning. Do not open later-stage materials yet.
+Preserve your initial answers. Add corrections later instead of erasing your
+first reasoning. Do not open later-stage materials yet.
 
-## A. Retrieval warm-up
+## A. Start with one memory space
 
-Given:
+The brackets show five neighboring memory slots. Four IP-address values are
+currently stored.
 
-```c
-int events[4] = {17, 23, 31, 46};
+```text
+[10] [50] [20] [30] [ ]
 ```
 
-1. What are the valid indexes? ______________________________________
-2. Write the expression that accesses the third value. _______________
-3. What information does C store automatically about how many elements
-   the program considers “in use”?
+1. Which value is stored at index 2? ________________________________
+2. Which indexes currently contain stored data? _____________________
+3. How could you find the value at index 3 without checking indexes 0,
+   1, and 2 first?
 
    _________________________________________________________________
 
-4. What would `events[4] = 52;` attempt to do?
+## B. Keep the data packed together
+
+1. Cross out `50`. What gap remains? _______________________________
+2. What must move so that the remaining values stay together?
 
    _________________________________________________________________
 
-## B. Macro-Question
+3. Starting again from `[10] [20] [30] [ ] [ ]`, insert `99` between
+   `20` and `30`. Which value must move first, and why?
 
-> How can a fixed block of C memory behave like a collection that grows, and what trade-offs change when elements are stored in separately allocated nodes?
+   _________________________________________________________________
 
-Initial model:
+## C. When the memory space becomes full
 
-____________________________________________________________________
+Suppose every allocated slot contains data.
 
-____________________________________________________________________
+1. Why is writing one more value into the next position unsafe?
 
-____________________________________________________________________
+   _________________________________________________________________
 
-## C. Derive the minimum state
+2. Describe how the program can continue without losing the existing order.
 
-A fifth event arrives after all four slots are occupied. Without naming C
-fields yet, list the minimum facts a reusable collection must remember.
+   _________________________________________________________________
 
-1. _________________________________________________________________
-2. _________________________________________________________________
-3. _________________________________________________________________
+3. What should happen to the old memory space after every value has been
+   copied successfully?
 
-For each fact, explain what could go wrong if it were missing:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-One question your model does not yet answer:
-
-____________________________________________________________________
+   _________________________________________________________________

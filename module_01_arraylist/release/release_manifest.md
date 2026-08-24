@@ -11,15 +11,14 @@ Release before Meeting A:
 - linear accessible initial prompt;
 - optional vocabulary support.
 
-This stage does not reveal the `IntList` fields and contains no notes, expert
-diagram, answer key, code, or solution.
+This stage contains no notes, expert diagram, answer key, code, or solution.
 
-## Stage B — Representation and Cognitive Pause
+## Stage B — Memory Model and Cognitive Pause
 
 Release after students have constructed their initial model:
 
-- instructor-authorized representation reveal;
-- three-target Cognitive Pause.
+- instructor-authorized memory-space reveal;
+- four-target Cognitive Pause.
 
 Withhold expert calibration until each student has completed the initial
 response, including approved extended-time or asynchronous equivalents.
@@ -37,7 +36,8 @@ This stage supplies prompts, not expert answers.
 
 Release after the Meeting A investigation and exit ticket:
 
-- full student notes;
+- frozen Chapter 1 textbook;
+- student summary and lab bridge;
 - memory-model diagrams and text equivalents.
 
 ## Stage E — Lab and Evidence

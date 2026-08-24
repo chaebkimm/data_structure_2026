@@ -1,7 +1,7 @@
-# Module 1 — Stage B: Representation and Cognitive Pause
+# Module 1 — Stage B: Memory Model and Cognitive Pause
 
-Use `representation_reveal.md` only when directed, then complete the three
-timed targets in `cognitive_pause.md` without notes, slides, neighbors, or an
+Use `representation_reveal.md` only when directed, then complete the four
+targets in `cognitive_pause.md` without notes, slides, neighbors, or an
 IDE before receiving the expert calibration. The remaining prompts are
 calibration follow-up, not part of the five-minute requirement.
 

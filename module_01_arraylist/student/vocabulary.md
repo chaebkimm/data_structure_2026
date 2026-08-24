@@ -1,19 +1,19 @@
 # Module 1 Vocabulary
 
-This page may be distributed before the inquiry lesson without revealing the target representation.
+This page uses the same concepts and boundaries as the textbook.
 
 | Term | Working definition |
 |---|---|
-| allocation | A block of storage obtained from an allocator |
-| address | A value identifying a location in memory |
-| logical element | A value the data structure currently considers part of its collection |
-| capacity | The number of element slots an allocation can hold |
-| ownership | Responsibility for eventually releasing a resource |
-| invariant | A condition that must be true in every valid observable state |
-| failure atomicity | An operation completes, or the previous valid state remains unchanged |
-| stale pointer | An address that no longer refers to the intended live object |
-| overflow | Arithmetic produces a result outside the type’s representable range |
-| amortized analysis | Cost averaged across a sequence that includes occasional expensive operations |
-| contiguous | Stored in one uninterrupted sequence of memory locations |
-| indirection | Reaching an object through an address stored elsewhere |
-
+| data | The things a computer processes and stores |
+| data structure | A way of organizing data so it can be stored and used efficiently |
+| contiguous memory | Memory positions placed next to one another without a gap |
+| array | A fixed number of neighboring memory slots for items of one type |
+| list | Data stored in a specific order |
+| ArrayList | A list implemented with an array |
+| dynamic array | An array-based structure that obtains a larger memory space when full |
+| index | The number identifying an item's position |
+| element | One item stored in an array or list |
+| invariant | A rule that must remain true while the data structure is used |
+| pointer | A variable that stores a memory address |
+| `NULL` | A value meaning that a pointer does not refer to a usable address |
+| memory leak | Allocated memory that a running program no longer uses but has not released |
