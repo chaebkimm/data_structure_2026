@@ -5,7 +5,7 @@ Each chapter only uses what was learned in the previous chapters. For new concep
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](https://www.google.com/search?q=module_00_datastructure/textbook.md).
 
 1. [Keeping Data Together in One Place](https://www.google.com/search?q=module_01_arraylist/student/textbook.md)
-2. [Connecting Data Up and Down](https://www.google.com/search?q=module_02_binary_tree/student/textbook.md)
+2. [Organizing Data in a Hierarchy](https://www.google.com/search?q=module_02_binary_tree/student/textbook.md)
 3. [Storing Relationships in Multiple Directions](https://www.google.com/search?q=module_03_graph/student/textbook.md)
 4. [Taking Out the Last Value First](https://www.google.com/search?q=module_04_stack/student/textbook.md)
 5. [Following One Path to the End](https://www.google.com/search?q=module_05_tree_dfs/student/textbook.md)

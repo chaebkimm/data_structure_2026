@@ -59,7 +59,7 @@ $stages = @(
             @{ Source = "code\tests\test_core.c"; Entry = "code/tests/test_core.c" },
             @{ Source = "code\tests\test_student.c"; Entry = "code/tests/test_student.c" },
             @{ Source = "code\autopsy\README.md"; Entry = "code/autopsy/README.md" },
-            @{ Source = "code\autopsy\faulty_undirected.c"; Entry = "code/autopsy/faulty_undirected.c" }
+            @{ Source = "code\autopsy\faulty_ghost_connection.c"; Entry = "code/autopsy/faulty_ghost_connection.c" }
         )
     }
 )

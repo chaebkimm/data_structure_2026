@@ -20,8 +20,8 @@ become extra homework. The required contact path is capped at 180 minutes.
 
 This package is the Linear stage of the fifth
 Linear -> Tree -> Graph spiral in **Data Structures Course 2026**. It returns
-to Module 1's contrast between contiguous and separately stored data, then uses two fixed arrays to prepare
-for Kruskal's cycle checks in Module 16.
+to Module 1's contiguous storage and Module 2's separately linked nodes,
+then uses two fixed arrays to prepare for Kruskal's cycle checks in Module 16.
 
 ## Beginner-first rule
 
@@ -333,9 +333,9 @@ also cannot remove an old relationship or reconstruct the relationship path.
 
 ## Relationship to the course spiral
 
-- **Revisits:** Module 1 contiguous storage, pointers, allocation,
-  components, bounds checks, implicit trees, and Module 13's open-addressed
-  table slots.
+- **Revisits:** Module 1 contiguous storage and bounds checks, Module 2
+  linked nodes, allocation contracts from the Stack lab, graph components,
+  implicit trees, and Module 13's open-addressed table slots.
 - **Contrasts:** an ArrayList owns one contiguous block; a linked list owns
   separate nodes. Module 13 resolves collisions by probing array slots; this
   module follows explicit links between separately owned nodes. A DSU answers

@@ -1,105 +1,51 @@
 /*
- * INTENTIONALLY BROKEN TRAINING PROGRAM.
+ * INTENTIONALLY BROKEN LOGICAL-BOUNDARY TRAINING PROGRAM.
  *
- * Build and run separately from the normal library tests. Identify the
- * earliest invalid state before focusing on the line where a fault appears.
+ * The array has eleven physical slots but only ten usable list slots. The
+ * extra slot is an observation guard, not a production fix. Writing the
+ * guard is inside this array, so the demonstration has no out-of-bounds
+ * memory access even though the list invariant becomes false.
  */
 
-#include "int_list.h"
-
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-static void *simulated_failed_realloc(
-    void *old_pointer,
-    size_t requested_bytes
-)
+static int broken_append(int array[], int size, int capacity, int value)
 {
-    (void)old_pointer;
-    (void)requested_bytes;
-    return NULL;
+    /* The equality case incorrectly accepts an already full list. */
+    if (size <= capacity) {
+        array[size] = value;
+        return size + 1;
+    }
+    return size;
 }
 
-static int broken_grow(IntList *list, size_t new_capacity)
+int main(void)
 {
-    list->data = simulated_failed_realloc(
-        list->data,
-        new_capacity * sizeof *list->data
-    );
-    list->capacity = new_capacity;
-
-    if (list->data == NULL) {
-        return 0;
-    }
-
-    return 1;
-}
-
-static int has_valid_shape(const IntList *list)
-{
-    if (list == NULL || list->size > list->capacity) {
-        return 0;
-    }
-
-    if (list->capacity == 0U) {
-        return list->data == NULL && list->size == 0U;
-    }
-
-    return list->data != NULL;
-}
-
-int main(int argc, char **argv)
-{
-    IntList list;
-    int *diagnostic_original;
-
-    list.data = malloc(4U * sizeof *list.data);
-    if (list.data == NULL) {
-        (void)fprintf(stderr, "setup allocation failed\n");
-        return 2;
-    }
-
-    list.size = 4U;
-    list.capacity = 4U;
-    list.data[0] = 11;
-    list.data[1] = 22;
-    list.data[2] = 33;
-    list.data[3] = 44;
-    diagnostic_original = list.data;
+    int array[11] = {
+        100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, -999
+    };
+    int size = 10;
+    int capacity = 10;
 
     (void)printf(
-        "before: data=%p size=%zu capacity=%zu first=%d\n",
-        (void *)list.data,
-        list.size,
-        list.capacity,
-        list.data[0]
+        "before: size=%d capacity=%d guard=%d\n",
+        size,
+        capacity,
+        array[10]
     );
 
-    (void)broken_grow(&list, 8U);
+    size = broken_append(array, size, capacity, 1100);
 
     (void)printf(
-        "after failed growth: data=%p size=%zu capacity=%zu valid=%s\n",
-        (void *)list.data,
-        list.size,
-        list.capacity,
-        has_valid_shape(&list) ? "yes" : "no"
+        "after faulty append: size=%d capacity=%d guard=%d\n",
+        size,
+        capacity,
+        array[10]
     );
     (void)printf(
-        "diagnostic: original allocation address was %p\n",
-        (void *)diagnostic_original
+        "0 <= size <= capacity: %s\n",
+        size >= 0 && size <= capacity ? "true" : "false"
     );
-
-    if (argc > 1 && strcmp(argv[1], "--inspect-only") == 0) {
-        free(diagnostic_original);
-        return 0;
-    }
-
-    (void)printf("continuing to the next list write...\n");
-    (void)fflush(stdout);
-
-    list.data[0] = 99;
-
-    free(diagnostic_original);
+    (void)printf("The guard changed; the usable list was already full.\n");
     return 0;
 }

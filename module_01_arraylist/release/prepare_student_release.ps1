@@ -24,10 +24,6 @@ $stages = @(
             @{
                 Source = "student\inquiry_prompt_linear.md"
                 Entry = "inquiry_prompt_linear.md"
-            },
-            @{
-                Source = "student\vocabulary.md"
-                Entry = "vocabulary.md"
             }
         )
     },
@@ -41,6 +37,10 @@ $stages = @(
             @{
                 Source = "student\representation_reveal.md"
                 Entry = "representation_reveal.md"
+            },
+            @{
+                Source = "student\vocabulary.md"
+                Entry = "vocabulary.md"
             },
             @{
                 Source = "student\cognitive_pause.md"

@@ -1,94 +1,104 @@
-# Student Notes — Keeping Data Together in One Place
+# Student Notes — A List in a Fixed Array
 
-These notes summarize the frozen Chapter 1 textbook. The lab adds a structured
-C interface afterward, but it does not change the model explained here.
+Use these notes after the initial inquiry. The chapter’s main example uses
+`int array[10]`, an item count named `size`, and a fixed capacity of 10.
 
-## 1. Why keep data together?
+## 1. Distinguish storage from current items
 
-An ordered collection lets a program repeat the same action for every item.
-An array stores items in neighboring memory positions. If the index is known,
-the program calculates the item's position directly.
+An array provides ten neighboring integer positions. The list uses only the
+first `size` positions. With `size == 3`, indexes 0, 1, and 2 are current
+items; indexes 3 through 9 are unused by the list.
 
-Searching by value is different. The program may need to inspect every stored
-item until it finds a match.
+The array still has ten slots after a deletion. Only the item count changes.
+An unused slot may retain an earlier value. The program must not read it as a
+current list item.
 
-## 2. Keep stored items packed at the front
+## 2. Keep the invariant
 
-The chapter's golden rule is:
+A valid list state follows these rules:
 
-> Stored items begin at index 0 and follow one another without empty gaps.
+- `0 <= size <= capacity`;
+- current items occupy indexes 0 through `size - 1` with no gaps; and
+- those positions preserve list order, which need not be numerical order.
 
-This rule determines how insertion and deletion work.
+The example’s capacity remains 10. Every array passed to a function must
+actually have at least the claimed number of slots.
 
-### Delete an item
+Zero, negative numbers, and repeated values are valid data. No integer marks
+an unused position. The count defines the current list.
 
-Deleting an item creates a hole. Every later item moves one position to the
-left. The number of stored items decreases by one.
+## 3. Read, update, and search
+
+`int_list_valid_index(size, capacity, index)` returns 1 only when the counts
+are valid and `0 <= index < size`. Otherwise it returns 0.
+
+After a successful check, `array[index]` reads or changes that item directly.
+Reading or updating does not change `size`.
+
+`int_list_find(array, size, capacity, value)` checks current items in index
+order. It returns the first matching index, or `-1` if no item matches or the
+counts are invalid. Its result is an index. A data value of `-1` can therefore
+still be found at a nonnegative index.
+
+## 4. Append, insert, and remove
+
+An append writes at the old `size` when space remains. Insertion also allows
+that final position, but can place the new item earlier in the sequence.
+
+To insert in the middle, move items from the final current item toward the
+target index. Moving in this order prevents an unread item from being
+overwritten.
+
+To remove an item, move every later current item one position toward index 0.
+The count decreases by one. The inactive tail does not need to be erased.
+
+The chapter’s sequence is:
 
 ```text
-[10] [50] [20] [30] [ ]
-[10] [ ]  [20] [30] [ ]
-[10] [20] [30] [ ]  [ ]
+start:             [100, 200, 300]   size 3
+update index 1:    [100, 500, 300]   size 3
+remove index 1:    [100, 300]        size 2
+insert 600 at 1:   [100, 600, 300]   size 3
 ```
 
-### Insert an item
+Each row uses the same ten-slot array; only current items are shown.
 
-Insertion first moves the target item and every later item one position to the
-right. Items move from back to front so that an unmoved value is not
-overwritten. The new value enters the open position.
+## 5. Preserve state when a request is rejected
 
-```text
-[10] [20] [30] [ ]  [ ]
-[10] [20] [ ]  [30] [ ]
-[10] [20] [99] [30] [ ]
+A full list has `size == capacity`. Append and insertion must reject the
+request before writing or shifting anything. Invalid counts or indexes also
+leave the entire array unchanged.
+
+Each mutating function returns the new count on success or the original
+count on rejection. The caller must save that result:
+
+```c
+size = int_list_append(array, size, capacity, 600);
 ```
 
-## 3. Grow when the space is full
+No function in this module changes the capacity.
 
-Before adding an item, check whether every allocated slot is occupied. If the
-space is full:
+## 6. Count the work
 
-1. obtain a larger contiguous memory space;
-2. copy all stored items in the same order;
-3. add the new item;
-4. release the old memory space;
-5. continue using the new starting address.
+Except for the rejection row, assume valid requests that succeed. Removal
+starts with at least one current item.
 
-The course example doubles the allocated space. Doubling leaves room for many
-later additions, so copying happens less often than it would with one-slot
-growth.
-
-Across many additions, the total copying work grows in proportion to the
-number of items added. The average work for one addition therefore remains
-small.
-
-## 4. Compare the work
-
-| Operation | Work |
+| Operation | Item work |
 |---|---|
-| Find by index | The position is calculated directly |
-| Find by value | Items may be checked one by one |
-| Add at the end with space available | One new item is written |
-| Insert near the front | Later items move right |
-| Delete near the front | Later items move left |
-| Expand | Every stored item is copied |
+| Read or update by valid index | Access one item |
+| Find a value | Check up to `size` current items |
+| Append with room | Write one item |
+| Insert at index 0 | Move `size` current items |
+| Remove the final item | Move no other items |
+| Remove index 0 | Move `size - 1` items |
+| Reject a full-list addition | Change no items |
 
-## 5. C features used in the chapter
+## 7. C features used in the lab
 
-- `sizeof` reports how many bytes a value or type needs.
-- A pointer stores a memory address.
-- `malloc` requests one contiguous memory block.
-- `NULL` reports that a usable address was not returned.
-- `free` releases an allocated memory block.
-- After `free(arrayList)`, reset the pointer to `NULL` and reset the tracking
-  variables before reusing them.
-
-## 6. Bridge to the lab
-
-The lab groups the dynamic-array pointer and its two tracking numbers into an
-`IntList`. Its functions perform the same operations described above:
-initialize, obtain space, read by index, append, insert, remove, and release.
-
-The lab also checks invalid requests and memory-allocation errors. These are
-implementation requirements for robust C code. They extend the textbook
-without changing its core explanation.
+- `int array[10]` declares ten integer slots.
+- `array[index]` selects one slot.
+- Conditions check counts and index limits before access.
+- Loops shift or search current items.
+- A function return value communicates a new count or a search index.
+- `const` on the search function’s array parameter means that the function
+  does not change the array through that parameter.

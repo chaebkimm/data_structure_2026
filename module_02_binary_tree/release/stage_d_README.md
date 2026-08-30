@@ -1,10 +1,10 @@
-# Module 2 — Stage D: Beginner Notes and Models
+# Module 2 — Stage D: Textbook and Models
 
-Open these materials after completing and preserving the Stage C core
-attempt.
+Open these materials after preserving the Stage C attempt:
 
-- `textbook.md` teaches from one worked example and explains each new
-  technical term in plain language.
-- `diagrams/tree_models.md` supplies diagrams and text equivalents.
+- `textbook.md` explains the binary-tree model through `(3 + 5) * 2`.
+- `diagrams/tree_models.md` gives correct-operation diagrams and text
+  equivalents.
 
-Add corrections beside the preserved initial work instead of erasing it.
+Annotate earlier responses instead of erasing them. The separate lab
+autopsy arrives in Stage E; preserve your own prediction before running it.

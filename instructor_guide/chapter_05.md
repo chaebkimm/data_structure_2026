@@ -61,9 +61,14 @@ Let's predict:
 
 ## Vocabulary Rules
 
-**Words we can use:** Binary tree, node, root, child, subtree, height, and stack.
+**Words we can use:** Binary tree, node, root, left and right child, subtree,
+height, recursion, stopping case, current-node/left/right search, and stack.
 
-**Names we will introduce in this chapter:** Tree traversal, depth-first search, recursive call, stopping condition, active call, call frame, running call stack, preorder traversal, inorder traversal, postorder traversal, and call space `O(h)`.
+**Names we will introduce in this chapter:** Tree traversal, depth-first
+search, active call, call frame, running call stack, preorder, inorder,
+postorder, binary-search-tree ordering, allocated-node destruction, and call
+space `O(h)`. Preorder names the current-node/left/right pattern already
+traced in Chapter 2; the three named orders are compared here.
 
 **Words we won't use yet:** Graph visit history, graph depth-first search, queue, breadth-first search, or balance and rotation. Iterative preorder traversal using a separate stack is optional and should not be included in required coding or testing.
 

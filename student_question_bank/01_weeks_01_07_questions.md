@@ -10,186 +10,188 @@
 
 - Why can an item be found directly when its index is known?
 - Why can searching for a value require checking every stored item?
-- Which positions belong to the collection when unused allocated slots remain?
+- Which positions belong to the list when size is 3 and capacity is 10?
 - Why do stored items begin at index 0 in this design?
 
 ### Insertion and deletion
 
-- After deleting the item at index 1, which items must move?
+- After deleting index 1 from `[100, 500, 300]`, which items must move?
 - Why does insertion shift items from back to front?
 - How much work can insertion at the front require?
 - How much work can deletion at the end require?
 
-### Expansion
+### Fixed capacity and invariants
 
-- What condition means that a new memory space is required?
-- In what order should the old items be copied?
-- When may the old memory space be released?
-- Why would growing by only one slot cause repeated copying?
-- Why does doubling make copying happen less often?
-- Across many additions, why does the average work per addition remain small?
+- How do size and capacity differ?
+- What must remain unchanged when an addition is attempted on a full list?
+- Why is index 10 not a slot in `int array[10]`?
+- How does deleting an item make room without changing capacity?
+- Why can zero be a stored value rather than an empty-slot marker?
+- What goes wrong if size includes a slot that has not been initialized as a list item?
 
 ### C connection
 
-- What does `sizeof(int)` report?
-- What information does a pointer store?
-- What does `malloc` return when it cannot provide the requested space?
-- Why must allocated memory eventually be passed to `free`?
-- Why is the pointer reset to `NULL` after the final `free`?
+- Which conditions must be checked before reading or updating `array[index]`?
+- Why can insertion accept index equal to size while removal cannot?
+- Why must the caller assign the size returned by a mutating function?
+- What does `int_list_find` return for a missing value or duplicate matches?
+- What does `const` promise about the array passed to `int_list_find`?
 
-### Lab extension
+### Lab and testing questions
 
-- How does the textbook model map to `IntList`?
-- Why does checked access compare an index with the number of stored items?
-- How does `int_list_reserve` implement the textbook's expansion step?
-- What must the lab implementation preserve if allocation fails?
-- Why does the lab reject an allocation size that cannot be represented?
-- Which tests demonstrate append, access, expansion, and cleanup?
-- How do insertion and removal preserve the textbook's no-gap invariant?
+- How do the textbook's array, size, and capacity map to the function arguments?
+- Which test distinguishes an unused array slot from a valid list index?
+- How can a snapshot prove that a rejected operation changed no array slot?
+- What happens when size is negative or greater than capacity?
+- Why must the caller ensure capacity does not exceed the actual array length?
+- Which operation sequence demonstrates that deletion makes room for another addition?
+- How does the guard-slot autopsy expose a bad full check without accessing outside its physical array?
 
-## Week 2 — Binary-Tree Foundations and BST Seed
-
-### Meaning and mental model
-
-- What makes a collection of linked nodes a tree rather than merely a set of pointers?
-- What is the difference among a root, parent, child, leaf, subtree, path, depth, and height?
-- Can the same node be a leaf, a subtree root, and someone else’s child at the same time?
-- Why does a binary tree limit child positions without requiring binary-search ordering?
-
-### Representation and invariants
-
-- How do a tree diagram, an arena index table, and `left`/`right` pointer fields describe the same state?
-- Why must the root have no parent while every other active node has exactly one parent?
-- Why must every arena node be reachable from the root in a completed valid tree?
-- Which shared-node, cycle, out-of-arena, and orphan configurations violate the whole-tree invariant?
-
-### Operations, C API, and ownership
-
-- Who owns the node array passed to `tree_arena_init`, and how long must that storage remain alive?
-- Why may `storage` and `keys` be `NULL` for an empty tree but not for a nonempty tree?
-- What does `tree_assign_child` check locally, and why can it return `TREE_OK` for a structure that is globally invalid?
-- Why must `tree_immediate_family` validate the entire structure before reporting one node’s parent?
-
-### Tracing
-
-- Given keys, a root index, and several child assignments, what pointers and index relationships result after each operation?
-- How do I translate a pointer value back to the corresponding arena index without confusing an address with a key?
-- What does a validation trace record when two parents point to the same child?
-- How can a tree satisfy every local child-slot check yet still contain a cycle or unreachable node?
-
-### Tests and debugging
-
-- Which tests distinguish an empty tree, a singleton leaf, a one-child node, and a two-child node?
-- How can a regression test expose a child pointer that accidentally points outside the arena?
-- What test separates a direct self-link defect from a longer ancestor cycle?
-- In the Tree Structure Autopsy, which address and parent-count evidence identifies the first broken invariant?
-
-### Complexity
-
-- Why can a local leaf or child-count query be constant time?
-- Why does whole-structure validation need to examine more than the selected node?
-- What work is required to find a node’s parent when nodes store only child pointers?
-- How might adding parent pointers change operation costs, storage, and invariant complexity?
-
-### Cybersecurity and interpretation
-
-- How could an unchecked child index become an out-of-bounds pointer or memory-corruption defect?
-- Why can shared ownership of one node lead to double cleanup later?
-- How might an attacker-controlled insertion order preview poor BST performance even when ordering remains correct?
-- Why should a hierarchy inferred from security records be validated rather than assumed to be a tree?
-
-### Assignment and evidence
-
-- Which local query and link operations must I implement for the Week 2 core?
-- Am I expected to write recursion, general traversal, dynamic node allocation, rotations, or balancing this week?
-- What three distinct student-authored tests would add structural evidence beyond the supplied cases?
-- What should my corrected Cognitive Pause explain if my original diagram accidentally created a graph?
-
-### Transfer and prerequisites
-
-- Which Week 1 ideas about addresses, `NULL`, invariants, and failure preservation are reused here?
-- Why will depth-first traversal require more than the local family queries implemented this week?
-- Which tree restriction disappears when we generalize relationships to a graph in Week 3?
-- How does the strict BST seed prepare us for later search and AVL balancing?
-
-### Extension and deferred questions — optional or later
-
-- Could the arena be resized safely, and which stored pointers would become invalid if it moved?
-- How would individually allocated nodes change ownership and cleanup compared with the fixed arena?
-- Can we write a traversal now, or is traversal intentionally deferred to Week 5?
-- Are rotations and balancing part of Week 2 evidence or reserved for the later AVL unit?
-
-## Week 3 — Graph Models and Representations
+## Week 2 — Expression-Tree Model, Binary-Tree Links, and Recursive Clearance
 
 ### Meaning and mental model
 
-- What can a graph represent that a tree cannot represent safely?
-- What is the difference among a vertex, edge, neighbor, path, cycle, degree, and connected component?
-- How do directed and undirected relationships differ in meaning?
-- How is an unweighted graph different from a weighted graph even if both have the same endpoints?
+- How does `(3 + 5) * 2` become a root operation, a sub-expression, and operand leaves?
+- How do root, parent, child, ancestor, descendant, and subtree differ?
+- Why is a node with only a right child still a valid binary-tree node?
+- How do a generic binary tree's zero/one/two-child possibilities differ from a completed binary expression?
 
 ### Representation and invariants
 
-- What does `adjacency[from][to] == true` mean in a directed graph?
-- Why must an undirected adjacency matrix be symmetric?
-- Why must active diagonal cells be false under this course’s no-self-loop contract?
-- What must be true of `vertex_count`, `kind`, active cells, and inactive cells immediately after `graph_init`, and which facts does later validation inspect?
+- How do a diagram and the data, left, and right fields describe the same state?
+- Why are left and right operand positions not interchangeable for every operator?
+- Why must every non-root node appear in exactly one child position?
+- Which no-cycle and no-sharing rules are caller responsibilities rather than automatic checks?
 
-### Operations, C API, and ownership
+### Direct operations and C
 
-- Which indexes are valid after `graph_init` with `vertex_count == V`?
-- Why do undirected add and remove operations need to update two matrix cells as one logical change?
-- When must `graph_has_edge`, degree queries, and neighbor queries leave caller output unchanged?
-- Why can an edge operation check only one selected pair while `graph_validate` checks the whole active graph?
+- Which fields must be initialized before a local node is linked into a tree?
+- Why can the C character constants `'*'` and `'+'` be stored in an `int` data field in this simplified model?
+- What does `&plus` provide, and how does `root.left` differ from `node->left`?
+- What must remain unchanged when the chosen child position is already occupied?
 
-### Tracing
+### Recursive tracing
 
-- How do I translate the same graph among a drawing, an edge set, and an adjacency matrix?
-- What matrix cells change when adding or removing one directed edge versus one undirected edge?
-- How do I trace out-degree and in-degree without swapping rows and columns?
-- In what order should `graph_out_neighbors` report neighbors, and how is that order visible in the matrix?
+- What stopping cases does tree_find need?
+- Why does the canonical search order begin `'*', '+', 3, 5, 2`?
+- Which node address is returned when several nodes store the target value?
+- What unfinished work remains after the search enters the left subtree?
+
+### Clearing and lifetime
+
+- What happens to the data and links of every node reached by tree_clear?
+- Why does clearing root.left not automatically set root.left to NULL?
+- Why does a cleared node remain a live object, and why is data zero not an empty-node marker?
+- Why must every linked local node variable stay alive while the tree uses its address?
 
 ### Tests and debugging
 
-- Which tests distinguish duplicate-edge, absent-edge, self-loop, and out-of-range failures?
-- How can a test detect that an undirected add changed `[a][b]` but forgot `[b][a]`?
-- What malformed graph should make a whole-graph validator fail even though an unrelated local query looks valid?
-- In the Matrix Symmetry Autopsy, what two regression tests would prove both mutation and query behavior are repaired?
+- Which cases distinguish no children, a left-only child, and a right-only child?
+- How can a snapshot test prove that an occupied-side attachment made no change?
+- How can a test prove that clearing the `'+'` branch preserves the right operand `2` and its position?
+- Why should cycle mistakes be analyzed with diagrams rather than passed to these recursive functions?
 
 ### Complexity
 
-- Why is one adjacency-matrix edge lookup `O(1)`?
-- Why does listing all outgoing neighbors from one vertex take `O(V)` with a matrix?
-- Why does full matrix validation take `O(V^2)` even when the graph has few edges?
-- For which dense or sparse workloads would a matrix, edge list, or adjacency list be the more plausible choice?
+- Why do initialization and a guarded child-link assignment take constant work?
+- Why can an unsuccessful search inspect every node?
+- Why does clearing a subtree with k nodes require work proportional to k?
+- Why can recursive search and clearance use temporary call-stack space proportional to height?
 
-### Cybersecurity and interpretation
+### Safety and interpretation
 
-- Would a directed edge between two hosts mean communication, trust, authorization, or merely an observed record?
-- How could silently treating a directed relation as undirected create a false security conclusion?
-- Why must vertex identifiers be range-checked before any matrix access?
-- Why are the course’s synthetic relationships unsuitable as evidence for scanning or exploiting live systems?
+- How can a child link back to an ancestor prevent a recursive operation from finishing?
+- In the shared-child autopsy, why does clearing one branch unexpectedly change the other branch's data?
+- Why is the shared child's pointer still live after clearance rather than a pointer to released storage?
+- What information can be lost if an occupied child link is overwritten without checking it?
 
 ### Assignment and evidence
 
-- Which graph operations and reports are required in the Week 3 core lab?
-- Is DFS, BFS, weighted search, or dynamic adjacency-list construction required this week?
-- What must the embedded Spiral 1 comparison say about choosing an ArrayList, tree, or graph?
-- What evidence belongs in the Week 3 artifact and capstone skeleton without becoming a second submission?
+- What must I implement in tree_find and tree_clear?
+- How should my three student-authored tests demonstrate expression construction, searching, and clearance?
+- What warning-enabled and diagnostic evidence belongs in the submission?
+- What should my corrected Cognitive Pause explain about links, search order, and node lifetime?
 
-### Transfer and prerequisites
+### Transfer and deferred questions
 
-- Which tree invariants become unnecessary, and which graph invariants must replace them?
-- How will the neighbor order supplied by this representation affect later DFS and BFS traces?
-- Why will graph traversal need separate visited state when tree traversal did not?
-- What capstone decisions should remain representation-independent so the backend can change later?
+- Which Chapter 1 ideas about fixed storage, checking before mutation, and invariants are reused?
+- How will Module 3 change the no-sharing and no-cycle restrictions?
+- When will Module 5 formalize and compare traversal orders and introduce binary-search ordering?
+- Why are allocation, parent links, root-comparison helpers, rotations, and balancing outside this lab?
 
-### Extension and deferred questions — optional or later
+## Week 3 — Directed Adjacency Matrices
 
-- How would supporting self-loops change validation, degree definitions, and tests?
-- How would weights change the matrix representation and the meaning of “no edge”?
-- Could an adjacency list reduce work on a sparse graph, and what ownership problems would it introduce?
-- Are graph searches and dynamically allocated adjacency lists part of Week 3 grading or later work?
+## Anticipated student questions
+
+### Meaning and mental model
+
+- What can a graph represent that Chapter 2's tree cannot represent as a valid tree?
+- What is the difference among a vertex, an edge, a path, and a cycle?
+- Why are `u -> v` and `v -> u` separate facts in a directed graph?
+- What information does this unweighted graph omit from an edge?
+
+### Representation and invariants
+
+- What does `grid[from][to] == 1` mean?
+- How does `vertex_count` distinguish an isolated active vertex from an inactive index?
+- Why must every inactive row and column remain zero?
+- Why is a self-loop forbidden here even though a cycle through two or more vertices is valid?
+
+### Operations and C
+
+- Why does `graph_init` clear all 16 by 16 cells even when only three vertices are active?
+- Which checks must occur before a direct grid lookup or update?
+- Why may a repeated valid add or removal succeed without changing the final cell value?
+- What do `size_t` and `GRAPH_MAX_VERTICES` contribute to the fixed representation?
+
+### Tracing
+
+- Which cells record the textbook edges `0 -> 1`, `1 -> 2`, and `1 -> 0`?
+- Why is the App server's initial row `[1, 0, 1]`, and what is its out-degree?
+- After removing `1 -> 2`, what is row 1 and what out-degree should be reported?
+- How can `0 -> 1` and `1 -> 0` form a valid cycle while both diagonal cells remain zero?
+
+### Tests and debugging
+
+- How can a test prove that initialization clears cells outside the active square?
+- Which test distinguishes a directed edge from its reverse edge?
+- How can a test prove that a rejected bound or self-loop addition changes no matrix cell?
+- How can a test prove that a failed out-degree request leaves its output unchanged?
+
+### Complexity
+
+- Why does reading, adding, or removing one checked edge take constant work?
+- Why does out-degree counting inspect every active cell in one row?
+- Why does inspecting an active matrix take work proportional to the vertex count squared?
+- Why can a fixed adjacency matrix waste storage when few edges exist?
+
+### Safety and interpretation
+
+- What can happen if a vertex index is used before it is checked against `vertex_count`?
+- Why do the four functions assume the rest of the supplied matrix already satisfies its invariant?
+- How can a stale 1 in an inactive row reappear as a ghost connection later?
+- Why does an all-zero row mean no outgoing edges rather than no vertex?
+
+### Assignment and evidence
+
+- Which four functions are implementation tasks, and which guarded lookup remains a direct operation?
+- What three distinct student-designed tests are required?
+- What build, diagnostic, and explanation evidence belongs in the submission?
+- Why are Boolean graph kinds, validators, DFS, BFS, and dynamic adjacency lists outside this lab?
+
+### Representation comparison
+
+- How would an undirected connection differ from the directed matrix operation implemented here?
+- How would an edge list and an adjacency list store the same relationships differently?
+- When might a matrix be preferable to a list representation, and when might it be wasteful?
+- Why are weights and connected-component algorithms discussed without being implemented here?
+
+### Transfer to later modules
+
+- Why will a later traversal need visited state when this graph contains a cycle?
+- How will scanning matrix columns in increasing order influence later traversal traces?
+- What new support must Module 6 add before it can operate on undirected graphs?
+- How do the ArrayList, tree, and graph representations differ in their central invariant?
 
 ## Week 4 — Stack and Nested Delimiters
 
@@ -323,7 +325,7 @@
 
 ### Transfer and prerequisites
 
-- Which Week 2 vocabulary and strict BST rule must I understand before tracing these functions?
+- Which Week 2 tree, ownership, and recursion ideas must I retrieve before learning formal traversal orders and BST rules?
 - How is the implicit runtime call stack related to, but different from, the Week 4 Stack ADT?
 - Why will graph DFS need visited state even if tree DFS does not?
 - How will inorder traversal and BST search reappear in the later AVL unit?

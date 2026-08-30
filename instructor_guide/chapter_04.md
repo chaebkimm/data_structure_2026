@@ -51,9 +51,9 @@ Let's predict:
 
 ## Vocabulary Rules
 
-**Words we can use:** Array-based list, expansion, ownership, keeping the state after a failure, and amount of work.
+**Words we can use:** Fixed-capacity array-based list, size, capacity, pointers, keeping the state after a rejected operation, and amount of work.
 
-**Names we will introduce in this chapter:** Delimiter, top, Last-In-First-Out (LIFO), stack, `push`, `peek`, `pop`, underflow, abstract data type, and nesting limit.
+**Names we will introduce in this chapter:** Growable array, checked expansion, doubling, array ownership, delimiter, top, Last-In-First-Out (LIFO), stack, `push`, `peek`, `pop`, underflow, abstract data type, and nesting limit.
 
 **Words we won't use yet:** We will only mention "running function call storage" and "depth-first search" by name. We will not explain how they work or how to build them yet.
 

@@ -1,30 +1,42 @@
-# Cognitive Pause — Moving to a Larger Memory Space
+# Stage B — Five-Minute Cognitive Pause: Indexes and Boundaries
 
-Use no notes, slides, neighbors, or IDE for the first five minutes. You may
-draw, type, dictate, or use a structured list.
+Use no notes, slides, neighbors, or coding tools for five minutes. You may
+draw, type, dictate, or use a structured list. Preserve your initial response
+when correction begins. Approved extended-time versions use the same targets.
 
 ## Starting state
 
-The four-slot memory space is full.
+The array has ten slots. The current list is `[100, 200, 300]`, so `size` is
+3 and capacity is 10. Values occupy indexes 0 through 2.
 
-```text
-[10] [50] [20] [30]
-```
+## Complete exactly three targets
 
-The program must add `99`. It obtains a new space with eight slots.
+### Target 1 — Interpret the count
 
-## Five-minute response
-
-1. Draw or describe the new eight-slot space after the four old values have
-   been copied in order.
-2. Show where `99` is added.
-3. State what happens to the old four-slot space.
-4. Explain why getting only one additional slot would cause too much copying
-   across many additions.
+State the valid indexes for reading list items. Explain why index 3 is not a
+valid list item even though it is inside the ten-slot array.
 
 Response:
 
 ____________________________________________________________________
+
+### Target 2 — Preserve list order
+
+Delete the item at index 1. State which value moves, the final logical list,
+and the new `size`. Must the program erase the old value beyond the new
+`size` for the list to be correct? Explain.
+
+Response:
+
+____________________________________________________________________
+
+### Target 3 — Handle a full list
+
+Start a separate case with `size == 10`. The program receives an append
+request. State its result and what must happen to all ten stored values and
+the count.
+
+Response:
 
 ____________________________________________________________________
 
@@ -32,8 +44,8 @@ ____________________________________________________________________
 
 After the expert model is revealed:
 
-- place a check beside each correct step;
-- correct the order of any misplaced step;
+- preserve your first answers;
+- label each correction `index`, `order`, or `capacity`; and
 - finish the sentence below.
 
 The evidence that changed or confirmed my model was:

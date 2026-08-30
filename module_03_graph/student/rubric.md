@@ -1,56 +1,26 @@
 # Module 3 Lab Rubric — 100 Points
 
-A **rubric** is a scoring guide. **Functional correctness** means that the
-required code produces the required results. A **compiler** translates C
-code into a runnable program. A compiler **warning** points out code that
-may be mistaken. **CI**, or continuous integration, means another computer
-automatically builds and tests submitted code. **Reproducible** evidence
-includes enough detail for another person to repeat the check. **Transfer**
-means using an idea in a new setting.
-
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
-| Vocabulary and representation | 20 | New terms are explained; diagram, edge set, and matrix describe the same graph |
-| Functional correctness | 25 | Initialization, edge operations, degrees, and neighbor reporting satisfy their contracts—the stated rules for inputs, changes, and results |
-| Matrix and boundary safety | 20 | Vertex indexes, self-loops, duplicates, symmetry, and unchanged outputs are handled correctly |
-| Tests and tool evidence | 15 | Three nonduplicate student-authored tests with rationale plus reproducible warning-enabled compiler or CI results |
-| Representation reasoning | 10 | Matrix, edge-list, and adjacency-list trade-offs and operation costs are accurately compared |
-| Autopsy and spiral transfer | 10 | The one-sided defect is diagnosed and ArrayList/tree/graph choices are justified |
+| Directed representation and vocabulary | 15 | Diagram or description, edge set, and `int` matrix agree; row is source and column is destination |
+| Initialization | 20 | Valid count is stored and the complete 16-by-16 grid, including inactive cells, is cleared; failure preserves state |
+| Directed edge operations | 20 | Add and remove check active indexes, update one directed cell, preserve unrelated cells, and behave idempotently |
+| Out-degree and direct lookup | 15 | A valid row is counted correctly, invalid requests preserve output, and a guarded direct lookup is demonstrated |
+| Invariants and boundary safety | 10 | Capacity, active-index, binary-cell, inactive-cell, and diagonal rules are applied accurately |
+| Tests and tool evidence | 15 | Exactly three distinct student-authored tests have rationales and pass with reproducible warning-enabled compiler or approved CI evidence |
+| Ghost autopsy and reflection | 5 | The first inactive-cell defect, delayed symptom, repair, and regression claim are distinguished |
 | **Total** | **100** | |
 
-## Performance levels
+## Performance guidance
 
-### Exceeds expectations
-
-The student explains unfamiliar graph states with the invariant, deliberately
-tests a direction or symmetry risk, and transfers the representation choice
-accurately.
-
-### Meets expectations
-
-The required functions work, matrix relationships are accurately described,
-and supplied plus student-authored tests support the claims.
-
-### Developing
-
-The common successful case works, but terminology, symmetry, output
-preservation, or testing still needs guidance.
-
-### Beginning
-
-The code or diagram reverses row and column meaning, accepts unsafe indexes,
-or cannot distinguish directed from undirected storage.
-
-## Scoring notes
-
-- Every professional term may be explained in ordinary language; memorized
-  notes wording is not required.
+- Full credit does not require memorized wording. Accurate ordinary-language
+  explanations earn the same credit.
 - Drawing quality, handwriting, typing speed, and spoken fluency are not
-  grading criteria.
-- An approved verbal, tactile, linear-text, or instructor-CI equivalent earns
-  the same credit.
-- **Extension work**, meaning optional work beyond the required core, may
-  earn a separate distinction or up to five bonus points. It never replaces
-  core representation, safety, or evidence points.
+  grading criteria. An approved linear-text, verbal, tactile, or instructor-CI
+  equivalent earns the same credit.
 - An incorrect initial Cognitive Pause is not penalized when it is preserved
   and meaningfully corrected.
+- Conceptual comparisons with undirected, weighted, edge-list, or
+  adjacency-list graphs do not add implementation requirements.
+- Optional extension work may earn separate recognition, but it never replaces
+  required core evidence.

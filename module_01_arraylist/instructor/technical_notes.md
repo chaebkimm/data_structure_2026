@@ -1,146 +1,198 @@
 # Instructor Technical Notes — Module 1
 
-These notes document the lab implementation. They intentionally go beyond the
-frozen textbook's introductory scope. Use them during Meeting B and for code
-review; do not make these API details prerequisites for the textbook lesson.
+## Canonical representation
 
-## Canonical API decisions
+Module 1 uses a plain fixed array and two integer counts:
 
-The package uses a status enum rather than `bool` so students can distinguish invalid arguments, range errors, allocation failure, and overflow. No integer sentinel represents failure.
+```c
+int array[10];
+int size = 0;
+int array_capacity = 10;
+```
 
-The struct is intentionally visible in Module 1 because students must model `data`, `size`, and `capacity`. Later courses may prefer an opaque type.
+The normal teaching capacity is ten. Size counts active items, which occupy
+the gapless prefix `[0, size)`. The capacity never changes during an
+operation. Full append and insertion requests fail without changing size or
+any array element.
 
-Core:
+No wrapper struct is needed. The public header keeps the existing
+`int_list.h` filename, and both implementations remain named `int_list.c`.
 
-- `int_list_init`
-- `int_list_destroy`
-- `int_list_is_valid`
-- `int_list_reserve`
-- `int_list_get`
-- `int_list_append`
+## Public API
 
-Extension:
+```c
+int int_list_valid_index(int size, int capacity, int index);
+int int_list_append(int array[], int size, int capacity, int value);
+int int_list_insert(
+    int array[], int size, int capacity, int index, int value
+);
+int int_list_remove(int array[], int size, int capacity, int index);
+int int_list_find(const int array[], int size, int capacity, int value);
+```
 
-- `int_list_insert`
-- `int_list_remove`
+All five functions support the core operations. Checked read and update use
+`int_list_valid_index` followed by direct bracket access:
 
-## Contract boundaries
+```c
+if (int_list_valid_index(size, array_capacity, pos)) {
+    int data = array[pos];
+    array[pos] = 500;
+}
+```
 
-- `int_list_init` is for an uninitialized or destroyed object. Reinitializing a live object would leak and cannot be detected portably.
-- `destroy(NULL)` is a no-op.
-- A second destroy is safe because the first resets the canonical state.
-- `get` requires a nonnull output pointer, changes it only on success, and
-  forbids that pointer from overlapping the list allocation.
-- `remove` permits a null output pointer to discard the removed integer; a
-  nonnull output pointer must not overlap the list allocation.
-- `reserve` never shrinks.
-- Removal never shrinks in this module.
-- Shallow copying `IntList second = first;` is prohibited because it creates duplicate apparent ownership.
-- External aliases into `data` are invalid across any call that may grow.
+The mutators return the resulting size. The caller must retain it:
 
-## What `int_list_is_valid` can prove
+```c
+size = int_list_append(array, size, array_capacity, 400);
+size = int_list_insert(array, size, array_capacity, 1, 600);
+size = int_list_remove(array, size, array_capacity, 1);
+```
 
-The helper checks only observable shape:
+## Metadata and array contract
 
-- nonnull list pointer;
-- `size <= capacity`;
-- zero-capacity/null-pointer correspondence.
+Valid metadata satisfies `0 <= size && size <= capacity`. This includes the
+empty zero-capacity case, although ordinary class examples use capacity ten.
+The caller supplies a live array with at least `capacity` actual positions.
+The helpers cannot infer the physical extent of a C array argument.
 
-It cannot prove:
+Negative size, negative capacity, or size greater than capacity is invalid
+metadata. On such input:
 
-- the allocation is actually large enough;
-- the pointer is live;
-- ownership is unique;
-- logical slots contain initialized values.
+- `int_list_valid_index` returns `0`;
+- `int_list_find` returns `-1`; and
+- append, insert, and remove return the original size and change no array
+  element.
 
-Call it a shape validator, not a complete invariant proof.
+No status enum is used. The result is either a validity flag, an index, or a
+size count. In particular, `-1` is a search result, not a valid array index.
 
-## Growth details
+## Operation contracts
 
-The solution uses:
+### Checked read and update
 
-- initial capacity `4`;
-- geometric doubling;
-- `SIZE_MAX / sizeof *data` as maximum representable element capacity;
-- checked `size + 1`;
-- temporary `realloc` result;
-- commit after success.
+`int_list_valid_index` returns `1` exactly when metadata is valid and
+`0 <= index && index < size`; otherwise it returns `0`.
 
-Tests assert content and invariant, not a particular address or a requirement that `realloc` move.
+A check against capacity alone is insufficient: positions at or beyond size
+are not active list items. Read and update do not change size or capacity.
+An invalid position must never be used in a bracket access.
 
-When compiled with `INT_LIST_TESTING`, the course allocator wrapper exposes
-`int_list_test_fail_next_allocation`. The separate instructor test uses it to
-force exactly one real reserve request to fail, then verifies unchanged
-pointer, size, capacity, and values. Production and normal student builds do
-not define the macro.
+### Linear first-match search
 
-## Insert/remove details
+`int_list_find` scans indexes zero through `size - 1` in order. It returns
+the first index whose value equals the target, or `-1` if no active value
+matches. Duplicate values are allowed; the earliest active match wins.
 
-The solution uses `memmove`, not `memcpy`, because shifted regions overlap.
+The function does not read inactive positions and does not change the array.
+The `const` array parameter expresses that read-only intent.
 
-Insertion:
+### Append
 
-- accepts `index <= size`;
-- reserves before shifting;
-- shifts `(size - index)` integers right;
-- stores, then increments size.
+Append requires valid metadata and `size < capacity`. It writes the value at
+`array[size]` and returns `size + 1`. It does not move existing active items.
 
-Removal:
+A full list returns its original size without writing. In particular, the
+test must be strict: `size < capacity`, not `size <= capacity`.
 
-- requires `index < size`;
-- copies the removed value before shifting when requested;
-- shifts `(size - index - 1)` integers left;
-- decrements size;
-- does not shrink.
+### Insert
+
+Insertion requires valid metadata, `0 <= index && index <= size`, and
+`size < capacity`. The end position `index == size` is allowed.
+
+Validate every condition before moving an element. Shift right from back to
+front, write the new item at the selected index, and return `size + 1`.
+One suitable loop starts at `size` and continues while `i > index`, copying
+`array[i - 1]` into `array[i]`.
+
+Moving front to back overwrites values that still need to be copied. Full or
+invalid requests must preserve the entire backing array, including inactive
+positions.
+
+### Remove
+
+Removal requires valid metadata and `0 <= index && index < size`. Shift all
+later active items left from front to back and return `size - 1`.
+
+Clearing the former last slot is not required. That position lies outside
+the new active prefix, so any retained value is not another list item.
+Removing the last item requires no shifts.
+
+## Complexity
+
+Let `n` be the number of active items. The teaching capacity is fixed at ten;
+the table describes how the work depends on the active count.
+
+| Operation | Work | Additional array storage |
+|---|---:|---:|
+| checked indexed read/update | `O(1)` | `O(1)` |
+| first-match search | `O(n)` worst case | `O(1)` |
+| append | `O(1)` | `O(1)` |
+| insert at index `i` | `O(n - i)` shifts; `O(n)` worst case | `O(1)` |
+| remove at index `i` | `O(n - i - 1)` shifts; `O(n)` worst case | `O(1)` |
+| reject a full append/insert | `O(1)` | `O(1)` |
+
+Index and capacity checks happen before any mutation. They do not depend on
+the number of active values.
+
+## Core versus extension
+
+Read, update, find, append, insert, and remove are all core. The extension
+suite adds only boundary and sequence evidence for those same operations,
+such as:
+
+- duplicate-value first-match selection;
+- negative or inconsistent metadata;
+- empty and full states;
+- insertion at the front and at the end;
+- removal followed by an append into the reopened position; and
+- repeated operations that must preserve order and the active-prefix rule.
+
+Do not present insert or remove as optional implementation work.
 
 ## Toolchain guidance
 
-Preferred warnings for GCC/Clang:
+Preferred GCC/Clang warnings:
 
 ```text
 -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 ```
 
-Sanitizers where supported:
+Runtime checks where supported:
 
 ```text
 -fsanitize=address,undefined -fno-omit-frame-pointer
 ```
 
-MSVC Developer PowerShell:
+Microsoft C uses `/nologo /std:c11 /W4 /Zi`. Provide instructor CI or a
+debugger/invariant-check alternative when a local sanitizer is unavailable.
 
-```text
-/nologo /std:c11 /W4 /Zi
-```
+## Bounds and Invariant Autopsy
 
-Do not make sanitizer availability a grading requirement. Provide instructor CI or a debugger/invariant-check alternative.
+`code/autopsy/faulty_append.c` is a standalone demonstration. It uses an
+eleven-position backing array, a usable capacity of ten, and guard `-999` in
+physical slot ten. The deliberately wrong `size <= capacity` test permits a
+full append to overwrite that guard with `1100` and report size eleven.
 
-## Autopsy isolation
+The write remains inside the demonstration's actual backing array. The
+observed failure is the list contract: the guard changed and
+`size > capacity`. A sanitizer need not report a memory violation, and a
+crash is neither required nor expected.
 
-`code/autopsy/faulty_append.c` is a self-contained separate executable. It
-does not link the reference solution and must never be linked into normal
-tests or submitted as library code. Its intentional invalid write may appear
-as:
-
-- AddressSanitizer error;
-- access violation on Windows;
-- segmentation fault on other platforms;
-- or silent undefined behavior without instrumentation.
-
-The learning target is the earliest invalid state, not obtaining a dramatic crash.
+The correct repair is a strict capacity check before writing. The extra
+guard position is an observation device, not added usable capacity or a
+production repair. Keep the autopsy separate from the normal test suite.
 
 ## Package validation checklist
 
 - [ ] Solution compiles with strong warnings.
-- [ ] Core tests pass.
-- [ ] Extension tests pass.
-- [ ] Forced allocation-failure test passes.
-- [ ] Sanitizer run is clean for the solution.
-- [ ] Autopsy builds separately.
-- [ ] Autopsy is not registered as a passing normal test.
-- [ ] Student starter compiles before TODO completion.
+- [ ] Core tests cover every required operation and pass.
+- [ ] Extension tests add edge and sequence cases and pass.
+- [ ] Runtime checks are clean for the reference implementation.
+- [ ] The guarded autopsy builds and prints its expected invariant failure.
+- [ ] The starter compiles before TODO completion.
+- [ ] No obsolete test target is mentioned in release build files.
 - [ ] Every diagram has a text equivalent.
-- [ ] Student and instructor API names match.
-- [ ] Lab, tests, and rubric agree on core versus extension scope.
-- [ ] Five release archives contain only their documented student-facing
-      stage and no solution or answer key.
+- [ ] Student and instructor API names match the header.
+- [ ] Lab, tests, and the 100-point rubric agree on core scope.
+- [ ] Five staged releases contain only their documented student materials,
+      with no solution or answer key.

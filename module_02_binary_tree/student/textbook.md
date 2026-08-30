@@ -1,271 +1,331 @@
-# Chapter 2. Organizing Data
+# Chapter 2. Organizing Data in a Hierarchy
 
 ## Thinking Logically
 
-### What does data in a hierarchy look like?
+### What does hierarchical data look like?
 
-Think about the folders and files on your computer. Inside the very top folder (called the "root"), there are other folders or files. Inside those folders, there can be even more folders or files.
+Think about a mathematical expression like `(3 + 5) * 2`. You don't just read it in a single straight line from left to right; you calculate the `(3 + 5)` group first, and then multiply that result by `2`. The `*` operation relies on the result of the `+` operation below it. This data branches out into levels of priority, forming a structure much like a family tree, called an expression tree.
 
-### What do we need to store to keep this hierarchy?
+### What should each item remember?
 
-We need to package and store not just the data itself, but also the information about how it connects (or links) to other pieces of data.
+Each item (we call it a node) needs to store its own actual data (such as a math operator or a number) and the exact locations of the items sitting directly beneath it. To keep things simple, each node only looks downward at its own pieces; it has no idea what larger equation is sitting above it.
 
-### The Simplest Method
+### Simple example
 
-We set up empty spots for each piece of data so that it can connect to a maximum of just two other pieces of data.
+A general binary-tree node has two specific child positions, left and right.
+It may use neither position, either one, or both. The completed binary
+expression tree in this chapter follows an additional expression rule: an
+operator such as `+` or `*` uses both positions for its two operands, while a
+number uses neither. The tree functions remain general binary-tree functions;
+they do not enforce this expression-specific rule or calculate the result.
 
-### How do we add data?
+### How do we add a new item?
 
-We connect the new data to an existing piece of data that still has an empty spot available.
+For a binary operator, attach each number or sub-expression to its
+corresponding operand position. Left and right must stay distinct because
+operand order matters for operators such as subtraction and division.
 
-### How do we delete data?
+### How do we describe an item's position?
 
-If the data you want to delete has nothing else connected to it, you simply cut the connection to it.
+You trace the path from the final, outermost operation at the very top down to the specific item. Counting the steps on that downward route tells you exactly how deeply buried that part of the expression is.
 
-If the data you want to delete *does* have other data attached to it, you cut the connection to the data you are removing, and then you take the leftover attached data and add it back in.
+### How do we find a specific piece of data?
 
-When a node with two children is deleted, the right child takes its place. The left child is then dragged all the way down to the bottom-left corner of the right child's family line so the numbers stay in the correct order.
+You start at the very top. If it isn't what you are looking for, you search the entire left side of the equation. If you still don't find it, you search the entire right side. You keep repeating this left-then-right checking process until you find a match.
 
-### How do we delete data with two children?
+### What happens when we throw away a branch?
 
-First, we promote one branch so that the grandparent bypasses the target and grabs onto that branch. This leaves the second branch orphaned, meaning we need to find it a new home on the tree. We scout for a valid empty spot, attach the orphaned branch there, and finally, clean up the memory of the old target node.
+Because a node only looks down, it cannot unhook itself from the operation above it. You must ask the parent to clear the selected child's sub-expression, then set that left or right link to `NULL`. Clearing resets the nodes' data and links. It does not release their storage or end their lifetimes.
 
-## Measuring Efficiency
+## Calculating Efficiency
 
-### Memory Efficiency
+### How much memory does one item use?
 
-Unlike an array that sets aside a huge chunk of space in advance, here we only ask for new memory space exactly when we add a new piece of data. However, each piece of data uses a bit more memory because it also has to store the "connection links" (up to two extra spots) to point to other data.
+Every item takes up a fixed, predictable amount of room: space for its data (a number or symbol), plus space for a left and right pointer. Even a plain number at the bottom reserves the space for those two pointers. Also, when searching or calculating deeply through the expression, the computer uses a little bit of temporary memory to keep track of its place. This temporary memory grows based on how deep the branches go.
 
-### Efficiency of Adding Data
+### How fast is creating or adding one item?
 
-To add new data, you simply start at the top and travel down the connections to find an empty spot. Because you don't have to push or shift a massive row of existing data backward, adding data is very fast. The amount of work depends on how deep the layers go, rather than the total amount of data.
+Setting up a new empty item is instantly fast. Hooking it up to an empty left or right spot is also instantly fast because you are just updating one single location, regardless of how massive the entire equation is.
 
-### Efficiency of Deleting Data
+### How fast is finding a value?
 
-Just like adding data, you don't need to shift everything around. If the data you want to delete is at the very bottom (with nothing connected to it), you just erase the connection instantly. If it has other data connected below it, you simply do a little extra work to reconnect the leftover data so nothing gets lost.
+Because the data isn't sorted in a clever sequence, the computer might have to open every single node in the worst-case scenario. The time it takes grows steadily in proportion to the total number of items you have stored in the tree.
 
-### Efficiency of Finding Data
+### How fast is throwing away a whole branch?
 
-Since the data is connected in layers, you don't have to check every single item one by one. You just follow the connections starting from the top. 
+Unhooking a single sub-expression from its parent is instantly fast. However, going through and wiping out all the nodes sitting below it takes time. The amount of work grows in proportion to how many items are being thrown away.
 
-## Helpful Terms
+## Glossary
 
 ### Node
 
-A single package or "box" that holds your actual data, along with the connection spots (links) to attach to other data.
+One object that stores data and links to related nodes.
 
 ### Tree
 
-A data structure that organizes data in a hierarchy. It is called a tree because if you draw it, it branches out downwards from a single starting point, looking exactly like an upside-down tree.
+A hierarchy in which a node may have children.
 
 ### Binary Tree
 
-A special kind of tree structure where each node can connect to a maximum of exactly **two** other nodes (usually called a "left" connection and a "right" connection).
+A hierarchy in which every node has at most two children, specifically distinguished as left and right.
 
-### Root Node
+### Expression Tree
 
-The very first, topmost piece of data in the tree. Every search or journey starts from this point.
+A tree that represents an expression. In this chapter's completed examples,
+an operator node has two operand children and a number node is a leaf.
 
-### Leaf Node
+### Root
 
-A piece of data at the very bottom of the tree that has empty connection spots (meaning nothing is connected below it).
+The top node (usually the final operation to be evaluated in an expression).
 
-### Pointer (or Link)
+### Parent
 
-The hidden information inside a node that tells the computer exactly where the next connected piece of data is saved in the memory. If a spot is empty, programmers usually call it **NULL**.
+A parent is directly above another node.
+
+### Child
+
+The node directly below it is its child.
+
+### Sibling
+
+A different node with the same parent.
+
+### Ancestor
+
+An ancestor is a node earlier on the path from the root to another node. Ancestors still exist even though our nodes do not store upward links.
+
+### Descendant
+
+A descendant is found below a node by following one or more child links.
+
+### Leaf
+
+A node with no children. Both its `left` and `right` links are `NULL`.
+
+### Subtree
+
+One node together with all of its descendants (a standalone sub-expression).
+
+### Path
+
+A sequence of nodes connected by child links.
+
+### Depth
+
+The number of child links on the path from the root to a node. The root has depth zero.
+
+### Height
+
+The greatest number of child links on a downward path from a node to a leaf. A leaf has height zero.
+
+### Cycle
+
+A path of links that returns to a node already on that path. A valid tree has no cycles.
+
+### Recursion
+
+A technique in which a function calls itself on a smaller part of the same problem. A tree function can process one node and then call itself on each child subtree.
+
+### Cascading Clearance
+
+Recursively resetting every node's data and child links in a subtree. Detachment from its outside parent is a separate caller step.
+
+## Invariant
+
+### What is the invariant (the golden rule) in this data structure?
+
+- The Root Rule: A nonempty tree has exactly one root at the very top.
+
+- The Single-Parent Rule: Every node below the root appears in exactly one child position. Two parent nodes cannot share the exact same child node, and one parent cannot use the exact same node as both its left and right child.
+
+- The Acyclicity Rule (No Loops): A node cannot be placed inside itself, and you can never create an endless loop where following child links downward leads you back to where you started.
+
+### What happens if an invariant is broken?
+
+- If the Root Rule breaks: Two disconnected starting nodes describe two
+  separate trees, not one tree. A search or clearance that starts at one root
+  cannot reach the nodes below the other root.
+
+- If the Acyclicity Rule breaks: Imagine Node A links to Node B, and Node B links back to Node A. A search that keeps following those links, or a recursive clearance, can revisit the same nodes without finishing and exhaust call-stack space.
+
+- If the Single-Parent Rule breaks: Even without a loop, if Node A and Node B both contain Node C, the structure is not a tree. A search may visit Node C twice. Clearing Node A also clears Node C, so Node B unexpectedly sees changed data and links. Node C still exists; its storage has not been released.
+
+### How do we keep the invariant intact?
+
+The examples check whether the chosen child position is empty. The programmer must also use initialized nodes, avoid cycles and shared children, and keep every linked node variable alive while its address is used. These small examples do not automatically validate the whole tree.
 
 ## Coding Plan
 
-### Designing a Data Package (Node)
+### Designing a node
 
-* **Blueprint:** Create a blueprint that has one spot for the data, one spot for a left connection, and one spot for a right connection.
+- Store one integer named `data`.
+- Store two pointers: one for the `left` child, one for the `right` child.
 
-### Creating New Data
+### Initializing a node
 
-* **Allocate Memory:** Get exactly enough memory space from the computer to hold one single node.
-* **Save Data:** Put your data into the node's data spot.
-* **Empty Connections:** Set both the left and right connections to "empty" since the package isn't connected to the tree yet.
+- Take an existing node variable.
+- Save the data and set both the left and right links to `NULL`.
 
-### Connecting Data Together
+### Adding a child
 
-* **Find a Parent:** Choose an existing node in the tree that still has an empty connection spot.
-* **Attach Child:** Link the existing node's empty left or right connection spot directly to your newly created node.
+- Check if the desired side (left or right) is currently empty.
+- Put the child's address in that specific link.
 
-### Deleting Data (Cutting a Connection)
+### Finding a value
 
-* **Find Target:** Find the parent of the data you want to delete.
-* **Cut Link:** Change the parent's connection from the target data to "empty".
-* **Clean Up:** Give the memory space used by the deleted data back to the computer.
+- Return `NULL` when the current link is empty.
+- Return the current node when its data matches.
+- Recursively search the left child.
+- If not found there, recursively search the right child.
+
+### Clearing a subtree
+
+- Recursively clear the left child.
+- Recursively clear the right child.
+- Reset the node's data and empty its links.
+
+The cleared node remains a live object. A data value of `0` does not mean that a node is absent; only a `NULL` link means no child.
+
+### Removing a child
+
+- Fully clear the selected child's subtree.
+- Set the parent's link (left or right) to NULL.
 
 ## New C Syntax Explained
 
-### `struct` (Structures)
+### A Pointer to the Same Structure Type
 
-In Chapter 1, we stored simple numbers using standard types like `int`. However, a tree node needs to hold three things at once: the data, a left connection, and a right connection. A `struct` allows you to design your own custom package or "blueprint" that groups these different pieces of information together into one single unit.
+Inside `struct TreeNode`, the left and right pointers store the addresses of other nodes of the exact same type.
 
-### `*` (Pointers and Structures)
+### `&` (The Address-Of Operator)
 
-When you connect nodes together, you don't physically place one entire node inside another. Instead, you use a pointer. By placing an asterisk (`*`) next to a data type (like `struct Node *`), you tell the computer that this variable won't hold actual data. Instead, it holds the exact memory address (the physical location) of where another piece of data is stored. In our tree, the left and right connection spots are pointers acting as signposts guiding the computer to the next connected node.
-
-### `->` (The Arrow Operator)
-
-When you have a normal package of data, you can look inside it easily. But when you only have a pointer (the map to the package), you need a special tool to reach inside it. The arrow operator (`->`) tells the computer: "Follow this pointer to the actual memory address, and once you are there, access this specific spot inside the package." For example, `new_node->data = 100` means "go to the new node's location and set its data spot to 100."
+Since we are not dynamically requesting memory, we create nodes as regular variables (e.g., `struct TreeNode root;`). To link these variables together, we need to find exactly where they live in memory. Putting an `&` in front of a variable (like `&root`) gives you its memory address. The address may be used only while that local object remains alive.
 
 ### `NULL`
 
-When you create a pointer, it needs to point somewhere. If a node doesn't have any other data connected to it yet (like a newly created node or a leaf at the bottom of the tree), you must explicitly set its connection to NULL. NULL is a special programming keyword that means "empty" or "nowhere." It serves as a safe dead end, telling the computer to stop looking because there is no further data down this path.
+`NULL` means that a pointer does not currently identify an object. An unused child link contains `NULL`.
+
+### Explicit `struct` Tags
+
+By choosing not to use `typedef`, you must explicitly tell the compiler what kind of custom data type you are referencing. Every time you declare a node variable or pointer, you must write `struct TreeNode`.
+
+### `.` and `->` (Accessing Fields)
+
+`root.data` accesses a field in the node variable `root`. `node->data` accesses the same kind of field through the address stored in the pointer `node`.
+
+### Recursive Functions
+
+A recursive function needs a stopping case. The search and clearing functions stop when their current node pointer is `NULL`. Without a stopping case, calls could continue until the program runs out of call-stack space.
 
 ## C Code
 
-### Designing a Data Package (Node)
+### Designing the node
 
 ```c
-/* Blueprint for a Node */
-struct Node {
-        int data;               /* Spot for the data */
-        struct Node *left;      /* Spot for the left connection */
-        struct Node *right;     /* Spot for the right connection */
-};
+#include <stddef.h>
 
-```
-
-### Creating New Data
-
-```c
-#include <stdlib.h>
-
-/* Allocate Memory */
-struct Node *new_node = malloc(sizeof(struct Node));
-
-if (new_node != NULL) {
-        
-        /* Save Data */
-        new_node->data = 100;
-
-        /* Empty Connections (NULL means empty) */
-        new_node->left = NULL;
-        new_node->right = NULL;
-}
-
-```
-
-### Connecting Data Together
-
-```c
-/* Imagine we already have a top node called 'root_node' */
-/* and we want to attach our 'new_node' to its left side */
-
-/* Find Parent's empty spot and Attach Child */
-root_node->left = new_node;
-
-```
-
-### Deleting Data (Cutting a Connection)
-
-```c
-/* If we want to delete a child node that has nothing else connected below it */
-
-/* Cut Link */
-root_node->left = NULL;
-
-/* Clean Up Memory */
-free(new_node);
-
-```
-
-```c
-/* If we want to delete a child node that has only left node connected below it */
-
-/* Cut Link */
-root_node->left = new_node->left;
-
-/* Clean Up Memory */
-free(new_node);
-
-```
-
-```c
-/* If we want to delete a child node that has only right node connected below it */
-
-/* Cut Link */
-root_node->left = new_node->right;
-
-/* Clean Up Memory */
-free(new_node);
-
-```
-
-```c
-/* If we want to delete a child node that has both left and right node connected below it */
-
-/* Cut Link */
-root_node->left = new_node->right;
-
-/* save left node */
-struct Node *new_parent = new_node->right;
-
-while (new_parent->left != NULL)
-        new_parent = new_parent->left;
-
-new_parent->left = new_node->left;
-
-/* Clean Up Memory */
-free(new_node);
-
-```
-
-### Complete, Working Example of Tree
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-/* 1. The Blueprint */
-struct Node {
+struct TreeNode {
         int data;
-        struct Node *left;
-        struct Node *right;
+        struct TreeNode *left;
+        struct TreeNode *right;
 };
+```
 
-/* 2. A helper function to build a new package (node) safely */
-struct Node* create_node(int data) 
+### Initializing a node
+
+```c
+struct TreeNode root;
+root.data = '*'; /* The root of the expression `(3 + 5) * 2` */
+
+/* Set child links to empty */
+root.left = NULL;
+root.right = NULL;
+```
+
+The field has type `int`. C character constants such as `'*'` and `'+'` also
+have integer type, so they can represent operators without relying on a
+particular numeric character code.
+
+### Building the complete example
+
+```c
+struct TreeNode three = { 3, NULL, NULL };
+struct TreeNode five = { 5, NULL, NULL };
+struct TreeNode plus = { '+', NULL, NULL };
+struct TreeNode two = { 2, NULL, NULL };
+struct TreeNode root = { '*', NULL, NULL };
+
+if (plus.left == NULL) {
+        plus.left = &three;
+}
+if (plus.right == NULL) {
+        plus.right = &five;
+}
+if (root.left == NULL) {
+        root.left = &plus;
+}
+if (root.right == NULL) {
+        root.right = &two;
+}
+```
+
+These five live local variables represent `(3 + 5) * 2`. The root stores
+`'*'`; its left child stores `'+'` and its right child stores `2`. The `+`
+node's left and right children store `3` and `5`, respectively.
+
+### Finding a value recursively
+
+```c
+struct TreeNode* tree_find(struct TreeNode *node, int target)
 {
-        /* Allocate exact memory for one node */
-        struct Node *new_node = malloc(sizeof(struct Node));
-
-        /* Make sure the computer actually gave us the memory */
-        if (new_node != NULL) {
-                new_node->data = data;
-                new_node->left = NULL;  /* Set empty connections */
-                new_node->right = NULL; 
+        if (node == NULL) {
+                return NULL;
+        }
+        if (node->data == target) {
+                return node;
         }
 
-        return new_node;
-}
+        /* Search the left subtree first */
+        struct TreeNode *found = tree_find(node->left, target);
+        if (found != NULL) {
+                return found;
+        }
 
-int main() 
-{
-        /* 3. Create the Root Node */
-        struct Node *root = create_node(50);
-
-        /* 4. Attach Children using the "Smart Rule" */
-        /* 25 is smaller than 50, so it goes left */
-        root->left = create_node(25);
-
-        /* 75 is bigger than 50, so it goes right */
-        root->right = create_node(75);
-
-        /* 5. Prove it works by printing the data */
-        printf("Root node: %d\n", root->data);
-        printf("Left child: %d\n", root->left->data);
-        printf("Right child: %d\n", root->right->data);
-
-        /* 6. The Safety Check: Clean up memory! */
-        /* Always free the bottom leaves first, then the root */
-        free(root->left);
-        free(root->right);
-        free(root);
-
-        return 0;
+        /* If not found on the left, search the right subtree */
+        return tree_find(node->right, target);
 }
 ```
+
+### Clearing a subtree
+
+```c
+void tree_clear(struct TreeNode *node)
+{
+        if (node == NULL) {
+                return;
+        }
+
+        /* Clear children recursively */
+        tree_clear(node->left);
+        node->left = NULL;
+
+        tree_clear(node->right);
+        node->right = NULL;
+
+        node->data = 0;
+}
+```
+
+### Clearing a child
+
+```c
+/* Clear the left child and everything below it */
+tree_clear(root.left);
+
+/* Detach it cleanly so the tree rule is maintained */
+root.left = NULL;
+```
+
+The resulting right-only shape can remain a structurally valid general binary
+tree. It no longer represents the complete expression `(3 + 5) * 2`, because
+the `*` operator is missing its left operand.

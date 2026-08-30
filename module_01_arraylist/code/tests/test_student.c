@@ -9,12 +9,13 @@ static unsigned int tests_run = 0U;
 static unsigned int tests_failed = 0U;
 
 /*
- * Replace each placeholder body with a test you designed. If a test
- * initializes a list, destroy it on every return path.
+ * Replace each placeholder body with a test you designed. Use an automatic
+ * array, a size count, and a fixed usable capacity. Keep the usable capacity
+ * within the actual array extent; there is no cleanup operation.
  */
 static bool test_student_case_1(void)
 {
-    /* TODO: add a nonduplicate boundary or malformed-input test. */
+    /* TODO: add a nonduplicate capacity, index, or metadata boundary test. */
     return false;
 }
 

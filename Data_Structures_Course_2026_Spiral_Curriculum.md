@@ -46,7 +46,7 @@ By the end of the course, students will be able to:
 
 | Spiral | Linear/supporting module | Tree module | Graph module | Recurring idea |
 |---|---|---|---|---|
-| 1 | 1. Keeping ordered data together with an ArrayList | 2. Binary-tree foundations and BST seed | 3. Graph models and representations | Representing relationships in memory |
+| 1 | 1. Keeping ordered data together with an ArrayList | 2. Expression-tree model and binary-tree links | 3. Graph models and representations | Representing relationships in memory |
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
 | 3 | 7. Queue | 8. Tree BFS | 9. Graph BFS | FIFO-controlled exploration |
 | 4 | 10. Priority Queue ADT | 11. Binary Heap | 12. Dijkstra | Priority-controlled exploration |
@@ -55,9 +55,9 @@ By the end of the course, students will be able to:
 This map contains deliberate previews and returns:
 
 - The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Modules 8 and 9 form one breadth-first week, and Modules 10 and 11 form one priority/Heap week.
-- Module 13 is an associative-index bridge between Spirals 4 and 5. It returns to array growth, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
-- Linked nodes are previewed in Module 1, used in early tree work, and retrieved through bounded implementation and repair in Module 14.
-- BST ordering is seeded in Module 2, used during tree traversals, and formally strengthened into AVL balance in Module 15.
+- Module 13 is an associative-index bridge between Spirals 4 and 5. It revisits Module 1's array bounds and Module 4's growable-array storage, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
+- Linked local node variables appear in Module 2. Allocation is introduced with the Stack in Module 4 and with individual tree nodes in Module 5, then retrieved through bounded implementation and repair in Module 14.
+- Module 2 uses an expression tree to introduce binary-tree links, node lifetime, and simple recursive processing. Module 5 formalizes traversal orders and introduces binary-search ordering before Module 15 strengthens that ordering with AVL balance.
 - Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
 - Stack precedes DFS; Queue precedes BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find precedes Kruskal.
@@ -115,69 +115,125 @@ Production materials: [Module 1 teaching package](module_01_arraylist/README.md)
 Students will:
 
 - explain why neighboring memory positions support direct indexed access;
-- compare direct index lookup with value-by-value search;
+- perform checked indexed reads and updates, and compare them with first-match value search;
 - preserve the no-gap, index-0 rule during insertion and deletion;
-- describe how a full array moves to a larger memory space;
-- explain why doubling reduces repeated copying across many additions;
-- connect `sizeof`, pointers, `malloc`, `NULL`, and `free` to dynamic-array growth.
+- distinguish the fixed capacity from the number of stored items;
+- reject a full-array addition before changing any slot or the item count;
+- translate the textbook loops into functions using plain array parameters and returned counts.
 
 ### Macro-Question
 
-> How can we keep ordered data together, preserve its order when items are added or deleted, and continue when the original memory space becomes full?
+> How can we keep ordered data in ten positions, preserve its order when items are added or deleted, and reject an addition when no position remains?
 
 ### Micro-Questions
 
 - Why can an index locate an item directly?
 - Why can finding an item by value require checking every item?
+- How do the stored-item count and the fixed capacity differ?
 - Which direction must items move during insertion and deletion?
-- What condition means the current memory space is full?
-- In what order should data move to a larger space?
-- Why does doubling make complete copies happen less often?
+- Why is index `size` a possible insertion position but not a stored item?
+- What must remain unchanged when an index is invalid or the array is full?
 
 ### Learning sequence
 
-Meeting A follows the frozen textbook. Students use the values 10, 50, 20,
-30, and 99 to trace indexed access, value search, deletion, insertion, and
-movement from a full four-slot space to an eight-slot space. They state the
-rule that stored items begin at index 0 without gaps and explain the average
-work of repeated additions in plain language.
+The module uses two 90-minute meetings and five gated releases. Stage A
+preserves each student's initial model without a vocabulary reference.
+Stage B reveals the representation and vocabulary and ends with an individual
+Cognitive Pause; Stage C follows the instructor explanation. Stage D releases
+the textbook after the Stage C core is saved, and Stage E supplies the
+Meeting B lab. Standard and linear materials have the same questions and
+evidence requirements.
 
-Meeting B maps the textbook's starting address and tracking numbers to the
-repository's `IntList` fields. The lab then adds checked access, allocation
-failure handling, arithmetic limits, tests, and cleanup contracts as
-implementation-level engineering requirements.
+Meeting A follows the revised textbook's fixed-capacity model:
+
+```c
+int array[10] = {100, 200, 300};
+int size = 3;
+int capacity = 10;
+```
+
+Students distinguish the active prefix `array[0]` through `array[size - 1]`
+from inactive positions. They read index 1, update it to 500, remove index 1
+to obtain `[100, 300]`, and insert 600 at index 1 to obtain
+`[100, 600, 300]`. Appending 200 then gives `[100, 600, 300, 200]`.
+A separate duplicate example establishes that value search returns the first
+matching index. A full ten-item example rejects append and insertion without
+changing the count or any array element. Capacity remains 10 throughout.
+
+Meeting B translates these traces into plain array-parameter functions.
+Students check indexes before direct reads or updates, search the active
+prefix, append only when there is room, shift right from back to front for
+insertion, and shift left for removal. All operations are core; extensions
+add edge-case and operation-sequence tests, not additional required APIs.
 
 ### C lab and cybersecurity context
 
-Implement an ArrayList that stores synthetic authentication-event codes.
-Required core tests include empty access, first growth, repeated growth,
-invalid indexes, and cleanup. Insertion/removal tests accompany a scaffolded
-or extension implementation. An instructor-only deterministic allocator hook
-forces the real reserve path to fail and verifies complete state preservation.
+Implement the following fixed-array operations for synthetic event codes:
 
-The security emphasis is safe ingestion of an unpredictable event volume: bounds checks, capacity arithmetic, resource limits, and explicit failures. “Dynamic” does not mean unlimited.
+```c
+int int_list_valid_index(int size, int capacity, int index);
+int int_list_append(int array[], int size, int capacity, int value);
+int int_list_insert(int array[], int size, int capacity, int index, int value);
+int int_list_remove(int array[], int size, int capacity, int index);
+int int_list_find(const int array[], int size, int capacity, int value);
+```
+
+Metadata is valid when `0 <= size <= capacity`; zero capacity with zero size
+is valid. The caller supplies an actual live array whose extent is at least
+`capacity`. `int_list_valid_index` returns 1 only for valid metadata and
+`0 <= index < size`; students use it before a direct `array[index]` read or
+update. `int_list_find` returns the first matching active index, or -1 for
+absence or invalid metadata.
+
+Append, insert, and remove return the new count on success and the original
+count on rejection. The caller retains that result, for example
+`size = int_list_append(array, size, capacity, 400);`. Invalid metadata,
+an invalid index, or a full-array addition must leave every array element
+unchanged. Insertion accepts `0 <= index <= size` only when there is room;
+removal accepts `0 <= index < size`. Removal need not erase the now-inactive
+tail position.
+
+Core tests cover checked read/update, first-match search, append, insertion,
+removal, and rejection without mutation. Students add three nonduplicate
+tests. The Bounds and Invariant Autopsy uses an eleven-element demonstration
+array with a usable capacity of ten and a guard at physical index 10. A faulty
+`size <= capacity` append changes the guard from -999 to 1100 and the count
+from 10 to 11. This safely exposes the logical bound violation without a real
+out-of-bounds access. The extra guard is a teaching fixture, not the repair;
+the repair checks `size < capacity` before any mutation.
+
+The security connection is bounded input handling: a rejected item must not
+overwrite another position or make the item count untrustworthy. Any policy
+for rejecting, deferring, or reporting excess input is separate from the
+fixed-array representation.
 
 ### Evidence of learning
 
-- insertion, deletion, and expansion traces;
+- indexed-access, first-match search, insertion, and deletion traces;
 - tested C implementation plus three nonduplicate student-authored
   contract/property tests;
-- operation-cost table;
-- annotated memory defect and repair;
-- explanation connecting the textbook model to the `IntList` lab;
-- bounded-ingestion or backpressure policy distinct from representation safety.
+- full-array and invalid-index evidence showing unchanged count and contents;
+- operation-cost table: indexed read/update and append are `O(1)`; search,
+  insertion, and removal are `O(n)` in the worst case;
+- annotated guard-autopsy explanation, repair, and regression test;
+- explanation of the active prefix and the caller's returned-count assignment.
+
+The 100-point rubric assigns 20 points to the model and invariant, 25 to core
+operations, 20 to bounds and rejection, 15 to tests, 10 to efficiency, and 10
+to the autopsy.
 
 ### Spiral links
 
-**Revisits:** arrays, indexing, loops, pointers, allocation, and release.
+**Revisits:** plain arrays, indexing, conditions, loops, and function calls.
 
-**Forward:** fixed node arenas in Module 2, graph matrices in Module 3, Stack
-backing storage in Module 4, Hash Table storage in Module 13, and linked-list
-implementation/repair in Module 14.
+**Forward:** linked node variables in Module 2, graph matrices in Module 3,
+growable Stack backing storage introduced in Module 4, and checked Hash Table
+storage in Module 13. Allocation and release belong to the later Stack and
+owned-node labs, not this chapter.
 
 ---
 
-## Module 2 — Tree: Binary-tree foundations and BST seed
+## Module 2 — Tree: Expression-tree model, binary-tree links, and recursive clearance
 
 Production materials: [Module 2 teaching package](module_02_binary_tree/README.md)
 
@@ -185,59 +241,107 @@ Production materials: [Module 2 teaching package](module_02_binary_tree/README.m
 
 Students will:
 
-- use root, parent, child, leaf, path, depth, height, and subtree terminology;
-- translate among a tree diagram, a child-index table, and a pointer-linked C representation;
-- state the defining invariants of a rooted binary tree;
-- safely construct and inspect fixed trees with `NULL` children;
-- recognize the global ordering invariant that turns a binary tree into a BST and state an explicit duplicate-key policy.
+- identify root, parent, child, sibling, ancestor, descendant, leaf, path, depth, height, and subtree;
+- map the expression `(3 + 5) * 2` to a five-node binary tree while distinguishing expression rules from generic binary-tree rules;
+- translate between a binary-tree diagram and local node variables with distinct left/right links;
+- explain the one-incoming-link and no-cycle invariants, including the caller's responsibility for them;
+- initialize nodes and attach a fresh child only to an empty chosen side;
+- implement current-node, left-subtree, right-subtree search and return the first matching node;
+- clear a selected subtree, detach its parent-side link explicitly, and preserve the other branch;
+- distinguish resetting fields from ending a node variable's lifetime.
 
 ### Macro-Question
 
-> How can separate memory objects represent a hierarchy, and what rules prevent those links from becoming an arbitrary graph?
+> How can separate node variables represent a hierarchy, and how can we search and clear its branches without losing track of the links?
 
 ### Micro-Questions
 
-- Does `left` contain a child object or the address of one?
-- How is “no child” represented?
-- What prevents cycles or multiple parents?
-- Does a child need to be adjacent to its parent in memory?
-- What must be true of every key in the left and right subtrees—not merely the immediate children?
+- Does a child field contain another node or its address?
+- Why are `'*'` and `'+'` valid values for an `int` field in this simplified C model?
+- Why does operand position matter even though a generic tree allows either side to be empty?
+- Why is a right-only child valid, and why must it stay on the right?
+- Why can two parents not share a child even without a cycle?
+- What stops the recursive search or clearance?
+- Why can an unsorted-tree search need to inspect every node?
+- Why does clearing a child not automatically detach the parent's link?
 
 ### Learning sequence
 
-Meeting A contrasts Chapter 1's contiguous row with separately connected tree
-nodes. Students reconstruct trees from child-index tables, identify cycle and
-duplicate-parent violations, and compare logical position with physical
-address. BST order is introduced globally: every left-subtree key is lower
-and every right-subtree key is higher under the course’s stated “reject
-duplicate keys” policy. Rotations and balancing are deferred.
+Use two 90-minute meetings and the five A–E release gates. Meeting A
+contrasts Chapter 1's contiguous row with distinct local node variables.
+Students first model the hierarchy, then learn addresses, `struct`,
+`&`, `.`, `->`, and `NULL`. The canonical tree represents `(3 + 5) * 2`:
+root `'*'` has left child `'+'` with children `3` and `5`, and right child
+`2`. The current-left-right search sequence is `'*', '+', 3, 5, 2`.
+Stage C transfers the same reasoning to `(8 - 3) * (4 + 2)`. Vocabulary
+belongs to Stage B; Stage D notes do not reveal the later autopsy's result.
 
-Meeting B provides a syntax sandbox for self-referential `struct`, `TreeNode *`, `->`, `&nodes[i]`, and `NULL`. Students build a tree in a fixed, non-resizing node arena and query only immediate relationships. Formal traversal waits until Stack and DFS.
+Meeting B implements exactly the two functions shown in the textbook:
+
+```c
+struct TreeNode *tree_find(struct TreeNode *node, int target);
+void tree_clear(struct TreeNode *node);
+```
+
+The node has `int data`, `struct TreeNode *left`, and
+`struct TreeNode *right`. Initialization and guarded attachment remain
+direct field operations. C character constants such as `'*'` and `'+'`
+have type `int`; using them here is a simplified label encoding, not a
+type-safe evaluator. To remove the left branch, the caller uses
+`tree_clear(parent.left);` followed by `parent.left = NULL;`.
+No child positions are shifted. Students construct local fixtures in three
+authored tests and explain the return path and clearance sequence.
+
+A generic binary-tree node may have zero, one, or two children. A completed
+binary expression using binary operators requires two operands per operator
+and no children below a numeric operand. The two child-pointer fields enforce
+the generic two-position limit, but the library does not validate the
+expression-specific arity rule. After removing one operand, the links may
+still form a valid tree even though they no longer encode a complete expression.
+
+Formal DFS and named traversal-order comparisons belong to Module 5.
+Allocation, parent pointers, shared-root queries, status-code interfaces,
+binary-search ordering, and balancing are not Module 2 work.
 
 ### C lab and cybersecurity context
 
-Build a simplified process or directory hierarchy and implement:
+The caller supplies initialized node objects that remain live while their
+addresses are used. Child links must form a finite, acyclic, unshared tree.
+The functions assume those conditions; they do not validate an arbitrary
+graph. A guarded direct attachment preserves an occupied side.
 
-- `is_leaf`;
-- `child_count`;
-- immediate-family reporting;
-- child assignments followed by an instructor-supplied whole-tree validator;
-- a range-propagating BST validator on a supplied small example.
+`tree_find` returns the first matching address or `NULL`, without changing
+the tree. `tree_clear(NULL)` does nothing. Clearing resets all reachable
+data to zero and child links to `NULL`, but does not release storage or
+remove an outside parent's link. Zero remains an ordinary data value.
 
-The lab distinguishes a local empty-slot check from global validation: preserving “one parent” and “no cycles” requires arena-wide bookkeeping or validation. Fixed-arena nodes are never passed to `free`; Module 5 explicitly introduces separately heap-owned nodes. Students explain why symbolic links or shared children would violate the pure-tree model and motivate graphs.
+The bounded autopsy intentionally gives two parents the same live child.
+Clearing one branch unexpectedly changes the child observed from the other.
+All objects remain live, so the lesson concerns logical aliasing, not a
+dangling pointer or a double free. Do not run recursive functions on an
+actual cycle or deliberately exhaust call-stack space.
 
 ### Evidence of learning
 
-- diagram ↔ index-table ↔ pointer translation;
-- fixed-arena C construction;
-- identification of a structural violation;
-- pointer-state diagram;
-- initial explanation of the BST-ordering benefit.
+- expression-diagram-to-left/right-field translation and a separate generic right-only-child case;
+- direct local initialization and occupied-side preservation;
+- correct recursive search, including duplicate values and absence;
+- branch clearance with explicit detachment and unchanged opposite branch;
+- three nonduplicate student-authored tests and warning/diagnostic evidence;
+- an explanation that cleared objects remain live;
+- corrected Cognitive Pause and bounded autopsy reasoning.
 
 ### Spiral links
 
-**Revisits:** addresses, `NULL`, ownership, representation invariants.  
-**Forward:** graph generalization in Module 3, DFS in Module 5, BFS in Module 8, and BST/AVL mastery in Module 15.
+**Revisits:** variables, conditions, loops, fixed storage, and invariants.
+
+**Introduces:** an expression-tree application, self-referential structs,
+node addresses and lifetimes, distinct left/right links, recursive search,
+and recursive field clearance.
+
+**Forward:** graph relationships in Module 3; allocation and growable storage
+in Module 4; formal DFS and allocated-node destruction in Module 5; BFS in
+Module 8; BST/AVL synthesis in Module 15.
 
 ---
 
@@ -249,11 +353,11 @@ Production materials: [Module 3 teaching package](module_03_graph/README.md)
 
 Students will:
 
-- distinguish directed/undirected and weighted/unweighted graphs;
-- use vertex, edge, neighbor, degree, path, cycle, and undirected-component vocabulary;
-- translate among a diagram, edge set, and adjacency matrix;
-- implement bounded matrix-based graph operations;
-- compare adjacency-matrix, edge-list, and adjacency-list trade-offs.
+- distinguish directed from undirected and weighted from unweighted graphs;
+- use vertex, edge, degree, path, cycle, self-loop, and isolated-vertex vocabulary;
+- translate the textbook's three-server graph among connections and a matrix;
+- implement four bounded directed-matrix operations; and
+- compare matrix, edge-list, and adjacency-list representations conceptually.
 
 ### Macro-Question
 
@@ -263,35 +367,50 @@ Students will:
 
 - What becomes a vertex, and what becomes an edge?
 - How does direction change the meaning of an edge?
-- Why is an undirected adjacency matrix symmetric?
+- How would two-way communication appear as two directed cells?
 - Which tree invariants no longer apply?
 - When is a matrix wasteful, and what would an adjacency list store instead?
 
 ### Learning sequence
 
-Meeting A adds cross-links and back-links to the Module 2 hierarchy. Students encode the result as an edge set and adjacency matrix, manually identify paths and undirected components, and compare representations without yet performing graph search.
+Meeting A contrasts Chapter 2's tree rules with relationships that share a
+destination or form a cycle. Students use the three textbook vertices—Web,
+App, and Database—and translate `0 -> 1`, `1 -> 2`, and `1 -> 0` into a
+directed integer adjacency matrix. Undirected graphs, weights, edge lists,
+adjacency lists, symmetric matrices, and connected components remain
+conceptual comparisons. No formal graph search is performed.
 
-Meeting B implements a bounded adjacency-matrix `Graph`. Modules 3–12 use a simple-graph contract: parallel edges and self-loops are rejected. The low-pointer representation deliberately reduces extraneous load. Adjacency lists are explained and will return after students have stronger dynamic-storage skills. Directed-graph work uses reachability or traversal-forest language rather than the ambiguous word “component.”
+Meeting B implements a bounded `struct DirectedGraph` with `vertex_count`
+and a fixed 16 by 16 `int grid`. Active vertex IDs are the dense range from
+zero through one less than the count. Entries are 0 or 1, inactive rows and
+columns stay zero, and the diagonal stays zero. Cycles longer than a
+self-loop and multiple incoming edges are valid. Adjacency lists return after
+students have stronger dynamic-storage skills.
 
 ### C lab and cybersecurity context
 
 Implement:
 
 - `graph_init`;
-- directed and undirected edge insertion;
-- edge removal and query;
-- degree or in/out-degree;
-- neighbor printing;
-- vertex-range validation.
+- idempotent `graph_add_edge` for one directed cell;
+- idempotent `graph_remove_edge`; and
+- row-based `graph_out_degree`.
 
-The lab models permitted communication in a synthetic network. An edge represents a modeled connection or policy permission, not proof of exploitability.
+Guarded direct matrix lookup is core test work rather than another public
+function. The lab has no graph-kind enum, status enum, Boolean matrix,
+whole-graph validator, neighbor result, in-degree helper, or undirected
+mutation API. Initialization clears all 256 cells. Rejected bounds or
+self-loop insertion leaves the graph unchanged.
+
+The lab models permitted communication in a synthetic network. An edge is a
+stored relationship, not proof that communication occurred.
 
 Module 16 deliberately broadens the input contract to an edge-list representation that may contain parallel edges and self-loops; its algorithms handle or ignore those cases explicitly.
 
 ### Evidence of learning
 
-- equivalent diagram, edge set, and matrix;
-- tested graph API;
+- equivalent connection description and directed matrix;
+- tested four-function API and direct guarded lookup;
 - representation comparison;
 - explanation of why the model is no longer a tree.
 
@@ -318,6 +437,7 @@ Students will:
 
 - specify the LIFO contract independently of its backend;
 - implement a checked ArrayList-backed Stack;
+- trace growable-array storage and checked geometric growth introduced in this module;
 - trace mixed `push`, `pop`, and `peek` operations;
 - use a Stack to validate nested delimiters;
 - distinguish a Stack ADT from the C runtime call stack.
@@ -331,12 +451,21 @@ Students will:
 - Which item may be removed next?
 - How should underflow be reported?
 - Why must clients not bypass the Stack API and index the backing ArrayList?
+- How can a replaceable backing array preserve prior state when a growth request fails?
+- Why does doubling reduce the frequency of complete copies during repeated pushes?
 - Why does nested structure require LIFO matching?
 - How does recursion also depend on stack-like saved state?
 
 ### C lab and cybersecurity context
 
 Implement a character Stack and validate delimiters in simplified security-policy expressions. Test empty input, deep nesting, an unmatched closing delimiter, a mismatched delimiter, leftover openings, and an explicit resource limit.
+
+Growable-array storage, replacement-buffer ownership, and checked geometric
+growth are introduced here. Students carry forward Module 1's active-prefix
+and bounds rules while learning how a successful growth changes capacity and
+how a failed growth preserves prior state. They distinguish an individual
+copying push from the amortized cost of repeated pushes under a doubling
+policy. These are new Stack-backend requirements, not Chapter 1 tasks.
 
 Malformed input must fail safely. The module explicitly distinguishes stack-buffer vulnerabilities, runtime call frames, and the Stack ADT.
 
@@ -352,7 +481,12 @@ Because C has no automatic generic container, later modules receive separately t
 
 ### Spiral links
 
-**Revisits:** ArrayList invariants, encapsulation, checked errors.  
+**Revisits:** Module 1's contiguous storage, size/capacity distinction, and
+bounds checks; node addresses, fields, and local-variable lifetime from Module 2.
+
+**Introduces:** allocation and release, growable-array storage, checked
+doubling, owned storage, Stack encapsulation, and its error contract.
+
 **Forward:** tree DFS and graph DFS.
 
 ---
@@ -371,7 +505,7 @@ Students will:
 - trace preorder, inorder, and postorder;
 - implement recursive preorder, inorder, and postorder traversal;
 - trace an explicit-stack preorder traversal and explain its correspondence to call frames;
-- trace and complete scaffolded BST search using the Module 2 ordering seed;
+- distinguish the binary-tree representation and trace scaffolded BST search before completing it;
 - inspect and test an instructor-provided BST insertion baseline that returns in Module 15;
 - use postorder to destroy a dynamically allocated tree safely;
 - analyze traversal as `O(n)` time and `O(h)` auxiliary space.
@@ -397,7 +531,7 @@ Traverse a synthetic in-memory directory or policy tree:
 - perform an inorder trace and complete scaffolded BST search;
 - destroy a heap-allocated test tree in postorder.
 
-The instructor supplies the heap-building fixture and constructor so students do not confuse Module 2’s non-owning arena nodes with individually allocated nodes. Real filesystem traversal is not required. Students document that aliases or symbolic links would require graph-style visited tracking.
+The instructor supplies the allocated-node fixture and constructor. Students reuse Module 2's binary `left`/`right` links while learning that these nodes now require matching release calls. Module 2 only reset local node fields; Module 5 destroys individually allocated nodes. Real filesystem traversal is not required. Students document that aliases or symbolic links would require graph-style visited tracking.
 
 ### Evidence of learning
 
@@ -444,7 +578,16 @@ Students will:
 
 ### C lab and cybersecurity context
 
-Using the Module 3 graph, implement iterative DFS, report all vertices reachable from a selected source, and count connected components only for an undirected graph. The implementation uses an instructor-provided vertex-ID Stack with the Module 4 contract. Students trace the equivalent recursive control flow; implementing that second form is an extension. Test a cycle, an isolated vertex, a disconnected graph, and a single vertex. A separate faulty-input test verifies that the simple-graph API rejects a self-loop.
+Using an instructor-supplied Boolean directed/undirected graph that extends
+Module 3's fixed-matrix idea, implement iterative DFS, report all vertices
+reachable from a selected source, and count connected components only for an
+undirected graph. The broader graph kind and whole-graph validation belong to
+Module 6 support, not the Module 3 implementation. The implementation uses
+an instructor-provided vertex-ID Stack with the Module 4 contract. Students
+trace the equivalent recursive control flow; implementing that second form
+is an extension. Test a cycle, an isolated vertex, a disconnected graph, and
+a single vertex. A separate faulty-input test verifies that the Module 6
+support API rejects a self-loop.
 
 The Week 6 practical collects this implementation, trace, repair, and transfer evidence. There is no additional ordinary Module 6 submission in the 14-week path.
 
@@ -879,7 +1022,10 @@ Let `n` be live entries and `m` be capacity. Expected lookup, insertion, and del
 
 ### Bridge links
 
-**Revisits:** Module 1 contiguous storage and growth, modular indexing, failure preservation, and Module 12's dense internal vertex IDs.  
+**Revisits:** Module 1's contiguous storage, bounds, and unchanged state after
+rejection; Module 4's growable-array storage, doubling, and failed-growth
+preservation; modular indexing; and Module 12's dense internal vertex IDs.
+
 **Forward:** Module 14 contrasts open-addressed slots with separately allocated nodes; Module 15 contrasts expected exact lookup with ordered `O(log n)` lookup; the capstone can map sparse external labels to validated dense graph IDs.
 
 ---
@@ -962,7 +1108,7 @@ Production materials: [Module 15 teaching package](module_15_bst_avl/README.md)
 Students will:
 
 - state BST ordering and AVL balance invariants;
-- trace and test the instructor-provided BST search/insertion baseline seeded in Modules 2 and 5;
+- trace and test the instructor-provided BST search/insertion baseline seeded in Module 5;
 - show how hostile insertion order creates height `n - 1`;
 - compute heights and balance factors;
 - recognize LL, RR, LR, and RL cases;
@@ -1010,7 +1156,7 @@ The security connection is algorithmic-complexity denial of service. Students di
 
 ### Spiral links
 
-**Revisits:** Module 2 BST seed, inorder DFS, tree-height reasoning, Heap-order contrast, and Module 13's sparse exact-match index.  
+**Revisits:** Module 5 BST seed and inorder DFS, tree-height reasoning, Heap-order contrast, and Module 13's sparse exact-match index.
 **Forward:** compare AVL's ordered worst-case guarantee with hash lookup's expected exact-match cost, then compare local and global invariants.
 
 ---
@@ -1218,7 +1364,7 @@ The capstone is built incrementally so Week 14 is integration rather than a new 
 
 | Delivery milestone | Capability added |
 |---|---|
-| Week 3 / Module 3 | Validated records, graph representation, and capstone skeleton |
+| Week 3 / Module 3 | Bounded directed matrix, tested operations, and capstone skeleton |
 | Week 6 / Module 6 | Stack-backed DFS and reachability |
 | Week 8 / Modules 8–9 | Queue-backed BFS and unweighted paths |
 | Week 10 / Module 12 | Heap-backed Dijkstra |
@@ -1294,7 +1440,13 @@ Near-peer mentors or teaching assistants should normalize debugging difficulty w
 
 # C Engineering Baseline
 
-All submitted implementations use a consistent engineering contract:
+All submitted implementations use a consistent engineering contract. Apply
+representation-specific requirements when they are introduced: Chapter 1
+uses fixed-array bounds and plain integer counts. Module 2 introduces local
+node variables, pointer links, and recursive field clearance. Module 4 adds
+allocation and replaceable array storage; Module 5 adds allocated tree nodes.
+Module 2's recursive functions assume valid trees: inspect malformed cycles
+with diagrams, not by running recursive operations on them.
 
 - compile with the strongest practical warnings for the course toolchain;
 - never ignore an allocation result;
@@ -1319,13 +1471,18 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 
 | Dependency | First formal placement | Used later by |
 |---|---|---|
-| Pointers and allocated memory | Module 1 textbook | Entire course |
-| `struct` and detailed ownership contracts | Module 1 lab extension | Entire course |
+| Fixed-array bounds, active prefix, shifts, and first-match search | Module 1 | Stack, matrices, Hash Table, Heap |
+| Addresses and pointers | Module 2 | Later node and container implementations |
+| `struct` and local-node lifetime | Module 2 | Later node and container implementations |
+| Allocation, release, and owned storage | Module 4 array storage; Module 5 individual nodes | Later containers and linked-node implementations |
 | Linked-node mental model | Module 2 tree representation; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
-| Tree representation and BST-order preview | Module 2 | DFS, BFS, AVL |
+| Binary-tree representation and recursive field clearance | Module 2 | Graph contrast, DFS, BFS |
+| BST-ordering preview | Module 5 | AVL |
 | Graph representation | Module 3 | All graph algorithms |
 | Stack | Module 4 | Tree and graph DFS |
-| Recursion and explicit call frames | Module 5 recursive core; explicit-stack tree traversal as extension | Tree algorithms and cleanup |
+| Growable-array storage and checked doubling | Module 4 | Priority Queue, Heap, Hash Table |
+| Recursive base cases and bottom-up field clearance | Module 2 | Formal traversal and later tree algorithms |
+| Traversal orders and explicit call frames | Module 5 recursive core; explicit-stack tree traversal as extension | Tree and graph algorithms |
 | Queue | Module 7 | Tree and graph BFS |
 | Tree level-order transfer | Module 8 bridge in combined Week 8 | Graph BFS |
 | Height and balance | Module 15 | AVL validation and rotation |
@@ -1335,12 +1492,15 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Weighted relaxation | Module 12 | Dijkstra; comparison with Prim |
 | Hash Table, linear probing, and tombstones | Module 13 | Sparse external-label index; comparison with AVL |
 | Union-Find with compression/rank | Module 14 | Kruskal |
-| BST operations and AVL rotations | BST operations seeded in Modules 2/5; height, balance, and rotations mastered in Module 15 | Ordered-index capstone; comparison with hashing |
+| BST operations and AVL rotations | BST operations seeded in Module 5; height, balance, and rotations mastered in Module 15 | Ordered-index capstone; comparison with hashing |
 | Edge-list construction and safe sorting/comparator | Module 14 Kruskal pre-lab | Kruskal |
 
 Scope controls:
 
 - Every teaching week has a hard 180-minute contact budget. A complete package may contain extension, make-up, or longer-calendar materials beyond that budget.
+- Module 1 requires checked indexed read/update, first-match search, append,
+  insertion, and removal in a fixed array. Its extensions add tests only;
+  growable-array storage is introduced in Module 4.
 - Module 5 requires recursive tree DFS; explicit-stack tree traversal is an extension. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
 - Modules 8 and 9 share one Week 8 submission. The Module 8 core is a short level-order trace and supplied-code inspection; graph BFS, predecessor state, and path reconstruction are the main implementation.
 - Modules 10 and 11 share one Week 9 submission. The Module 10 unsorted-array implementation is supplied; the Heap backend and comparison are the main implementation.
@@ -1358,10 +1518,10 @@ Scope controls:
 
 | Week | Primary topic | Package use and major artifact |
 |---:|---|---|
-| 1 | Keeping data together with an ArrayList | Module 1; safe growth lab |
-| 2 | Binary-tree foundations and BST seed | Module 2; representation translation |
+| 1 | Keeping data together with a fixed-capacity ArrayList | Module 1; checked operations and bounds/invariant autopsy |
+| 2 | Expression-tree model and binary-tree links | Module 2; local-node construction, search, and clearance evidence |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
-| 4 | Stack | Module 4; nested-input Micro-CTF |
+| 4 | Stack | Module 4; growable backend and nested-input Micro-CTF |
 | 5 | Tree DFS | Module 5 recursive core; explicit-stack implementation is extension |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
 | 7 | Queue | Module 7; circular-buffer incident analysis |

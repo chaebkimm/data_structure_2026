@@ -118,12 +118,12 @@ $stages = @(
                 Entry = "code/Makefile"
             },
             @{
-                Source = "code\include\tree_arena.h"
-                Entry = "code/include/tree_arena.h"
+                Source = "code\include\binary_tree.h"
+                Entry = "code/include/binary_tree.h"
             },
             @{
-                Source = "code\starter\tree_arena.c"
-                Entry = "code/starter/tree_arena.c"
+                Source = "code\starter\binary_tree.c"
+                Entry = "code/starter/binary_tree.c"
             },
             @{
                 Source = "code\tests\test_core.c"
@@ -138,8 +138,8 @@ $stages = @(
                 Entry = "code/autopsy/README.md"
             },
             @{
-                Source = "code\autopsy\faulty_links.c"
-                Entry = "code/autopsy/faulty_links.c"
+                Source = "code\autopsy\faulty_cascade.c"
+                Entry = "code/autopsy/faulty_cascade.c"
             }
         )
     }

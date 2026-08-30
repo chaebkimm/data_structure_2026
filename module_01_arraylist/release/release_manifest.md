@@ -1,65 +1,70 @@
 # Module 1 Staged Release Manifest
 
 Run `prepare_student_release.ps1` from this directory to create five ZIP
-archives in `../dist`. The script refuses to overwrite an existing archive.
+archives in `../dist`. The script validates required sources and refuses to
+overwrite an existing archive.
 
 ## Stage A — Initial Inquiry
 
 Release before Meeting A:
 
-- standard initial prompt;
-- linear accessible initial prompt;
-- optional vocabulary support.
+- standard initial prompt; and
+- linear accessible initial prompt.
 
-This stage contains no notes, expert diagram, answer key, code, or solution.
+This stage contains no vocabulary reference, completed model, notes, answer
+key, code, or solution.
 
-## Stage B — Memory Model and Cognitive Pause
+## Stage B — Fixed-Array Model and Cognitive Pause
 
-Release after students have constructed their initial model:
+Release after students preserve their initial model:
 
-- instructor-authorized memory-space reveal;
-- four-target Cognitive Pause.
+- instructor-authorized representation reveal;
+- vocabulary reference for the revealed model; and
+- three-target Cognitive Pause on active indexes, order, and full capacity.
 
-Withhold expert calibration until each student has completed the initial
+Withhold expert calibration until every student completes the initial
 response, including approved extended-time or asynchronous equivalents.
 
 ## Stage C — Investigation
 
-Release after the timed Cognitive Pause and expert growth calibration:
+Release after the timed pause and expert calibration:
 
 - standard investigation worksheet;
 - linear accessible investigation worksheet.
 
-This stage supplies prompts, not expert answers.
+The prompts cover size versus capacity, checked reads/updates, first-match
+search, append, right-shift insertion, left-shift removal, and unchanged
+state after rejection. They do not provide the answer key.
 
 ## Stage D — Calibrated Notes
 
 Release after the Meeting A investigation and exit ticket:
 
-- frozen Chapter 1 textbook;
-- student summary and lab bridge;
-- memory-model diagrams and text equivalents.
+- revised fixed-array Chapter 1 textbook;
+- student summary and lab bridge; and
+- fixed-array diagrams with text equivalents.
+
+These diagrams do not include a worked Stage E autopsy. Keep its faulty-code
+prediction and repair answers out of Stage D materials.
 
 ## Stage E — Lab and Evidence
 
 Release for Meeting B:
 
-- lab, rubric, evidence template, and Segfault Autopsy prompt;
-- public header and starter implementation;
-- supplied core/extension tests and student-test template;
-- student-only PowerShell and GNU Make build files;
-- solution-independent faulty autopsy executable.
+- lab, 100-point rubric, evidence template, and Bounds and Invariant Autopsy;
+- public header and plain-array starter implementation;
+- supplied core tests, extra edge/sequence tests, and student-test template;
+- student-only PowerShell and GNU Make build files; and
+- standalone guarded autopsy.
 
-Stage E excludes:
+All six operations are core: checked indexed read, update, first-match find,
+append, insert, and remove. Extensions add tests only.
 
-- `instructor/`;
-- `code/solution/`;
-- the deterministic instructor allocation-failure test;
-- earlier inquiry answers and the instructor answer key.
+Stage E excludes `instructor/`, `code/solution/`, and every answer key.
 
-## Instructor-only verification
+## Instructor verification
 
-Before release, validate the full package with:
+Before release, validate the reference implementation and guarded autopsy:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File ..\code\build.ps1 `
@@ -67,7 +72,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ..\code\build.ps1 `
 powershell -NoProfile -ExecutionPolicy Bypass -File ..\code\build.ps1 `
   -Target solution -Extensions
 powershell -NoProfile -ExecutionPolicy Bypass -File ..\code\build.ps1 `
-  -Target solution -AllocationFailure
+  -Target autopsy
 ```
 
-Run sanitizer-enabled equivalents when the local toolchain supports them.
+Run sanitizer-enabled equivalents when supported. The guarded autopsy
+demonstrates a logical bounds violation without a real out-of-bounds access.

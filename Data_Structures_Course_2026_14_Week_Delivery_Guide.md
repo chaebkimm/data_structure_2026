@@ -40,9 +40,9 @@ issued as a second weekly programming submission.
 
 | Week | Required focus and package use | Required graded work | Extension only | Weekly vocabulary and questions |
 |---:|---|---|---|---|
-| 1 | Keeping data together with an ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1 | Checked `IntList` engineering extensions | [Week 1 page](student_question_bank/week_01_arraylist.md) |
-| 2 | Binary-tree foundations and BST seed — [Module 2](module_02_binary_tree/README.md) core | Ordinary lab 2 | Package extensions | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
-| 3 | Graph representations — [Module 3](module_03_graph/README.md) core | Ordinary lab 3 | Package extensions | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
+| 1 | Fixed-capacity ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1: access, search, append, insert, and remove | Additional boundary and operation-sequence tests | [Week 1 page](student_question_bank/week_01_arraylist.md) |
+| 2 | Expression-tree model, binary-tree links, and recursive clearance — [Module 2](module_02_binary_tree/README.md) core | Ordinary lab 2: direct local-node construction, recursive search, and field clearance | Additional valid-tree fixtures and traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
+| 3 | Directed integer adjacency matrices — [Module 3](module_03_graph/README.md) core | Ordinary lab 3: initialize, add, remove, and count outgoing edges | Additional valid directed fixtures and traces | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
 | 4 | Stack — [Module 4](module_04_stack/README.md) core | Ordinary lab 4 | Package extensions | [Week 4 page](student_question_bank/week_04_stack.md) |
 | 5 | Tree DFS — [Module 5](module_05_tree_dfs/README.md), with recursive traversal as the implementation core | Ordinary lab 5 | Explicit-stack tree traversal | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |

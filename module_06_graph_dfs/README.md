@@ -139,7 +139,8 @@ builds and tests submitted code.
 
 ## Relationship to the course spiral
 
-- **Revisits:** the Module 3 adjacency matrix, Module 4 LIFO Stack, Module 5
+- **Revisits:** Module 3's directed integer adjacency-matrix idea, Module 4
+  LIFO Stack, Module 5
   recursive and iterative depth-first models, checked errors, and cleanup.
 - **Introduces:** visited-aware graph DFS, source reachability, and
   undirected connected-component counting.

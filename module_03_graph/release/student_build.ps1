@@ -46,9 +46,9 @@ if ($Target -eq "autopsy") {
     }
 
     $sources = @(
-        (Join-Path $codeRoot "autopsy\faulty_undirected.c")
+        (Join-Path $codeRoot "autopsy\faulty_ghost_connection.c")
     )
-    $outputName = "matrix_autopsy"
+    $outputName = "ghost_connection_autopsy"
 } else {
     $implementation = Join-Path $codeRoot "starter\graph_matrix.c"
     if ($StudentTests) {

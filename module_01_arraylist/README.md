@@ -2,97 +2,112 @@
 
 ## Keeping Data Together in One Place
 
-This package is the production template for the remaining modules in **Data Structures Course 2026**. It implements the first Linear → Tree → Graph spiral’s linear stage.
+This package is the first Linear -> Tree -> Graph spiral's linear stage in
+**Data Structures Course 2026**.
 
-### Module question
+## Module question
 
-> How can we keep ordered data together, preserve its order when items are added or deleted, and continue when the original memory space becomes full?
+> How can a fixed array keep ordered data together, and how do reads,
+> updates, searches, additions, and removals preserve that order?
 
-### Core learning targets
+## Canonical model
+
+```c
+int array[10];
+int size = 0;
+int array_capacity = 10;
+```
+
+Capacity is the ten available positions. Size is the number of active items.
+The active list occupies indexes `0` through `size - 1` with no gaps. An
+unused position may still contain an old value; `size` determines whether
+that position belongs to the list.
+
+The capacity stays ten. An append or insertion into a full array is rejected
+without changing the size or any active value.
+
+## Core learning targets
 
 Students will be able to:
 
-1. Explain why an ordered collection keeps its active items together.
-2. Find an item directly by index and search for an item by value.
-3. Trace the shifts required for insertion and deletion.
-4. Explain why a full array must move to a larger memory space.
-5. Compare the work required by indexing, searching, shifting, and expansion.
-6. Use `sizeof`, pointers, `malloc`, `NULL`, and `free` in a small dynamic-array example.
+1. distinguish fixed capacity from the number of stored items;
+2. explain contiguous storage and the active-prefix invariant;
+3. read and update a checked index directly;
+4. find the first matching value with a left-to-right linear search;
+5. append at the first unused position when space remains;
+6. insert by shifting right from back to front;
+7. remove by shifting later items left from front to back; and
+8. reject invalid indexes and full-array additions without changing the
+   existing list.
 
-The textbook defines the conceptual core. The lab maps the same ideas to the
-repository's `IntList` API and adds implementation-level checks. Those checks
-support safe C programming, but they are not prerequisites for understanding
-the textbook.
-
-Insertion and removal are scaffolded extensions. They are not required for the core three-hour module.
+Read, update, find, append, insert, and remove are all core operations. The
+extension suite adds only extra edge cases and longer operation sequences.
 
 ## Package map
 
 ```text
 module_01_arraylist/
-├── README.md
-├── diagrams/
-│   └── memory_models.md
-├── instructor/
-│   ├── answer_key.md
-│   ├── lesson_plan.md
-│   └── technical_notes.md
-├── student/
-│   ├── cognitive_pause.md
-│   ├── evidence_template.md
-│   ├── inquiry_prompt.md
-│   ├── inquiry_prompt_linear.md
-│   ├── investigation_worksheet.md
-│   ├── investigation_worksheet_linear.md
-│   ├── lab.md
-│   ├── notes.md
-│   ├── representation_reveal.md
-│   ├── rubric.md
-│   ├── segfault_autopsy.md
-│   ├── textbook.md
-│   └── vocabulary.md
-├── release/
-│   ├── release_manifest.md
-│   ├── prepare_student_release.ps1
-│   ├── stage_a_README.md … stage_e_README.md
-│   ├── student_build.ps1
-│   ├── student_code_README.md
-│   └── student_Makefile
-├── dist/
-│   └── module_01_stage_a_*.zip … module_01_stage_e_*.zip
-└── code/
-    ├── README.md
-    ├── build.ps1
-    ├── Makefile
-    ├── include/int_list.h
-    ├── starter/int_list.c
-    ├── solution/int_list.c
-    ├── tests/test_allocation_failure.c
-    ├── tests/test_core.c
-    ├── tests/test_extension.c
-    ├── tests/test_student.c
-    └── autopsy/
-        ├── README.md
-        └── faulty_append.c
+|-- README.md
+|-- diagrams/memory_models.md
+|-- instructor/
+|   |-- answer_key.md
+|   |-- lesson_plan.md
+|   `-- technical_notes.md
+|-- student/
+|   |-- cognitive_pause.md
+|   |-- evidence_template.md
+|   |-- inquiry_prompt.md
+|   |-- inquiry_prompt_linear.md
+|   |-- investigation_worksheet.md
+|   |-- investigation_worksheet_linear.md
+|   |-- lab.md
+|   |-- notes.md
+|   |-- representation_reveal.md
+|   |-- rubric.md
+|   |-- segfault_autopsy.md
+|   |-- textbook.md
+|   `-- vocabulary.md
+|-- release/
+|   |-- release_manifest.md
+|   |-- prepare_student_release.ps1
+|   |-- stage_a_README.md ... stage_e_README.md
+|   |-- student_build.ps1
+|   |-- student_code_README.md
+|   `-- student_Makefile
+|-- dist/
+|   `-- module_01_stage_a_*.zip ... module_01_stage_e_*.zip
+`-- code/
+    |-- README.md
+    |-- build.ps1
+    |-- Makefile
+    |-- include/int_list.h
+    |-- starter/int_list.c
+    |-- solution/int_list.c
+    |-- tests/test_core.c
+    |-- tests/test_extension.c
+    |-- tests/test_student.c
+    `-- autopsy/
+        |-- README.md
+        `-- faulty_append.c
 ```
 
-## Recommended use
+## Recommended release order
 
-1. Run `release/prepare_student_release.ps1` once and use the five archives
-   described in `release/release_manifest.md`.
+1. Prepare the five archives described in `release/release_manifest.md` only
+   after the reference checks pass.
 2. Before Meeting A, release Stage A only. Offer the standard or linear
-   accessible initial prompt and optional vocabulary support.
-3. Let students predict insertion, deletion, and full-array behavior, then
-   release Stage B for the memory-model reveal and timed Cognitive Pause.
-4. After the growth trace, release Stage C for the invariant, operations, and
-   efficiency investigation.
-5. Release the Stage D textbook, notes, and diagrams only after Meeting A
-   reasoning is complete.
-6. Before Meeting B, release Stage E with the starter, supplied tests,
-   student-test template, and solution-independent autopsy.
-7. Assess the submission with `student/rubric.md`.
-8. Keep `code/solution`, `code/tests/test_allocation_failure.c`, and all
-   `instructor/` materials instructor-only until revisions close.
+   accessible inquiry; withhold the model and vocabulary.
+3. Preserve the first model, then release Stage B for the fixed-array reveal,
+   vocabulary reference, and timed Cognitive Pause.
+4. After the pause and expert calibration, release Stage C for invariant,
+   operation, and efficiency reasoning.
+5. Release Stage D's textbook, notes, and diagram/text models after the
+   Meeting A investigation and exit ticket.
+6. Release Stage E for Meeting B with the starter, supplied tests,
+   student-test template, and isolated autopsy.
+7. Assess the submission with the 100-point `student/rubric.md`.
+8. Keep `code/solution/` and all `instructor/` materials private until
+   revisions close.
 
 ## Core submission
 
@@ -100,19 +115,20 @@ Students submit:
 
 - completed `code/starter/int_list.c`;
 - passing core-test transcript;
-- three passing student-authored tests with rationale;
-- compiler-warning and sanitizer/debugger evidence;
-- `student/evidence_template.md`, completed in an accessible format;
-- Segfault Autopsy response;
+- three passing student-authored tests with rationales;
+- warning-enabled compiler and approved memory-check/debugger evidence;
+- completed `student/evidence_template.md`;
+- autopsy response; and
 - corrected Cognitive Pause.
 
-The extension submission adds `int_list_insert` and `int_list_remove` plus the extension tests.
+Extensions provide further boundary and sequence tests for the same core
+operations; they do not introduce another representation or additional
+required operations.
 
 ## Relationship to the course spiral
 
-- **Revisits:** C arrays, indexing, loops, functions, address-of, and dereference.
-- **Introduces:** contiguous storage, ArrayLists, dynamic arrays, indexes,
-  elements, shifting, dynamic growth, and invariants.
-- **Lab extension:** an `IntList` implementation with checked access,
-  allocation errors, arithmetic limits, and cleanup contracts.
-- **Previews:** array-backed Stack.
+- **Revisits:** C variables, arrays, indexing, loops, functions, and conditions.
+- **Introduces:** fixed-capacity ArrayLists, size versus capacity, linear
+  first-match search, shift direction, checked boundaries, and invariants.
+- **Previews:** an array-backed Stack and later comparisons with linked
+  structures.

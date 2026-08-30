@@ -11,10 +11,11 @@ LIFO: the last character pushed is the first character popped.
 **pointer** is a value storing a memory address, and **contiguous storage**
 places values in one unbroken memory region.
 
-The implementation deliberately revisits the Module 1 ArrayList ideas:
-contiguous storage, separate size and capacity, checked growth, ownership,
-and unchanged state after failure. It does not ask students to build a
-generic `void *` container or a linked-node backend.
+The implementation revisits Module 1's contiguous storage, separate size and
+capacity, bounds checks, and unchanged state after rejection. Checked growth
+and ownership of a replaceable array are new requirements here, not
+prerequisites from Chapter 1. Students do not build a generic `void *`
+container or a linked-node backend.
 
 The parser recognizes only six delimiter characters:
 

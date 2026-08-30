@@ -1,117 +1,67 @@
 # Stage B — Five-Minute Individual Construction
 
-A **program** is a group of instructions a computer can run. **C** is the
-programming language used in this course.
+Complete this activity after the representation reveal and before opening
+`vocabulary.md`. Use no notes, slides, classmates, or code-running tools while
+the timer is active. You may draw, type, dictate, or answer in numbered
+sentences. Preserve your first response; drawing quality and speed are not
+graded.
 
-A short period for building an answer without outside help is called a
-**Cognitive Pause**. Read the starting state with the instructor before
-timing begins. When the instructor starts the five-minute timer, use no
-notes, slides, classmates, vocabulary file, or programs used to write or run
-C instructions. You may draw, type, dictate, or respond in numbered
-sentences.
+## Starting state
 
-An approved extended-time version or a version completed at another approved
-time uses the same starting state and the same three targets. Speed,
-handwriting, and drawing quality are not assessed. Preserve the initial
-response when correction begins.
+The fixed directed graph has three active vertices:
 
-## Starting state and needed words
+- 0: Web
+- 1: App
+- 2: Database
 
-A **model** is a simplified description used for reasoning. A **graph** is a
-model of objects and their relationships. A **vertex** is one object, and an
-**edge** is one direct relationship. A **directed edge** has one direction.
-An **index** is a numbered position. The letters `u` and `v` below stand for
-vertex indexes. The notation `u → v` means the edge goes from vertex `u` to
-vertex `v`. An **undirected edge** connects both ways. An **undirected
-graph** uses undirected edges.
-
-An **edge set** is the collection of all edges. An **ordered pair** places
-the starting vertex first. A **destination** is where a directed edge ends,
-so `(u, v)` records `u → v`.
-
-An **adjacency matrix** is a grid with one horizontal row and one vertical
-column for every vertex. A **cell** is one position in the grid. The cell in
-row `u`, column `v` records whether `u → v` exists. A **Boolean value** is
-either `true` or `false`; this activity writes them as `1` and `0`.
-
-The vertices are:
-
-- 0: Gateway
-- 1: Web
-- 2: Admin
-- 3: Database
-- 4: Monitor
-- 5: Archive
-
-The directed edge set is:
-
-```text
-{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 1)}
-```
+Its directed edges are `0 → 1`, `1 → 2`, and `1 → 0`. In the adjacency
+matrix, row `from`, column `to` records that one directed edge with `1`; `0`
+means the edge is absent. Opposite directions are separate facts.
 
 ## Complete exactly three targets
 
-### Target 1 — Translate listed relationships
+### Target 1 — Orient the grid
 
-State the value in each requested matrix cell and explain one answer:
-
-- row 0, column 1;
-- row 1, column 0;
-- row 2, column 3; and
-- every cell in row 5.
+Write the three active matrix rows. Then explain why the cell at row 0,
+column 1 can differ from the cell at row 1, column 0 even though both happen
+to be `1` in this model.
 
 Response:
 
 ____________________________________________________________________
 
-### Target 2 — Preserve direction
+### Target 2 — Trace one removal
 
-Suppose the directed edge `1 → 0` is added while `0 → 1` remains.
-
-State:
-
-- the new ordered pair added to the edge set;
-- the one matrix cell changed to `1`; and
-- why the two opposite edges are separate facts.
+Suppose the directed edge `1 → 2` is removed. State which one cell changes,
+write the new active row 1, and give the new out-degree of vertex 1.
 
 Response:
 
 ____________________________________________________________________
 
-### Target 3 — Record a two-way relationship
+### Target 3 — Protect the invariant
 
-Suppose a new undirected graph contains the edge `{2, 4}`. An undirected edge
-has no direction, so it must be recorded both ways.
+The graph has `vertex_count == 3` and capacity 16. For each proposed addition,
+state accept or reject and name the rule that supports your choice:
 
-The **diagonal** is the line of matrix cells whose row and column numbers
-match.
+1. `2 → 2`
+2. `3 → 1`
+3. `2 → 0`
 
-State:
-
-- the two matrix cells that become `1`; and
-- the relationship those two cells must have across the matrix diagonal.
+State what must happen to the matrix when an addition is rejected.
 
 Response:
 
 ____________________________________________________________________
 
-## Compare answers after time is called
+## Compare after time is called
 
-**Calibration** means comparing an initial answer with an accurate model.
-When the instructor releases the model:
+When the instructor releases the model, preserve the initial response, mark
+reasoning that remains correct, and label each correction `row/column`,
+`direction`, `active index`, or `self-loop`.
 
-1. preserve the initial response;
-2. place a check beside reasoning that remains correct;
-3. label each correction `listed relationship`, `direction`, or `two-way`;
-   and
-4. finish the sentence below.
-
-Correction:
+The evidence that changed or strengthened my model was:
 
 ____________________________________________________________________
 
-The evidence that changed my model was:
-
-____________________________________________________________________
-
-You may open `vocabulary.md` only after this response has been preserved.
+You may now open `vocabulary.md`.

@@ -2,48 +2,53 @@
 
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
-| Vocabulary and representation | 20 | New terms are correctly explained; diagram, index table, and pointers describe the same tree |
-| Functional correctness | 25 | Leaf, child-count, child-assignment, and immediate-family functions satisfy their contracts—the stated rules for inputs, changes, and results |
-| Structural and pointer safety | 20 | Bounds and slots are checked; local and whole-tree validation are distinguished; outputs remain unchanged on error |
-| Tests and tool evidence | 15 | Three nonduplicate student-authored tests with rationale plus reproducible warning-enabled compiler or CI results |
-| Binary search tree reasoning | 10 | The binary search tree (BST) ordering rule and reject-duplicates policy are explained with a correct allowed-range trace |
-| Autopsy and forward transfer | 10 | Structural defect is diagnosed and the move from one-parent trees to general graph relationships is justified |
+| Representation and invariants | 20 | The expression fixture, pointer expressions, and portable character literals agree; general-tree arity, expression arity, one incoming link, no cycles, and caller preconditions are explained |
+| Direct node operations | 15 | The five local nodes are fully initialized; chosen-side attachment checks for an empty link; a right-only generic-tree case is handled correctly |
+| Recursive search | 20 | Current-node, left-subtree, right-subtree order returns the first matching address without mutation; missing and `NULL` cases work |
+| Clearing, removal, and lifetime | 20 | Every selected node is reset; caller detachment is explicit; the opposite side is unchanged; cleared nodes remain live objects |
+| Operation efficiency | 10 | Work is counted for initialization, linking, search, clearing, and detachment; depth is related to temporary recursive-call storage |
+| Tests and tool evidence | 10 | Three distinct student tests have rationales and use valid, live-node fixtures; build and approved diagnostic evidence is reproducible |
+| Autopsy and forward transfer | 5 | The shared-operand setup defect is diagnosed without blaming correct clearing or claiming destroyed storage; a repair is justified |
 | **Total** | **100** | |
 
 ## Performance levels
 
 ### Exceeds expectations
 
-The student explains unfamiliar structures using the invariant, tests a
-whole-structure risk deliberately, and transfers the model accurately to
-graphs.
+The student explains unfamiliar valid arrangements, tests side preservation
+and repeated data deliberately, and separates a caller precondition from an
+operation's local checks.
 
 ### Meets expectations
 
-The required functions work, pointer relationships are accurately described,
-and supplied plus student-authored tests support the claims.
+Both recursive functions work. Direct initialization, guarded attachment,
+and caller detachment are demonstrated. Tests and explanations respect node
+lifetime and the unshared-tree contract.
 
 ### Developing
 
-The common successful case works, but terminology, whole-tree reasoning, output
-preservation, or testing still needs guidance.
+Common cases work, but initialization, search order, recursive clearing,
+side preservation, or the distinction between clearing and detaching needs
+guidance.
 
 ### Beginning
 
-The code or diagram confuses an address with an object, accepts unsafe
-indexes, or cannot distinguish a tree from arbitrary links.
+The code follows uninitialized links, loses an uncleared subtree, changes
+the opposite child position, or treats a cleared live node as nonexistent.
+The explanation relies on automatic checks that these functions do not make.
 
 ## Scoring notes
 
-- Every professional term may be explained in ordinary language; memorized
-  textbook wording is not required.
-- Drawing quality, handwriting, typing speed, and spoken fluency are not
-  grading criteria.
-- An approved verbal, tactile, linear-text, or instructor-CI equivalent earns
-  the same credit.
-- **CI**, or continuous integration, means another computer automatically
-  builds and tests submitted code.
-- Extension work may earn a separate distinction or up to five bonus points.
-  It never replaces core representation, safety, or evidence points.
-- An incorrect initial Cognitive Pause is not penalized when it is preserved
-  and meaningfully corrected.
+- Only `tree_find` and `tree_clear` are implementation TODOs. Direct node
+  operations remain core and are assessed through examples and student tests.
+- No traversal-label memorization or whole-tree validation is required.
+- Do not create a real cycle or expired-node access to earn testing credit.
+- Optional extensions add valid fixtures and traces. They may earn a separate
+  distinction or up to five bonus points when course policy permits, without
+  replacing core points.
+- Everyday explanations are acceptable. Drawing quality, handwriting, typing
+  speed, and spoken fluency are not grading criteria.
+- Approved linear-text, verbal, debugger, or instructor-CI equivalents earn
+  the same credit. CI means another computer runs the submitted tests.
+- An incorrect initial Cognitive Pause is not penalized when preserved and
+  meaningfully corrected.

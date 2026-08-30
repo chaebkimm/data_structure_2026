@@ -14,27 +14,27 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 starter-core: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) starter/tree_arena.c tests/test_core.c -o $(BUILD_DIR)/starter_core
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/binary_tree.c tests/test_core.c -o $(BUILD_DIR)/starter_core
 	$(BUILD_DIR)/starter_core
 
 starter-student-tests: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) starter/tree_arena.c tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/binary_tree.c tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
 	$(BUILD_DIR)/starter_student_tests
 
 starter-extension: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) starter/tree_arena.c tests/test_extension.c -o $(BUILD_DIR)/starter_extension
+	$(CC) $(CFLAGS) $(CPPFLAGS) starter/binary_tree.c tests/test_extension.c -o $(BUILD_DIR)/starter_extension
 	$(BUILD_DIR)/starter_extension
 
 solution-core: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) solution/tree_arena.c tests/test_core.c -o $(BUILD_DIR)/solution_core
+	$(CC) $(CFLAGS) $(CPPFLAGS) solution/binary_tree.c tests/test_core.c -o $(BUILD_DIR)/solution_core
 	$(BUILD_DIR)/solution_core
 
 solution-extension: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) solution/tree_arena.c tests/test_extension.c -o $(BUILD_DIR)/solution_extension
+	$(CC) $(CFLAGS) $(CPPFLAGS) solution/binary_tree.c tests/test_extension.c -o $(BUILD_DIR)/solution_extension
 	$(BUILD_DIR)/solution_extension
 
 autopsy: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_links.c -o $(BUILD_DIR)/link_autopsy
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_cascade.c -o $(BUILD_DIR)/link_autopsy
 	$(BUILD_DIR)/link_autopsy
 
 clean:

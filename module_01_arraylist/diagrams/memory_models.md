@@ -1,72 +1,167 @@
-# Module 1 Memory Models
+# Module 1 Fixed-Array Models
 
-These diagrams use the same values and operations as the Chapter 1 textbook.
-Each diagram includes a text equivalent.
+These models use ten fixed positions. Every diagram includes a text
+equivalent. The active list is the prefix of positions before `size`.
 
-## 1. Stored items and unused space
-
-```mermaid
-flowchart LR
-    I0["index 0<br/>10"] --- I1["index 1<br/>50"] --- I2["index 2<br/>20"] --- I3["index 3<br/>30"] --- I4["index 4<br/>unused"]
-```
-
-Text equivalent: Five contiguous slots are allocated. Indexes 0 through 3
-contain 10, 50, 20, and 30. Index 4 is unused.
-
-## 2. Delete and close the gap
+## 1. Size and capacity
 
 ```text
-before: [10] [50] [20] [30] [ ]
-remove: [10] [ ]  [20] [30] [ ]
-after:  [10] [20] [30] [ ]  [ ]
+index:       0     1     2     3    4    5    6    7    8    9
+array:     [100] [200] [300] [ ]  [ ]  [ ]  [ ]  [ ]  [ ]  [ ]
+active:    <------------- >
+size: 3                                           capacity: 10
 ```
 
-The later items move left. The active items still begin at index 0 and contain
-no gap.
+Text equivalent: indexes zero, one, and two contain the three active values
+`100`, `200`, and `300`. Indexes three through nine are available but do not
+belong to the list yet. Capacity is ten; size is three.
 
-## 3. Insert without overwriting
+An empty drawing position means “outside the active list,” not necessarily
+that its stored bits are zero. Reading a list item requires `index < size`,
+not merely `index < capacity`.
+
+## 2. Checked indexed read and update
 
 ```text
-before: [10] [20] [30] [ ]  [ ]
-shift:  [10] [20] [ ]  [30] [ ]
-after:  [10] [20] [99] [30] [ ]
+before: [100] [200] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+                ^
+           index 1 is active
+
+read array[1]: 200
+write array[1] = 500
+
+after:  [100] [500] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+size remains 3; capacity remains 10
 ```
 
-Move values from back to front. Moving front to back would overwrite a value
-before that value had been copied.
+Text equivalent: check `0 <= index && index < size` before using brackets.
+Reading returns the selected value. Updating replaces that one active value;
+it does not change the number of items.
 
-## 4. Expand a full memory space
+## 3. Linear first-match search
 
-```mermaid
-flowchart LR
-    O["old four-slot space<br/>10 | 50 | 20 | 30"] --> N["new eight-slot space<br/>10 | 50 | 20 | 30 | 99 | _ | _ | _"]
-    N --> F["release old space<br/>continue with new address"]
+```text
+active values: [100] [600] [300] [600]
+index:            0     1     2     3
+target: 600
+
+check index 0: no match
+check index 1: match; return 1 and stop
 ```
 
-Text equivalent:
+Text equivalent: examine active items from index zero upward. Return the
+first matching index. The second `600` is not visited after the first match
+is found. If no active item matches, `int_list_find` returns `-1`.
 
-1. The old four-slot space is full.
-2. Obtain a new eight-slot space.
-3. Copy 10, 50, 20, and 30 in the same order.
-4. Add 99 after 30.
-5. Release the old four-slot space.
-6. Continue using the new starting address.
+## 4. Append into the first unused position
 
-## 5. Why doubling helps
+```text
+before: [100] [200] [300] [ ]  [ ] [ ] [ ] [ ] [ ] [ ]
+size: 3                    ^ next write at index size
 
-With one-slot growth, additions repeatedly trigger copying. With doubling,
-each expansion creates room for several later additions. Expansions become
-farther apart as the array grows. Across many additions, the average work for
-one addition remains small.
-
-## 6. Release the final dynamic array
-
-```c
-free(arrayList);
-arrayList = NULL;
-arrayList_size = 0;
-arrayList_capacity = 0;
+append 400:
+after:  [100] [200] [300] [400] [ ] [ ] [ ] [ ] [ ] [ ]
+size: 4
 ```
 
-The allocation is returned, and the tracking variables no longer describe
-released memory.
+Text equivalent: when `size < capacity`, place the new value at `array[size]`
+and increase size by one. No existing active item moves.
+
+## 5. Remove and close the gap
+
+Starting from the updated textbook state:
+
+```text
+before: [100] [500] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+remove index 1
+move:   [100] [300] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+size becomes 2
+active: [100] [300]
+```
+
+Text equivalent: copy index two into index one, then reduce size from three
+to two. The old value at index two may remain in the array, but it is outside
+the active prefix and is not a third list item.
+
+For a longer list, move later values left from front to back:
+
+```text
+array[index]     = array[index + 1]
+array[index + 1] = array[index + 2]
+... continue through the former last active item
+```
+
+## 6. Insert without overwriting
+
+Insert `600` at index one into `[100, 300]`:
+
+```text
+before: [100] [300] [ ]   [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+shift:  [100] [300] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+write:  [100] [600] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+size changes from 2 to 3
+```
+
+Text equivalent: first move the last active value from index one to index
+two. Then write `600` at index one. Existing values must move right from back
+to front so each source is copied before its position is overwritten.
+
+For insertion at index one into `[10, 20, 30, 40]`:
+
+```text
+1. move 40: index 3 -> index 4
+2. move 30: index 2 -> index 3
+3. move 20: index 1 -> index 2
+4. write the new value at index 1
+5. increase size
+```
+
+## 7. Full means reject without mutation
+
+```text
+before:
+[100] [200] [300] [400] [500] [600] [700] [800] [900] [1000]
+size: 10; capacity: 10
+
+request: append 1100
+result: rejected; returned size is still 10
+
+after:
+[100] [200] [300] [400] [500] [600] [700] [800] [900] [1000]
+```
+
+Text equivalent: there is no usable index ten in the ten-position model.
+Append and insertion must check fullness before any write or shift. The
+capacity and all array contents remain unchanged after rejection.
+
+## 8. Valid positions differ by operation
+
+| Operation | Accepted position |
+|---|---|
+| read or update | `0 <= index < size` |
+| remove | `0 <= index < size` |
+| insert | `0 <= index <= size`, with `size < capacity` |
+| append | exactly index `size`, with `size < capacity` |
+
+Text equivalent: insertion may use the position immediately after the current
+last item. A read, update, or removal cannot use that position because it does
+not contain an active item yet.
+
+## 9. Counting the work
+
+Let `n` be the number of active items.
+
+| Operation | Work |
+|---|---|
+| checked read or update | `O(1)` |
+| first-match value search | `O(n)` worst case |
+| append with room | `O(1)` |
+| insert at the end | `O(1)` |
+| insert near the front | `O(n)` shifts |
+| remove the last item | `O(1)` |
+| remove near the front | `O(n)` shifts |
+| reject a full append/insert | `O(1)` |
+
+The teaching array has capacity ten. Counting work in terms of `n` explains
+which operations depend on the number of stored items, even within that
+small fixed limit.

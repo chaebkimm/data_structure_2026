@@ -1,216 +1,211 @@
-# Lab — Build and Check a Small Tree
+# Lab — Build, Search, and Clear a Binary Tree
 
-## Purpose
+## Purpose and scope
 
-Build a small hierarchy in C without asking for new memory while the program
-runs. Asking for memory while a program runs is called **dynamic allocation**.
-A **process** is a program while it is running. This lab uses invented
-numbers to stand for processes; it does not read a live computer.
+Use local node variables with a data field and two child links. Build the
+five-node expression tree for `(3 + 5) * 2`, search it recursively, and clear
+a selected subtree. Then use small generic binary-tree boundary cases to test
+the same representation and functions.
 
-A **hierarchy** arranges objects in levels. A **tree** is a hierarchy in which
-each object, except the top object, has exactly one object directly above it.
-A **binary tree** allows each object to have no more than two children.
+All of those operations are core. Only search and clearing are packaged as
+public functions. Initialization, attachment, and caller detachment remain
+direct C operations.
+
+## Two 90-minute meetings
+
+| Meeting | Work | Minutes |
+|---|---|---:|
+| A — Conceptual stages | Inquiry, representation reveal, Cognitive Pause, calibration, investigation, and exit ticket | 90 |
+| B — Stage E lab | Direct node operations, two recursive functions, tests, autopsy, and submission evidence | 90 |
+| **Total** | | **180** |
+
+Stage D's textbook and diagrams follow the Meeting A investigation and exit
+ticket. Stage E's lab and code are released for Meeting B.
 
 ## Files
 
 You receive:
 
-- `code/include/tree_arena.h`
-- `code/starter/tree_arena.c`
+- `code/include/binary_tree.h`
+- `code/starter/binary_tree.c`
 - `code/tests/test_core.c`
 - `code/tests/test_student.c`
+- `code/autopsy/faulty_cascade.c`
 - `code/build.ps1`
 - `code/Makefile`
 
-A **header** is a C file ending in `.h` that declares shared types and
-functions. A **test** is code that runs a specific case and checks the result.
-A **build script** or **Makefile** contains commands that translate the source
-files into a runnable program.
+Edit only `code/starter/binary_tree.c` and `code/tests/test_student.c`.
+Do not change the header or supplied tests unless the instructor authorizes
+it. The header declares the shared node type and function contracts.
 
-Edit only:
+## Representation and the two-function API
 
-- `code/starter/tree_arena.c`
-- `code/tests/test_student.c`
-
-Do not change the public header or supplied tests unless the instructor
-authorizes it.
-
-## Words used in this lab
-
-- A **node** is one object in a tree.
-- A **function** is a named block of code that performs one task.
-- An **argument** is a value given to a function when asking it to run.
-- The **root** is the top node.
-- A **parent** is the node directly above another node.
-- A **child** is a node directly below another node.
-- A **leaf** is a node with no children.
-- A **pointer** is a C variable that stores a memory address.
-- `NULL` means that a pointer does not contain a usable object address.
-- `bool` is a C type whose only values are `true` and `false`.
-- An **enum** is a C type whose allowed choices have names.
-- `const` states that a function promises not to change an object through
-  that particular pointer.
-- An **index** is an array position. C indexes begin at zero.
-- `size_t` is a nonnegative whole-number type used for counts and indexes.
-- An **arena** in this module is a fixed array that already contains every
-  node. It does not grow.
-- A **contract** states what a function accepts, changes, and returns.
-- An **invariant** is a rule that must be true for every completed valid tree.
-- An **output** is a result that a function writes into a caller-provided
-  variable.
-- A **caller** is the code that asks a function to run.
-- **Nonnull** means “not `NULL`.”
-
-## Public representation
+Each node groups one value with its two downward connections.
 
 ```c
-typedef struct TreeNode {
-    int key;
+struct TreeNode {
+    int data;
     struct TreeNode *left;
     struct TreeNode *right;
-} TreeNode;
+};
 
-typedef struct {
-    TreeNode *nodes;
-    size_t count;
-    TreeNode *root;
-} TreeArena;
+struct TreeNode *tree_find(struct TreeNode *node, int target);
+void tree_clear(struct TreeNode *node);
 ```
 
-`key` is the integer stored in a node. `left` and `right` hold child addresses
-or `NULL`.
+Use the full name `struct TreeNode`. A pointer stores a node address.
+`NULL` means that no node is linked at that position. `void` means that
+`tree_clear` returns no value.
 
-`TreeArena` points to a caller-provided node array. It does not own that array
-and must not call `free`.
+### Caller preconditions
 
-## Completed-tree rules
+A precondition is a condition the caller must ensure before an operation.
 
-The course's empty tree has no node array, a count of zero, and a `NULL`
-root. A completed valid nonempty binary tree satisfies all of these rules:
+- Initialize every node's data and both links before using its address.
+- Keep every linked local variable alive throughout the operation.
+- Build a finite tree with no cycles or shared child objects.
+- Each non-root node has exactly one incoming child link. Do not put the
+  same child in both sides of a parent.
+- Attach only a fresh, unlinked node or a disjoint valid subtree.
+- Check that the selected side is empty before attaching.
 
-1. The root pointer names one node inside the fixed arena, and that root has
-   no parent.
-2. Every other node has exactly one parent.
-3. Every node can be reached by following child pointers from the root.
-4. No child path returns to a node already above it. Such a return is a
-   **cycle**.
-5. Every node has at most two children, represented by `left` and `right`.
-6. Every nonnull child pointer names a node inside the fixed arena.
-7. One node's `left` and `right` fields cannot name the same child.
+A general binary-tree node may have zero, one, or two children. In the
+completed expression fixture, each operator has two operand children and
+each number has none. The API does not enforce or evaluate that extra
+expression rule.
 
-During construction, some nodes may not yet be connected. Treat that state as
-a candidate, not as a completed tree. Run the supplied whole-tree validator
-after all links have been assigned.
+The two functions do not validate arbitrary relationships. A side being
+empty does not prove that a proposed link satisfies the global tree rules.
+An address does not remain usable after its local variable's block ends.
 
 ## Core checkpoints
 
-### 1. Read initialization and validation
+The starter marks two `TODO(core)` regions: one in each recursive function.
+Their `NULL` base cases are supplied. A base case finishes without another
+recursive call.
 
-The starter supplies:
+### 1. Initialize and link ordinary node variables
 
-- `tree_arena_init`, which copies keys into the fixed node array and clears
-  all child links;
-- `tree_validate_structure`, a **validator** (a function that checks rules)
-  for the completed-tree rules;
-- `tree_validate_bst`, which checks the additional binary search tree (BST)
-  ordering rule defined in checkpoint 6.
+Use direct field assignments, as in the textbook:
 
-Do not rewrite these supplied validators. Mark where each output value is
-changed and what remains unchanged after an error.
+```c
+struct TreeNode root;
+root.data = '*';
+root.left = NULL;
+root.right = NULL;
 
-You do not need to understand every supplied helper function yet. Use its
-written contract, and edit only the marked `TODO` regions. `TODO` labels work
-that remains to be completed.
+struct TreeNode plus;
+plus.data = '+';
+plus.left = NULL;
+plus.right = NULL;
 
-### 2. Decide whether a node is a leaf
-
-Complete `tree_node_is_leaf`.
-
-A node is a leaf only when both child pointers are `NULL`.
-
-- Reject a null node or null output pointer.
-- Change the output only when the function succeeds.
-
-### 3. Count immediate children
-
-Complete `tree_node_child_count`.
-
-- Add one when `left` is not `NULL`.
-- Add one when `right` is not `NULL`.
-- The result must be `0`, `1`, or `2`.
-- Change the output only on success.
-
-### 4. Assign one child link
-
-Complete `tree_assign_child`.
-
-The function performs **local validation**, meaning it checks only the
-requested parent, child, and slot:
-
-- both indexes must be inside the arena;
-- a node cannot be its own child;
-- the selected slot must be empty;
-- `TREE_SIDE_LEFT` selects `left`; `TREE_SIDE_RIGHT` selects `right`.
-
-A successful local assignment does not prove that the finished whole
-structure is a tree. It could still give one child two parents or create a
-longer cycle. The supplied whole-tree validator detects those problems.
-
-### 5. Report immediate family
-
-Complete `tree_immediate_family`.
-
-The result contains the indexes of the node’s parent, left child, and right
-child. `TREE_NO_INDEX` means that a relationship is absent.
-
-The function must:
-
-1. reject invalid arguments or an out-of-range node index;
-2. require the completed structure to pass whole-tree validation;
-3. scan the arena to find the one parent;
-4. translate nonnull child pointers back to indexes;
-5. change the output only after every check succeeds.
-
-### 6. Trace the BST key limits
-
-A **binary search tree**, shortened to **BST**, is a binary tree with an
-additional ordering rule:
-
-- every key in a node’s left subtree is lower than the node’s key;
-- every key in its right subtree is higher;
-- duplicate keys are rejected in this course.
-
-A **subtree** is one node together with every node below it.
-
-For each node below, write the lower and upper key limits carried by the
-supplied validator. Do not classify the order in which nodes are visited.
-
-```text
-Valid:          Global-order violation:
-     10                  10
-    /  \                /  \
-   5   15              5   15
-      /                  \
-     12                  12
+if (root.left == NULL) {
+    root.left = &plus;
+}
 ```
 
-The second example fails because `12` is inside the entire left subtree of
-`10`, even though it is greater than its immediate parent `5`.
+The dot selects a field of a variable. `&plus` is the address of `plus`.
+The assignment links the existing object; it does not copy it.
+The `int` data field can store C character constants such as `'*'` and `'+'`;
+use those portable literals instead of numeric character codes.
 
-### 7. Design three tests
+For the canonical example, initialize five local nodes and construct these
+relationships:
 
-Inspect the supplied tests. Add three cases that are not direct copies:
+| Variable and data | Left child | Right child |
+|---|---|---|
+| `root`, `'*'` | `&plus` | `&two` |
+| `plus`, `'+'` | `&three` | `&five` |
+| `three`, `3` | none | none |
+| `five`, `5` | none | none |
+| `two`, `2` | none | none |
 
-- one boundary or invalid-input case;
-- one local-versus-whole-structure case;
-- one additional function-contract or BST rule you identify.
+The values do not impose a sorting rule. Left and right preserve operand
+positions. A right-only child is valid in a general binary tree, although it
+is not a completed binary operator. A guarded assignment to an occupied side
+leaves the existing link and all nodes unchanged. It does not replace or move
+a child.
 
-For each case, explain what new claim it checks. Clean up is unnecessary
-because this module performs no dynamic allocation.
+### 2. Complete recursive search
 
-A **boundary case** uses a value at or near an allowed limit. **Invalid
-input** breaks a function's contract. A test **rationale** is a short
-explanation of why the test adds useful evidence.
+Complete `tree_find`.
+
+- Check the current node's data first.
+- If it does not match, search the entire left subtree.
+- Return a left-side match immediately.
+- Otherwise search the right subtree.
+- Return the first matching node address, or `NULL` if the target is absent.
+- Do not change any node.
+
+A search from `NULL` returns `NULL`. Duplicate, zero, and negative data
+values are valid. Check a returned pointer before using `->` to read one
+of its fields.
+
+Trace the canonical search for `2` before running the tests. Its complete
+check order is `'*'`, `'+'`, `3`, `5`, `2`. Explain why a missing value may
+require visiting every node. You do not need to memorize a traversal label.
+
+### 3. Complete recursive clearing
+
+Complete `tree_clear`.
+
+- Clear the left and right subtrees.
+- Set both child links to `NULL`.
+- Set the current node's data to 0.
+
+Keep a child address available until that subtree has been cleared.
+`tree_clear(NULL)` does nothing. Every cleared local node remains alive
+until its declaring block finishes.
+
+Clearing is not the same as ending an object's lifetime. A cleared node is
+still a node with data 0 and no children. Zero is not an empty-node marker.
+
+### 4. Remove a child through its caller
+
+A child has no upward field. Clearing the child cannot change the outside
+parent's link. The caller performs both actions:
+
+```c
+tree_clear(root.left);
+root.left = NULL;
+```
+
+In the canonical tree, this removes the branch beginning at `plus`. The right
+link still identifies `two`. Its side and its subtree must remain unchanged.
+The remaining right-only shape is a valid general binary tree but no longer a
+completed representation of the original expression.
+
+Inspect the cleared variables while they are still alive. Distinguish those
+objects from the nodes still reachable through `root`. Do not move the
+right child into the empty left position.
+
+### 5. Design three student tests
+
+Replace the three placeholder bodies in `code/tests/test_student.c`.
+Return 1 when a test passes and 0 when it fails. Leave the supplied test
+runner unchanged.
+
+1. Search: use a new boundary, repeated-value case, or unsorted arrangement
+   that checks the current-left-right search order.
+2. Direct operations: initialize local nodes and test chosen-side linking,
+   an occupied-side guard, or caller detachment.
+3. Clearing: test a subtree and show that still-live cleared nodes can be
+   inspected or reinitialized without changing the opposite branch.
+
+Use fixtures or sequences that add evidence beyond the supplied tests.
+Explain each test's claim. Keep all node variables alive through the checks.
+
+Do not pass actual cycles, shared structures, or ended-lifetime addresses to
+the recursive functions in ordinary tests. Reason about such invalid input
+on paper; the isolated autopsy provides one controlled sharing example.
+
+## Optional additional cases
+
+After the required tests pass, the instructor may separately release extra
+valid fixtures and longer traces using the same two functions and direct
+operations. These are not included in the Stage E package. Use the matching
+tests and build commands supplied with that optional release. No additional
+algorithms or functions are required.
 
 ## Build and test
 
@@ -220,41 +215,38 @@ From the `code` directory in PowerShell:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target starter -StudentTests
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
+  -Target autopsy
 ```
 
-The execution-policy option applies only to this child PowerShell process.
+When supported, add `-Sanitize` to a test command. A sanitizer checks some
+invalid memory accesses while a program runs. It does not prove that every
+logical tree rule is satisfied. The execution-policy option applies only
+to this child PowerShell process.
 
 In Git Bash, MSYS2, WSL, Linux, or macOS:
 
 ```sh
 make starter-core
 make starter-student-tests
+make autopsy
 ```
 
-The Makefile uses commands understood by those environments and defaults to
-the GCC C compiler. Use `make CC=clang starter-core` to select the Clang C
-compiler instead.
+The Makefile defaults to GCC. Use `make CC=clang starter-core` for Clang.
 
-If a compiler is unavailable, use the instructor’s approved CI or classroom
-compiler. **CI**, or continuous integration, means another computer
-automatically builds and tests the submitted code.
-
-## Constraints
-
-- Do not call `malloc`, `realloc`, or `free`, which are C library functions
-  for requesting, resizing, or releasing memory while a program runs.
-- Do not use a live process list or directory tree.
-- Do not treat a locally accepted child link as proof of a valid whole tree.
-- Do not change a caller’s output value after an error.
-- Do not implement general **traversal**—a procedure that systematically
-  visits nodes—yet; that appears in later modules.
+If a local diagnostic tool is unavailable, use approved debugger or
+instructor-CI evidence. CI means another computer runs the submitted tests.
 
 ## Required submission
 
-1. completed `tree_arena.c`;
-2. supplied-test transcript, meaning the saved text printed by the test run;
-3. three passing student-authored tests with rationale;
-4. compiler-warning or instructor-CI evidence;
-5. completed evidence record;
-6. Tree Structure Autopsy;
-7. corrected Cognitive Pause.
+1. Completed `code/starter/binary_tree.c` with both recursive functions.
+2. A passing supplied core-test transcript.
+3. Three passing student-authored tests with a rationale for each.
+4. Warning-enabled and approved diagnostic evidence.
+5. Completed evidence record.
+6. Tree Structure Autopsy.
+7. Corrected Cognitive Pause.
+
+Completion means the two functions and direct-operation tests satisfy the
+contracts, student-controlled code has no compiler warnings, and the
+explanation distinguishes clearing, detaching, and node lifetime.

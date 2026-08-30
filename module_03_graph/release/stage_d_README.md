@@ -1,10 +1,10 @@
-# Module 3 — Stage D: Beginner Notes and Models
+# Module 3 — Stage D: Textbook and Models
 
-Open these materials after completing and preserving the Stage C core
-attempt.
+Open these materials after preserving the complete Stage C attempt:
 
-- `textbook.md` teaches from one worked example and explains each new
-  technical term when it is needed.
-- `diagrams/graph_models.md` supplies diagrams and text equivalents.
+- `textbook.md` explains the graph and fixed directed-matrix model.
+- `diagrams/graph_models.md` supplies correct-operation diagrams and text
+  equivalents.
 
-Add corrections beside preserved initial work instead of erasing it.
+Annotate earlier answers instead of erasing them. The exact ghost-connection
+fixture arrives with Stage E; preserve your prediction before running it.

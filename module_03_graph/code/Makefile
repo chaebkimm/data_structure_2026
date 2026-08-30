@@ -34,8 +34,8 @@ solution-extension: | $(BUILD_DIR)
 	$(BUILD_DIR)/solution_extension
 
 autopsy: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_undirected.c -o $(BUILD_DIR)/undirected_autopsy
-	$(BUILD_DIR)/undirected_autopsy
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_ghost_connection.c -o $(BUILD_DIR)/ghost_connection_autopsy
+	$(BUILD_DIR)/ghost_connection_autopsy
 
 clean:
 	$(RM) -r $(BUILD_DIR)

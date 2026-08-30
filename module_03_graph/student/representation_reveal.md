@@ -1,153 +1,95 @@
-# Stage B — Formal Names and a Storage Choice
+# Stage B — Formal Names and the Directed Matrix
 
-Open this file only after preserving the Stage A inquiry.
+Open this file only after preserving Stage A.
 
-A **representation** is a chosen way to store or show information.
-**Equivalent** representations show the same facts in different forms.
+## 1. Name the model
 
-## 1. Name the general structure
+A **graph** models objects and their direct relationships. One object is a
+**vertex**; one direct relationship is an **edge**. A **directed edge** has a
+source and a destination. The ordered pair `(u, v)` means `u → v`; reversing
+the pair names a different possible edge.
 
-A **model** is a simplified description used for reasoning. A **graph** is a
-model made of objects and the relationships between them.
+The chapter’s canonical directed graph is:
 
-- A **vertex** is one object in a graph. The plural is **vertices**.
-- An **edge** is one direct relationship between two vertices.
-- The two vertices named by an edge are its **endpoints**.
-- A **directed edge** has one direction. The arrow `0 → 1` goes from vertex
-  0 to vertex 1.
-- An **undirected edge** has no direction. The notation `{0, 1}` connects
-  vertices 0 and 1 both ways.
-- A **directed graph** uses directed edges.
-- An **undirected graph** uses undirected edges.
+- vertex 0: Web
+- vertex 1: App
+- vertex 2: Database
+- edge set `{(0, 1), (1, 2), (1, 0)}`
 
-A **program** is a group of instructions a computer can run. A **service**
-is a program that performs a task for other programs.
+This model may contain cycles longer than one edge or several edges entering
+one destination. Those relationships are why it is not restricted like a
+tree.
 
-The six Stage A services become these vertices:
+## 2. Translate it to a matrix
 
-- 0: Gateway
-- 1: Web
-- 2: Admin
-- 3: Database
-- 4: Monitor
-- 5: Archive
+An **adjacency matrix** uses one row and one column for every possible vertex
+pair. Row `from`, column `to` answers “Does `from → to` exist?” The course
+stores the answer as the integer `1` for yes and `0` for no.
 
-Having no edge is called **isolated**. Archive is isolated.
+| From \ To | 0 | 1 | 2 |
+|---:|---:|---:|---:|
+| 0 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 1 |
+| 2 | 0 | 0 | 0 |
 
-## 2. List the edges
+Row 1 is `[1, 0, 1]`, so App has two outgoing edges. Column 1 shows edges
+entering App. A row and its matching column answer different questions.
 
-A **set** is a collection in which an item appears at most once. An
-**ordered pair** is a pair whose first and second positions have different
-roles. An **edge set** lists a graph’s edges.
+## 3. Distinguish active size from capacity
 
-The Stage A one-way relationships form this directed edge set:
-
-```text
-{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 1)}
-```
-
-The ordered pair `(2, 3)` means the directed edge `2 → 3`. Reversing the
-positions would name the different edge `3 → 2`.
-
-## 3. Store direct answers in a grid
-
-**Adjacent** vertices share a direct edge. A **matrix** is a rectangular grid
-of values arranged in horizontal rows and vertical columns. An **adjacency
-matrix** uses one row and one column for each vertex. A **cell** is one
-position in the grid. An **index** is a numbered position; C begins indexes
-at zero.
-
-For a directed graph, the cell in row `from` and column `to` answers:
-
-> Does the edge `from → to` exist?
-
-A **Boolean value** has only two choices: `true` or `false`. The table below
-uses `1` for `true` and `0` for `false`.
-
-| From \ To | 0 | 1 | 2 | 3 | 4 | 5 |
-|---:|---:|---:|---:|---:|---:|---:|
-| 0 | 0 | 1 | 1 | 0 | 0 | 0 |
-| 1 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 2 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 3 | 0 | 0 | 0 | 0 | 1 | 0 |
-| 4 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 5 | 0 | 0 | 0 | 0 | 0 | 0 |
-
-An **outgoing edge** leaves a vertex. For example:
-
-- row 2, column 3 is `1`, so `2 → 3` exists;
-- row 3, column 2 is `0`, so `3 → 2` does not exist; and
-- row 5 contains only `0`, so Archive has no outgoing edge.
-
-## 4. See how direction changes the matrix
-
-Let `u` and `v` stand for two different vertex indexes. In an undirected
-graph, one edge connects both ways. Storing `{u, v}`
-therefore sets both row `u`, column `v` and row `v`, column `u` to `true`.
-
-The two cells `[u][v]` and `[v][u]` are **mirrored cells** because their row
-and column positions trade places.
-
-The top-left-to-bottom-right **diagonal** contains cells whose row and column
-numbers match. A matrix is **symmetric** when every cell has the same value
-as the cell across that diagonal. An undirected adjacency matrix is symmetric
-because each edge is recorded in both mirrored cells.
-
-The directed matrix above need not be symmetric. It stores `0 → 1` without
-claiming that `1 → 0` exists.
-
-## 5. Separate numbers from existence
-
-A **weight** is a number attached to an edge, such as distance, time, or
-cost. A **weighted graph** stores edge weights. An **unweighted graph**
-records only whether an edge exists.
-
-This module implements an unweighted graph. Each matrix cell is Boolean, so
-it cannot also store a weight. Weighted graphs are a concept in this module;
-their step-by-step methods and C storage come later.
-
-## 6. Preview the stored form
-
-**C** is the programming language used in this course. A **type** describes
-the kind of value C stores. A **variable** is named storage for a value. A
-**struct** is a C type that groups related variables, and a **field** is one
-named variable inside a struct.
-
-An **enum** is a C type whose allowed choices have names. An **array** is a
-numbered row of matching values. A **two-dimensional array** is an array of
-rows, so it can represent a matrix. `size_t` is a nonnegative whole-number
-type used for counts and indexes. `bool` is C’s Boolean type. `typedef`
-creates a shorter type name.
-
-`#define` gives a fixed name to text used by the program. Here,
-`GRAPH_MAX_VERTICES` names the storage limit. The suffix `U` marks `16` as
-an unsigned value, which means a value that is not negative.
+The physical matrix reserves 16 rows and 16 columns. `vertex_count` says how
+many indexes are currently active. With a count of 3, only indexes 0, 1, and 2
+name vertices. Index 3 is physically inside the array but is not an active
+vertex.
 
 ```c
-#define GRAPH_MAX_VERTICES 16U
+#define GRAPH_MAX_VERTICES 16
 
-typedef enum {
-    GRAPH_DIRECTED = 0,
-    GRAPH_UNDIRECTED
-} GraphKind;
-
-typedef struct {
+struct DirectedGraph {
     size_t vertex_count;
-    GraphKind kind;
-    bool adjacency[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
-} Graph;
+    int grid[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
+};
 ```
 
-An **active vertex** is included in the current graph. `vertex_count` stores
-how many vertex indexes are active. `kind` records
-whether edges are directed or undirected. `adjacency[from][to]` stores the
-Boolean answer for the possible edge `from → to`. The fixed matrix reserves
-16 rows and 16 columns; this module does not resize it.
+This is fixed storage: the grid never grows and no dynamic memory is used.
+`grid[from][to]` is the stored directed fact. The representation has only the
+two fields shown above.
+
+## 4. State the completed-state invariant
+
+Every valid completed course graph satisfies all these rules:
+
+1. `vertex_count <= GRAPH_MAX_VERTICES`.
+2. Active vertex indexes are `0` through `vertex_count - 1`.
+3. Every grid entry is exactly `0` or `1`.
+4. Every row or column position involving an inactive index is `0`.
+5. Every diagonal cell is `0` under the course no-self-loop policy.
+
+Initialization therefore clears the complete 16-by-16 grid, not only the
+active square. A rejected operation changes neither metadata nor cells.
+
+## 5. Preview the four operations
+
+- Initialization validates the count, stores it, and clears the full grid.
+- Adding a valid non-self edge sets one cell to `1`.
+- Removing a valid edge sets one cell to `0`.
+- Out-degree counts `1` cells across one active row.
+
+Adding an edge already present and removing an edge already absent are
+idempotent: repeating either operation leaves the same valid state. A guarded
+direct lookup reads one cell after checking both active indexes.
+
+## 6. Keep comparisons conceptual
+
+An **undirected** relationship can be represented by two opposite directed
+connections; its matrix is symmetric. A **weighted** graph stores more than
+existence. An **edge list** stores endpoint pairs, while an **adjacency list**
+stores neighbors by vertex. These comparisons explain design choices, but
+this module implements only the fixed directed, unweighted integer matrix.
 
 ## 7. Prepare for individual thinking
 
-Review how one edge appears in an edge set and in a matrix. Do not open
-`vocabulary.md` until after the five-minute individual activity has been
+Do not open `vocabulary.md` until the five-minute Cognitive Pause has been
 completed and preserved.
 
 One representation question:

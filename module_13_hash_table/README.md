@@ -328,7 +328,7 @@ system security.
 
 ## Relationship to the course spiral
 
-- **Revisits:** Module 1 array growth and failure preservation, direct
+- **Revisits:** Module 1 contiguous storage and bounds, Module 4 array growth and failure preservation, direct
   indexing in graph representations, exact lookup, invariants, and bounded
   loops.
 - **Contrasts:** direct indexing uses key-sized address space; a linked list

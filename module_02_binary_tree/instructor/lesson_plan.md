@@ -1,284 +1,287 @@
-# Instructor Lesson Plan — Module 2: Binary-Tree Foundations
+# Instructor Lesson Plan — Module 2: Child-Only Binary Trees
 
 ## Purpose and limits
 
-This module introduces a **hierarchy**, an arrangement in which objects are
-placed above or below other objects. Students represent the hierarchy with a
-**binary tree**, a structure in which each object has at most two direct
-**children**, objects directly below it.
+This module uses ordinary local node variables. Each `struct TreeNode`
+stores one integer plus independent `left` and `right` child pointers.
+There is no upward pointer. Relationships form a binary tree only when the
+caller preserves the no-cycle, no-sharing, and live-object preconditions.
 
-The module deliberately uses a fixed, non-resizing **arena**: one already
-created array that holds every node used in the exercise. A **node** is one
-object in the tree. Students do not request memory, resize memory, or call
-`free`, the C function that releases previously requested memory, in this
-module. An **address** is a memory location. A **pointer** is a C variable
-that stores an address.
-An **invariant** is a rule that must hold whenever a completed structure is
-used. A **validator** is a function that checks stated rules. A **graph** is a
-collection of objects and less-restricted relationships. A **traversal** is a
-planned process for visiting nodes, and an **algorithm** is a precise sequence
-of problem-solving steps. Formal traversal algorithms wait until later
-modules.
+Chapter 1 supplies fixed arrays, conditions, loops, and invariants. Introduce
+addresses, pointers, explicit structure tags, `NULL`, and recursive calls
+here. Do not assume Chapter 1 taught these new representation features.
 
-By the end of the module, students should be able to:
+The module has two 90-minute meetings. It does not teach binary-search ordering,
+balancing, arbitrary-graph validation, or a resizable child collection.
+Clearing resets existing objects; it does not end their lifetimes.
 
-1. name and locate a root, parent, child, leaf, path, depth, height, and
-   subtree;
-2. translate one small tree among a diagram, an array-index table, and C
-   pointers;
-3. state and test the rooted-binary-tree invariant;
-4. implement checked questions about one node and make a checked local child
-   assignment;
-5. use supplied whole-tree validators without implementing traversal;
-6. explain the ordering rule that changes a binary tree into a **binary search
-   tree**, a binary tree arranged by lower and higher keys;
-7. explain which relaxed tree rules lead toward a graph.
+## Learning targets
+
+Students will be able to:
+
+1. identify root, parent, child, sibling, leaf, path, depth, height, and subtree;
+2. translate a binary hierarchy among a diagram, a left/right table, and C;
+3. initialize a local node and distinguish the object from its address;
+4. explain why a right-only child is valid;
+5. distinguish local attachment checks from whole-tree caller preconditions;
+6. trace and implement recursive current-left-right search;
+7. clear a selected subtree descendant-first and detach only its chosen link;
+8. explain why the unselected side never shifts; and
+9. support claims with tests, compiler evidence, and an autopsy explanation.
+
+## Canonical representation
+
+```c
+struct TreeNode {
+    int data;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+```
+
+Use this tree for the Stage B reveal:
+
+```text
+             root:'*'
+             /      \
+        plus:'+'    two:2
+          /   \
+     three:3 five:5
+```
+
+It represents `(3 + 5) * 2`, and its current-left-right order is
+`'*', '+', 3, 5, 2`. Left and right identify operand positions, so students
+must not treat the two links as interchangeable.
+
+Stage C uses the fresh expression `(8 - 3) * (4 + 2)`: root `'*'`, left
+child `minus:'-'` with children `eight:8` and `three:3`, and right child
+`plus:'+'` with children `four:4` and `two:2`. Students translate a fresh set
+of labels rather than repeat the first table.
+
+Binary operators in these expression fixtures have exactly two operands.
+Keep that expression rule distinct from the general `TreeNode`
+representation, which also permits valid zero-child and one-child nodes.
 
 ## Beginner language sequence
 
-Introduce each word immediately before students need it.
-
-| Word | First-use explanation |
+| Word or symbol | First-use explanation |
 |---|---|
-| object | One stored item with its own fields |
-| relationship | A connection between two objects |
-| address | A number-like location identifying where an object is stored |
-| pointer | A C variable that stores an address |
-| index | An array position; C begins numbering positions at zero |
-| `NULL` | A special pointer value meaning “no object” |
-| node | One object in a tree |
-| root | The one starting node; it has no parent |
-| parent | A node directly above another node |
-| child | A node directly below another node |
-| binary tree | A tree in which every node has at most two children |
-| leaf | A node with no children |
-| path | A sequence of connected nodes |
-| depth | The number of links from the root to a node |
-| height | The greatest number of downward links from a node to a leaf |
-| subtree | A node together with every node below it |
-| invariant | A rule that must be true whenever a completed structure is used |
-| reachable | Able to be reached by starting at the root and following child pointers |
-| cycle | A path that returns to a node already on that same path |
-| validator | A function that checks whether stated rules hold |
-| traversal | A planned process for visiting the nodes of a structure |
-| local check | A check of only the requested node or link |
-| whole-tree check | A check involving every node and relationship |
-| output | A result a function writes into a variable supplied by its caller |
-| caller | The code that asks a function to run |
-| `TreeSide` | A named choice between the left and right child fields |
-| `TreeStatus` | A named result describing success or the kind of failure |
-| key | The integer value used to compare nodes |
-| binary search tree (BST) | A binary tree with a global lower-key/higher-key ordering rule |
-| graph | A collection of objects and relationships without the parent/child restrictions of a tree |
+| node | an object storing one value and child links |
+| address | a location that identifies an object |
+| pointer | a C value holding an address or `NULL` |
+| `&node` | the address of a node variable |
+| `node.data` | a field selected directly from an object |
+| `p->data` | a field selected through a pointer |
+| `NULL` | no child at this position |
+| binary tree | a tree with two named positions, left and right |
+| expression tree | a tree whose operator nodes connect to operand subexpressions |
+| operator and operand | an action and the values or subexpressions it combines |
+| parent | the node immediately above another in the hierarchy |
+| leaf | a node whose left and right links are both empty |
+| path | a route following child links |
+| depth | number of links from the root to a node |
+| height | longest downward route to a leaf, counted in links |
+| subtree | one node and every node below it |
+| lifetime | the time during which an object remains usable |
+| recursion | calling the same function on a smaller part of the problem |
+| base case | an input handled without further recursive calls |
+| current-first search | inspect the current node, then the left and right subtrees |
+| cascading clearance | reset every node in a selected branch |
+| detach | remove a link to a branch |
+| precondition | a fact the caller must establish before an operation |
 
-Do not use “obvious,” “simply,” “just recurse,” or unexplained family
-metaphors. Ask students to point to exact nodes and pointers.
+A parent is a relationship, not a stored field in this representation.
+Require students to name the exact local variable, pointer, or child side
+rather than saying only “the node.”
 
 ## Five release gates
 
-A **release gate** is a planned point when the instructor makes another set of
-materials available. The gates prevent later explanations from replacing the
-student’s first attempt.
-
 | Gate | Release time | Give students | Hold back |
 |---|---|---|---|
-| A — Initial inquiry | Before Meeting A | Standard or linear initial prompt | Node representation, vocabulary reference, invariant answer, code |
-| B — Representation | After students preserve their first relationship model | Representation reveal, three-target Cognitive Pause, and post-pause vocabulary reference | Instructor explanation and structural worksheet |
-| C — Investigation | After the pause and instructor relationship explanation | Standard or linear structural investigation worksheet | Beginner notes, completed models, code |
-| D — Notes and models | After Meeting A and completion of the Stage C core | Example-first beginner notes and diagrams with text equivalents | Lab package and all instructor materials |
-| E — Lab and evidence | At the start of Meeting B | Lab, rubric, evidence form, autopsy, public header, starter, public tests, student-test template, and build files | Reference solution, instructor tests, answer key |
+| A — Initial inquiry | before Meeting A | standard or linear hierarchy prompt | representation, vocabulary, code, answers |
+| B — Model and pause | after the first model is saved | left/right reveal, vocabulary, three-target Cognitive Pause | expert calibration and investigation |
+| C — Investigation | after the pause and calibration | standard or linear structural investigation | worked notes, code, answers |
+| D — Textbook and models | after the Stage C attempt is saved | textbook and diagram/text models | lab, autopsy prediction answers, instructor materials |
+| E — Lab and evidence | Meeting B | lab, 100-point rubric, evidence form, autopsy, header, starter, public tests, build files | solution, instructor extension tests, answer key |
 
-Reference answers and the solution remain instructor-only until the
-instructor’s chosen post-submission review. They are not a sixth student
-release gate.
-
-Students needing an accommodation may receive material earlier without
-penalty. Preserve the order of “attempt, compare, calibrate” even when the
-timing changes.
-
----
+Accommodations may change timing without changing the reasoning target.
+Preserve the sequence “attempt, compare, correct.” Vocabulary begins in
+Stage B, never as an early exception in Stage A. Stage D must not contain a
+worked answer to the Stage E autopsy.
 
 # Meeting A — Model and Reason (90 minutes)
 
-## Macro-Question
+## Macro-question
 
-> How can memory addresses represent a hierarchy, and what rules keep those
-> connections from becoming an unrestricted graph?
+> How can separate node variables form a hierarchy using only left and right
+> links, and what rules keep recursive operations meaningful?
 
-| Minutes | Activity | Instructor move | Evidence |
-|---:|---|---|---|
-| 0–8 | Welcome and retrieval | Revisit Module 1: an address can identify an object even when objects are not conceptually adjacent. Define “object,” “address,” and “pointer.” | One-sentence retrieval |
-| 8–18 | Human hierarchy model | Use labeled cards. Define root, parent, child, and binary tree. Limit every card to a left and right child position. | Spoken or written labels |
-| 18–29 | Missing children | Introduce `NULL` as “no child.” Define leaf. Ask whether a one-child node is a leaf. | Two classifications with reasons |
-| 29–42 | Three representations | Translate the five-node example among a tree diagram, child-index table, and `&nodes[i]` pointer expression. Stress that logical position means role in the tree, not neighboring memory. | Completed translation |
-| 42–47 | Gate B Cognitive Pause | Release the three-target prompt. Students work alone for five minutes on representation, structural change, and BST order. | Initial individual model |
-| 47–59 | Peer comparison and expert calibration | Partners compare exact links. Release the expert model only after both have committed an answer. | Corrected model in a second color, annotation style, or revision block |
-| 59–72 | What makes it a tree? | Define invariant, reachable, and cycle. Test cards showing a second parent, a cycle, and an unreachable node. | Violation name plus offending link |
-| 72–82 | Gate C and BST preview | Release the investigation. Work through its structural-rule and global-order cases. Define key, subtree, binary search tree, and range. State that duplicate keys are rejected. | Deep-violation explanation |
-| 82–88 | Tree → Graph transfer | Add a shared child and then a back-link. Define graph. Ask which tree rule each added link breaks and why the relation may still be useful. | Two-rule comparison |
-| 88–90 | Exit ticket | “What must be true of every completed course tree?” Explain the between-meetings task and preserve every first response. | Invariant statement |
+| Minutes | Activity | Evidence |
+|---:|---|---|
+| 0–8 | Retrieve fixed-array bounds, conditions, and invariants | Entry response |
+| 8–18 | Stage A hierarchy inquiry | Preserved first model |
+| 18–28 | Compare branching models without introducing code early | Annotated relationships |
+| 28–38 | Stage B reveal: local nodes, addresses, and two child sides | Node/field labels |
+| 38–43 | Five-minute Cognitive Pause | Three independent responses |
+| 43–54 | Calibrate side identity, caller rules, and search order | Corrected pause |
+| 54–70 | Stage C translation, paths, and legal local changes | Worksheet traces |
+| 70–80 | Trace clearing and removal in the Stage C tree | Reset and surviving-link table |
+| 80–88 | Compare a tree with a shared or cyclic relationship model | Transfer explanation |
+| 88–90 | Exit ticket | One supported invariant claim |
 
-## Between meetings — Complete, then read
+## Stage B calibration
 
-Allow about 60–75 minutes for students to finish the Stage C worksheet in
-the standard or linear format. Sections D–J are the core; Section K is the
-short exit check. Release Gate D—the notes and models—only after the
-student has submitted or preserved that core attempt. Students then use the
-notes to label corrections before Meeting B. An approved extended-time or
-asynchronous schedule preserves the same attempt-before-explanation order.
+The three pause targets are:
 
-## Cognitive Pause prompt
+1. read the named child positions and explain that a right-only node is valid;
+2. explain why placing `root` below leaf `three` would create a cycle even
+   though the selected side is empty; and
+3. trace the search for `2` as `'*', '+', 3, 5, 2`, explaining why the whole
+   left subtree is visited before the right operand.
 
-Use the released five-node table:
+For the proposed cycle, distinguish “invalid for a tree” from “automatically
+detected by an empty-side check.” Whole-tree acyclicity is the caller's
+responsibility.
+Do not execute a recursive search or clear on the invalid example.
 
-| Node index | Key | Left-child index | Right-child index |
-|---:|---:|---:|---:|
-| 0 | 50 | 1 | 2 |
-| 1 | 30 | 3 | 4 |
-| 2 | 70 | none | none |
-| 3 | 20 | none | none |
-| 4 | 40 | none | none |
+## Representation demonstration
 
-Students complete exactly three targets:
-
-1. report the root key, the two addresses in its child fields, and all leaf
-   indexes;
-2. decide whether `nodes[3].left = &nodes[0]` leaves a valid tree and name
-   the relevant whole-tree rule;
-3. decide whether changing the key at index `4` to `60`, or to a duplicate
-   `50`, satisfies the course BST rule.
-
-Accept a structured list, tactile model, or spoken response instead of a
-drawing.
-
-## Meeting A checks
-
-Before moving on, verify that students can say:
-
-- `left` and `right` store addresses, not whole child objects;
-- `NULL` means that the corresponding child is absent;
-- array index and tree depth are different ideas;
-- checking only an immediate child cannot prove the whole BST rule;
-- a shared child or cycle is rejected by the course tree model.
-
----
-
-# Meeting B — Build and Verify (90 minutes)
-
-## Scope reminder
-
-An **application programming interface (API)** is the set of named functions
-other code is allowed to call. Students complete only the small local API.
-The whole-tree structural validator and range-based BST validator are
-supplied. Students call and interpret them and trace key limits on small
-examples. They do not implement either validator or classify its
-link-following order.
-
-| Minutes | Activity | Instructor move | Evidence |
-|---:|---|---|---|
-| 0–8 | Gate E and invariant retrieval | Release the lab package. Keep editors closed while students state the root, parent, reachability, cycle, and child-count rules. | Retrieval response |
-| 8–21 | C syntax sandbox | Define a sandbox as a short, isolated practice. Build `TreeNode` and `TreeArena` one field at a time. Define `struct`, `->`, `&nodes[i]`, pointer, and `NULL` as they appear. | Four expression translations |
-| 21–31 | Fixed arena and lifetime | Define lifetime as the period when an object exists. Explain that the arena points to, but does not own, its array. `malloc` requests memory, `realloc` resizes a request, and `free` releases one; none is used here. | Ownership sentence |
-| 31–43 | Checked local questions | Students predict and then implement checked leaf and child-count functions. Failed requests do not change output values. | Focused public tests |
-| 43–54 | Immediate family | Students report a node’s parent, left child, and right child. The parent is found by checking the arena because nodes store no parent pointer. | Family record for three nodes |
-| 54–64 | Local child assignment | Students implement the checked local assignment. It verifies arguments, index bounds, selected side, empty destination, and direct self-link. Explain what it cannot prove. | Local tests and limitation statement |
-| 64–72 | Construct candidate tree | Students initialize all links to `NULL`, assign the supplied child table, and set the root. A **candidate** is a not-yet-approved structure. | Fixed-arena construction |
-| 72–79 | Supplied structural validator | Validate the completed candidate. Deliberately create one shared child, one cycle, and one unreachable node, restoring the valid tree each time. | Three detected failures |
-| 79–84 | Supplied BST validator | Run the range-based validator on the valid example, a deep ordering violation, and a duplicate key. | Results with reasons |
-| 84–88 | Tree → Graph transfer | State which rejected relationship becomes normal in a graph. Define bookkeeping as extra recorded facts, then identify what later graph work must record. | Transfer statement |
-| 88–90 | Exit and submission check | Collect the representation translation, C results, violation analysis, and BST preview. | Complete evidence list |
-
-## After Meeting B — Finish and document
-
-The 90-minute meeting establishes the model and starts each core function;
-it is not expected to absorb every student's debugging and documentation
-time. Allow about 45–75 additional minutes for students to finish the starter
-TODOs, run the supplied tests, write three original tests, complete the
-autopsy, and finish the evidence record. Provide an instructor-supported lab
-period or equivalent asynchronous help for students who need it.
-
-## Core API teaching contracts
-
-A **contract** states what a function accepts, returns, changes, and preserves.
-Use the actual package names if they differ, but preserve these concepts:
+Declare or draw five separate node objects. Initialize their data and empty
+links, then connect their addresses. Show these two equivalent views:
 
 ```c
-typedef struct TreeNode {
-    int key;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
-
-typedef struct {
-    TreeNode *nodes;
-    size_t count;
-    TreeNode *root;
-} TreeArena;
+root.left = &plus;
+struct TreeNode *p = &root;
+/* p->left and root.left contain the same address. */
 ```
 
-- `tree_arena_init`: copies supplied keys into the fixed node array, clears
-  every child link, and selects the root by array index;
-- `tree_node_is_leaf`: reports whether both child pointers are `NULL`;
-- `tree_node_child_count`: reports zero, one, or two non-`NULL` children;
-- `tree_assign_child`: accepts parent and child indexes plus a `TreeSide`,
-  then changes one empty child pointer only after local checks pass;
-- `tree_immediate_family`: reports parent, left-child, and right-child
-  indexes; `TREE_NO_INDEX` means that a relative is absent;
-- supplied `tree_validate_structure`: checks the completed whole-tree
-  invariant;
-- supplied `tree_validate_bst`: passes allowable lower and upper key limits
-  through the whole tree and rejects duplicate keys;
-- `tree_status_name`: turns a numeric `TreeStatus` result into a short
-  explanation suitable for messages. `TREE_ERR_INVALID_STRUCTURE` means the
-  links do not form a valid tree. `TREE_ERR_NOT_BST` means the links do form a
-  valid tree, but at least one key breaks strict BST ordering.
+Physical adjacency does not determine the relationship. The link does.
+No child needs to store how it was reached.
 
-## Hint ladder
+## Invariant calibration
 
-Reveal one prompt at a time:
+A valid tree has one starting root and:
 
-1. Which object does this pointer identify?
-2. Is the pointer allowed to be `NULL` here?
-3. Is the pointed-to node one of the arena’s nodes?
-4. Does this question concern only one node or the whole tree?
-5. Can another parent already point to this child?
-6. Could following this link eventually return to an earlier node?
-7. Have all nodes in the arena been reached from the root?
-8. What lower and upper key limits apply at this node?
+- no repeated node on any downward route;
+- no node reached through two child links;
+- only initialized, live node objects at nonempty links; and
+- at most one child at each named side.
 
-## Common misconceptions
+Both links may be empty. Either link may be empty independently of the
+other. A direct empty-side check inspects the selected field; it is not a
+whole-tree validator. The only two library functions are recursive find and
+clear.
 
-| Misconception | Diagnostic question | Correction |
-|---|---|---|
-| A child is stored inside its parent | “What is the declared type of `left`?” | It is a pointer storing a child’s address. |
-| Array neighbors must be tree relatives | “Must `nodes[2]` be a child of `nodes[1]`?” | No. Pointers, not array adjacency, define the tree. |
-| `NULL` is a node with key zero | “Can `NULL->key` be read?” | No. `NULL` means no object is present. |
-| A node with one child is a leaf | “How many non-`NULL` child pointers does it have?” | A leaf has zero children. |
-| Two local comparisons prove BST order | “Could a larger value hide deeper in the left subtree?” | Every descendant must remain inside its inherited range. |
-| A successful local assignment proves a valid tree | “Could the child already have a different parent?” | Whole-tree facts require the supplied validator. |
-| Arena nodes should be freed one by one | “Which call allocated each node?” | None. The fixed array owns their storage; do not call `free`. |
-| Duplicate keys can go on either side | “What is this course’s duplicate policy?” | The course BST rejects duplicate keys. |
-| Trees and graphs are unrelated | “What happens if one child is shared?” | Relaxing tree restrictions produces graph-like relationships. |
+## Search trace routine
 
-## Accessibility and pacing
+For each call, ask:
 
-- Pair every diagram with a numbered text description or table.
-- Do not rely on color, line direction alone, or spatial layout alone.
-- Permit drawing, typing, dictation, tactile cards, or oral explanation.
-- Read pointer expressions aloud: `&nodes[3]` means “the address of node
-  three.”
-- Read the starting state before timing, then give five uninterrupted minutes
-  for the Cognitive Pause.
-- Allow an extended or asynchronous pause when an accommodation calls for it.
-- Grade relationship reasoning, not drawing quality or typing speed.
-- Keep formal traversal names and recursive code out of student requirements.
+1. Is the current pointer empty?
+2. Does this node's data match?
+3. What returned from the complete left subtree?
+4. Should the right subtree be searched?
+5. Which address or empty result returns to the caller?
 
-## Evidence collected
+Use a missing target to establish worst-case `O(n)` visits. Use equal data
+in separate nodes to establish that the first current-left-right match wins.
 
-1. initial and corrected diagram/index/pointer translation;
-2. complete invariant statement;
-3. checked local API implementation and test results;
-4. fixed-arena ownership explanation;
-5. three structural-validator failure explanations;
-6. valid, deep-invalid, and duplicate-key BST results;
-7. Tree → Graph transfer statement.
+## Clear and remove trace
+
+For the Stage C left branch, reset `eight` and `three` before `minus`, then
+empty the root's left link. The `plus` node remains on the right with its
+children `four` and `two` unchanged. The reset local variables still exist.
+The remaining links form a valid generic tree, but not a completed binary
+expression because the `'*'` node now has only its right operand.
+
+Emphasize two separate responsibilities: recursive clearance changes the
+selected objects, and removal changes the link in the node above them.
+Calling a child-only clear operation cannot discover or erase that incoming
+link.
+
+## Formative checks
+
+- Is a right-only node valid? Yes.
+- Is it a leaf? No.
+- Does a right child have to store a larger number? No.
+- Does an empty side prove a proposed link is globally safe? No.
+- Does clearing a local node make its address unusable? Not while its scope
+  remains active.
+- Can a returned address outlive the local variable it identifies? No.
+- Should removing the left branch move the right branch? No.
+
+# Between meetings
+
+1. Preserve the Stage C attempt before releasing Stage D.
+2. Ask students to annotate earlier answers using the textbook and models.
+3. Release Stage E for Meeting B.
+4. Validate reference tests and the isolated autopsy with strong warnings
+   and supported runtime checks.
+
+# Meeting B — Implement, Test, and Explain (90 minutes)
+
+| Minutes | Activity | Evidence |
+|---:|---|---|
+| 0–8 | Retrieve the model and current-left-right order | Re-entry response |
+| 8–18 | Read the two-function contract and mark caller preconditions | Header annotations |
+| 18–30 | Practice direct initialization and guarded selected-side attachment | Side-preservation tests |
+| 30–48 | Implement recursive current-left-right search | Search trace and tests |
+| 48–66 | Implement recursive clearance | Descendant-reset tests |
+| 66–73 | Practice caller-side removal and unchanged opposite side | Surviving-link tests |
+| 73–80 | Run public tests and finish three distinct student tests | Transcript and rationales |
+| 80–87 | Preserve an autopsy prediction, then run and explain it | Incident record |
+| 87–90 | Check submission against the 100-point rubric | Evidence checklist |
+
+## Coaching boundaries
+
+Coach the contract, not a memorized solution:
+
+- Which object exists before this function is called?
+- Which fields need initialization?
+- Which single side may this successful operation change?
+- What remains unchanged after a local rejection?
+- Which global facts are the caller's responsibility?
+- What is the recursion base case?
+- Which descendants must be visited before these links are reset?
+- Why is the right side still right after removing the left?
+
+Do not accept a claim of automatic no-cycle/no-sharing validation without
+code and a contract that actually provide it. Do not ask students to add
+such validation as hidden core work.
+
+## Tests, autopsy, and assessment
+
+Require three nonduplicate student-authored tests with a rationale for each:
+
+1. search boundaries or first-match selection with duplicate data in a valid
+   tree;
+2. direct initialization and selected-side behavior, such as an occupied-side
+   guard or caller detachment with the opposite side unchanged; and
+3. cascading clearance and reuse of a cleared, still-live local node.
+
+Use the student rubric's 100-point core:
+
+| Criterion | Points |
+|---|---:|
+| Representation and invariants | 20 |
+| Direct node operations | 15 |
+| Recursive search | 20 |
+| Clearing, removal, and lifetime | 20 |
+| Operation efficiency | 10 |
+| Tests and tool evidence | 10 |
+| Autopsy and forward transfer | 5 |
+| Total | 100 |
+
+Instructor extension tests add boundary and sequence evidence; they do not
+add parent tracking, extra library APIs, or graph validation requirements.
+The current-left-right order is called preorder in later traversal work;
+name memorization and traversal-order comparisons are not Chapter 2 core.
+
+The isolated autopsy is an invariant exercise. Its malformed expression
+`(3 + 5) * (5 - 2)` uses one `shared_five` node as an operand of both `plus`
+and `minus`. Students predict before running, compare observable link/data
+state, explain the violated rule, and propose a regression test. A crash is
+not the target. Keep worked fixture answers in the instructor answer key only.
+
+Provide linear text, selectable commands, verbal or tactile equivalents, and
+instructor CI where needed. Grade reasoning and evidence, not drawing
+quality, typing speed, or exact memorized terminology.

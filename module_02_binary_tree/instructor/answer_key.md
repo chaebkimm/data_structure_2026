@@ -1,509 +1,431 @@
 # Instructor Answer Key — Module 2
 
-## Macro-Question synthesis
+Keep this file instructor-only. Students preserve an initial attempt before
+calibration and an autopsy prediction before observation.
 
-A **hierarchy** arranges objects above or below other objects. A **pointer**
-stores the address of another object. A **parent** is directly above a
-**child**, so a parent pointer can identify children that are elsewhere in
-memory. The **root** is the one starting node. The pointers create a
-hierarchy only when all of these rules hold for the completed structure:
+## Macro-question synthesis
 
-1. the root has no parent;
-2. every other node has exactly one parent;
-3. every node can be reached from the root;
-4. no path returns to a node already on that path;
-5. every non-`NULL` child address names an active arena node;
-6. every node has at most two children; and
-7. one node's left and right fields do not name the same child.
+Separate local objects form a hierarchy when their child fields store
+addresses of other live objects. Every node has two named child positions,
+left and right. Either position may be empty independently.
 
-If a child may have several parents, links may return backward, or some links
-cross branches, the relationships are better modeled as a **graph**, a
-collection of objects and less-restricted relationships.
+The caller constructs a finite, acyclic, unshared tree. The two recursive
+functions assume those rules; they do not certify arbitrary link patterns.
+Operators and numbers are data, not directions for choosing a search branch.
 
-## Stage A inquiry
+## Stage A — Initial inquiry
 
-### Original hierarchy
+### A. Reconstruct the hierarchy
 
 ```text
-Security Lab
-├── Logs
-│   ├── Login Events
-│   └── Firewall Events
-└── Reports
-    ├── Daily Summary
-    └── Incident Summary
+                 '*'
+                /   \
+              '+'    2
+             /   \
+            3     5
 ```
 
-- single starting item: `Security Lab`;
-- bottom items: `Login Events`, `Firewall Events`, `Daily Summary`, and
-  `Incident Summary`;
-- one valid route: `Security Lab → Logs → Login Events`. Any complete route
-  from the start to one of the four bottom items is correct.
+- Starting item: `'*'`.
+- Items with nothing below them: `3`, `5`, and `2`.
+- Route to `5`: `'*' -> '+' -> 5`.
+- Maximum number immediately below an item: two, one at each named side.
 
-### Proposed changes
+The tree represents `(3 + 5) * 2`. Left and right preserve operand order;
+they are not interchangeable expression positions.
 
-1. Putting `Firewall Events` below both `Logs` and `Reports` gives it two
-   immediate items above it. Its one parent is no longer clear, so the result
-   is not a pure tree.
-2. Linking `Login Events` back to `Security Lab` creates a route that can
-   repeat forever and gives the starting item an incoming relationship.
-3. Once detached, `Daily Summary` cannot be reached from `Security Lab`.
+Accept a side-labeled table or linear description instead of a drawing.
 
-Any two accurate original rules earn credit: one starting item, no parent for
-that start, one parent for every other item, all items reachable from the
-start, no returning route, or at most two immediate lower items in this
-example.
+### B. Preserve the hierarchy
 
-### Storage brainstorm
+1. Giving the existing `five` object another incoming link from `two.left`
+   shares one node between two routes. That is no longer this module's
+   unshared tree.
+2. Linking `three` back to `root` creates the cycle
+   `root -> plus -> three -> root`. Repeated downward processing cannot rely
+   on reaching an empty link along that route.
+3. Removing the left `plus` branch below `root` leaves `two` on the right.
+   Side identity does not depend on a neighboring side being occupied. The
+   result is a valid general binary tree with one child, but it is no longer
+   a completed binary expression because `'*'` lacks its left operand.
 
-- Store an address for each immediate lower item.
-- Store `NULL` when a child position is empty.
-- Related items need not be adjacent in memory; stored addresses create the
-  relationship.
-- Open questions vary. Use them to plan pointer, `NULL`, or structural
-  support rather than scoring a predicted answer.
+Suitable rules include no sharing, no cycles, at most one item on each
+named side, and one starting root.
 
-## Entry retrieval
+### C–D. Model and storage brainstorm
 
-1. An ArrayList places values in one contiguous block, meaning one unbroken
-   region of memory.
-2. A linked relationship stores another object’s address.
-3. `NULL` represents the absence of a linked object.
-4. The object at the next memory address does not automatically become a
-   child. A child pointer must explicitly store its address.
-5. An **arena** in this module is one fixed array containing all nodes. It
-   avoids resizing, so node addresses remain stable during the exercise.
+Each object needs its data and a way to identify each child. A special empty
+marker represents an unused position. Related objects need not be physically
+adjacent. Two objects storing the same integer remain different objects.
 
-## Vocabulary checks
+Do not require pointer vocabulary before the Stage B reveal. A response
+such as “remember where the left and right items are” is a sound initial
+model.
 
-- **root:** the one starting node; it has no parent;
-- **parent:** a node with a direct link to a child;
-- **child:** the node identified by a parent’s left or right pointer;
-- **leaf:** a node whose left and right pointers are both `NULL`;
-- **path:** a sequence of nodes connected by links;
-- **depth:** number of links from the root to a named node;
-- **height:** greatest number of downward links from a named node to a leaf;
-- **subtree:** a named node and every descendant below it;
-- **descendant:** any node below another node, not only a direct child.
+## Stage B — Representation and pause
 
-For the course convention, a leaf has height zero. The empty-child position
-below a leaf is not counted as a node.
+### Canonical local-node table
 
-## Stage B Cognitive Pause
+| Variable | Data | Left address | Right address |
+|---|---|---|---|
+| `root` | `'*'` | `&plus` | `&two` |
+| `plus` | `'+'` | `&three` | `&five` |
+| `three` | `3` | `NULL` | `NULL` |
+| `five` | `5` | `NULL` | `NULL` |
+| `two` | `2` | `NULL` | `NULL` |
 
-### Target 1 — Representation
+### Target 1 — Preserve the sides
 
-- root key: `50`;
-- root left address: `&nodes[1]`;
-- root right address: `&nodes[2]`;
-- leaf indexes: `2`, `3`, and `4`.
-
-### Target 2 — Structural change
-
-`nodes[3].left = &nodes[0]` uses an in-arena address and an empty local slot,
-but the completed result is invalid. Following child links from index `0` to
-index `1`, then index `3`, returns to index `0`. This is a cycle. It also
-gives the root a parent.
-
-### Target 3 — BST order
-
-Changing index `4` from key `40` to `60` leaves the shape structurally valid
-but breaks BST ordering. Index `4` remains inside the entire left subtree of
-key `50`, so it must be lower than `50`. The expected status is
-`TREE_ERR_NOT_BST`.
-
-Changing index `4` to `50` is also rejected with `TREE_ERR_NOT_BST` because
-the course duplicate policy uses strict lower-than and higher-than
-comparisons.
-
-## Stage D diagram translation
-
-An **index** is an array position, numbered from zero in C.
-
-| Parent node | Left pointer | Right pointer |
-|---|---|---|
-| `nodes[0]`, key `50` | `&nodes[1]` | `&nodes[2]` |
-| `nodes[1]`, key `30` | `&nodes[3]` | `&nodes[4]` |
-| `nodes[2]`, key `70` | `NULL` | `NULL` |
-| `nodes[3]`, key `20` | `NULL` | `NULL` |
-| `nodes[4]`, key `40` | `NULL` | `NULL` |
-
-`arena.root` is `&nodes[0]`.
-
-## Stage C investigation
-
-### D. Translate three representations
-
-The relationships are:
-
-```text
-index 0, key 40
-├── left: index 1, key 20
-│   ├── left: index 3, key 10
-│   └── right: index 4, key 30
-└── right: index 2, key 60
-```
-
-Pointer completions:
+After complete removal of the root's left branch:
 
 ```c
-TreeNode *root = &nodes[0];
-nodes[0].left  = &nodes[1];
-nodes[0].right = &nodes[2];
-nodes[1].left  = &nodes[3];
-nodes[1].right = &nodes[4];
+root.left == NULL
+root.right == &two
+```
+
+A right child without a left child is valid. The removed local objects have
+been cleared but remain alive while their scope is active. The remaining
+shape is not a completed binary expression because the root operator has only
+one operand.
+
+### Target 2 — Whole-tree rule
+
+`three.left = &root` would create a cycle. An empty `three.left` proves only
+that this one field is unused; it does not make the whole relationship safe.
+The caller must prevent the change. Neither search nor clearance is a
+cycle-rejection routine. Do not run the invalid example recursively.
+
+### Target 3 — Search order
+
+`tree_find(&root, 2)` checks:
+
+```text
+'*', '+', 3, 5, 2
+```
+
+It returns `&two`. There is no value-order guarantee: the complete left
+subtree must be searched before the right operand, because the expression
+shape encodes operations and operands rather than binary search ordering.
+
+## Stage C — Investigation
+
+Each independent operation starts again from the supplied Stage C state.
+
+### D. Translate among representations
+
+```text
+                  root:'*'
+                  /       \
+             minus:'-'    plus:'+'
+               /   \       /   \
+          eight:8 three:3 four:4 two:2
+```
+
+| Variable | Data | `left` | `right` |
+|---|---|---|---|
+| `root` | `'*'` | `&minus` | `&plus` |
+| `minus` | `'-'` | `&eight` | `&three` |
+| `plus` | `'+'` | `&four` | `&two` |
+| `eight` | `8` | `NULL` | `NULL` |
+| `three` | `3` | `NULL` | `NULL` |
+| `four` | `4` | `NULL` | `NULL` |
+| `two` | `2` | `NULL` | `NULL` |
+
+Direct relationships include:
+
+```c
+root.left = &minus;
+root.right = &plus;
+minus.left = &eight;
+minus.right = &three;
+plus.left = &four;
+plus.right = &two;
 ```
 
 | Expression | Meaning |
 |---|---|
-| `nodes[1]` | the complete node object at index `1`, with key `20` |
-| `&nodes[1]` | the address of that node |
-| `nodes[1].right` | the right-child pointer stored in that node; here it is `&nodes[4]` |
-| `root->left` | the left-child pointer in the object identified by `root`; here it is `&nodes[1]` |
-| `NULL` | no object or no child |
+| `root` | the node object |
+| `&root` | that object's address |
+| `root.data` | `'*'` |
+| `root.left` | `&minus` |
+| `root.left->data` | `'-'`, reached through the stored left address |
+| `NULL` | no child at the selected position |
 
-### E. Name and measure positions
+### E. Paths and positions
 
-1. Path from index `0` to index `4`: `0, 1, 4`.
-2. Depth of index `4`: `2`.
-3. Leaves: indexes `2`, `3`, and `4`.
-4. Height of index `1`: `1`.
-5. Height of root: `2`.
-6. Subtree rooted at index `1`: indexes `1`, `3`, and `4`.
+- Path to `four`: `'*' -> '+' -> 4`.
+- Depth of `four`: 2.
+- Leaves: `eight`, `three`, `four`, and `two`.
+- Height of `minus`: 1.
+- Height of `root`: 2.
+- Subtree rooted at `minus`: `minus`, `eight`, and `three`.
 
-### F. Structural invariant
+Count links, not nodes. A leaf has height zero. Parent and ancestor remain
+relationship words, but the node stores no upward link. The diagram or a
+route from a known root supplies that context.
 
-The blanks are:
+### F. Invariants versus local checks
 
-1. `NULL`;
-2. `root`;
-3. `zero`;
-4. `one`;
-5. `active`;
-6. `reachable`;
-7. `cycle`;
-8. `child` or `node`.
+The representation has at most two children, distinguished as left and
+right. Every reachable non-root node has one incoming tree link; no node is
+shared, and no downward route repeats a node. All referenced objects must
+be initialized and alive.
 
-| Proposed change | Valid tree? | Reason |
-|---|---|---|
-| No change | yes | All five nodes satisfy the completed-tree rules |
-| Index `2` also points to index `4` | no | Index `4` has two incoming parent links |
-| Index `3` points back to index `0` | no | A cycle is created and the root receives a parent link |
-| Detach index `4` but still call it active | no | Index `4` is unreachable and has no parent |
-| Index `2` points to itself | no | The self-link is a one-node cycle |
+The four rule blanks are zero incoming links at the root, one incoming link
+at each other node, a cycle, and alive.
 
-### G. Fixed-arena reasoning
+| Proposed change | Judgment |
+|---|---|
+| attach a fresh initialized `n7` to empty `two.left` under the general tree contract | valid if its lifetime is sufficient, though it no longer represents the supplied binary expression |
+| put `&n7` in occupied `root.left` without replacement | not permitted; the empty-side guard prevents the write |
+| also put existing `&three` in `four.left` | invalid sharing, even if the selected side is empty |
+| connect `eight.left` to `&root` | invalid cycle |
+| put `&n7` in both sides of `two` | invalid repeated incoming link, even though both fields can hold an address |
 
-| Statement | Judgment | Reason |
-|---|---|---|
-| Store `&nodes[3]` in a child field | memory-safe address, subject to structure validation | The address is inside the live arena; the relationship still needs a valid-tree check |
-| Pass `&nodes[3]` to `free` | unsafe | The node was not obtained as a separate allocation |
-| Infer a relationship from nearby memory | unsafe reasoning | Pointers, not physical adjacency, define relationships |
-| Use a child pointer after arena lifetime | unsafe | The pointer no longer identifies a live object |
-| Store an address outside the active arena | not allowed by this tree contract | Merely storing a live outside address is memory-safe, but it is not a valid child and the validator rejects the structure |
+The `if` check establishes only whether that side is empty. There is no
+status value or automatic whole-tree rejection. The caller must not perform
+a link assignment that would violate the global rules.
 
-Physical position describes where bytes are stored. Logical position
-describes the role established by links; therefore neighboring array objects
-need not be parent and child.
+### G. Local-node lifetime and clearance
 
-### H. Local and whole-tree validation
+| Action | Judgment and explanation |
+|---|---|
+| initialize data and both links before use | safe and required before linking the node |
+| follow a node whose child links were never initialized | unsafe; those fields do not yet identify valid children or empty sides |
+| inspect `minus.data` after `tree_clear(&minus)` while still in scope | valid; the data is zero |
+| keep using the address of a local node after its scope ends | invalid lifetime use |
 
-Three examples that escape local checks are:
+Clearance resets contents. It does not destroy the local variable.
+Reinitialization and reuse are possible while that object remains alive and
+unlinked. Zero is an ordinary value, not a “no node” marker; `NULL` marks an
+empty link.
 
-1. a child already has a parent elsewhere;
-2. a longer path returns to an ancestor and forms a cycle;
-3. a different active node becomes unreachable.
+Passing an address to another function does not extend the local object's
+lifetime. The declaring block still controls when it ends.
 
-BST ordering is another whole-tree rule, but it is checked separately from
-shape.
+### H. Selected-side attachment and removal
 
-A parent-count record detects no-parent, multiple-link, and incoming-root
-defects. A `seen` record helps detect repeated or unreachable nodes. An empty
-selected slot describes only that slot; it says nothing about links stored
-by other nodes.
-
-### I. Global BST rule
-
-Allowed-key descriptions for the Stage B tree:
-
-| Index | Allowed key description |
-|---:|---|
-| 0 | no ancestor bound |
-| 1 | lower than `50` |
-| 2 | higher than `50` |
-| 3 | lower than `30`, and therefore also lower than `50` |
-| 4 | higher than `30` and lower than `50` |
-
-| Independent change | Valid BST? | Reason |
-|---|---|---|
-| `20` to `25` at index `3` | yes | `25` remains lower than `30` and `50` |
-| `40` to `60` at index `4` | no | `60` exceeds the inherited upper bound `50` |
-| `40` to `30` at index `4` | no | Strict ordering rejects equality with its parent |
-| `70` to `50` at index `2` | no | Strict ordering rejects equality with the root |
-
-Immediate comparison is insufficient because every ancestor can add a lower
-or upper limit. The `40`-to-`60` case returns `TREE_ERR_NOT_BST`: its links
-still form a valid tree, so `TREE_ERR_INVALID_STRUCTURE` would describe the
-wrong kind of defect.
-
-### J. Tree → Graph
-
-Useful shared relationships include one library used by two programs, one
-course counted in two degree plans, or one service reached by two processes.
-A graph removes the tree’s one-parent restriction and may permit cycles,
-cross-links, several routes, and disconnected groups. It records visited
-vertices so returning links do not cause endless repeated work.
-
-A representative transfer sentence is:
-
-> A tree is useful when each non-root item belongs in exactly one hierarchical
-> position; a graph is needed when shared, crossing, or returning
-> relationships are meaningful.
-
-### K. Exit ticket
-
-1. A child field stores an address.
-2. `NULL` means no child.
-3. The root has no parent; every other node has exactly one incoming parent
-   link.
-4. Accept one: one parent, reachability, no cycles, in-arena pointers, or BST
-   range order.
-5. Every left-subtree key is lower and every right-subtree key higher than the
-   current key.
-6. A duplicate is rejected with `TREE_ERR_NOT_BST` after structure passes.
-7. Questions vary and guide the next support.
-
-## Structural invariant cases
-
-An **invariant** is a rule that must hold whenever the completed tree is made
-available for use.
-
-| Case | Valid? | Reason |
-|---|---|---|
-| Five-node example above | yes | One root, one parent for each other node, all reachable, no cycle, at most two children |
-| Both `nodes[1].right` and `nodes[2].left` point to `nodes[4]` | no | Node `4` has two parents |
-| `nodes[3].left` points to `nodes[0]` | no | The link returns to the root, creating a cycle and giving the root a parent |
-| No pointer identifies `nodes[4]` | no | Node `4` is unreachable from the root |
-| `arena.root` is `NULL` while `count` is five | no | A nonempty arena has no starting node |
-| A child pointer identifies an object outside `arena.nodes` | no | Every non-`NULL` child must identify a node in the arena |
-| One node's left and right fields identify the same child | no | The child has two incoming links even though both come from one node |
-| Empty arena with `nodes == NULL`, `count == 0`, `root == NULL` | yes | This is the course’s canonical empty-tree state |
-
-The two pointer fields enforce “at most two children” by representation.
-They do not enforce any of the other global rules.
-
-## Local function answers
-
-### Checked leaf
-
-A valid request reports true only when:
+In the separate worksheet example, `parent.left == NULL` and
+`parent.right == &n8`. The parent is not a leaf because its right child is
+present. Attaching fresh `n4` to the selected left side gives:
 
 ```c
-node->left == NULL && node->right == NULL
+if (parent.left == NULL) {
+    parent.left = &n4;
+}
 ```
 
-`tree_node_is_leaf` checks that the node and output pointers are non-`NULL`.
-It is a local question and therefore does not prove that the node belongs to
-a valid arena. On failure, it does not change the caller’s output value.
+The two links are then `&n4` and `&n8`. If the selected left field were
+occupied, the guard would leave it unchanged; it would not silently use the
+right side instead.
 
-### Checked child count
+For removal:
 
-`tree_node_child_count` starts at zero and adds one for each non-`NULL` child
-pointer. The only successful results are `0`, `1`, and `2`. Like the leaf
-query, it checks its two pointer arguments but does not validate an arena.
+```c
+tree_clear(parent.left);
+parent.left = NULL;
+```
 
-### Immediate family
+The links become `NULL` and `&n8`. The right field keeps its identity and
+original address. Clearing an empty selected side and assigning `NULL` again
+is harmless.
 
-For node index `1`, key `30`, `tree_immediate_family` reports:
+### I. Recursive search
 
-- `parent_index = 0`, key `50`;
-- `left_child_index = 3`, key `20`;
-- `right_child_index = 4`, key `40`.
-
-For root index `0`, key `50`, it reports:
-
-- `parent_index = TREE_NO_INDEX`;
-- `left_child_index = 1`, key `30`;
-- `right_child_index = 2`, key `70`.
-
-For leaf index `4`, key `40`, it reports:
-
-- `parent_index = 1`, key `30`;
-- `left_child_index = TREE_NO_INDEX`;
-- `right_child_index = TREE_NO_INDEX`.
-
-Because `TreeNode` has no parent field, finding the parent requires checking
-the left and right pointers of arena nodes. If `n` is the number of nodes,
-this may inspect up to `n` nodes. `TREE_NO_INDEX` is a special `size_t` value
-meaning “no related node.”
-
-### Local child assignment
-
-`tree_assign_child` receives parent and child array indexes plus a
-`TreeSide`. It can prove:
-
-- the arena exists;
-- both indexes are inside the arena;
-- the selected side is left or right;
-- the destination child position is available under the course contract;
-- the parent is not being assigned directly as its own child.
-
-It cannot by itself prove:
-
-- that the proposed child lacks another parent;
-- that the child is not an earlier ancestor;
-- that every arena node remains reachable;
-- that the keys obey BST order.
-
-Those are whole-tree facts, so the completed candidate must be passed to
-`tree_validate_structure` before it is accepted.
-
-## BST preview
-
-A **binary search tree (BST)** is a binary tree with this global rule:
-
-- every key in a node’s entire left subtree is lower than the node’s key;
-- every key in its entire right subtree is higher than the node’s key.
-
-“Global” means the rule applies to all descendants, not only direct children.
-This course rejects duplicate keys, so both comparisons are strict.
-
-### Valid example
-
-The five-node example is valid. The node with key `40` is in the right
-subtree of `30`, so it must be greater than `30`. It is also in the left
-subtree of `50`, so it must be lower than `50`. It satisfies the allowable
-range `30 < key < 50`.
-
-### Deep violation
+Complete current-left-right sequence:
 
 ```text
-10
-└── left: 5
-    └── right: 12
+'*', '-', 8, 3, '+', 4, 2
 ```
 
-The immediate relation `5 < 10` is correct, and `12 > 5` is correct. The tree
-is still not a BST because `12` occurs inside the left subtree of `10`, where
-every key must be lower than `10`.
+Searching for `4` checks `'*', '-', 8, 3, '+', 4` and returns `&four`.
+Searching for 404 checks all seven nodes and returns `NULL`.
+If `two.data` is separately changed to `4`, a search for `4` still returns
+`&four`: it checks `'*', '-', 8, 3, '+', 4` and stops before `two`. The return
+value identifies that object rather than merely reporting the integer.
 
-### Duplicate
+Changing `eight.data` to 900 does not break a tree rule. A search for 900
+checks `'*', '-', 900` and finds `&eight`. The lack of a value-order invariant
+means the left subtree cannot be skipped based on a comparison with root data.
 
-```text
-8
-└── right: 8
-```
+A correct function handles `NULL`, checks the current node, searches left,
+returns a left match immediately, then searches right. Search does not
+change any field. Worst-case work is `O(n)`.
 
-This is rejected. A right-subtree key must be strictly greater than `8`.
+### J. Cascading clearance and removal
 
-`tree_validate_bst` reports `TREE_ERR_NOT_BST` for this duplicate and for the
-deep ordering violation. This result says the structure is a valid binary
-tree but is not a valid binary search tree. It reports
-`TREE_ERR_INVALID_STRUCTURE` instead when the links already violate a tree
-rule, such as one-parent or no-cycle.
+For the Stage C left branch:
 
-### Why ranges work
+1. clear `eight`;
+2. clear `three`;
+3. clear `minus`; and
+4. set `root.left` to `NULL`.
 
-The root begins with no lower or upper restriction beyond the `int` type.
-Moving left adds the current key as an exclusive upper limit. Moving right
-adds it as an exclusive lower limit. **Exclusive** means the limit itself is
-not allowed, which rejects duplicates.
+The three cleared objects each end with data zero and both links empty.
+The surviving root still stores `'*'`, and `root.right == &plus`. The plus
+node and its children `four` and `two` are unchanged. No child changes sides.
+The remaining links form a valid generic binary tree but not a completed
+binary expression, because the root operator now has only its right operand.
 
-Students need to interpret this supplied validator, not implement or classify
-its link-following mechanism in Module 2.
+If the caller only runs `tree_clear(&minus)`, `root.left` still contains
+`&minus`. The additional assignment is what detaches that cleared branch.
 
-## Operation-cost answers
+Calling `tree_clear(&root)` resets all seven node objects but does not end
+any of their lifetimes. Calling it again is safe. A later
+`tree_find(&root, 0)` returns `&root`, because that live node now stores
+zero. The detached descendants are no longer reachable from it.
 
-**Operation cost** describes how the amount of work changes as input grows.
-`O(1)` means a fixed amount of work. `O(n)` means work can grow in proportion
-to `n`, the node count.
-
-| Operation | Cost | Reason |
+| Operation | Work | Reason |
 |---|---:|---|
-| Arena initialization | `O(n)` | It copies `n` keys and clears `n` pairs of links |
-| Checked leaf | `O(1)` | It checks two pointer fields |
-| Checked child count | `O(1)` | It checks two pointer fields |
-| Local child assignment | `O(n)` in the supplied version | Its container check scans up to `n` addresses to confirm that the root belongs to the arena |
-| Immediate-family report | `O(n²)` in the supplied version | It first runs structural validation, then scans for the parent |
-| Structural validation | `O(n²)` in the supplied version | Each of up to `n` links may require a scan of up to `n` arena addresses |
-| BST validation | `O(n²)` in the supplied version | It validates structure and maps child addresses back to indexes |
+| initialize one existing node | `O(1)` | set three fixed fields |
+| attach to a known empty selected side | `O(1)` | one check and one link write |
+| search data | `O(n)` worst case | a missing value can require every node |
+| clear a selected subtree | `O(k)` | reset each of its `k` nodes |
+| detach a known side alone | `O(1)` | write one `NULL` |
+| clear and detach | `O(k)` | recursive clearance dominates |
 
-Do not require students to derive traversal-based proofs yet. It is enough to
-connect repeated scans with growing work. The raised `²` means “multiplied by
-itself”: `n²` means up to `n × n` comparison opportunities. The course arena
-is capped at 32 nodes, favoring clear checks over a more advanced lookup
-structure.
+Each node always includes space for its two pointers, including a leaf.
+Recursive call-stack space is proportional to the longest pending route,
+`O(h + 1)` when height counts links.
 
-## Ownership and lifetime answer
+### K. Tree-to-graph transfer
 
-The arena points into an already created array. It is **non-owning**, meaning
-it may use that storage but is not responsible for releasing it. Students
-must not call `free` on `arena.nodes`, `arena.root`, or any child pointer.
+A reused subexpression referenced by two operators may need a directed
+acyclic graph rather than a tree. A relationship model that also permits
+cycles needs a more general directed graph. A tree assumes one route to each
+node from its root; shared or returning relationships require different
+processing rules, commonly including remembering which objects have already
+been visited.
 
-All tree use must stop before the array’s lifetime ends. A **lifetime** is the
-period during which an object exists and its address may be used.
+Students explain this distinction; they do not implement a graph validator
+or repair arbitrary graphs with the two tree functions.
 
-## Tree Structure Autopsy
+### L. Exit anchors
 
-The four links are:
+A child field stores an address or `NULL`. Both child positions are
+independent. The caller keeps objects alive and prevents sharing and cycles.
+Search is current node, left subtree, right subtree. Clearance resets every
+reachable node, and removal also needs the caller to erase the selected
+incoming link. No side shifting occurs.
 
-| Parent index | Side | Child index |
-|---:|---|---:|
-| `0` | left | `1` |
-| `0` | right | `2` |
-| `1` | left | `3` |
-| `2` | right | `3` |
+## Exact implementation boundary
 
-The first three assignments form a valid four-node tree. The fourth
-assignment, `nodes[2].right = &nodes[3]`, is the first invalid completed
-state because index `3` already has index `1` as a parent.
+```c
+struct TreeNode {
+    int data;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
 
-Each local assignment uses in-range addresses, avoids a direct self-link, and
-fills an empty field. Only comparison with other parents reveals the shared
-child.
+struct TreeNode *tree_find(struct TreeNode *node, int target);
+void tree_clear(struct TreeNode *node);
+```
 
-Expected output facts:
+Only the two function bodies are starter TODOs. Direct initialization,
+guarded attachment, and explicit detachment belong in examples and tests.
+Do not grade an invented constructor, count query, status type, or validation
+helper as required work.
 
-- arena slots: `4`;
-- branch-count result: `5`;
-- times key `40` is encountered: `2`;
-- the two printed child addresses for index `3` are equal.
+In formal traversal terminology the search order is preorder. Chapter 2
+requires the sequence and reasoning, not memorization of this later label.
 
-The counting function reaches index `3` once through index `1` and again
-through index `2`; it counts routes, not distinct arena nodes.
+## Tree Structure Autopsy — worked instructor answers
 
-A pure-tree repair removes either incoming link to index `3` and then requires
-`tree_validate_structure(...) == TREE_OK`. A graph is the appropriate later
-model if both relationships are meaningful.
+### Starting links
 
-Strong regression tests:
+All six variables remain alive throughout the fixture. The intended reading
+is `(3 + 5) * (5 - 2)`, but both written `5` operands incorrectly identify
+one shared node object.
 
-1. build the shared-child candidate and require
-   `TREE_ERR_INVALID_STRUCTURE`;
-2. remove one of the two links, require `TREE_OK`, and confirm that a
-   distinct-node count is four.
+| Object and data | `left` | `right` |
+|---|---|---|
+| `root`, `'*'` | `&plus` | `&minus` |
+| `plus`, `'+'` | `&three` | `&shared_five` |
+| `minus`, `'-'` | `&shared_five` | `&two` |
+| `three`, `3` | `NULL` | `NULL` |
+| `shared_five`, `5` | `NULL` | `NULL` |
+| `two`, `2` | `NULL` | `NULL` |
 
-## Tree → Graph transfer
+The initializer for `minus` first violates the unshared-tree rule when its
+left field receives `&shared_five` while `plus.right` already holds that
+address. The fact that this is a newly initialized field is not evidence that
+`shared_five` is unlinked elsewhere.
 
-A tree gives every non-root node exactly one parent and forbids cycles. A
-graph permits more general relationships:
+### Predicted consequence
 
-- two objects may both link to one shared object;
-- a link may cross from one branch to another;
-- a path may return to an earlier object;
-- some objects may not be reachable from a chosen start.
+The fixture performs correct recursive clearance on the left branch, then
+sets `root.left = NULL`.
 
-In graph language, objects are often called **vertices**, and relationships
-are called **edges**. Later graph searches need a “visited” record so a cycle
-does not cause repeated processing forever.
+```text
+root.left  = NULL
+root.right = &minus
+minus.data = '-'
+minus.left = &shared_five
+minus.right = &two
+shared_five.data = 0
+shared_five.left = NULL
+shared_five.right = NULL
+plus.data = 0
+plus.left = NULL
+plus.right = NULL
+three.data = 0
+two.data = 2
+```
 
-## Exit-ticket answers
+The program's exact observations are:
 
-1. A pointer field stores a child’s address; it does not contain the child
-   object.
-2. `NULL` means the selected child is absent.
-3. A local assignment cannot prove one-parent, reachability, cycle, or BST
-   rules for the whole structure.
-4. Duplicate BST keys are rejected.
-5. Arena nodes are never individually freed.
-6. Shared or backward relationships motivate a graph.
+```text
+before: shared operand data=5
+after clearing and detaching the plus branch:
+root.left is NULL: yes
+root.right still points to minus: yes
+minus.left still points to shared_five: yes
+minus.left->data=0
+```
+
+The shared operand remains alive at the same address. The surviving minus
+route still reaches it, but it now contains zero rather than 5. This is
+not an expired pointer, and a memory sanitizer need not complain.
+
+The defect is the invalid shared relationship, not the supplied
+`tree_clear` implementation. Changing clear to skip a descendant or
+preserve its data would break the valid-tree contract.
+
+### Repair and regression evidence
+
+Keep one incoming link to the shared object, or use distinct `left_five` and
+`right_five` objects if both expression positions need the value 5. Equal
+data does not make two operands the same object. If the application truly
+needs a shared reusable subexpression, choose a later graph representation
+with an appropriate processing policy.
+
+A valid regression fixture can give the left and right branches distinct
+operand objects that both store 5. After removing the plus branch, assert that
+the minus branch's operand remains at its original address with data 5, while
+all plus-branch objects are zeroed and `root.left == NULL`.
+
+This explanation may support one of the three required student tests; the
+autopsy does not require a fourth coded test. Do not claim the regression
+fixture turns the library into an automatic sharing detector.
+
+## Assessment alignment
+
+| Criterion | Points |
+|---|---:|
+| Representation and invariants | 20 |
+| Direct node operations | 15 |
+| Recursive search | 20 |
+| Clearing, removal, and lifetime | 20 |
+| Operation efficiency | 10 |
+| Tests and tool evidence | 10 |
+| Autopsy and forward transfer | 5 |
+| Total | 100 |
+
+The three authored-test slots cover search boundaries/duplicate order,
+direct linking/occupied sides/detachment, and recursive clearance/live-node
+reuse, in that order. Together they must show the opposite side is unchanged.
+Require distinct claims and rationales; copying the same test with different
+data is insufficient.
+
+Accept equivalent linear descriptions, verbal explanations, and approved
+tool evidence. Do not penalize an initial misconception that is preserved
+and meaningfully corrected.

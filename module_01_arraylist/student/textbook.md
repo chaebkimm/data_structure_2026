@@ -18,37 +18,25 @@ Since all the data is lined up right next to each other in the computer's memory
 
 Even after deleting a piece of data, we need to keep the remaining data packed closely together. To do this, we move all the data that comes *after* the deleted item forward by one space. After deleting, the final number of items goes down by one.
 
-```text
-[10] [50] [20] [30] [ ] (Initial state)
-[10] [ ] [20] [30] [ ] (Remove 50)
-[10] [20] [30] [ ] [ ] (Shift 20 and 30 to the left)
-```
-
 ### How do we add data?
 
 You can simply add new data to the very end of your existing data.
 
 If you want to add data right in the middle, you must make sure all the data stays packed together without losing any values. First, shift the data at the target spot—and everything after it—backward by one space. Then, place your new data into the empty spot. After adding it, the final number of items goes up by one.
 
-```text
-[10] [20] [30] [ ] [ ] (Initial state)
-[10] [20] [ ] [30] [ ] (Shift 30 right)
-[10] [20] [99] [30] [ ] (Insert 99 in the middle)
-```
-
 ### What should we check when adding data?
 
-You need to check if the memory space you set aside is completely full. If it is, you have to handle it with a special extra step.
+Check that the insertion position is valid and that the array has room for one more item. The capacity is the number of available slots. The size is the number of items currently stored.
 
-### How can we add data if the space is full?
+### What happens if the space is full?
 
-You just need to get a new, bigger memory space. Copy the old data over one by one, from start to finish, into the new space. Then, add your new data. Finally, give back (free) the old memory space.
+Reject the addition and leave the stored values and size unchanged. This chapter uses a fixed array of ten integers. Deleting an item makes room for another item; the array itself does not become larger.
 
 ## Calculating Efficiency
 
 ### Memory Efficiency
 
-You use exactly the amount of memory you originally set aside for your items. When you need to get a new memory space, it is usually double the size of the old one.
+The array reserves its full capacity even when only some slots are in use. An array of ten integers still has ten slots when the list contains only three items. The remaining slots are outside the current list.
 
 ### Efficiency of Adding Data
 
@@ -65,10 +53,6 @@ Because the data items are placed right next to each other, if you just know its
 ### Efficiency of Finding Data by its Value
 
 You have to check the items one by one, starting from the first one. If it is at the very front, you find it instantly. But if it is at the very end—or not there at all—you have to check absolutely everything. The work grows with the total amount of data.
-
-### Efficiency of Expanding Memory and Copying Data
-
-Because every old item must move to the new memory space, one expansion requires more work as the amount of stored data grows. However, doubling creates many empty slots, so expansion happens less often. Across many additions, the total copying work grows in proportion to the number of items added. Therefore, the average work for each addition remains small.
 
 ## Glossary
 
@@ -95,10 +79,6 @@ A data structure that stores data in a specific, ordered sequence.
 ### ArrayList
 
 A list that is built using an array under the hood.
-
-### Dynamic Array
-
-An array that automatically gets a bigger memory space and moves the old data into it whenever it gets completely full.
 
 ### Index
 
@@ -130,96 +110,66 @@ To add a new piece of data without breaking the rule, the ArrayList handles it i
 
 When you remove an item from the middle of the list, it leaves a gap. To keep the data contiguous, you must shift all the items that came after the deleted item one space to the left to close the hole.
 
-## Example: managing ip addresses of connected devices
+### What happens if the invariant is broken?
 
-### Where should we save the IP addresses?
+Imagine you delete an item from the middle of your list but decide to skip the heavy work of shifting the remaining data. This breaks the golden rule, leaving an empty "hole" or gap in the middle of your memory space.
 
-An IPv4 address is made up of four numbers ranging from 0 to 255 (for example, 192.168.1.10). Because of this specific size, a single IP address can be converted and fit perfectly inside a standard unsigned int on a typical computer. We will use an array of unsigned int to store these addresses efficiently.
+If you allow this to happen, the entire structure of the ArrayList breaks down in three major ways:
 
-### How many memory slots should we start with?
+- Random Access Fails: The biggest advantage of an array is being able to instantly jump to an item using its number. But with a gap, the numbers no longer match the data's true order. In the example above, if you ask for the 3rd item (index 2), the computer will hand you an empty space instead of the number 40.
 
-Before any devices connect, we must set aside a fixed amount of space. Let's start by allocating enough contiguous memory for 10 slots (a capacity of 10).
+- Messy Code and Lost Speed: Every time you try to read, print, or search for data, you can no longer just breeze through the memory. Your code would have to constantly ask, "Wait, is this spot empty?" before doing anything. This extra checking destroys the elegant simplicity and speed of the list.
 
-### What happens when the first IP address is stored?
+- Confusion with Size: If you have 4 items scattered across 5 memory slots, what is the "size" of your list? Does your size variable track the number of items (4), or the next available index at the very end (5)? Adding a new item to the end becomes confusing because you lose track of where the actual data ends.
 
-Because our memory space is completely empty, the first IP address is stored at the very front of our allocated memory, which is index 0. We then update our total count of connected devices to 1.
-
-### What happens when the second IP address is stored?
-
-To maintain our golden rule—that all data must be packed tightly together without any gaps—the new IP address must be placed immediately after the first one. It is saved at index 1, and our total count goes up to 2.
-
-### What happens when the first IP address is deleted?
-
-If the device at index 0 disconnects, deleting its IP address leaves an empty hole at the front of our memory block. To keep the data contiguous, we must pull all the other IP addresses forward (to the left) by exactly one space. The IP at index 1 moves to index 0, the IP at index 2 moves to index 1, and so on. Finally, the total count is reduced by one.
-
-### How do we check whether a specific IP address is connected?
-
-To find a device by its actual IP address (its value, not its index), we cannot jump straight to it. Instead, we must start at index 0 and iterate through the array, checking the items one by one. We stop searching once we either find a match or reach the total number of currently stored IP addresses.
+By strictly enforcing the invariant—even when shifting data takes extra work—we guarantee that our data is always predictable, perfectly ordered, and instantly accessible.
 
 ## Coding Plan
 
 ### Saving Data in an Array
 
-* **Allocate Memory:** Decide the maximum number of items you want to store and grab that much memory space.
-* **Choose Position:** Pick the very first number (spot) in the memory that doesn't have data saved in it yet.
-* **Save Data:** Put your data into that chosen spot.
-* **Update Count:** Increase the total count of your stored data.
+- Declare an Array: Choose a fixed capacity and set aside that many slots.
+- Choose Position: Pick the very first number (spot) in the memory that doesn't have data saved in it yet.
+- Save Data: Put your data into that chosen spot.
+- Update Count: Increase the total count of your stored data.
 
 ### Reading or Changing Data at a Specific Number
 
-* **Check Number:** Make sure the number you want actually has data saved in it.
-* **Read Value:** Read what is saved at that number in the array.
-* **Change Value:** Update or change the value saved at that number.
+- Check Number: Make sure the number you want actually has data saved in it.
+- Read Value: Read what is saved at that number in the array.
+- Change Value: Update or change the value saved at that number.
 
 ### Deleting Data at a Specific Number
 
-* **Check Number:** Make sure the number actually has data saved in it.
-* **Pull Data Forward:** Move everything that comes right after the deleted spot forward by one space, doing it one by one from front to back.
-* **Decrease Count:** Decrease the total count of your data.
+- Check Number: Make sure the number actually has data saved in it.
+- Pull Data Forward: Move everything that comes right after the deleted spot forward by one space, doing it one by one from front to back.
+- Decrease Count: Decrease the total count of your data.
 
 ### Adding Data to a Specific Number
 
-* **Check Number:** Make sure the spot connects to your existing data and fits perfectly inside your total memory size.
-* **Push Data Back:** Starting from the very last item down to the spot where you want to add, push each item back by one space.
-* **Save Data:** Put your new data into the freshly cleared spot.
-* **Increase Count:** Increase the total count of your data.
+- Check Number: Make sure the spot connects to your existing data and fits perfectly inside your total memory size.
+- Push Data Back: Starting from the very last item down to the spot where you want to add, push each item back by one space.
+- Save Data: Put your new data into the freshly cleared spot.
+- Increase Count: Increase the total count of your data.
 
 If we start from the front and move the first item to the right, we will accidentally crush the item sitting in the next spot before it has a chance to move! Starting from the back ensures we move data into empty holes.
 
-### Expanding the Memory Space
-
-* **Create Space:** Get a new memory space that is twice as big as your old one.
-* **Transfer Data:** Copy all the data from the old memory into the new memory in the exact same order.
-* **Clean Up Old Space:** Give back the old memory space, and start using the new memory space from now on.
-
 ## New C Syntax Explained
 
-### `sizeof`
+### `[capacity]` (Creating an Array)
 
-Before you can ask the computer for memory space, you need to know exactly how big your data is. Different types of data take up different amounts of room. `sizeof()` is a built-in tool that calculates exactly how much space (in bytes) one piece of data needs. For example, writing `sizeof(int)` tells the computer the exact size of one integer. To figure out the total space needed for an array, you just multiply the size of one item by the total number of items you want to store.
+To create an array in C, you use square brackets `[]` immediately after the name of your variable. Inside these brackets, you write the exact number of items you want to store. For example, writing `int array[10];` tells the computer to set aside a single, continuous block of memory big enough to hold exactly 10 integers. Because this space is fixed, you must know the maximum capacity you need right from the start.
 
-### `*` (Pointers)
+### `[index]` (Accessing Data)
 
-When you get a new space in memory, the computer doesn't hand you the actual space—it hands you the address of where that space starts. A "pointer" is simply a special variable designed to hold a memory address. It literally "points" to where your data lives. In C, you mark a variable as a pointer by putting a star (`*`) next to it. For example, `int *arrayList` creates a pointer that holds the starting address of a bunch of integers.
-
-### `malloc` (Memory Allocation)
-
-When you need to grab a new memory space while your program is already running (like when you are creating a dynamic array), you use malloc. You tell it exactly how much total room you need (for example, `sizeof(int) * 6`). The computer will then find a single, unbroken block of memory that fits your request and hand you back the starting position of that brand new space.
-
-### `NULL`
-
-When you ask the computer for memory using `malloc`, there is a tiny chance it might say "no" (usually because the computer is completely out of memory). When this happens, it doesn't give you a real memory address. Instead, it hands back a special, empty value called `NULL`. `NULL` simply means "pointing to absolutely nothing." You should always check if your pointer equals `NULL` after using `malloc`. If you try to use `NULL` as a valid memory address, the program cannot operate safely and may crash.
-
-### `free`
-
-Whenever you use `malloc` to grab memory, you are only borrowing it. The computer will never take it back automatically. When you are done using that space—such as when your old array gets full and you move your data into a newer, bigger one—you must use `free()` to give the old memory back to the computer. If you forget to free memory that is no longer needed, the program wastes memory for as long as it continues running. This is called a memory leak.
+Once the array is created, you use the square brackets again to look at or change the data inside it. You simply put the specific number (the index) of the item you want inside the brackets. In C, counting always starts at 0, not 1. Therefore, `array[0]` lets you access the very first item, `array[1]` accesses the second item, and so on.
 
 ## C Code
 
 ### Saving Data in an Array
 
 ```c
-/* Allocate Memory */
+/* Declare Fixed Storage */
 int array[10];
 int array_capacity = 10;
 
@@ -308,74 +258,3 @@ if (pos >= 0 && pos <= size && size < array_capacity) {
 }
 
 ```
-
-### Making a Dynamic Array
-
-```c
-#include <stdlib.h>
-
-int arrayList_capacity = 6;
-int *arrayList = malloc(sizeof(int) * arrayList_capacity);
-
-if (arrayList == NULL) {
-        exit(1);
-}
-
-for (int i = 0; i < arrayList_capacity; i = i + 1) {
-        arrayList[i] = i * 100;
-}
-
-int arrayList_size = arrayList_capacity; /* Situation where the space is totally full */
-
-```
-
-### Expanding the Memory Space of a Dynamic Array
-
-```c
-/* Create Space */
-int new_capacity = arrayList_capacity * 2;
-int *new_array = malloc(sizeof(int) * new_capacity);
-
-if (new_array != NULL) {
-
-        /* Transfer Data */
-        for (int i = 0; i < arrayList_size; i = i + 1) {
-                new_array[i] = arrayList[i];
-        }
-
-        /* Clean Up Old Space */
-        int *old_array = arrayList;
-        arrayList = new_array;
-        arrayList_capacity = new_capacity;
-        free(old_array);
-}
-
-```
-
-### Releasing the Entire Dynamic Array
-
-```c
-/* Free the allocated memory */
-free(arrayList);
-
-/* Reset variables to prevent dangling pointers and logic errors */
-arrayList = NULL;
-arrayList_size = 0;
-arrayList_capacity = 0;
-```
-
-## Why Double the Memory Space?
-
-### The Problem with Adding Just a Little Space
-
-Imagine you are moving to a new house because your current one is completely full. Packing up all your furniture and moving it is exhausting and takes a lot of time. In a computer, copying every single piece of data from the old memory space to a new one is exactly like this—it is a slow, heavy task.
-
-If you only increase your memory space by one extra spot, you will run out of room the very next time you want to add an item. This means you have to pack up and move all your data over and over again, every single time you add something new. The computer would become incredibly slow.
-
-### The "Doubling" Solution
-
-Instead of adding just a little bit of space, we ask the computer for a space that is twice as big as the old one.
-
-Moving all your old data to this new, double-sized space still takes some effort. However, because you now have so much extra room, you can add many, many new items instantly without having to move again. The bigger your array gets, the longer you can wait before you have to do another big move.
-
-Doubling is a common design choice because it provides a practical balance between unused memory and repeated copying.

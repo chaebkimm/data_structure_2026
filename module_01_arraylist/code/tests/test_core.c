@@ -1,27 +1,12 @@
 #include "int_list.h"
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 
 typedef bool (*TestFunction)(void);
 
 static unsigned int tests_run = 0U;
 static unsigned int tests_failed = 0U;
-static IntList *active_list = NULL;
-
-static void track_active_list(IntList *list)
-{
-    active_list = list;
-}
-
-static void release_active_list(void)
-{
-    if (active_list != NULL) {
-        int_list_destroy(active_list);
-        active_list = NULL;
-    }
-}
 
 #define REQUIRE(condition)                                                   \
     do {                                                                     \
@@ -33,10 +18,21 @@ static void release_active_list(void)
                 __LINE__,                                                    \
                 #condition                                                   \
             );                                                               \
-            release_active_list();                                           \
             return false;                                                    \
         }                                                                    \
     } while (false)
+
+static bool same_values(const int actual[], const int expected[], int count)
+{
+    int index;
+
+    for (index = 0; index < count; index = index + 1) {
+        if (actual[index] != expected[index]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static void run_test(const char *name, TestFunction test)
 {
@@ -52,246 +48,212 @@ static void run_test(const char *name, TestFunction test)
     }
 }
 
-static bool test_null_arguments(void)
+static bool test_checked_index_and_metadata(void)
 {
-    IntList list;
-    int output = 71;
-
-    REQUIRE(int_list_init(NULL) == INT_LIST_ERR_INVALID_ARGUMENT);
-    int_list_destroy(NULL);
-    REQUIRE(!int_list_is_valid(NULL));
-    REQUIRE(int_list_reserve(NULL, 4U) == INT_LIST_ERR_INVALID_ARGUMENT);
-    REQUIRE(int_list_append(NULL, 9) == INT_LIST_ERR_INVALID_ARGUMENT);
-    REQUIRE(
-        int_list_get(NULL, 0U, &output) ==
-        INT_LIST_ERR_INVALID_ARGUMENT
-    );
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(
-        int_list_get(&list, 0U, NULL) ==
-        INT_LIST_ERR_INVALID_ARGUMENT
-    );
-    REQUIRE(output == 71);
-    release_active_list();
+    REQUIRE(int_list_valid_index(3, 10, 0) == 1);
+    REQUIRE(int_list_valid_index(3, 10, 2) == 1);
+    REQUIRE(int_list_valid_index(3, 10, 3) == 0);
+    REQUIRE(int_list_valid_index(3, 10, -1) == 0);
+    REQUIRE(int_list_valid_index(0, 10, 0) == 0);
+    REQUIRE(int_list_valid_index(0, 0, 0) == 0);
+    REQUIRE(int_list_valid_index(-1, 10, 0) == 0);
+    REQUIRE(int_list_valid_index(3, -1, 0) == 0);
+    REQUIRE(int_list_valid_index(11, 10, 0) == 0);
     return true;
 }
 
-static bool test_initialization_and_destroy(void)
+static bool test_append_and_caller_size_update(void)
 {
-    IntList list;
+    int array[10] = { 0 };
+    int size = 0;
+    int capacity = 10;
+    int index;
 
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_is_valid(&list));
-    REQUIRE(list.data == NULL);
-    REQUIRE(list.size == 0U);
-    REQUIRE(list.capacity == 0U);
+    size = int_list_append(array, size, capacity, 100);
+    REQUIRE(size == 1);
+    size = int_list_append(array, size, capacity, 200);
+    REQUIRE(size == 2);
+    size = int_list_append(array, size, capacity, 300);
+    REQUIRE(size == 3);
+    REQUIRE(array[0] == 100);
+    REQUIRE(array[1] == 200);
+    REQUIRE(array[2] == 300);
 
-    release_active_list();
-    REQUIRE(int_list_is_valid(&list));
-    REQUIRE(list.data == NULL);
-    REQUIRE(list.size == 0U);
-    REQUIRE(list.capacity == 0U);
-
-    int_list_destroy(&list);
-    REQUIRE(int_list_is_valid(&list));
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    release_active_list();
-    return true;
-}
-
-static bool test_empty_access_and_reserve_zero(void)
-{
-    IntList list;
-    int output = 1234;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(
-        int_list_get(&list, 0U, &output) ==
-        INT_LIST_ERR_OUT_OF_RANGE
-    );
-    REQUIRE(output == 1234);
-
-    REQUIRE(int_list_reserve(&list, 0U) == INT_LIST_OK);
-    REQUIRE(list.data == NULL);
-    REQUIRE(list.size == 0U);
-    REQUIRE(list.capacity == 0U);
-
-    release_active_list();
-    return true;
-}
-
-static bool test_first_append(void)
-{
-    IntList list;
-    int output = 0;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_append(&list, 42) == INT_LIST_OK);
-    REQUIRE(int_list_is_valid(&list));
-    REQUIRE(list.data != NULL);
-    REQUIRE(list.size == 1U);
-    REQUIRE(list.capacity >= 1U);
-    REQUIRE(int_list_get(&list, 0U, &output) == INT_LIST_OK);
-    REQUIRE(output == 42);
-
-    release_active_list();
-    return true;
-}
-
-static bool test_repeated_growth_and_values(void)
-{
-    IntList list;
-    size_t i;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-
-    for (i = 0U; i < 512U; ++i) {
-        int value = (int)i * 3 - 7;
-
-        REQUIRE(int_list_append(&list, value) == INT_LIST_OK);
-        REQUIRE(int_list_is_valid(&list));
-        REQUIRE(list.size == i + 1U);
+    for (index = 3; index < capacity; index = index + 1) {
+        size = int_list_append(array, size, capacity, (index + 1) * 100);
+        REQUIRE(size == index + 1);
     }
+    REQUIRE(size == capacity);
+    REQUIRE(array[9] == 1000);
+    return true;
+}
 
-    for (i = 0U; i < 512U; ++i) {
-        int actual = 0;
-        int expected = (int)i * 3 - 7;
+static bool test_direct_checked_read_and_update(void)
+{
+    int array[10] = { 100, 200, 300 };
+    int size = 3;
+    int capacity = 10;
+    int index = 1;
+    int value = -1;
 
-        REQUIRE(int_list_get(&list, i, &actual) == INT_LIST_OK);
-        REQUIRE(actual == expected);
+    REQUIRE(int_list_valid_index(size, capacity, index) == 1);
+    if (int_list_valid_index(size, capacity, index)) {
+        value = array[index];
+        array[index] = 500;
     }
+    REQUIRE(value == 200);
+    REQUIRE(array[0] == 100);
+    REQUIRE(array[1] == 500);
+    REQUIRE(array[2] == 300);
 
-    release_active_list();
-    return true;
-}
-
-static bool test_reserve_preserves_and_does_not_shrink(void)
-{
-    IntList list;
-    int first = 0;
-    int second = 0;
-    int *pointer_after_growth;
-    size_t capacity_after_growth;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_append(&list, 10) == INT_LIST_OK);
-    REQUIRE(int_list_append(&list, 20) == INT_LIST_OK);
-
-    REQUIRE(int_list_reserve(&list, 100U) == INT_LIST_OK);
-    REQUIRE(int_list_is_valid(&list));
-    REQUIRE(list.capacity >= 100U);
-    REQUIRE(list.size == 2U);
-    REQUIRE(int_list_get(&list, 0U, &first) == INT_LIST_OK);
-    REQUIRE(int_list_get(&list, 1U, &second) == INT_LIST_OK);
-    REQUIRE(first == 10);
-    REQUIRE(second == 20);
-
-    pointer_after_growth = list.data;
-    capacity_after_growth = list.capacity;
-    REQUIRE(int_list_reserve(&list, 2U) == INT_LIST_OK);
-    REQUIRE(list.data == pointer_after_growth);
-    REQUIRE(list.capacity == capacity_after_growth);
-    REQUIRE(list.size == 2U);
-
-    release_active_list();
-    return true;
-}
-
-static bool test_boundaries_and_invalid_shape(void)
-{
-    IntList list;
-    IntList invalid = { NULL, 1U, 1U };
-    int output = 900;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_append(&list, 5) == INT_LIST_OK);
-    REQUIRE(
-        int_list_get(&list, list.size, &output) ==
-        INT_LIST_ERR_OUT_OF_RANGE
-    );
-    REQUIRE(output == 900);
-    REQUIRE(
-        int_list_get(&list, SIZE_MAX, &output) ==
-        INT_LIST_ERR_OUT_OF_RANGE
-    );
-    REQUIRE(output == 900);
-
-    REQUIRE(!int_list_is_valid(&invalid));
-    REQUIRE(
-        int_list_append(&invalid, 7) ==
-        INT_LIST_ERR_INVALID_ARGUMENT
-    );
-
-    release_active_list();
-    return true;
-}
-
-static bool test_overflow_rejection_preserves_state(void)
-{
-    IntList list;
-    int *old_data;
-    size_t old_size;
-    size_t old_capacity;
-    int output = 0;
-
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_append(&list, 88) == INT_LIST_OK);
-
-    old_data = list.data;
-    old_size = list.size;
-    old_capacity = list.capacity;
-
-    if (SIZE_MAX / sizeof(int) < SIZE_MAX) {
-        REQUIRE(
-            int_list_reserve(&list, SIZE_MAX) ==
-            INT_LIST_ERR_OVERFLOW
-        );
-        REQUIRE(list.data == old_data);
-        REQUIRE(list.size == old_size);
-        REQUIRE(list.capacity == old_capacity);
-        REQUIRE(int_list_get(&list, 0U, &output) == INT_LIST_OK);
-        REQUIRE(output == 88);
+    index = size;
+    if (int_list_valid_index(size, capacity, index)) {
+        array[index] = 999;
     }
+    REQUIRE(array[3] == 0);
+    REQUIRE(size == 3);
+    return true;
+}
 
-    release_active_list();
+static bool test_find_first_active_match(void)
+{
+    const int array[10] = { 100, 200, 100, 300, 777 };
+
+    REQUIRE(int_list_find(array, 4, 10, 100) == 0);
+    REQUIRE(int_list_find(array, 4, 10, 300) == 3);
+    REQUIRE(int_list_find(array, 4, 10, 999) == -1);
+    REQUIRE(int_list_find(array, 4, 10, 777) == -1);
+    REQUIRE(int_list_find(array, 0, 10, 100) == -1);
+    REQUIRE(int_list_find(array, -1, 10, 100) == -1);
+    REQUIRE(int_list_find(array, 11, 10, 100) == -1);
+    REQUIRE(int_list_find(array, 4, -1, 100) == -1);
+    return true;
+}
+
+static bool test_insert_front_middle_and_end(void)
+{
+    int array[10] = { 0 };
+    const int expected[5] = { 5, 10, 15, 20, 25 };
+    int size = 0;
+
+    size = int_list_insert(array, size, 10, 0, 15);
+    REQUIRE(size == 1);
+    size = int_list_insert(array, size, 10, 0, 10);
+    REQUIRE(size == 2);
+    size = int_list_insert(array, size, 10, 0, 5);
+    REQUIRE(size == 3);
+    size = int_list_insert(array, size, 10, 3, 25);
+    REQUIRE(size == 4);
+    size = int_list_insert(array, size, 10, 3, 20);
+    REQUIRE(size == 5);
+    REQUIRE(same_values(array, expected, size));
+    return true;
+}
+
+static bool test_remove_front_middle_and_end(void)
+{
+    int array[10] = { 10, 20, 30, 40, 50 };
+    const int expected[2] = { 20, 40 };
+    int size = 5;
+
+    size = int_list_remove(array, size, 10, 0);
+    REQUIRE(size == 4);
+    size = int_list_remove(array, size, 10, 1);
+    REQUIRE(size == 3);
+    size = int_list_remove(array, size, 10, size - 1);
+    REQUIRE(size == 2);
+    REQUIRE(same_values(array, expected, size));
+
+    size = int_list_remove(array, size, 10, 0);
+    REQUIRE(size == 1);
+    REQUIRE(array[0] == 40);
+    size = int_list_remove(array, size, 10, 0);
+    REQUIRE(size == 0);
+    REQUIRE(int_list_remove(array, size, 10, 0) == 0);
+    return true;
+}
+
+static bool test_textbook_operation_trace(void)
+{
+    int array[10] = { 0 };
+    const int expected[3] = { 100, 600, 300 };
+    int size = 0;
+    int capacity = 10;
+
+    size = int_list_append(array, size, capacity, 100);
+    size = int_list_append(array, size, capacity, 200);
+    size = int_list_append(array, size, capacity, 300);
+    REQUIRE(size == 3);
+    REQUIRE(int_list_valid_index(size, capacity, 1) == 1);
+    array[1] = 500;
+
+    size = int_list_remove(array, size, capacity, 1);
+    REQUIRE(size == 2);
+    REQUIRE(array[0] == 100);
+    REQUIRE(array[1] == 300);
+
+    size = int_list_insert(array, size, capacity, 1, 600);
+    REQUIRE(size == 3);
+    REQUIRE(same_values(array, expected, size));
+    REQUIRE(int_list_find(array, size, capacity, 600) == 1);
+    return true;
+}
+
+static bool test_rejected_mutations_preserve_entire_array(void)
+{
+    int array[10] = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+    const int expected[10] = {
+        10, 20, 30, 40, 50, 60, 70, 80, 90, 100
+    };
+
+    REQUIRE(int_list_append(array, 10, 10, 999) == 10);
+    REQUIRE(same_values(array, expected, 10));
+    REQUIRE(int_list_insert(array, 10, 10, 0, 999) == 10);
+    REQUIRE(same_values(array, expected, 10));
+    REQUIRE(int_list_insert(array, 3, 10, -1, 999) == 3);
+    REQUIRE(same_values(array, expected, 10));
+    REQUIRE(int_list_insert(array, 3, 10, 4, 999) == 3);
+    REQUIRE(same_values(array, expected, 10));
+    REQUIRE(int_list_remove(array, 3, 10, -1) == 3);
+    REQUIRE(same_values(array, expected, 10));
+    REQUIRE(int_list_remove(array, 3, 10, 3) == 3);
+    REQUIRE(same_values(array, expected, 10));
+
+    REQUIRE(int_list_append(array, -1, 10, 999) == -1);
+    REQUIRE(int_list_append(array, 3, -1, 999) == 3);
+    REQUIRE(int_list_append(array, 3, 2, 999) == 3);
+    REQUIRE(int_list_insert(array, -1, 10, 0, 999) == -1);
+    REQUIRE(int_list_insert(array, 3, -1, 0, 999) == 3);
+    REQUIRE(int_list_insert(array, 3, 2, 0, 999) == 3);
+    REQUIRE(int_list_remove(array, -1, 10, 0) == -1);
+    REQUIRE(int_list_remove(array, 3, -1, 0) == 3);
+    REQUIRE(int_list_remove(array, 3, 2, 0) == 3);
+    REQUIRE(same_values(array, expected, 10));
     return true;
 }
 
 int main(void)
 {
-    run_test("null arguments", test_null_arguments);
-    run_test("initialization and destroy", test_initialization_and_destroy);
+    run_test("checked index and metadata", test_checked_index_and_metadata);
     run_test(
-        "empty access and reserve zero",
-        test_empty_access_and_reserve_zero
-    );
-    run_test("first append", test_first_append);
-    run_test("repeated growth and values", test_repeated_growth_and_values);
-    run_test(
-        "reserve preservation and no shrink",
-        test_reserve_preserves_and_does_not_shrink
+        "append and caller size update",
+        test_append_and_caller_size_update
     );
     run_test(
-        "boundaries and invalid shape",
-        test_boundaries_and_invalid_shape
+        "direct checked read and update",
+        test_direct_checked_read_and_update
     );
+    run_test("find first active match", test_find_first_active_match);
+    run_test("insert front, middle, and end", test_insert_front_middle_and_end);
+    run_test("remove front, middle, and end", test_remove_front_middle_and_end);
+    run_test("textbook operation trace", test_textbook_operation_trace);
     run_test(
-        "overflow rejection preserves state",
-        test_overflow_rejection_preserves_state
+        "rejected mutations preserve entire array",
+        test_rejected_mutations_preserve_entire_array
     );
 
     (void)printf(
-        "\n%u test(s), %u failure(s)\n",
+        "\n%u core test(s), %u failure(s)\n",
         tests_run,
         tests_failed
     );

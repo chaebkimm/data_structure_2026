@@ -905,7 +905,7 @@ Sample answer:
 Sample:
 
 - Module 7 Queue idea: earliest-added waiting work leaves first.
-- Module 2 or 5 tree idea: nodes have left/right child pointers and depth is
+- Module 5 tree idea: nodes have left/right child pointers and depth is
   counted from the root.
 - New BFS idea: the Queue frontier produces nondecreasing depth and a
   shallowest-match guarantee.

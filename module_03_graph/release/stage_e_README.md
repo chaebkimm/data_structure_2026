@@ -2,13 +2,14 @@
 
 Start with `student/lab.md`, then edit only:
 
-- `code/starter/graph_matrix.c`;
+- `code/starter/graph_matrix.c`; and
 - `code/tests/test_student.c`.
 
-The supplied whole-graph validator—a function that checks rules—is an
-instructor-authored tool. Read it and test it, but do not replace it. The
-autopsy, a careful investigation after a failure, contains an intentionally
-one-sided relationship and remains separate from passing tests.
+Complete exactly four library functions. Demonstrate guarded direct lookup
+without adding another API. Supply exactly three distinct tests with
+rationales and do not modify public tests to conceal failures.
 
-Submit the files and evidence listed in the lab and complete
-`student/evidence_template.md`.
+Preserve the prediction in `student/matrix_autopsy.md` before running
+`code/autopsy/faulty_ghost_connection.c`. Submit the lab's required
+evidence and use the 100-point rubric. Instructor extensions are not hidden
+additional work.

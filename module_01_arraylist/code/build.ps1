@@ -7,11 +7,7 @@ param(
 
     [switch]$StudentTests,
 
-    [switch]$AllocationFailure,
-
-    [switch]$Sanitize,
-
-    [switch]$InspectOnly
+    [switch]$Sanitize
 )
 
 $ErrorActionPreference = "Stop"
@@ -41,13 +37,13 @@ if ($clangCommand) {
 } else {
     throw @"
 No supported C compiler was found on PATH.
-Install/activate Clang, GCC/MinGW-w64, or use a Visual Studio Developer
+Install or activate Clang, GCC/MinGW-w64, or use a Visual Studio Developer
 PowerShell, then rerun this command.
 "@
 }
 
 if ($Target -eq "autopsy") {
-    if ($Extensions -or $StudentTests -or $AllocationFailure) {
+    if ($Extensions -or $StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
     }
 
@@ -56,23 +52,12 @@ if ($Target -eq "autopsy") {
     )
     $outputName = "autopsy"
 } else {
-    $implementation = Join-Path $codeRoot "$Target\int_list.c"
-
-    $selectedTestCount = @(
-        $Extensions,
-        $StudentTests,
-        $AllocationFailure
-    ).Where({ $_ }).Count
-    if ($selectedTestCount -gt 1) {
-        throw @"
-Choose at most one of -Extensions, -StudentTests, or -AllocationFailure.
-"@
+    if ($Extensions -and $StudentTests) {
+        throw "Choose either -Extensions or -StudentTests, not both."
     }
 
-    if ($AllocationFailure) {
-        $testSource = Join-Path $codeRoot "tests\test_allocation_failure.c"
-        $outputName = "${Target}_allocation_failure"
-    } elseif ($StudentTests) {
+    $implementation = Join-Path $codeRoot "$Target\int_list.c"
+    if ($StudentTests) {
         $testSource = Join-Path $codeRoot "tests\test_student.c"
         $outputName = "${Target}_student_tests"
     } elseif ($Extensions) {
@@ -101,10 +86,6 @@ if ($compilerKind -eq "msvc") {
         $arguments += @("/Od", "/fsanitize=address")
     }
 
-    if ($AllocationFailure) {
-        $arguments += "/DINT_LIST_TESTING"
-    }
-
     $arguments += $sources
     $arguments += "/Fe:$outputExecutable"
 } else {
@@ -126,10 +107,6 @@ if ($compilerKind -eq "msvc") {
         )
     }
 
-    if ($AllocationFailure) {
-        $arguments += "-DINT_LIST_TESTING"
-    }
-
     $arguments += $sources
     $arguments += @("-o", $outputExecutable)
 }
@@ -141,33 +118,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Compilation failed with exit code $LASTEXITCODE."
 }
 
-if ($Target -eq "autopsy") {
-    if ($InspectOnly) {
-        & $outputExecutable "--inspect-only"
-        if ($LASTEXITCODE -ne 0) {
-            throw "Autopsy inspection returned exit code $LASTEXITCODE."
-        }
-
-        Write-Host "Inspection completed without triggering the fault."
-    } else {
-        & $outputExecutable
-        if ($LASTEXITCODE -eq 0) {
-            Write-Warning @"
-The intentional undefined behavior returned zero on this run. Rebuild with
--Sanitize or use a debugger; a crash is not guaranteed by the C language.
-"@
-        } else {
-            Write-Host (
-                "Fault observed as intended; process exit code: " +
-                $LASTEXITCODE
-            )
-        }
-    }
-
-    return
-}
-
 & $outputExecutable
 if ($LASTEXITCODE -ne 0) {
-    throw "Test executable returned exit code $LASTEXITCODE."
+    throw "Program returned exit code $LASTEXITCODE."
 }

@@ -7,9 +7,7 @@ param(
 
     [switch]$StudentTests,
 
-    [switch]$Sanitize,
-
-    [switch]$InspectOnly
+    [switch]$Sanitize
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,9 +52,6 @@ if ($Target -eq "autopsy") {
     )
     $outputName = "autopsy"
 } else {
-    if ($InspectOnly) {
-        throw "-InspectOnly is available only with -Target autopsy."
-    }
     if ($Extensions -and $StudentTests) {
         throw "Choose either -Extensions or -StudentTests, not both."
     }
@@ -123,33 +118,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Compilation failed with exit code $LASTEXITCODE."
 }
 
-if ($Target -eq "autopsy") {
-    if ($InspectOnly) {
-        & $outputExecutable "--inspect-only"
-        if ($LASTEXITCODE -ne 0) {
-            throw "Autopsy inspection returned exit code $LASTEXITCODE."
-        }
-
-        Write-Host "Inspection completed without triggering the fault."
-    } else {
-        & $outputExecutable
-        if ($LASTEXITCODE -eq 0) {
-            Write-Warning @"
-The intentional undefined behavior returned zero on this run. Rebuild with
--Sanitize or use a debugger; a crash is not guaranteed by the C language.
-"@
-        } else {
-            Write-Host (
-                "Fault observed as intended; process exit code: " +
-                $LASTEXITCODE
-            )
-        }
-    }
-
-    return
-}
-
 & $outputExecutable
 if ($LASTEXITCODE -ne 0) {
-    throw "Test executable returned exit code $LASTEXITCODE."
+    throw "Program returned exit code $LASTEXITCODE."
 }

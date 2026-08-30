@@ -1,121 +1,183 @@
 # Module 2 Teaching Package
 
-## Binary-Tree Foundations and Binary Search Tree (BST) Preview
+## Expression Trees with Child-Only Binary Links in C
 
-This package is the Tree stage of the first Linear → Tree → Graph spiral in
-**Data Structures Course 2026**.
+This package is the Tree stage of the first Linear -> Tree -> Graph spiral
+in **Data Structures Course 2026**. It follows Chapter 2's locally declared
+nodes and two named child positions.
 
 ## Beginner-first rule
 
-Students are not expected to know tree vocabulary or pointer-linked
-structures before this module. Every student-facing technical term is defined
-in ordinary language when it first appears. Assessment rewards accurate
-reasoning, not memorized wording.
+Chapter 1 supplies fixed arrays, conditions, loops, and invariants. This
+module introduces explicit structure tags, object addresses, child pointers,
+`NULL`, and recursion. Explain each new term in ordinary language before
+students use it.
 
 ## Module question
 
-> How can separate memory objects represent a hierarchy, and what rules prevent those links from becoming an arbitrary graph?
+> How can local node variables form a hierarchy using left and right links,
+> and how can we find data or clear a branch without disturbing another side?
+
+## Canonical model
+
+```c
+struct TreeNode {
+    int data;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+```
+
+The canonical fixture represents `(3 + 5) * 2` with five live local nodes:
+
+```text
+          root:'*'
+          /      \
+     plus:'+'    two:2
+       /   \
+  three:3 five:5
+```
+
+Its current-node/left/right sequence is `'*', '+', 3, 5, 2`. The operator
+and number values all fit in the `int data` field because C character
+constants such as `'*'` and `'+'` have type `int`. Left and right preserve
+operand order; they are not interchangeable expression positions.
+
+Create nodes as ordinary variables and connect their addresses. A node has
+no stored upward link. Left and right are independent: a right-only child is
+valid, and removing the left branch never shifts the right branch.
+
+For the canonical fixture, clearing and detaching `plus` leaves `two` on the
+right. That is a valid generic binary tree, but it is no longer a completed
+binary expression because `root` has only one operand.
+
+The expression fixture uses zero children for number nodes and two children
+for its binary operators. The underlying `TreeNode` representation remains a
+general binary tree, so valid test fixtures may also contain exactly one
+child, repeated values in distinct nodes, or values with no arithmetic
+meaning.
+
+The caller must keep every referenced node initialized and alive and ensure
+the structure is finite, acyclic, and unshared. An empty-side check does not
+establish those whole-tree properties.
+
+The two required library functions are:
+
+```c
+struct TreeNode *tree_find(struct TreeNode *node, int target);
+void tree_clear(struct TreeNode *node);
+```
+
+Search checks the current node, then the complete left subtree, then the
+right subtree, returning the first match or `NULL`. Clearance resets every
+reachable node's data to zero and its links to `NULL`. It does not end the
+local objects' lifetimes or detach an outside incoming link. To remove a
+left branch, the caller clears it and then sets that left link to `NULL`.
+Zero remains a valid data value; only `NULL` marks an empty child link.
 
 ## Core learning targets
 
 Students will be able to:
 
-1. explain node, root, parent, child, leaf, path, depth, height, and subtree;
-2. translate one tree among a diagram, index table, and C pointer fields;
-3. state the rules for a completed rooted binary tree;
-4. build nodes safely in a fixed, non-resizing array;
-5. implement checked leaf, child-count, local link, and immediate-family
-   operations;
-6. distinguish local link safety from whole-tree validity;
-7. trace a supplied binary search tree validator—a function that checks
-   stated rules—that rejects duplicate keys;
-8. explain why shared or many-to-many relationships lead toward graphs.
+1. explain root, parent, child, sibling, leaf, path, depth, height, and subtree;
+2. translate a binary hierarchy among a diagram, a left/right table, and C;
+3. initialize local nodes and distinguish `node`, `&node`, `node.data`,
+   and `p->data`;
+4. attach a fresh, unlinked node to a chosen empty side without replacing an
+   occupied link;
+5. distinguish a local side check from the caller's no-cycle/no-sharing rule;
+6. implement and trace current-left-right recursive search;
+7. implement cascading clearance and explicitly detach a selected branch;
+8. show that the opposite side stays unchanged and cleared local objects
+   remain alive while their scope is active; and
+9. explain operation costs and support claims with tests and tool evidence.
 
-General **traversal** (systematically visiting nodes), **dynamic allocation**
-(requesting storage while a program runs), student-written **recursion** (a
-function calling itself), tree **rotations** (small link rearrangements), and
-tree **balancing** (keeping branch heights reasonably similar) are deferred
-to later modules.
+Direct initialization, guarded attachment, and clear-then-detach removal
+are core examples and student-test work, not additional library APIs.
+Only `tree_find` and `tree_clear` are starter implementation tasks.
+Search-tree ordering and balancing are outside this module.
 
 ## Package map
 
 ```text
 module_02_binary_tree/
-├── README.md
-├── diagrams/
-│   └── tree_models.md
-├── instructor/
-│   ├── answer_key.md
-│   ├── lesson_plan.md
-│   └── technical_notes.md
-├── student/
-│   ├── cognitive_pause.md
-│   ├── evidence_template.md
-│   ├── inquiry_prompt.md
-│   ├── inquiry_prompt_linear.md
-│   ├── investigation_worksheet.md
-│   ├── investigation_worksheet_linear.md
-│   ├── lab.md
-│   ├── representation_reveal.md
-│   ├── rubric.md
-│   ├── textbook.md
-│   ├── tree_autopsy.md
-│   └── vocabulary.md
-├── release/
-│   ├── release_manifest.md
-│   ├── prepare_student_release.ps1
-│   ├── stage_a_README.md … stage_e_README.md
-│   ├── student_build.ps1
-│   ├── student_code_README.md
-│   └── student_Makefile
-├── dist/
-│   └── module_02_stage_a_*.zip … module_02_stage_e_*.zip
-└── code/
-    ├── README.md
-    ├── build.ps1
-    ├── Makefile
-    ├── include/tree_arena.h
-    ├── starter/tree_arena.c
-    ├── solution/tree_arena.c
-    ├── tests/test_core.c
-    ├── tests/test_extension.c
-    ├── tests/test_student.c
-    └── autopsy/
-        ├── README.md
-        └── faulty_links.c
+|-- README.md
+|-- diagrams/tree_models.md
+|-- instructor/
+|   |-- answer_key.md
+|   |-- lesson_plan.md
+|   `-- technical_notes.md
+|-- student/
+|   |-- cognitive_pause.md
+|   |-- evidence_template.md
+|   |-- inquiry_prompt.md
+|   |-- inquiry_prompt_linear.md
+|   |-- investigation_worksheet.md
+|   |-- investigation_worksheet_linear.md
+|   |-- lab.md
+|   |-- representation_reveal.md
+|   |-- rubric.md
+|   |-- textbook.md
+|   |-- tree_autopsy.md
+|   `-- vocabulary.md
+|-- release/
+|   |-- release_manifest.md
+|   |-- prepare_student_release.ps1
+|   |-- stage_a_README.md ... stage_e_README.md
+|   |-- student_build.ps1
+|   |-- student_code_README.md
+|   `-- student_Makefile
+`-- code/
+    |-- README.md
+    |-- build.ps1
+    |-- Makefile
+    |-- include/binary_tree.h
+    |-- starter/binary_tree.c
+    |-- solution/binary_tree.c
+    |-- tests/test_core.c
+    |-- tests/test_extension.c
+    |-- tests/test_student.c
+    `-- autopsy/
+        |-- README.md
+        `-- faulty_cascade.c
 ```
 
 ## Recommended release order
 
-1. Run `release/prepare_student_release.ps1`.
-2. Release Stage A before Meeting A; it does not reveal the node struct.
-3. Release Stage B after initial hierarchy models are preserved.
-4. Release Stage C after the timed Cognitive Pause and instructor
-   explanation.
-5. Release Stage D only after the student has preserved the Stage C core
-   attempt between meetings.
+1. Validate the reference implementation before preparing archives.
+2. Release Stage A's standard or linear inquiry before Meeting A; withhold
+   the representation and vocabulary.
+3. Preserve the first model, then release Stage B's left/right reveal,
+   vocabulary, and three-target Cognitive Pause.
+4. Release Stage C after the pause and instructor calibration.
+5. Release Stage D's textbook and diagram/text models only after the Stage C
+   attempt is saved. Do not include worked Stage E autopsy answers.
 6. Release Stage E for Meeting B.
-7. Keep `instructor/` and `code/solution/` instructor-only until revisions
-   close.
+7. Keep `instructor/`, `code/solution/`, and instructor extension tests
+   private until the chosen review point.
+
+The standard and linear materials have the same targets. The plan provides
+two 90-minute meetings and a 100-point core rubric.
 
 ## Core submission
 
 Students submit:
 
-- completed `code/starter/tree_arena.c`;
-- supplied-test transcript;
-- three nonduplicate student-authored tests with rationale;
-- warning-enabled compiler or instructor-CI evidence;
-- completed evidence record;
-- Tree Structure Autopsy;
-- corrected Cognitive Pause.
+- completed `code/starter/binary_tree.c`;
+- three nonduplicate tests in `code/tests/test_student.c`, with rationales;
+- supplied and student-test transcripts;
+- warning-enabled and supported runtime-check, debugger, or instructor-CI
+  evidence;
+- the evidence record and corrected Cognitive Pause; and
+- the Tree Structure Autopsy.
+
+Extensions provide additional tests of the same model, not extra required
+APIs or graph-validation algorithms.
 
 ## Relationship to the course spiral
 
-- **Revisits:** addresses, pointers, `NULL`, arrays, and invariants (rules
-  that must remain true in every valid state).
-- **Introduces:** tree relationships, whole-structure validation, fixed node
-  arenas, and global BST ordering.
-- **Previews:** graph relationships in Module 3, depth-first traversal in
-  Module 5, breadth-first traversal in Module 8, and BST/AVL mastery in
-  Module 15.
+- **Revisits:** conditions, loops, fixed representations, and invariants.
+- **Introduces:** local node objects, addresses, child-only binary links,
+  current-node/left/right recursive search, and cascading clearance.
+- **Previews:** shared relationships in Module 3, deeper traversal analysis
+  in Module 5, breadth-first traversal in Module 8, and later ordered trees.

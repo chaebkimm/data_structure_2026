@@ -111,7 +111,7 @@ Sources: [Module 5 teaching-package overview](../module_05_tree_dfs/README.md), 
 
 ### Transfer and prerequisites
 
-- Which Week 2 vocabulary and strict BST rule must I understand before tracing these functions?
+- Which Week 2 tree, ownership, and recursion ideas must I retrieve before learning formal traversal orders and BST rules?
 - How is the implicit runtime call stack related to, but different from, the Week 4 Stack ADT?
 - Why will graph DFS need visited state even if tree DFS does not?
 - How will inorder traversal and BST search reappear in the later AVL unit?

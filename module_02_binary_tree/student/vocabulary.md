@@ -1,55 +1,53 @@
 # Module 2 Vocabulary — Stage B Reference
 
 Open this page after completing and preserving the Stage A initial inquiry.
-Some definitions state the exact rules that Stage A asks you to derive.
+Some definitions state rules that Stage A asks you to derive.
 
 | Term | Plain-language definition |
 |---|---|
-| hierarchy | An arrangement in levels, with some items above other items |
-| relationship | A stated connection between two items |
-| immediate relationship | A connection with no item between the two items |
-| node | One item in a tree or tree-like arrangement |
-| tree | An empty structure, or a hierarchy with one starting node, exactly one parent for every other node, a route from the start to every node, and no route that loops back |
-| binary tree | A tree in which each node has at most two child positions |
-| root | The one starting node; it has no parent |
-| parent | The node directly above another node |
-| child | The node directly below another node |
-| leaf | A node with no children |
-| path | A sequence of nodes connected by relationships |
-| ancestor | A node above another node on a path |
-| descendant | A node below another node on a path |
-| depth | The number of links from the root to a node |
-| height | The greatest number of downward links from a node to a leaf |
-| subtree | One node together with everything below it |
-| reachable | Able to be arrived at by following links from the root |
-| cycle | A route that follows links and returns to an earlier node on that route |
-| state | The values and relationships currently stored by a program |
-| invariant | A rule that must be true in every valid state |
-| structurally valid | Following every required rule about how tree nodes are connected |
-| malformed | Breaking at least one required rule about how tree nodes are connected |
+| hierarchy | An arrangement in levels, with some items above others |
+| node | One object that stores data and links to related nodes |
+| tree | An empty structure, or one connected hierarchy with a root, one incoming link per other node, and no cycle |
+| binary tree | A tree with distinct left and right child positions at each node |
+| expression tree | A tree that represents an expression; in this chapter's completed examples, operators have two operand children and numbers are leaves |
+| root | The starting node chosen by the caller |
+| parent | A node directly above another node; this relationship is not stored in an upward field |
+| child | A node directly below another node |
+| sibling | A different node with the same parent |
+| leaf | A node whose left and right links are both `NULL` |
+| path | A sequence of nodes connected by links |
+| ancestor | An earlier node on the path from the root to another node |
+| descendant | A node reached by following one or more child links downward |
+| depth | The number of links from the root to a node; the root has depth zero |
+| height | The greatest number of downward links from a node to a leaf; a leaf has height zero |
+| subtree | One node together with all its descendants |
+| cycle | A route that returns to a node already on that route |
+| sharing | More than one incoming link to the same node, including both sides of one parent |
+| invariant | A rule followed by every valid state |
 | representation | A chosen way to store or show information |
-| object | One stored item that groups related values |
-| C | The programming language used in this course |
-| type | A description of the kind of value C stores |
-| variable | Named storage for a value |
-| computer memory | Working storage in which a running program keeps values |
-| array | A numbered row of matching objects |
-| index | An array position; C begins numbering at zero |
-| field | One named value inside a grouped object |
-| key | A value used to identify or compare a node |
-| address | A value identifying a location in computer memory |
+| object | A stored item that groups related values |
+| `struct` | A C type that groups named fields |
+| field | One named value inside a struct |
+| address | A value identifying a location in memory |
 | pointer | A variable that stores an address |
-| `NULL` | A pointer value meaning “no object here” |
-| arena | A prepared storage area from which a program uses objects |
-| fixed arena | An arena whose size does not change during the activity |
-| ownership | Responsibility for deciding how long storage remains usable and when it is released |
-| local validation | Checking one object and its immediate relationships |
-| global validation | Checking the entire structure |
-| binary search tree (BST) | A binary tree in which every left-subtree key is smaller and every right-subtree key is larger at every node |
-| duplicate key | A key equal to one already present; this course rejects it |
-| status code | A named result that reports success or a kind of failure |
-| `TREE_ERR_INVALID_STRUCTURE` | The result for a malformed tree shape |
-| `TREE_ERR_NOT_BST` | The result for a valid tree shape whose keys break BST ordering or the no-duplicate rule |
-| graph | A general relationship structure that may allow sharing or cycles |
-| vertex | One object in a graph |
-| edge | One relationship in a graph |
+| `&node` | The address of the variable named `node` |
+| `node.data` | The data field of a node variable |
+| `link->data` | The data field reached through a node pointer |
+| `NULL` | A pointer value meaning that no node is linked at that position |
+| local variable | A variable declared within a function or block |
+| lifetime | The time during which an object exists and its address remains usable |
+| dangling pointer | A pointer to an object whose lifetime has ended |
+| caller | The code that asks a function to run |
+| precondition | A condition the caller must ensure before an operation |
+| recursion | A function calling itself on a smaller part of a problem |
+| base case | A case handled without another recursive call |
+| search order | Check the current node, then its left subtree, then its right subtree |
+| clearing | Resetting node data to zero and child links to `NULL` while the objects remain alive |
+| detaching | Removing the incoming link from a parent to a child |
+| cascading clearance | Clearing every node in a selected subtree |
+
+The values do not determine the sides. A right-only child is valid in a
+general binary tree, even though it is not a completed binary operator. The
+`int` data field stores both numbers and portable C character constants such
+as `'*'` and `'+'`. Clearing a live node does not make zero a special
+“missing node” value.

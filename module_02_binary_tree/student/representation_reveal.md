@@ -1,129 +1,141 @@
-# Stage B — How the Hierarchy Is Stored
+# Stage B — How the Binary Tree Is Stored
 
 Open this file only when the instructor releases the representation.
 
-**Representation** means a chosen way to store or show information.
+A representation is a chosen way to store information. The hierarchy needs
+separate items and a way to reach the item at each side.
 
 ## 1. Name the stored pieces
 
-A **data structure** is a planned way to organize information in a program.
-An **object** is one stored item that groups related values. A **node** is one
-object in a data structure whose objects are connected by stored
-relationships. Here, every node stores a number and up to two relationships
-to other nodes.
-
-Before reading the C representation, use these new terms:
-
-- A **type** tells C what kind of value is stored and which operations make
-  sense for it. `int` is C’s type for whole numbers.
-- A **variable** is named storage for a value.
-- A **struct** is a C type that groups related variables.
-- A **field** is one named variable inside a struct.
-- A **key** is the value used to identify or compare a node.
-- An **address** is a value that identifies a location in memory.
-- A **pointer** is a variable that stores an address.
-- `NULL` is a special pointer value meaning “no object here.”
-- `typedef` gives a type a shorter name. Here it creates the name `TreeNode`.
-- **Self-referential** means that the type contains pointers to its own type.
-  A node does not contain two complete child nodes; it contains their
-  addresses.
+A node is one object in the tree. A C `struct` groups named fields in one
+object. Each node stores its data and two child addresses:
 
 ```c
-typedef struct TreeNode {
-    int key;
+struct TreeNode {
+    int data;
     struct TreeNode *left;
     struct TreeNode *right;
-} TreeNode;
-```
-
-Label each field in your own words:
-
-```text
-key:   _____________________________________________________________
-left:  _____________________________________________________________
-right: _____________________________________________________________
-```
-
-## 2. Prepare the storage
-
-An **array** is a numbered row of same-type objects. An **index** is an
-object’s numbered position, beginning at zero. An **arena** is a prepared
-storage area from which a program uses objects. A **fixed arena** is an array
-whose size does not change during the activity.
-
-```c
-TreeNode nodes[5] = {
-    {50, NULL, NULL},
-    {30, NULL, NULL},
-    {70, NULL, NULL},
-    {20, NULL, NULL},
-    {40, NULL, NULL}
 };
 ```
 
-All five nodes are **active**, meaning they belong to the current structure.
-The expression `nodes[1]` means the node object at index 1. The expression
-`&nodes[1]` means the address of that object.
+An address identifies a memory location. A pointer stores an address.
+The `*` in each child-field declaration says that the field is a pointer.
+`NULL` means that no node is linked at that position.
 
-The **root** is the one starting node. The links are created separately:
+A general binary tree has distinct left and right positions. It may use
+neither, either one, or both. The completed expression tree used here adds a
+meaning rule: an operator uses both positions for its operands, while a number
+uses neither. The generic node representation and functions do not enforce
+that expression rule. A node has no field pointing upward to its parent. A
+parent is still the node directly above a child in the hierarchy.
+
+Label the fields:
+
+- `data`: _________________________________________________________
+- `left`: _________________________________________________________
+- `right`: ________________________________________________________
+
+## 2. Initialize local variables, then connect their addresses
+
+Create a node as a regular local variable. Set its data and both links before
+the program follows any link.
 
 ```c
-TreeNode *root = &nodes[0];
+struct TreeNode root;
+root.data = '*';
+root.left = NULL;
+root.right = NULL;
 
-nodes[0].left  = &nodes[1];
-nodes[0].right = &nodes[2];
-nodes[1].left  = &nodes[3];
-nodes[1].right = &nodes[4];
+struct TreeNode plus;
+plus.data = '+';
+plus.left = NULL;
+plus.right = NULL;
+
+if (root.left == NULL) {
+    root.left = &plus;
+}
 ```
 
-The dot in `nodes[0].left` selects a field from a directly named object. The
-arrow in `root->left` selects a field by following a pointer. In this example,
-`root->left` and `nodes[0].left` read the same field.
+The dot in `root.left` selects a field of a node variable. `&plus` is the
+address of `plus`; assigning it creates a link, not a copy of the whole node.
+The check avoids replacing an existing left link.
 
-## 3. Translate the same state
+The field has type `int`. Character constants such as `'*'` and `'+'` have
+integer type in C, so use the character literals instead of assuming numeric
+character codes.
 
-A **child** is a node directly below another node. Its **parent** is the node
-directly above it. The root has no parent. A **leaf** is a node with no
-children. A **binary tree** is a hierarchy in which each node has at most two
-child positions, named left and right.
+When `root.left` is not `NULL`, `root.left->data` reads the linked node's
+data. The arrow `->` selects a field through a pointer.
 
-The code above is also described by this child-index table. A dash means
-“no child,” which becomes `NULL` in C.
+## 3. Read the complete example
 
-| Index | Key | Left child index | Right child index |
-|---:|---:|---:|---:|
-| 0 | 50 | 1 | 2 |
-| 1 | 30 | 3 | 4 |
-| 2 | 70 | — | — |
-| 3 | 20 | — | — |
-| 4 | 40 | — | — |
+All five variables below are initialized and remain alive in the same block.
+Together they represent `(3 + 5) * 2`.
 
-Text-only description:
+| Local variable | Data | Left address | Right address |
+|---|---:|---|---|
+| `root` | `'*'` | `&plus` | `&two` |
+| `plus` | `'+'` | `&three` | `&five` |
+| `three` | `3` | `NULL` | `NULL` |
+| `five` | `5` | `NULL` | `NULL` |
+| `two` | `2` | `NULL` | `NULL` |
 
-- Root index 0, key 50, has left child index 1 and right child index 2.
-- Index 1, key 30, has left child index 3 and right child index 4.
-- Index 2, key 70, has no children.
-- Index 3, key 20, has no children.
-- Index 4, key 40, has no children.
+The root is the starting node chosen by the caller. A leaf has no children:
+both of its links are `NULL`. The nodes need not be next to one another in
+memory.
 
-The child relationship comes from stored addresses, not from nearby array
-positions. Related nodes do not have to be next to one another in memory.
+The left and right links preserve operand positions. They are not a sorting
+rule. A search checks the current node, then its left subtree, then its right
+subtree: `'*'`, `'+'`, `3`, `5`, `2` for this tree. A subtree contains one
+node and all nodes below it. Recursion means that the search function calls
+itself on a child subtree.
 
-## 4. Who controls the storage?
+## 4. Keep positions distinct
 
-**Ownership** means responsibility for deciding how long storage remains
-usable and when it is released. `free` is a C operation that releases a block
-of memory that the program requested separately. The whole `nodes` array owns
-the node storage in this activity. An individual address such as `&nodes[3]`
-was not obtained as a separate block, so it must not be passed to `free`.
+A node with `left == NULL` and a nonnull right link is valid in the general
+binary-tree representation. It would not be a completed binary operator in
+this expression model. Removing the left child does not move the right child.
+The sides describe relationships, not a packed sequence of occupied
+positions.
 
-The arena’s **lifetime** is the time during which its storage remains usable.
-Every pointer into the arena is usable only during that lifetime.
+How does this differ from shifting items after deletion in Module 1?
 
-## 5. Prepare for the Cognitive Pause
+____________________________________________________________________
 
-Confirm that you can read the table and the four child assignments. Do not
-solve possible structural or ordering changes until the pause is released.
+## 5. Separate local checks from caller responsibilities
+
+An invariant is a rule every valid state follows. In a nonempty tree:
+
+1. Every node is reachable from one chosen root.
+2. Each non-root node has exactly one incoming child link. The same node
+   cannot occupy both sides of one parent or be shared by two parents.
+3. No downward route returns to an earlier node. Such a return is a cycle.
+4. Each child address names an initialized object that is still alive.
+
+A precondition is a condition the caller must ensure before an operation.
+Checking that one side is empty does not prove the whole structure is a
+valid tree. The caller attaches a fresh, unlinked node or a disjoint valid
+subtree. The search and clearing functions do not detect arbitrary sharing
+or cycles.
+
+## 6. Distinguish clearing from ending a lifetime
+
+A local node's lifetime lasts until the block that declared it finishes.
+Keeping its address elsewhere does not extend that lifetime. Do not follow
+a link after the linked object has stopped existing.
+
+Clearing a subtree resets each node's data to zero and both links to
+`NULL`. It does not end the lifetime of those node variables. Zero remains
+an ordinary data value.
+
+A node has no upward field, so clearing it cannot remove an outside parent's
+link. To remove a child branch, clear the selected subtree and set that
+parent's selected link to `NULL`. Leave the other side unchanged.
+
+## 7. Prepare for the Cognitive Pause
+
+Check that you can read the table and distinguish a node variable from its
+address. Do not solve the pause targets until the instructor releases them.
 
 One representation question:
 

@@ -1,418 +1,244 @@
 # Instructor Technical Notes — Module 2
 
-## Canonical representation
+## Scope and exact public contract
 
-**Canonical** means the one standard form selected by the course.
-**Representation** means the stored fields and the rules for interpreting
-them. A C `struct` groups related fields inside one object. A **key** is the
-integer stored in a node. A **pointer** is a variable storing a memory
-address. `NULL` means “no object,” and `size_t` is a nonnegative whole-number
-type used for counts and indexes. `bool` is a type whose values are `true`
-and `false`.
+The header is `code/include/binary_tree.h`. The implementations are
+`code/starter/binary_tree.c` and `code/solution/binary_tree.c`.
 
 ```c
-typedef struct TreeNode {
-    int key;
+struct TreeNode {
+    int data;
     struct TreeNode *left;
     struct TreeNode *right;
-} TreeNode;
+};
 
-typedef struct {
-    TreeNode *nodes;
-    size_t count;
-    TreeNode *root;
-} TreeArena;
+struct TreeNode *tree_find(struct TreeNode *node, int target);
+void tree_clear(struct TreeNode *node);
 ```
 
-A **self-referential structure** is a `struct` containing a pointer to the
-same structure type. It cannot directly contain another full `TreeNode`
-because that would require an object of unlimited size. A pointer has a fixed
-size and can store another node’s address.
+These are the only two required library functions. Use the explicit
+`struct TreeNode` spelling. Do not add a type alias, status enum, wrapper
+object, constructor, side-operation helper, or whole-tree validator.
 
-`TreeArena` is a view of one fixed node array:
+The representation has two downward pointers and no stored upward link.
+Left and right are independent named positions. A right-only node is valid.
+No numerical ordering is implied by a node's position.
 
-- `nodes` points to its first node;
-- `count` is the number of nodes included in the candidate tree;
-- `root` is `NULL` for the canonical empty tree or identifies one included
-  node.
+The canonical fixture is the expression `(3 + 5) * 2`: `root` stores `'*'`,
+its left child `plus` stores `'+'` with children `three` and `five`, and its
+right child `two` stores `2`. Its current-left-right sequence is
+`'*', '+', 3, 5, 2`. Character constants have type `int`, so operators and
+numbers use the same field without relying on ASCII numbers. This expression
+uses two children for each binary operator, but the representation and API
+remain generic binary-tree tools and accept valid one-child fixtures.
 
-The arena never resizes. Its node addresses therefore remain stable while the
-backing array exists.
+## Caller preconditions
 
-## Ownership and lifetime
+For each nonempty tree or subtree passed to a function:
 
-**Ownership** is responsibility for releasing a resource, such as memory
-storage. `TreeArena` does
-not own its array; the surrounding fixture owns the array. No node is
-separately requested from the C memory manager, so no node, child pointer,
-root pointer, or `arena.nodes` pointer is passed to `free`, the C function
-that releases requested memory.
+1. every reachable address refers to an initialized, live node object;
+2. the reachable structure is finite and acyclic;
+3. each reachable non-root node has exactly one incoming tree link;
+4. no node is shared by two child positions; and
+5. local variables remain in scope throughout all uses of their addresses.
 
-A **lifetime** is the period during which an object exists. The arena and all
-node pointers must stop being used before the backing array’s lifetime ends.
-Using an address after its object has ceased to exist creates a **dangling
-pointer**, an address that no longer identifies a live object.
+`NULL` is a valid empty-tree input to both functions. Arbitrary invalid or
+expired addresses are not validated. A successful search is not proof that
+the whole structure met its preconditions.
 
-Initialize every node’s `left` and `right` fields to `NULL` before assigning
-links. Uninitialized pointer bits must never be inspected as addresses.
+Before direct attachment, the caller additionally establishes that the child
+is fresh or otherwise unlinked and that the proposed attachment preserves
+the whole-tree rules. Checking only an empty side cannot discover an incoming
+link elsewhere or a longer cycle.
 
-Copying `TreeArena` copies only its pointers, not its nodes. Both copies then
-refer to the same array, and either copy can change it. Avoid the copy unless
-that shared view is intentional and documented.
+Do not run ordinary recursive operations on intentionally cyclic examples.
+Use paper traces to explain why a missing base-case path would fail to stop.
 
-## Course structural invariant
+## Local objects and initialization
 
-An **invariant** is a rule that must hold whenever a completed structure is
-made available to other code.
+The textbook initializes already existing variables:
 
-Canonical empty tree:
+```c
+struct TreeNode root;
+struct TreeNode plus;
+
+root.data = '*';
+root.left = NULL;
+root.right = NULL;
+
+plus.data = '+';
+plus.left = NULL;
+plus.right = NULL;
+```
+
+`root` is the object; `&root` is its address. A pointer such as
+`struct TreeNode *p = &root;` allows `p->data` to select the same field as
+`root.data`.
+
+Initialize both child links before searching or clearing. Reinitializing a
+node that still has children would discard its links without recursively
+resetting those descendants; that is not the required branch-clearance
+operation.
+
+The variable's storage duration, not a tree operation, controls its lifetime.
+Do not return the address of an automatic local node from a function whose
+scope then ends.
+
+## Guarded selected-side attachment
+
+For an initialized, unlinked child whose lifetime is sufficient:
+
+```c
+if (root.left == NULL) {
+    root.left = &plus;
+}
+```
+
+This example changes only the selected left field when it is empty. An
+occupied left field remains unchanged; the example does not silently
+replace it or fall back to the right side. Use the symmetric test when the
+caller selects the right side.
+
+This is a direct C pattern, not a library function or a global structural
+validation algorithm. Its local work is `O(1)` under the stated construction
+preconditions.
+
+## Recursive search
+
+`tree_find(node, target)`:
+
+1. returns `NULL` for an empty current pointer;
+2. returns the current node's address when its data equals the target;
+3. searches the complete left subtree;
+4. returns a nonempty left result immediately; and
+5. searches and returns the right result only after the left search failed.
+
+The order is current-left-right (preorder in formal traversal terminology).
+Chapter 2 assesses the sequence, not memorization of that later label. The
+result is an address, not a data value or a new object. A missing value returns
+`NULL`. Duplicate values are legal, and the first preorder match wins.
+
+Search must not mutate any node. Zero is ordinary data: a node containing
+zero is a legitimate match for target zero, including a previously cleared
+node that is still alive.
+
+In the canonical expression tree, searching for `2` checks
+`'*', '+', 3, 5, 2` and returns `&two`. Searching for `5` returns `&five`
+without visiting `two`, while a missing target checks all five nodes. The
+expression shape is semantic structure rather than numerical search ordering,
+so a data comparison cannot justify skipping either subtree.
+
+## Recursive clearance
+
+`tree_clear(node)` is a no-op for `NULL`. For a nonempty subtree it:
+
+1. recursively clears the left descendants;
+2. recursively clears the right descendants; and
+3. leaves the current node with data zero and both links `NULL`.
+
+A link may be reset after its recursive call, as in the textbook. The
+essential requirement is to retain access to every descendant until it has
+been cleared. Resetting both child links before traversing them loses the
+routes to those nodes.
+
+After a valid call, every formerly reachable node has data zero and two
+empty child links. Each local object still exists for the remainder of its
+scope. Repeatedly clearing an already cleared node is safe and leaves the
+same state.
+
+Clearance does not discover or change an incoming link outside its argument
+subtree. For example, `tree_clear(root.left)` resets the left branch but
+does not by itself change `root.left`.
+
+## Selected-side removal
+
+The caller removes a left branch with the textbook's two actions:
+
+```c
+tree_clear(root.left);
+root.left = NULL;
+```
+
+For the right branch, use `root.right` consistently. A missing selected
+branch is safe because clearing `NULL` does nothing.
+
+The opposite side is unchanged. A right-only result is valid, so removing
+left never moves right into left. No count or contiguous-prefix rule exists
+for these two named links.
+
+When this operation removes the plus branch from the canonical fixture, the
+remaining links are a valid generic binary tree but no longer a completed
+binary expression: the `'*'` node has only its right operand.
+
+The caller may inspect a reset local variable or initialize and link it again
+while it remains alive and unlinked. That is different from following an
+address after the variable's scope has ended.
+
+## Complexity and resource limits
+
+Let `n` be the number of nodes reachable from the starting node, `k` the
+size of a selected branch, and `h` the longest downward path in links.
+
+| Operation | Time | Additional call-stack space |
+|---|---:|---:|
+| initialize one existing node | `O(1)` | `O(1)` |
+| inspect left/right or attach to an empty selected side | `O(1)` | `O(1)` |
+| recursive search | `O(n)` worst case | `O(h + 1)` |
+| clear a whole tree | `O(n)` | `O(h + 1)` |
+| clear and detach a branch | `O(k)` | proportional to branch height plus one |
+| detach a known side without clearance | `O(1)` | `O(1)` |
+
+Each node has fixed representation size. The additional space is the pending
+recursive calls, not extra node storage. Deep finite trees can still exhaust
+the runtime call stack; use bounded classroom fixtures rather than claiming
+unlimited recursion.
+
+## Safe invariant autopsy
+
+`code/autopsy/faulty_cascade.c` is standalone. It provides the correct
+clearance routine so the exercise isolates the malformed relationship.
+
+Its six local nodes form the intentionally malformed expression
+`(3 + 5) * (5 - 2)`: both `plus.right` and `minus.left` store the address of
+one `shared_five` object. That sharing violates the tree precondition even
+though the relationship has no cycle. All objects remain alive, so the
+observation is an invariant failure rather than an expired-address error.
+Clearing and detaching the plus branch resets `shared_five`; the minus branch
+still reaches that same live, cleared object. Do not change the correct
+recursive algorithm to conceal the invalid fixture.
+
+Only the instructor answer key supplies the worked prediction and repair
+discussion. Student-facing Stage D diagrams teach correct operations without
+this fixture's answers.
+
+## Toolchain and validation
+
+Preferred GCC/Clang flags:
 
 ```text
-nodes = NULL, count = 0, root = NULL
+-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 ```
 
-Nonempty tree:
-
-1. `nodes != NULL`;
-2. `root` identifies exactly one element at an index from zero through
-   `count - 1`;
-3. every non-`NULL` child pointer identifies exactly one element of that same
-   array;
-4. the root has parent count zero;
-5. every other node has parent count one;
-6. every node is reachable from the root;
-7. no cycle exists;
-8. every node has at most two children;
-9. one node's `left` and `right` fields do not identify the same child.
-
-The two child fields enforce rule 8. They do not enforce rules 2–7 or 9.
-
-A **candidate tree** is a partly built or not-yet-validated structure. It may
-temporarily violate the completed-tree invariant. Keep it private until the
-supplied validator accepts it. In a system where other code can see the tree
-concurrently, build in separate storage or save old links and restore them
-after validation failure. **Concurrently** means that more than one activity
-could access the data during the same period.
-
-## Course API
-
-An **application programming interface (API)** is the collection of functions
-that client code is allowed to call. **Client code** is code that calls these
-functions. A **contract** specifies valid input, result, state change, and
-failure behavior.
-
-The exact course names and signatures are:
-
-```c
-TreeStatus tree_arena_init(
-    TreeArena *arena,
-    TreeNode *storage,
-    const int *keys,
-    size_t key_count,
-    size_t root_index);
-
-TreeStatus tree_node_is_leaf(
-    const TreeNode *node,
-    bool *out_is_leaf);
-
-TreeStatus tree_node_child_count(
-    const TreeNode *node,
-    size_t *out_child_count);
-
-TreeStatus tree_assign_child(
-    TreeArena *arena,
-    size_t parent_index,
-    TreeSide side,
-    size_t child_index);
-
-TreeStatus tree_validate_structure(const TreeArena *arena);
-
-TreeStatus tree_immediate_family(
-    const TreeArena *arena,
-    size_t node_index,
-    TreeFamily *out_family);
-
-TreeStatus tree_validate_bst(const TreeArena *arena);
-const char *tree_status_name(TreeStatus status);
-```
-
-In these declarations, `const` states that the function promises not to
-change an object through that particular pointer.
-
-`tree_arena_init` copies `key_count` keys into caller-owned storage, clears
-all child pointers, and selects the root by index. `TREE_ARENA_MAX_NODES` is
-`32`. The canonical empty call uses a zero key count and
-`TREE_NO_INDEX` as the root index. On failure, the arena and storage remain
-unchanged.
-
-For `tree_node_is_leaf` and `tree_node_child_count`:
-
-- reject a `NULL` node or output pointer;
-- change the output object only on success.
-
-These are deliberately local questions. They inspect the two child addresses
-and do not establish arena membership or whole-tree validity.
-
-The family record contains indexes:
-
-```c
-typedef struct {
-    size_t parent_index;
-    size_t left_child_index;
-    size_t right_child_index;
-} TreeFamily;
-```
-
-`TREE_NO_INDEX` means that a relative is absent. Therefore the root’s
-`parent_index` is `TREE_NO_INDEX`, as are both child indexes of a leaf.
-`tree_immediate_family` first requires
-`tree_validate_structure(arena) == TREE_OK`, because an invalid candidate may
-not have one clear parent.
-
-`TreeStatus` is a named result code. `TREE_OK` means success; the remaining
-values distinguish a bad argument, an out-of-range index, an occupied child
-position, a direct self-link, an invalid whole structure, and a tree that
-fails BST ordering. `TREE_ERR_INVALID_STRUCTURE` means that the links do not
-form a valid rooted binary tree. `TREE_ERR_NOT_BST` means that the links form
-a valid tree but a key violates strict BST order or duplicates another key.
-`tree_status_name` turns one result code into readable text.
-`TreeSide` is a named choice between `TREE_SIDE_LEFT` and
-`TREE_SIDE_RIGHT`.
-
-## Arena-membership checking
-
-A node is an arena member only if it equals one exact element address:
-
-```c
-node == &arena->nodes[i]
-```
-
-Scanning with pointer equality is clear and well-defined for this small fixed
-arena. Do not teach a range test such as:
-
-```c
-node >= arena->nodes && node < arena->nodes + arena->count
-```
-
-Relational pointer comparisons are defined by C only when both pointers refer
-within the same array object. A foreign pointer makes that comparison
-unsuitable as a general membership validator.
-
-Also reject an arena count greater than the fixture’s documented maximum
-before scanning. A **fixture** is prepared test data. The `TreeArena` fields
-alone cannot prove that its array truly contains `count` nodes; the
-surrounding fixture contract must guarantee that extent.
-
-## Local child assignment
-
-`tree_assign_child` should check:
-
-1. the arena container has a usable fixed array and root;
-2. `side` is `TREE_SIDE_LEFT` or `TREE_SIDE_RIGHT`;
-3. `parent_index` and `child_index` are lower than `arena->count`;
-4. the two indexes differ;
-5. the selected child field is `NULL`.
-
-The function fills one empty slot with `&arena->nodes[child_index]`. It does
-not clear or replace a link.
-
-The local function must not claim to preserve the global tree invariant. It
-cannot know from one parent alone whether the child already has another
-parent or is an ancestor. Run the supplied structural validator on the
-completed candidate. If editing an already valid tree, save the old child
-pointer, assign the candidate link, validate, and restore the old pointer on
-failure.
-
-## Supplied structural validator
-
-A **validator** is a function that reports whether stated rules hold. Supply
-this implementation; students call it and interpret results.
-
-Suggested internal phases:
-
-1. check the canonical empty/nonempty shape;
-2. map `root` and every child pointer to an exact arena index;
-3. count incoming parent links for each node;
-4. require zero incoming links for the root and exactly one for every other
-   node;
-5. follow links from the root with a private `seen` array;
-6. reject a repeated node and require the reached count to equal `count`.
-
-The `seen` array is **bookkeeping**, extra stored facts used while checking.
-Use a documented fixed maximum or caller-supplied **scratch array**, temporary
-storage used only while the function runs, so validation does not introduce
-resizing. The validator internally follows links, but do not teach a
-traversal order or ask students to implement the link-following algorithm in
-this module. Later modules organize that work as depth-first search (DFS) and
-breadth-first search (BFS), two different rules for choosing which
-relationship to follow next.
-
-Parent counts and reachability overlap deliberately:
-
-- parent counts expose shared children and an incoming link to the root;
-- reachability exposes disconnected nodes or a disconnected cycle;
-- a repeated reached node exposes a cycle or shared path.
-
-The course function returns `TREE_OK` for a valid structure and
-`TREE_ERR_INVALID_STRUCTURE` for a rejected structure. Bad function
-arguments retain their more specific status where the contract provides one.
-Grading should also ask students to identify the violated rule from a
-supplied small state.
-
-## Supplied range-based BST validator
-
-A **binary search tree (BST)** is a structurally valid binary tree whose keys
-follow a global order. Every left-subtree key must be strictly lower and every
-right-subtree key strictly higher. “Strictly” implements the course policy
-that duplicate keys are rejected.
-
-Validate structure before validating key order. Otherwise the range check
-could follow a cycle forever or process one shared node more than once.
-
-The supplied implementation carries an allowable open range. An **open
-range** excludes its endpoints:
+Supported runtime checks:
 
 ```text
-lower < node->key < upper
+-fsanitize=address,undefined -fno-omit-frame-pointer
 ```
 
-- the left child inherits `lower` and receives `node->key` as its upper
-  limit;
-- the right child receives `node->key` as its lower limit and inherits
-  `upper`.
+Microsoft C uses `/nologo /std:c11 /W4 /Zi`. Provide instructor CI or a
+debugger/invariant-check alternative when local runtime checks are
+unavailable. A sanitizer may remain silent on the autopsy because all node
+addresses remain live; tool silence does not establish a tree invariant.
 
-The supplied implementation uses `has_lower_bound` and `has_upper_bound`
-flags paired with `int` values. A flag records whether its bound currently
-exists. This permits `INT_MIN` and `INT_MAX` as real keys instead of
-mistaking either one for “no bound.”
+Before release, verify:
 
-The implementation stores pending node-and-range checks in one fixed local
-array. A **pending check** is work recorded now and processed by a later loop
-iteration. Do not name or classify its traversal order for students in this
-module; formal traversal begins later.
-
-The validator returns:
-
-- `TREE_OK` when structure and ordering both pass;
-- `TREE_ERR_INVALID_STRUCTURE` when the tree-link rules fail;
-- `TREE_ERR_NOT_BST` when the link structure is valid but a range or
-  duplicate-key check fails.
-
-Do not weaken the check to immediate-child comparisons. The tree
-`10 -> left 5 -> right 12` passes both immediate comparisons but violates the
-root’s upper limit in the left subtree.
-
-## Complexity language
-
-**Time complexity** describes how work grows as input size grows. Let `n` be
-the number of arena nodes.
-
-- reading two child fields is constant work, written `O(1)`;
-- `tree_node_is_leaf` and `tree_node_child_count` are `O(1)`;
-- mapping one address back to an arena index is `O(n)`;
-- `tree_assign_child` is `O(n)` in the supplied version because its container
-  check confirms the root's arena membership with that scan;
-- finding a parent without a parent field is `O(n)`;
-- the supplied structural validator is `O(n²)` because up to `n` child links
-  may each require an address-to-index scan of up to `n` nodes;
-- `tree_immediate_family` and `tree_validate_bst` are also `O(n²)` because
-  each first validates structure.
-
-**Space complexity** describes extra storage. The structural validator’s
-parent-count and seen arrays use `O(n)` extra storage. Keep this explanation
-informal; formal traversal analysis returns later.
-
-The raised `²` means “multiplied by itself.” The fixed maximum of 32 nodes
-keeps the simple equality scans bounded and beginner-readable.
-
-## Testing priorities
-
-Public tests should include:
-
-- canonical empty arena;
-- one-node leaf;
-- node with only a left child;
-- node with only a right child;
-- node with two children;
-- `NULL` arguments;
-- unchanged output after a rejected query;
-- invalid `TreeSide`;
-- parent or child index equal to `count`;
-- occupied child slot;
-- direct self-link rejection;
-- root immediate family;
-- non-root immediate family.
-
-Instructor structural tests should include:
-
-- valid five-node tree;
-- root outside arena;
-- child outside arena;
-- shared child;
-- incoming link to root;
-- self-cycle and deeper cycle;
-- unreachable node;
-- disconnected cycle;
-- count/root mismatches.
-
-BST tests should include:
-
-- empty tree under the chosen contract;
-- one node with `INT_MIN` or `INT_MAX`;
-- valid balanced and skewed examples;
-- immediate violation;
-- deep violation;
-- duplicate at the root and duplicate deeper in the tree.
-
-BST tests should assert `TREE_ERR_NOT_BST` for ordering and duplicate
-failures, not the broader `TREE_ERR_INVALID_STRUCTURE`.
-
-The reference solution should compile with warnings enabled. A warning is a
-compiler message about code that may be mistaken even when compilation can
-continue.
-
-## Deferred topics
-
-Explicitly defer:
-
-- named orders for visiting tree nodes: preorder, inorder, and postorder;
-- DFS and BFS;
-- recursive student implementations;
-- dynamic allocation, which requests memory while a program runs, for
-  individual nodes;
-- freeing a tree;
-- BST insertion and search implementation;
-- tree-balancing changes, later called rotations and AVL balancing.
-
-These are later returns in the spiral. The Module 2 BST is a recognition and
-validation preview only.
-
-## Tree → Graph transfer
-
-Make the bridge explicit:
-
-| Tree rule | What a graph may allow |
-|---|---|
-| One root | Any chosen starting vertex, or none |
-| One parent for each non-root node | Several incoming relationships |
-| No cycles | Cycles |
-| Every node reachable from root | Disconnected groups |
-| Left/right child roles | A general collection of neighboring vertices |
-
-A **vertex** is a graph object. An **edge** is a graph relationship. Once
-cycles are allowed, later search code needs a visited record to avoid
-processing the same vertex repeatedly.
-
-## Instructor validation checklist
-
-- [ ] Every new term is explained on first use.
-- [ ] Every visual has a text equivalent.
-- [ ] Fixed arena use contains no allocation or `free`.
-- [ ] Node addresses remain stable because no resize occurs.
-- [ ] Local assignment is not presented as global validation.
-- [ ] Structural validator is supplied, not student-implemented.
-- [ ] BST validator checks inherited ranges and rejects duplicates.
-- [ ] No formal traversal is required.
-- [ ] Public tests and written contracts agree.
-- [ ] The final prompt explicitly transfers tree restrictions into graph
-      possibilities.
+- both reference functions and supplied tests compile without warnings;
+- null, missing, duplicate, zero-data, and recursive cases pass;
+- direct examples preserve an occupied side and the unselected side;
+- clearance resets all selected nodes but does not detach an outside link;
+- all three student-test categories align with the 100-point rubric;
+- the starter compiles with exactly two implementation TODOs;
+- all release paths use `binary_tree.h` and `binary_tree.c`;
+- vocabulary appears only from Stage B onward;
+- Stage D contains no worked autopsy prediction; and
+- Stage E excludes the solution, instructor extension tests, and answer key.

@@ -1,328 +1,193 @@
 #include "graph_matrix.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 
-typedef bool (*TestFunction)(void);
-
-static unsigned int tests_run = 0U;
-static unsigned int tests_failed = 0U;
+static int tests_run = 0;
+static int tests_failed = 0;
 
 #define REQUIRE(condition)                                                   \
     do {                                                                     \
         if (!(condition)) {                                                  \
-            (void)printf(                                                    \
-                "  requirement failed at line %d: %s\n",                    \
+            (void)fprintf(                                                   \
+                stderr,                                                      \
+                "  requirement failed at %s:%d: %s\n",                     \
+                __FILE__,                                                    \
                 __LINE__,                                                    \
                 #condition                                                   \
             );                                                               \
-            return false;                                                    \
+            return 0;                                                        \
         }                                                                    \
-    } while (false)
+    } while (0)
 
-static bool graphs_equal(const Graph *left, const Graph *right)
+static int grid_is_all_zero(const struct DirectedGraph *graph)
 {
     size_t row;
     size_t column;
 
-    if (left->vertex_count != right->vertex_count ||
-        left->kind != right->kind) {
-        return false;
-    }
-
-    for (row = 0U; row < (size_t)GRAPH_MAX_VERTICES; ++row) {
+    for (row = 0U; row < (size_t)GRAPH_MAX_VERTICES; row = row + 1U) {
         for (column = 0U;
              column < (size_t)GRAPH_MAX_VERTICES;
-             ++column) {
-            if (left->adjacency[row][column] !=
-                right->adjacency[row][column]) {
-                return false;
+             column = column + 1U) {
+            if (graph->grid[row][column] != 0) {
+                return 0;
             }
         }
     }
-
-    return true;
+    return 1;
 }
 
-static bool neighbors_equal(
-    const GraphNeighbors *left,
-    const GraphNeighbors *right
-)
+static void run_test(const char *name, int (*test)(void))
 {
-    size_t index;
+    int passed;
 
-    if (left->count != right->count) {
-        return false;
-    }
-    for (index = 0U;
-         index < (size_t)GRAPH_MAX_VERTICES;
-         ++index) {
-        if (left->vertices[index] != right->vertices[index]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-static void run_test(const char *name, TestFunction test)
-{
-    bool passed;
-
-    tests_run += 1U;
+    tests_run = tests_run + 1;
     passed = test();
     if (passed) {
         (void)printf("PASS %s\n", name);
     } else {
-        tests_failed += 1U;
+        tests_failed = tests_failed + 1;
         (void)printf("FAIL %s\n", name);
     }
 }
 
-static bool test_all_sixteen_vertices(void)
+static int test_zero_vertex_graph(void)
 {
-    Graph graph;
-    GraphNeighbors neighbors;
-    size_t vertex;
+    struct DirectedGraph graph;
+    size_t degree = 41U;
+
+    REQUIRE(graph_init(&graph, 0U) == 1);
+    REQUIRE(graph.vertex_count == 0U);
+    REQUIRE(grid_is_all_zero(&graph));
+    REQUIRE(graph_add_edge(&graph, 0U, 0U) == 0);
+    REQUIRE(graph_remove_edge(&graph, 0U, 0U) == 0);
+    REQUIRE(graph_out_degree(&graph, 0U, &degree) == 0);
+    REQUIRE(degree == 41U);
+    REQUIRE(grid_is_all_zero(&graph));
+    return 1;
+}
+
+static int test_single_vertex_diagonal_behavior(void)
+{
+    struct DirectedGraph graph;
+    size_t degree = 41U;
+
+    REQUIRE(graph_init(&graph, 1U) == 1);
+    REQUIRE(graph_add_edge(&graph, 0U, 0U) == 0);
+    REQUIRE(graph.grid[0][0] == 0);
+    REQUIRE(graph_remove_edge(&graph, 0U, 0U) == 1);
+    REQUIRE(graph.grid[0][0] == 0);
+    REQUIRE(graph_out_degree(&graph, 0U, &degree) == 1);
+    REQUIRE(degree == 0U);
+    return 1;
+}
+
+static int test_full_capacity_dense_directed_graph(void)
+{
+    struct DirectedGraph graph;
+    size_t row;
+    size_t column;
     size_t degree;
 
     REQUIRE(
-        graph_init(
-            &graph,
-            (size_t)GRAPH_MAX_VERTICES,
-            GRAPH_UNDIRECTED
-        ) == GRAPH_OK
+        graph_init(&graph, (size_t)GRAPH_MAX_VERTICES) == 1
     );
-
-    for (vertex = 1U;
-         vertex < (size_t)GRAPH_MAX_VERTICES;
-         ++vertex) {
-        REQUIRE(graph_add_edge(&graph, 0U, vertex) == GRAPH_OK);
+    for (row = 0U; row < graph.vertex_count; row = row + 1U) {
+        for (column = 0U;
+             column < graph.vertex_count;
+             column = column + 1U) {
+            if (row != column) {
+                REQUIRE(graph_add_edge(&graph, row, column) == 1);
+            }
+        }
     }
 
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-    REQUIRE(graph_out_degree(&graph, 0U, &degree) == GRAPH_OK);
-    REQUIRE(degree == (size_t)GRAPH_MAX_VERTICES - 1U);
-    REQUIRE(
-        graph_out_neighbors(&graph, 0U, &neighbors) == GRAPH_OK
-    );
-    REQUIRE(neighbors.count == (size_t)GRAPH_MAX_VERTICES - 1U);
-    for (vertex = 1U;
-         vertex < (size_t)GRAPH_MAX_VERTICES;
-         ++vertex) {
-        REQUIRE(neighbors.vertices[vertex - 1U] == vertex);
+    for (row = 0U; row < graph.vertex_count; row = row + 1U) {
+        REQUIRE(graph.grid[row][row] == 0);
+        REQUIRE(graph_out_degree(&graph, row, &degree) == 1);
+        REQUIRE(
+            degree == (size_t)GRAPH_MAX_VERTICES - 1U
+        );
     }
-
-    REQUIRE(
-        graph_init(
-            &graph,
-            (size_t)GRAPH_MAX_VERTICES,
-            GRAPH_DIRECTED
-        ) == GRAPH_OK
-    );
-    for (vertex = 1U;
-         vertex < (size_t)GRAPH_MAX_VERTICES;
-         ++vertex) {
-        REQUIRE(graph_add_edge(&graph, 0U, vertex) == GRAPH_OK);
-    }
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-    REQUIRE(graph_out_degree(&graph, 0U, &degree) == GRAPH_OK);
-    REQUIRE(degree == (size_t)GRAPH_MAX_VERTICES - 1U);
-    return true;
+    return 1;
 }
 
-static bool test_directed_permission_cycle_is_valid(void)
+static int test_directed_cycle_and_shared_destination(void)
 {
-    Graph graph;
-    bool has_edge = false;
-
-    REQUIRE(graph_init(&graph, 6U, GRAPH_DIRECTED) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 0U, 1U) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 0U, 2U) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 1U, 3U) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 2U, 3U) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 3U, 4U) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 4U, 1U) == GRAPH_OK);
-
-    /*
-     * 1 -> 3 -> 4 -> 1 is a directed cycle: a route that returns to its
-     * starting vertex. Cycles are allowed in this graph representation.
-     */
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-    REQUIRE(
-        graph_has_edge(&graph, 4U, 1U, &has_edge) == GRAPH_OK
-    );
-    REQUIRE(has_edge);
-    return true;
-}
-
-static bool test_local_operations_ignore_unrelated_defects(void)
-{
-    Graph graph;
-    GraphNeighbors neighbors;
-    bool has_edge = false;
+    struct DirectedGraph graph;
     size_t degree;
 
-    REQUIRE(graph_init(&graph, 10U, GRAPH_UNDIRECTED) == GRAPH_OK);
-    graph.adjacency[7][8] = true;
-    graph.adjacency[8][7] = false;
+    REQUIRE(graph_init(&graph, 5U) == 1);
+    REQUIRE(graph_add_edge(&graph, 0U, 1U) == 1);
+    REQUIRE(graph_add_edge(&graph, 1U, 2U) == 1);
+    REQUIRE(graph_add_edge(&graph, 2U, 0U) == 1);
+    REQUIRE(graph_add_edge(&graph, 3U, 1U) == 1);
 
-    REQUIRE(graph_add_edge(&graph, 0U, 1U) == GRAPH_OK);
-    REQUIRE(
-        graph_has_edge(&graph, 0U, 1U, &has_edge) == GRAPH_OK
-    );
-    REQUIRE(has_edge);
-    REQUIRE(graph_out_degree(&graph, 0U, &degree) == GRAPH_OK);
+    REQUIRE(graph.grid[0][1] == 1);
+    REQUIRE(graph.grid[1][2] == 1);
+    REQUIRE(graph.grid[2][0] == 1);
+    REQUIRE(graph.grid[3][1] == 1);
+    REQUIRE(graph.grid[1][0] == 0);
+    REQUIRE(graph_out_degree(&graph, 0U, &degree) == 1);
     REQUIRE(degree == 1U);
-    REQUIRE(
-        graph_out_neighbors(&graph, 0U, &neighbors) == GRAPH_OK
-    );
-    REQUIRE(neighbors.count == 1U);
-    REQUIRE(neighbors.vertices[0] == 1U);
-    REQUIRE(graph_remove_edge(&graph, 0U, 1U) == GRAPH_OK);
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-
-    has_edge = false;
-    REQUIRE(
-        graph_has_edge(&graph, 7U, 8U, &has_edge) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(!has_edge);
-
-    REQUIRE(graph_init(&graph, 10U, GRAPH_DIRECTED) == GRAPH_OK);
-    graph.adjacency[9][9] = true;
-    REQUIRE(graph_add_edge(&graph, 0U, 1U) == GRAPH_OK);
-    REQUIRE(graph_out_degree(&graph, 0U, &degree) == GRAPH_OK);
+    REQUIRE(graph_out_degree(&graph, 3U, &degree) == 1);
     REQUIRE(degree == 1U);
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-    return true;
+    REQUIRE(graph_out_degree(&graph, 4U, &degree) == 1);
+    REQUIRE(degree == 0U);
+    return 1;
 }
 
-static bool test_full_validator_cases(void)
+static int test_reinitialize_smaller_clears_inactive_storage(void)
 {
-    Graph graph;
-
-    REQUIRE(graph_init(&graph, 0U, GRAPH_UNDIRECTED) == GRAPH_OK);
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-
-    REQUIRE(graph_init(&graph, 3U, GRAPH_DIRECTED) == GRAPH_OK);
-    graph.adjacency[GRAPH_MAX_VERTICES - 1U]
-                   [GRAPH_MAX_VERTICES - 1U] = true;
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-    REQUIRE(graph_add_edge(&graph, 0U, 1U) == GRAPH_OK);
-    graph.adjacency[1][2] = true;
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-    graph.adjacency[2][2] = true;
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-
-    REQUIRE(graph_init(&graph, 3U, GRAPH_UNDIRECTED) == GRAPH_OK);
-    graph.adjacency[0][2] = true;
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-    graph.adjacency[2][0] = true;
-    REQUIRE(graph_validate(&graph) == GRAPH_OK);
-
-    graph.vertex_count = (size_t)GRAPH_MAX_VERTICES + 1U;
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-    graph.vertex_count = 3U;
-    graph.kind = (GraphKind)99;
-    REQUIRE(graph_validate(&graph) == GRAPH_ERR_INVALID_GRAPH);
-    REQUIRE(
-        graph_validate(NULL) == GRAPH_ERR_INVALID_ARGUMENT
-    );
-    return true;
-}
-
-static bool test_every_output_type_is_preserved_on_failure(void)
-{
-    Graph graph;
-    Graph before;
-    GraphNeighbors neighbors;
-    GraphNeighbors neighbors_before;
-    bool has_edge = true;
-    size_t degree = 91U;
-    size_t index;
-
-    REQUIRE(graph_init(&graph, 4U, GRAPH_UNDIRECTED) == GRAPH_OK);
-    neighbors.count = 11U;
-    for (index = 0U;
-         index < (size_t)GRAPH_MAX_VERTICES;
-         ++index) {
-        neighbors.vertices[index] = index + 40U;
-    }
-    neighbors_before = neighbors;
+    struct DirectedGraph graph;
 
     REQUIRE(
-        graph_has_edge(&graph, 0U, 4U, &has_edge) ==
-        GRAPH_ERR_OUT_OF_RANGE
+        graph_init(&graph, (size_t)GRAPH_MAX_VERTICES) == 1
     );
-    REQUIRE(has_edge);
     REQUIRE(
-        graph_in_degree(&graph, 4U, &degree) ==
-        GRAPH_ERR_OUT_OF_RANGE
+        graph_add_edge(
+            &graph,
+            (size_t)GRAPH_MAX_VERTICES - 1U,
+            0U
+        ) == 1
     );
-    REQUIRE(degree == 91U);
     REQUIRE(
-        graph_out_neighbors(&graph, 4U, &neighbors) ==
-        GRAPH_ERR_OUT_OF_RANGE
+        graph_add_edge(
+            &graph,
+            0U,
+            (size_t)GRAPH_MAX_VERTICES - 1U
+        ) == 1
     );
-    REQUIRE(neighbors_equal(&neighbors, &neighbors_before));
 
-    graph.adjacency[1][2] = true;
-    before = graph;
-    REQUIRE(
-        graph_has_edge(&graph, 1U, 2U, &has_edge) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(has_edge);
-    REQUIRE(
-        graph_out_degree(&graph, 1U, &degree) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(degree == 91U);
-    REQUIRE(
-        graph_out_neighbors(&graph, 2U, &neighbors) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(neighbors_equal(&neighbors, &neighbors_before));
-    REQUIRE(
-        graph_add_edge(&graph, 1U, 2U) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(graphs_equal(&graph, &before));
-    REQUIRE(
-        graph_remove_edge(&graph, 1U, 2U) ==
-        GRAPH_ERR_INVALID_GRAPH
-    );
-    REQUIRE(graphs_equal(&graph, &before));
-    return true;
+    REQUIRE(graph_init(&graph, 3U) == 1);
+    REQUIRE(graph.vertex_count == 3U);
+    REQUIRE(grid_is_all_zero(&graph));
+    return 1;
 }
 
 int main(void)
 {
+    run_test("zero-vertex graph", test_zero_vertex_graph);
     run_test(
-        "all sixteen vertices",
-        test_all_sixteen_vertices
+        "single-vertex diagonal behavior",
+        test_single_vertex_diagonal_behavior
     );
     run_test(
-        "directed permission cycle is valid",
-        test_directed_permission_cycle_is_valid
+        "full-capacity dense directed graph",
+        test_full_capacity_dense_directed_graph
     );
     run_test(
-        "local operations ignore unrelated defects",
-        test_local_operations_ignore_unrelated_defects
+        "directed cycle and shared destination",
+        test_directed_cycle_and_shared_destination
     );
     run_test(
-        "full validator cases",
-        test_full_validator_cases
-    );
-    run_test(
-        "every output type is preserved on failure",
-        test_every_output_type_is_preserved_on_failure
+        "reinitialize smaller clears inactive storage",
+        test_reinitialize_smaller_clears_inactive_storage
     );
 
     (void)printf(
-        "\n%u extension test(s), %u failure(s)\n",
+        "\n%d extension test(s), %d failure(s)\n",
         tests_run,
         tests_failed
     );
-    return tests_failed == 0U ? 0 : 1;
+    return tests_failed == 0 ? 0 : 1;
 }

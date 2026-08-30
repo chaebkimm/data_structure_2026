@@ -1,10 +1,11 @@
-# Module 1 — Stage B: Memory Model and Cognitive Pause
+# Module 1 — Stage B: Fixed-Array Model and Cognitive Pause
 
-Use `representation_reveal.md` only when directed, then complete the four
-targets in `cognitive_pause.md` without notes, slides, neighbors, or an
-IDE before receiving the expert calibration. The remaining prompts are
-calibration follow-up, not part of the five-minute requirement.
+Open this stage only after preserving your initial inquiry. Use
+`representation_reveal.md` when directed, with `vocabulary.md` as its term
+reference. Then complete the three targets in `cognitive_pause.md` before
+expert calibration: active indexes, order-preserving removal, and full-list
+rejection.
 
-The scheduled pause is five minutes. An approved extended-time or
-asynchronous version uses the same state and reasoning target; speed,
-handwriting, and drawing quality are not assessed.
+The scheduled pause is five minutes. Approved extended-time or asynchronous
+versions use the same state and reasoning targets. Speed, handwriting, and
+drawing quality are not assessed.

@@ -2,14 +2,19 @@
 
 Start with `student/lab.md`, then edit only:
 
-- `code/starter/tree_arena.c`;
+- `code/starter/binary_tree.c`; and
 - `code/tests/test_student.c`.
 
-The supplied whole-tree and binary search tree (BST) validators—functions
-that check rules—are instructor-authored tools. Read them, follow their
-values step by step, and test them, but do not replace them. The autopsy, a
-careful investigation after a failure, contains intentionally invalid links
-and remains separate from passing tests.
+Complete the two functions `tree_find` and `tree_clear`. Practice direct
+initialization, guarded left/right attachment, and clear-then-detach removal
+in the three required student tests. Do not invent additional helper APIs or
+modify supplied tests to hide failures.
 
-Submit the files and evidence listed in the lab and complete
-`student/evidence_template.md`.
+The supplied core fixture uses `(3 + 5) * 2`, but your functions remain
+generic binary-tree operations. They must also handle valid one-child trees,
+duplicate integer data, zero data, and values unrelated to expressions.
+
+Before running the isolated autopsy, preserve the prediction requested in
+`student/tree_autopsy.md`. Submit the artifacts listed in the lab and
+complete the evidence template. Instructor extension tests are not an extra
+required implementation.

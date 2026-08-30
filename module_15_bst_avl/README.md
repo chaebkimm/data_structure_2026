@@ -290,7 +290,7 @@ validation, and cleanup remain necessary even when AVL height is correct.
 
 ## Relationship to the course spiral
 
-- **Revisits:** Module 2 strict BST ordering, Module 5 inorder DFS, Module 8
+- **Revisits:** Module 5 strict BST ordering and inorder DFS, Module 8
   level-order traversal, Module 11 Heap-order contrast, and Module 13
   hash-table exact lookup. Edge-height, stored height, and balance factor are
   introduced formally in this module rather than Module 8.

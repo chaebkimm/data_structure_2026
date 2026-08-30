@@ -5,7 +5,7 @@
 This module introduces a **stack**, a collection in which only one end is
 available for adding, inspecting, and removing items. That available end is
 the **top**. Students begin with behavior, then implement a character stack
-whose storage reuses the resizable-array ideas from Module 1.
+whose storage extends Module 1's fixed-array model with checked growth.
 
 An **abstract data type (ADT)** describes permitted operations and their
 behavior without requiring one storage method. A **backend** is the storage

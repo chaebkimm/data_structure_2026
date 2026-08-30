@@ -1,11 +1,14 @@
 # Module 2 — Stage A: Initial Hierarchy Inquiry
 
-Complete one initial prompt before opening later-stage materials.
+Complete one prompt before opening later-stage materials:
 
 - `inquiry_prompt.md` is the standard format.
 - `inquiry_prompt_linear.md` has the same targets in a linear format for
-  a screen reader—software that reads on-screen text aloud—keyboard
-  navigation, or speech input.
+  screen readers, keyboard navigation, or speech input.
 
-This stage asks you to model relationships without showing the later storage
-answer. Preserve the initial response for later correction.
+Preserve your first model. The node representation and vocabulary arrive in
+Stage B, after this inquiry. Add later corrections without erasing the
+original response.
+
+The hierarchy represents `(3 + 5) * 2`. Treat left and right as distinct
+operand positions; do not rearrange them while reconstructing the expression.

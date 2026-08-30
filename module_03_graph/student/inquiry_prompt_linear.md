@@ -2,166 +2,113 @@
 
 ## How to use this version
 
-This version has the same learning targets as the standard inquiry. It
-requires no table or drawing. It works with a **screen reader**, which is
-software that reads on-screen text aloud, as well as keyboard navigation,
-meaning movement with keyboard keys; speech input, meaning answering by
-voice; or a text-only response.
-
-Use only this file during the initial inquiry. Preserve your first answers.
-Later, add a labeled correction instead of replacing an initial answer.
-
-An **item** is one thing being described. A **relationship** states how two
-items are connected. A **hierarchy** arranges items in levels, with one item
-above another. A **branch** is one downward part of a hierarchy.
-
-## Student information
+This version has the same facts and questions as the standard inquiry, with no
+drawing or table requirement. It supports screen readers, keyboard navigation,
+speech input, and text-only responses. Preserve first answers and add labeled
+corrections later.
 
 Name:
 
 Date:
 
-## A. Reconstruct the starting arrangement
+## A. Read the three-tier system
 
-A **program** is a group of instructions a computer can run.
-An invented training system contains six services. A **service** is a program
-that performs a task for other programs.
+The invented system contains three services:
 
-The starting facts are:
+1. Item 0 is Web.
+2. Item 1 is App.
+3. Item 2 is Database.
 
-1. Gateway leads to Web.
-2. Gateway leads to Admin.
-3. Web leads to Database.
-4. Database leads to Monitor.
-5. Archive is present but has no relationship to another service.
+The stated one-way relationships are:
 
-A **route** is a sequence of relationships that can be followed.
+1. Web leads to App.
+2. App leads to Database.
+3. App leads back to Web.
 
-### A1. Describe the arrangement
+### A1. Describe the arrows
 
-Describe the arrangement line by line.
+Describe the three items and arrows line by line.
 
 Response:
 
-### A2. Starting item
+### A2. List immediate relationships
 
-Which service is the starting item?
-
-Response:
-
-### A3. Separate item
-
-Which service is separate from every other service?
+List every immediate relationship without adding an unstated reverse
+relationship.
 
 Response:
 
-### A4. One route
+## B. Follow direction
 
-State one route from Gateway to Monitor.
+### B1. Repeating route
 
-Response:
-
-## B. Add relationships that do not fit the hierarchy
-
-A **cross-link** joins items on different branches. Add the fact that Admin
-leads to Database.
-
-### B1. Several ways in
-
-How many immediate ways now lead into Database?
+Starting at Web, what repeating route can be followed?
 
 Response:
 
-### B2. One place in a hierarchy
+### B2. Unstated reverse
 
-Why is Database no longer in exactly one place below the starting item?
-
-Response:
-
-A **back-link** leads toward an item encountered earlier. Add the fact that
-Monitor leads to Web.
-
-### B3. Repeating route
-
-Start at Web and repeatedly follow the stated relationships. State the route
-that can repeat.
+Does “App leads to Database” prove that Database leads to App? Explain.
 
 Response:
 
-A **loop** is a route that can return to its starting item.
+### B3. Two separate facts
 
-### B4. Endless following
-
-Why could a program that follows the loop forever have a problem?
-
-Response:
-
-## C. Keep direction clear
-
-A **one-way relationship** can be followed only from its first item to its
-second item. A **two-way relationship** can be followed in both directions.
-
-### C1. What the statement proves
-
-The statement “Web leads to Database” gives one direction. Does it also prove
-that Database leads to Web? Explain.
+Why must “Web leads to App” and “App leads to Web” be stored as two separate
+facts?
 
 Response:
 
-### C2. One-way example
+## C. Test the limits of a hierarchy
 
-Give one situation in which a one-way relationship makes sense.
+A tree gives each non-starting item one incoming place and does not contain a
+route back to an earlier item.
+
+### C1. No-return rule
+
+Which stated relationship makes this model fail the no-return rule?
 
 Response:
 
-### C3. Two-way example
+### C2. Several ways in
 
-Give one situation in which a two-way relationship makes sense.
+Suppose Web also led directly to Database while App still led to Database.
+Which tree rule would then fail?
 
 Response:
 
-## D. Macro-Question
+## D. Macro-question
 
-An **object** is one stored thing that groups related information.
-**Computer memory** is the working storage in which a running program keeps
-values.
-
-What way of storing relationships is needed when separate objects may have
-cross-links, point backward, or form loops?
+How can a program store and check directed relationships when links may point
+back or several items may lead to the same destination?
 
 Initial explanation:
 
 ## E. Storage brainstorm
 
-Do not write C code yet. **C** is the programming language used in this
-course, and **code** means instructions written for a computer.
+Do not write C code yet.
 
-### E1. One-way fact
+### E1. One ordered pair
 
-What fact must a program remember for each allowed one-way relationship?
-
-Response:
-
-### E2. Direct yes-or-no question
-
-If the program selects a starting service and a possible second service, how
-could it answer “yes” or “no” about a direct relationship?
+If the program is given a starting item and a destination, what yes-or-no fact
+must it remember?
 
 Response:
 
-### E3. Both directions
+### E2. Rows and columns
 
-Would one saved fact always be enough to describe both directions? Explain.
-
-Response:
-
-### E4. Separate service
-
-What must the program remember about Archive, which has no relationships?
+How could rows and columns organize every possible ordered pair of the three
+items?
 
 Response:
 
-### E5. Open question
+### E3. Missing relationship
+
+What should a stored position contain when no relationship exists?
+
+Response:
+
+### E4. Open question
 
 What question does your current idea not answer?
 

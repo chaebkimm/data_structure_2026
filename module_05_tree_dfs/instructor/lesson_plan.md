@@ -28,7 +28,8 @@ evidence. Offer those files only after the recursive submission is complete.
 
 ## Purpose and limits
 
-This module returns to the binary-tree representation from Module 2 and the
+This module reuses Module 2's binary `left`/`right` links, adds allocated-node
+destruction and binary-search ordering, and returns to the
 Stack contract from Module 4. Students learn **depth-first traversal**, a
 procedure that follows one branch before returning to a postponed branch.
 They compare two ways to remember unfinished work:
@@ -166,7 +167,7 @@ continue in the announced independent completion window.
 
 | Minutes | Activity | Instructor move | Evidence |
 |---:|---|---|---|
-| 0-6 | Welcome and boundary | Reconstruct only the Module 2 five-node tree. Do not retrieve the Module 4 LIFO rule yet because it would give away the remembered-work model. State that all examples are synthetic. | Correct tree description |
+| 0-6 | Welcome and boundary | Reconstruct a small Module 2 binary tree, then explain this module's added key/flag fields and allocated-node lifetime. Do not retrieve the Module 4 LIFO rule yet because it would give away the remembered-work model. State that all examples are synthetic. | Correct tree description |
 | 6-19 | Gate A inquiry | Release one inquiry format. Require an individual, preserved first response before discussion. | Initial route and memory model |
 | 19-29 | Compare branch routes | After initial answers are preserved, retrieve the Module 4 LIFO rule. Ask students to point, speak, type, or move cards through the tree and identify what must be remembered at each fork. Keep formal traversal-order names closed. | One justified complete route |
 | 29-39 | Gate B representation reveal | Reveal the node-first/left-first/right-later procedure and the equivalence of saved active calls and postponed nodes. Do not release the vocabulary file. | Labeled representation |
@@ -240,7 +241,7 @@ Before moving on, verify that students can state:
 | 42-55 | Iterative preorder | Initialize the typed pointer Stack, push root, then repeat pop/visit/push right/push left. Trace every return path and destroy the Stack. | Matching preorder and limit tests |
 | 55-63 | Flag report and other orders | Filter recorded visits by `flagged`. Inspect the supplied inorder and postorder implementations and connect order to visit placement. | Flagged sequence and three-order table |
 | 63-71 | Strict-BST search | Complete the scaffold: equality succeeds, smaller chooses left, larger chooses right, `NULL` means not found. Delay output writes until success. | Found/missing traces |
-| 71-79 | Ownership and cleanup | Contrast Module 2's caller-owned arena with individually allocated nodes. Complete `tree_destroy_postorder` using supplied `tree_node_release`. Require children to be released before parent. | Ownership and release order |
+| 71-79 | Ownership and cleanup | Contrast Module 2's field clearance with destruction of allocated nodes. Complete `tree_destroy_postorder` using supplied `tree_node_release`. Require children to be released before parent. | Ownership and release order |
 | 79-84 | Cost analysis | Define `n`, `h`, time, and auxiliary space. Compare balanced and skewed height. | `O(n)`/`O(h)` explanation |
 | 84-88 | Safe autopsy | Predict the faulty iterative order before running. Identify the first bad decision, then write a regression test. | Prediction, observation, fix |
 | 88-90 | Boundary and submission | State acyclic/no-sharing precondition, graph visited requirement, synthetic scope, required evidence, and completion window. | Complete checklist |

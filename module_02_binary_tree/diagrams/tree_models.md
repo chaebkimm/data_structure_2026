@@ -1,329 +1,231 @@
-# Module 2 Tree Models
+# Module 2 Binary-Tree Models
 
-Every visual has a text equivalent. Students may use the diagram, the table,
-a tactile arrangement, a structured list, or a spoken description.
+Every diagram includes a text equivalent. Nodes are ordinary local
+`struct TreeNode` variables. Links store their addresses; the diagrams show
+relationships, not physical memory order.
 
-## 1. One node and two possible child links
+## 1. Two named child positions
 
-A **node** is one stored object. A **key** is the integer value stored in that
-node. An **address** is a memory location, and a **pointer** is a C variable
-that stores an address. A **child** is a node directly below another node, and its
-**parent** is the node directly above it. `NULL` is a special pointer value
-meaning “no object.”
-
-```mermaid
-flowchart LR
-    N["TreeNode<br/>key = 8<br/>left = address L<br/>right = NULL"]
-    L["TreeNode<br/>key = 3<br/>left = NULL<br/>right = NULL"]
-    X["no right child"]
-    N -- "left stores L" --> L
-    N -. "right stores NULL" .-> X
+```c
+struct TreeNode {
+    int data;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
 ```
 
-Text equivalent:
+```text
+one node
++-----------------------+
+| data                  |
+| left  -> node or NULL |
+| right -> node or NULL |
++-----------------------+
+```
 
-| Node | Field | Stored value | Meaning |
+Text equivalent: every node stores one integer and two independent child
+pointers. Left and right are named positions, not positions that slide when
+another link is removed. There is no upward link stored in this structure.
+
+## 2. The canonical expression tree
+
+```text
+             root:'*'
+             /       \
+        left/         \right
+        plus:'+'       two:2
+          /   \
+     three:3 five:5
+```
+
+Text equivalent: the root stores `'*'`. Its left child stores `'+'`, and its
+right child stores `2`. The plus node's left child stores `3`, and its right
+child stores `5`. Nodes 3, 5, and 2 have no children. The links encode
+`(3 + 5) * 2`; swapping left and right operands can change an expression's
+meaning, so their positions are deliberate.
+
+| Local variable | Data | `left` stores | `right` stores |
 |---|---|---|---|
-| key `8` | `left` | address of key `3` | key `3` is the left child |
-| key `8` | `right` | `NULL` | there is no right child |
-| key `3` | `left` | `NULL` | there is no left child |
-| key `3` | `right` | `NULL` | there is no right child |
+| `root` | `'*'` | `&plus` | `&two` |
+| `plus` | `'+'` | `&three` | `&five` |
+| `three` | `3` | `NULL` | `NULL` |
+| `five` | `5` | `NULL` | `NULL` |
+| `two` | `2` | `NULL` | `NULL` |
 
-Key `3` is a **leaf**, a node with no children. Key `8` is not a leaf.
+This is an expression tree, not a binary search tree. The stored value does
+not tell `tree_find` which side it may skip. Binary operators in this fixture
+have two operands, but the general `TreeNode` representation still permits a
+valid node with exactly one child.
 
-## 2. Valid five-node binary tree
+## 3. An object and its address
 
-A **hierarchy** arranges objects above or below other objects. A **binary
-tree** is a hierarchy in which each node has at most two children. The
-**root** is the one starting node and has no parent.
+```c
+struct TreeNode root;
+struct TreeNode plus;
 
-```mermaid
-flowchart TD
-    R["50 — root"]
-    A["30"]
-    B["70 — leaf"]
-    C["20 — leaf"]
-    D["40 — leaf"]
-    R -- "left" --> A
-    R -- "right" --> B
-    A -- "left" --> C
-    A -- "right" --> D
+root.data = '*';
+root.left = NULL;
+root.right = NULL;
+
+plus.data = '+';
+plus.left = NULL;
+plus.right = NULL;
+
+root.left = &plus;
+struct TreeNode *p = &root;
 ```
 
-Text equivalent:
+| Expression | Meaning |
+|---|---|
+| `root` | the local node object |
+| `&root` | the address of that object |
+| `root.data` | its integer field, containing the character value `'*'` |
+| `root.left` | the address `&plus` stored in its left field |
+| `p` | a pointer storing `&root` |
+| `p->data` | the data field reached through `p` |
+| `p->left` | the same child address as `root.left` |
+| `NULL` | no node at this child position |
+
+Text equivalent: the dot selects a field of a node variable. The arrow
+selects a field through a node pointer. Taking an address does not copy or
+move the node.
+
+All linked node variables must remain alive while the tree uses their
+addresses. Returning the address of a local variable whose function has
+ended would not meet that requirement.
+
+## 4. Empty, left-only, and right-only states
 
 ```text
-Root key 50
-1. Left child: key 30
-   1.1 Left child: key 20; key 20 has no children.
-   1.2 Right child: key 40; key 40 has no children.
-2. Right child: key 70; key 70 has no children.
+leaf                 left-only           right-only
+  A                      A                   A
+ / \                    / \                 / \
+-   -                  B   -               -   B
 ```
 
-A **path** is a sequence of connected nodes. One path is
-`50 → 30 → 40`.
+Text equivalent: a leaf has both links `NULL`. A node with only a left
+child is valid, and a node with only a right child is equally valid. Both
+one-child nodes are non-leaves. A right child does not need a left child.
 
-**Depth** is the number of links from the root. Key `40` has depth two.
-**Height** is the greatest number of downward links from a node to a leaf.
-The root has height two under the course convention.
-
-## 3. The same tree in a fixed arena
-
-An **arena** in this module is one already created, non-resizing array that
-stores all nodes. “Non-resizing” means its number of storage positions and
-their addresses do not change during the exercise. An **index** is an array
-position; C numbers its first position zero. `TreeArena` is the course name
-for the C type that stores the arena's starting address, node count, and root
-address.
-
-```mermaid
-flowchart LR
-    AR["TreeArena<br/>nodes = A<br/>count = 5<br/>root = &nodes[0]"]
-    MEM["fixed array beginning at address A<br/>nodes[0]: key 50<br/>nodes[1]: key 30<br/>nodes[2]: key 70<br/>nodes[3]: key 20<br/>nodes[4]: key 40"]
-    AR -- "nodes" --> MEM
-```
-
-Text equivalent:
-
-| Arena field | Value | Meaning |
-|---|---|---|
-| `nodes` | address of `nodes[0]` | beginning of the fixed array |
-| `count` | `5` | five nodes belong to the completed tree |
-| `root` | `&nodes[0]` | node at index zero is the root |
-
-The child pointers, not the array order, define family relationships:
-
-| Index and key | `left` | `right` |
-|---|---|---|
-| `nodes[0]`, key `50` | `&nodes[1]` | `&nodes[2]` |
-| `nodes[1]`, key `30` | `&nodes[3]` | `&nodes[4]` |
-| `nodes[2]`, key `70` | `NULL` | `NULL` |
-| `nodes[3]`, key `20` | `NULL` | `NULL` |
-| `nodes[4]`, key `40` | `NULL` | `NULL` |
-
-For example, `nodes[4]` is not automatically the child of `nodes[3]` merely
-because the indexes are adjacent. The stored pointers decide.
-
-## 4. Immediate family
-
-**Immediate family** in this course means one node’s parent and its direct
-left and right children. An **application programming interface (API)** is the
-set of functions other code may call. This API reports array indexes rather
-than addresses. `TREE_NO_INDEX` means that the requested relative is absent.
-
-```mermaid
-flowchart TD
-    P["parent: key 50"]
-    N["selected node: key 30"]
-    L["left child: key 20"]
-    R["right child: key 40"]
-    P --> N
-    N -- "left" --> L
-    N -- "right" --> R
-```
-
-Text equivalent:
-
-| Role relative to `nodes[1]`, key `30` | Reported index | Node |
-|---|---:|---|
-| parent | `0` | key `50` |
-| left child | `3` | key `20` |
-| right child | `4` | key `40` |
-
-The node does not store its parent. The immediate-family function finds the
-parent by checking which arena node points to the selected node.
-
-## 5. Structural invariant
-
-An **invariant** is a rule that must remain true whenever a completed
-structure is used. An **active node** is an arena node included in the
-current structure. In an empty tree, the root pointer is `NULL`. A valid
-nonempty course tree has:
-
-1. a root with no parent;
-2. exactly one parent for every other node;
-3. every child pointer equal to `NULL` or pointing to an active arena node;
-4. every active node reachable from the root;
-5. no cycles;
-6. at most two children per node; and
-7. no node whose left and right fields name the same child.
-
-**Reachable** means that starting at the root and following child pointers can
-arrive at the node. A **cycle** is a path that returns to a node already on
-that path.
-
-Text-only check:
-
-| Question | Required answer |
-|---|---|
-| How many parents has the root? | zero |
-| How many parents has every other node? | exactly one |
-| Where may a non-`NULL` child pointer point? | to an active node in this arena |
-| Can every arena node be reached from root? | yes |
-| Can following children return to an earlier node on the path? | no |
-| How many children may one node have? | zero, one, or two |
-| May both fields name the same child? | no |
-
-## 6. Invalid shared child
-
-```mermaid
-flowchart TD
-    R["root: 8"]
-    A["3"]
-    B["10"]
-    C["6 — shared child"]
-    R --> A
-    R --> B
-    A -- "right" --> C
-    B -- "left" --> C
-```
-
-Text equivalent:
-
-| Child | Parent links |
-|---|---|
-| key `3` | from key `8` |
-| key `10` | from key `8` |
-| key `6` | from key `3` and from key `10` |
-
-This is not a valid course tree because key `6` has two parents. A local
-child-slot check can accept the second link if that slot is empty; the
-supplied whole-tree validator must detect the global violation.
-
-## 7. Invalid cycle
-
-```mermaid
-flowchart TD
-    A["8 — root"]
-    B["3"]
-    C["6"]
-    A -- "left" --> B
-    B -- "right" --> C
-    C -- "left returns to root" --> A
-```
-
-Text equivalent:
+## 5. Paths, depth, and height
 
 ```text
-Start at key 8.
-Follow left to key 3.
-Follow right to key 6.
-Follow left to key 8 again.
+root:'*' --left--> plus:'+' --left--> three:3
+depth 0            depth 1              depth 2
+
+height(root) = 2
+height(plus) = 1
+height(three) = 0
 ```
 
-The path returns to key `8`, so it contains a cycle. The incoming link also
-breaks the rule that the root has no parent.
+Text equivalent: depth counts links from the chosen root to a node. Height
+counts links on the longest downward route to a leaf. A leaf has height
+zero. These are reasoning tasks, not additional required functions.
 
-## 8. Invalid unreachable node
+A parent is a relationship visible in the whole tree even though a node
+does not store a pointer to its parent. To describe an upward relationship,
+use the known diagram or a path from the root.
 
-```mermaid
-flowchart LR
-    subgraph T["reachable from root"]
-        R["8 — root"] --> A["3"]
-        R --> B["10"]
-    end
-    U["14 — arena node with no incoming link"]
-```
+## 6. Recursive current-left-right search
 
-Text equivalent:
-
-| Arena node | Can root reach it? |
-|---|---|
-| key `8` | yes; it is the root |
-| key `3` | yes; follow root’s left pointer |
-| key `10` | yes; follow root’s right pointer |
-| key `14` | no; no path from the root identifies it |
-
-Key `14` may occupy valid arena storage, but it is not part of a valid
-completed tree because it is unreachable.
-
-## 9. Binary search tree ranges
-
-A **binary search tree (BST)** is a binary tree with a global key-ordering
-rule. **Global** means that the rule covers the whole structure. Every key in
-a node’s entire left subtree is lower than that node’s key, and every key in
-its entire right subtree is higher. This course rejects duplicate keys.
-
-```mermaid
-flowchart TD
-    R["50<br/>allowed: any int"]
-    A["30<br/>allowed: lower than 50"]
-    B["70<br/>allowed: higher than 50"]
-    C["20<br/>allowed: lower than 30"]
-    D["40<br/>allowed: higher than 30 and lower than 50"]
-    R --> A
-    R --> B
-    A --> C
-    A --> D
-```
-
-Text equivalent:
-
-| Key | Limits inherited from its position | Passes? |
-|---:|---|---|
-| `50` | any whole-number key | yes |
-| `30` | lower than `50` | yes |
-| `70` | higher than `50` | yes |
-| `20` | lower than `30` and `50` | yes |
-| `40` | higher than `30`, lower than `50` | yes |
-
-The supplied **validator**, a function that checks stated rules, passes lower
-and upper limits to each node. Students interpret the limits here;
-step-by-step procedures for visiting all nodes come later.
-
-## 10. A deep BST violation
-
-```mermaid
-flowchart TD
-    R["10"]
-    A["5<br/>correct immediate relation: 5 is lower than 10"]
-    B["12<br/>incorrect global position: 12 is in 10's left subtree"]
-    R -- "left" --> A
-    A -- "right" --> B
-```
-
-Text equivalent:
+For target `2` in the canonical tree:
 
 ```text
-Key 5 is the left child of key 10.
-Key 12 is the right child of key 5.
-The two immediate comparisons look correct.
-Key 12 is still inside key 10's entire left subtree.
-Every key there must be lower than 10, but 12 is higher.
-Therefore this tree is not a BST.
+check '*'
+  search left: check '+'
+    search left: check 3 -> no match
+    search right: check 5 -> no match
+  search right: check 2 -> match; return its address
+
+visited data: '*', '+', 3, 5, 2
 ```
 
-Checking only parent/child pairs is insufficient.
+Text equivalent: inspect the current node first, search its complete left
+subtree next, and search its right subtree only if no match was found.
+An empty link returns `NULL`. A non-`NULL` match returns immediately through
+the pending calls.
 
-## 11. Tree → Graph transfer
+A missing value visits the same five nodes. A search for `5` stops before
+visiting `two`. If equal data occurs in several nodes, return the first
+matching node in this search order, not an arbitrary match.
 
-A **graph** is a collection of objects and relationships without the strict
-parent/child rules of a tree. A graph object is often called a **vertex**. A
-relationship is often called an **edge**.
+## 7. Clear a branch and remove its link
 
-```mermaid
-flowchart LR
-    A["process A"]
-    B["process B"]
-    C["shared service C"]
-    D["process D"]
-    A --> C
-    B --> C
-    C --> D
-    D -- "back-link" --> A
+Start again with the canonical tree. Clear the branch at `root.left`, then
+set that selected link to `NULL`.
+
+```text
+branch reset order: three, five, plus
+each becomes: data = 0, left = NULL, right = NULL
+
+surviving tree:
+       root:'*'
+       /      \
+     NULL     two:2
 ```
 
-Text equivalent:
+Text equivalent: visit descendants before resetting their containing node.
+The local objects `three`, `five`, and `plus` still exist while their scope is
+active; their contents have been reset. The removed branch is no longer
+reachable through the root's left link.
 
-| Relationship | Tree interpretation | Graph interpretation |
-|---|---|---|
-| `A → C` and `B → C` | invalid: `C` has two parents | allowed: two vertices link to one vertex |
-| `C → D → A` | invalid: the links create a cycle | allowed unless the application forbids it |
+The original right link still points to `two`. It never moves into the
+left position. Clearing the contents of a node and detaching the link above
+it are distinct actions: a child-only node cannot detach itself. These links
+still form a valid general binary tree, but they no longer form a completed
+binary expression because the `'*'` node has only one operand.
 
-The transfer question is:
+## 8. Stage C transfer model
 
-> When shared, crossing, or backward links are meaningful rather than
-> mistakes, which tree rules should be replaced by graph rules?
+```text
+                  root:'*'
+                  /       \
+             minus:'-'    plus:'+'
+               /   \       /   \
+          eight:8 three:3 four:4 two:2
+```
 
-Later graph search records which vertices have already been visited so a
-cycle does not cause endless repeated work.
+Text equivalent: this fresh Stage C tree represents `(8 - 3) * (4 + 2)`.
+The root stores `'*'`; its left child `minus` stores `'-'` with operands 8
+and 3, and its right child `plus` stores `'+'` with operands 4 and 2. The four
+number nodes are leaves.
+
+Use the named sides to trace paths and operations. In particular, the
+subtraction operands cannot exchange sides without changing the expression.
+This expression structure still supplies no binary-search ordering rule.
+
+## 9. Local checks and caller preconditions
+
+A direct `if` check can inspect a selected child link and avoid overwriting
+it. It cannot infer all incoming links to a node from its two downward fields.
+
+Before an operation, the caller must ensure that:
+
+- all involved node addresses identify initialized, live objects;
+- the complete structure has no cycle;
+- no node is shared by two child links; and
+- linking a proposed child preserves those whole-tree rules.
+
+A successful local check is not a complete graph-validation result. Keep
+invalid-cycle examples on paper; do not run ordinary recursive search or
+clear on a cyclic structure.
+
+## 10. Counting work
+
+Let `n` be the number of reachable nodes, `k` the number in a selected
+branch, and `h` the longest root-to-leaf path measured in links.
+
+| Operation | Time | Extra call-stack space |
+|---|---:|---:|
+| initialize one existing node | `O(1)` | `O(1)` |
+| inspect the two child positions | `O(1)` | `O(1)` |
+| attach to a known empty side | `O(1)` | `O(1)` |
+| recursive find | `O(n)` worst case | `O(h + 1)` |
+| clear a branch | `O(k)` | proportional to branch height plus one |
+| detach one known side alone | `O(1)` | `O(1)` |
+| clear and remove a branch | `O(k)` | proportional to branch height plus one |
+
+Text equivalent: setup and local checks touch a fixed number of fields.
+Search may visit every reachable node. Clearing visits every node in the
+selected branch once. Pending recursive calls follow the deepest active
+route, not every node at the same time.

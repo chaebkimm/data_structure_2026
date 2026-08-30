@@ -1,10 +1,10 @@
-# Module 3 — Stage B: How Relationships Are Stored
+# Module 3 — Stage B: Directed Matrix and Cognitive Pause
 
-Open `representation_reveal.md` only when the instructor tells you. It
-explains each new term before showing the program's storage form.
+Open this stage only after preserving Stage A. Use
+`representation_reveal.md`, then complete exactly three targets in
+`cognitive_pause.md` before opening `vocabulary.md`.
 
-Then complete the three timed targets in `cognitive_pause.md` before
-calibration—comparison with the instructor's model. After preserving your
-initial answers, use `vocabulary.md` as a reference. An approved extended-time
-or separately scheduled response uses the same reasoning targets. Speed and
-drawing quality are not assessed.
+The five-minute pause asks you to orient the three active matrix rows, trace
+one edge removal and out-degree change, and classify three additions by the
+self-loop and active-index rules. Preserve your response before calibration.
+Approved extended-time formats use the same targets.

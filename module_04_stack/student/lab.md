@@ -55,7 +55,7 @@ unused position, not the top.
 
 ## How this Stack is stored
 
-`CharStack` is backed by the same growable-array idea used for an ArrayList.
+`CharStack` extends the fixed-capacity ArrayList from Module 1 with growable storage.
 A **growable array** owns a block of memory that can be replaced by a larger
 block when it fills.
 

@@ -48,9 +48,9 @@ if ($Target -eq "autopsy") {
     }
 
     $sources = @(
-        (Join-Path $codeRoot "autopsy\faulty_undirected.c")
+        (Join-Path $codeRoot "autopsy\faulty_ghost_connection.c")
     )
-    $outputName = "undirected_autopsy"
+    $outputName = "ghost_connection_autopsy"
 } else {
     if ($Extensions -and $StudentTests) {
         throw "Choose either -Extensions or -StudentTests, not both."

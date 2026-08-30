@@ -1,279 +1,86 @@
 # Module 3 Word Reference — Open Only After the Pause
 
-This reference is intentionally released after the five-minute individual
-activity. Do not use it during Stage A or during that timed activity. Some
-definitions give the names and rules that the earlier questions ask you to
-construct.
+This reference contains the 30 required Module 3 terms. It is released after
+the five-minute individual activity. The lab explains function-specific C
+details where they are used; those details are not extra vocabulary targets.
 
-**C**  
-The programming language used for this course’s programming work.
+1. **graph** — A model of objects and their relationships.
 
-**code**  
-Instructions written for a computer.
+2. **vertex** — One object in a graph. The plural is vertices.
 
-**program**  
-A group of instructions a computer can run.
+3. **edge** — One direct relationship between two vertices.
 
-**function**  
-A named block of code that performs one task.
+4. **directed graph** — A graph whose edges have a starting direction and an
+   ending direction.
 
-**model**  
-A simplified description used for reasoning.
+5. **undirected graph** — A graph whose edges do not distinguish a start from
+   an end. This module compares the idea but implements a directed graph.
 
-**representation**  
-A chosen way to store or show information.
+6. **source** — The vertex where a directed edge starts.
 
-**data structure**  
-A planned way to organize information in a program.
+7. **destination** — The vertex where a directed edge ends.
 
-**graph**  
-A model made of objects and their relationships.
+8. **degree** — The number of edges touching a vertex in an undirected graph.
 
-**vertex**  
-One object in a graph. The plural is **vertices**.
+9. **out-degree** — The number of directed edges leaving a vertex; in the
+   matrix, count `1` cells across its row.
 
-**edge**  
-One direct relationship between two vertices.
+10. **in-degree** — The number of directed edges entering a vertex; inspect
+    its column. The concept is required, but no in-degree function is required.
 
-**endpoint**  
-Either vertex named by an edge.
+11. **path** — A sequence that follows edges without repeating a vertex.
 
-**set**  
-A collection in which an item appears at most once.
+12. **cycle** — A route that returns to its starting vertex without repeating
+    another vertex.
 
-**ordered pair**  
-A pair whose positions have different roles. `(u, v)` places `u` first and
-`v` second.
+13. **self-loop** — An edge from a vertex to itself. The course implementation
+    rejects adding one.
 
-**edge set**  
-The set of all edges in a graph.
+14. **weight** — A number attached to an edge, such as cost, delay, or
+    distance.
 
-**directed edge**  
-An edge with one direction. `(u, v)` records `u → v`.
+15. **unweighted graph** — A graph that records edge existence without an
+    edge weight. The course matrix is unweighted.
 
-**directed graph**  
-A graph whose edges have direction.
+16. **edge list** — A representation that stores one endpoint pair per edge.
 
-**undirected edge**  
-An edge with no direction; it connects both endpoints.
+17. **adjacency list** — A representation that stores neighbors for each
+    vertex.
 
-**undirected graph**  
-A graph whose edges have no direction.
+18. **adjacency matrix** — A grid whose row `u`, column `v` records whether
+    the directed edge `u → v` exists.
 
-**weight**  
-A number attached to an edge, such as distance, time, or cost.
+19. **connected component** — A maximal group joined by routes in an
+    undirected graph. It is a comparison concept, not a directed lab operation.
 
-**weighted graph**  
-A graph that stores a weight for each edge.
+20. **isolated vertex** — An active vertex with no incoming or outgoing edge.
 
-**unweighted graph**  
-A graph that records whether edges exist but stores no edge weight.
+21. **symmetric matrix** — A matrix whose values mirror across the diagonal.
+    An undirected adjacency matrix is symmetric; the implemented directed
+    matrix need not be.
 
-**index**  
-A numbered position. C begins indexes at zero.
+22. **row** — A horizontal line of matrix cells. A graph row records outgoing
+    edges from its vertex.
 
-**array**  
-A numbered row of matching values.
+23. **column** — A vertical line of matrix cells. A graph column records edges
+    entering its vertex.
 
-**two-dimensional array**  
-An array of rows.
+24. **grid cell** — One position selected by a row index and column index. The
+    course stores only the integer `0` or `1` in each cell.
 
-**matrix**  
-A rectangular grid of values arranged in rows and columns.
+25. **diagonal** — Cells whose row and column indexes are equal. They remain
+    `0` under the course no-self-loop rule.
 
-**cell**  
-One position in a matrix.
+26. **two-dimensional array** — An array of rows, written with two bracketed
+    indexes in C.
 
-**Boolean value**  
-A value with exactly two choices: `true` or `false`. `bool` is C’s name for
-storing such a value.
+27. **active vertex** — A vertex whose index is less than `vertex_count`.
 
-**adjacent**  
-Directly joined by an edge.
+28. **inactive row or column** — Physically reserved grid space involving an
+    index that is not an active vertex. Every such cell must remain `0`.
 
-**adjacency matrix**  
-A matrix with one row and one column per vertex; row `u`, column `v` records
-whether `u → v` exists.
+29. **`size_t`** — A nonnegative whole-number C type used for counts and
+    indexes.
 
-**diagonal**  
-The cells of a matrix whose row and column indexes match.
-
-**mirrored cells**  
-The two matrix cells `[u][v]` and `[v][u]`, whose row and column positions
-trade places.
-
-**symmetric matrix**  
-A matrix in which every cell equals its mirrored cell across the diagonal.
-
-**diagram**  
-A visual representation that shows vertices as labeled marks and edges as
-lines or arrows.
-
-**equivalent representations**  
-Different representations of exactly the same objects and relationships.
-
-**neighbor**  
-Another vertex joined by an edge.
-
-**source**  
-The vertex where a directed edge begins.
-
-**destination**  
-The vertex where a directed edge ends.
-
-**out-neighbor**  
-The destination of an edge leaving a vertex.
-
-**in-neighbor**  
-The source of an edge entering a vertex.
-
-**degree**  
-The number of edges touching a vertex in an undirected graph.
-
-**out-degree**  
-The number of directed edges leaving a vertex.
-
-**in-degree**  
-The number of directed edges entering a vertex.
-
-**route**  
-A sequence of vertices in which every consecutive pair has the required
-edge.
-
-**path**  
-A route that does not repeat a vertex.
-
-**cycle**  
-A route that returns to its starting vertex without repeating another
-vertex.
-
-**reachable**  
-Able to be arrived at from a stated start by following a route.
-
-**connected**  
-Joined by a route in an undirected graph.
-
-**connected component**  
-A largest group of vertices in an undirected graph in which every vertex is
-connected to every other vertex in the group.
-
-**isolated vertex**  
-A vertex with no edge.
-
-**state**  
-The information currently stored by a program.
-
-**contract**  
-The rules stating what code accepts, changes, reports, and preserves.
-
-**invariant**  
-A rule that is true in every valid completed state.
-
-**fixed vertex set**  
-A group of vertices whose count is selected when the graph is created and
-does not change afterward.
-
-**active vertex index**  
-An index from zero through one less than the graph’s stored vertex count.
-
-**self-loop**  
-An edge from a vertex to itself.
-
-**parallel edges**  
-Repeated edges with the same endpoints and, in a directed graph, the same
-direction.
-
-**simple graph**  
-A graph with no self-loop and no parallel edges.
-
-**malformed graph**  
-A stored graph whose values break its invariant.
-
-**operation**  
-One task provided by a data structure’s code.
-
-**query**  
-An operation that asks for information without changing the graph.
-
-**validator**  
-Code that checks stated rules.
-
-**sparse graph**  
-A graph with few edges compared with the number of possible edges.
-
-**edge-list representation**  
-A stored sequence containing one endpoint pair per edge.
-
-**adjacency-list representation**  
-A representation that stores a collection of outgoing neighbors for each
-vertex.
-
-**dynamic storage**  
-Computer memory requested or released while a program runs.
-
-**type**  
-A description of the kind of value C stores.
-
-**variable**  
-Named storage for a value.
-
-**struct**  
-A C type that groups related values.
-
-**field**  
-One named value inside a struct.
-
-**enum**  
-A C type whose allowed choices have names.
-
-**`size_t`**  
-A nonnegative whole-number C type used for counts and indexes.
-
-**`#define`**  
-A C instruction that gives a fixed name to text used by the program.
-
-**`Graph`**  
-The C type that stores this module’s vertex count, direction kind, and
-Boolean adjacency matrix.
-
-**`GraphKind`**  
-The C enum whose choices are `GRAPH_DIRECTED` and `GRAPH_UNDIRECTED`.
-
-**`GraphNeighbors`**  
-The C type that stores a neighbor count followed by vertex indexes.
-
-**status code**  
-A named result that reports success or one kind of failure.
-
-**`GraphStatus`**  
-The C enum used for the graph functions’ status codes.
-
-**`GRAPH_MAX_VERTICES`**  
-The fixed name for this module’s limit of 16 vertices.
-
-**algorithm**  
-A precise, step-by-step method for completing a task.
-
-**tree**  
-A restricted relationship model with one starting item called the root, one
-immediately preceding item called a parent for every other item, no cycle,
-and a route from the root to every item.
-
-**arena**  
-A prepared storage area used for objects.
-
-**ArrayList**  
-A numbered sequence that can replace its storage to make room for more items.
-
-**synthetic data**  
-Invented information used for safe practice or testing.
-
-**network**  
-A group of devices or services that can communicate. A service is a program
-that performs a task for other programs.
-
-**permission**  
-A rule that allows an action.
-
-**exploitability**  
-Whether a real weakness could actually be used to cause harm.
+30. **`GRAPH_MAX_VERTICES`** — The fixed name for this module’s capacity of 16
+    vertices.

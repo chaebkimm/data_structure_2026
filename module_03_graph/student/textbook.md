@@ -4,81 +4,71 @@
 
 ### How do we show relationships a tree can't hold?
 
-In a tree, an item has only one parent directly above it. Real-world relationships are much freer. Two different items can connect to the exact same item, and a connection can even loop all the way back to a previous item.
+Real-world relationships are much freer than those in a tree. To show these free-flowing, messy relationships, we use a map made up of items (like dots) and the direct connections between them (like directed links).
 
-To show these free-flowing, messy relationships, we use a map made up of items (like dots) and the direct connections between them (like lines or roads).
+### Example: Modeling a 3-Server System
 
-### Why do arrow directions matter?
+To understand these rules, imagine we are managing three servers: a Web Server (Item 0), an App Server (Item 1), and a Database (Item 2). We will use this simple three-item map throughout the chapter to see how relationships work.
 
-Sometimes a connection is like a one-way street. Going from item 0 to item 1 doesn't automatically mean you can go backward from 1 to 0.
+### Why do directions matter?
 
-Other times, a relationship works both ways without caring about direction. This is like a two-way street, where a single connection between item 0 and item 1 lets you easily travel back and forth.
+The direction of a connection is critical. Often, a connection is strictly one-way. For example, our Web Server (0) might be allowed to send requests to the App Server (1), but the App Server is not allowed to initiate a connection backward to the Web Server. This is modeled as a directed connection. 
+
+### What about two-way connection?
+
+If two-way communication is needed, it can be explicitly built using two separate directed connections pointing in opposite ways.
 
 ### How do we count relationships around one item?
 
-If we are looking at one-way streets, we count the number of paths leaving an item and the number of paths coming into it separately. In a map of two-way streets, we simply count how many total lines touch that item.
+To understand how busy a specific item is, we count its connections. In a directed map, we differentiate between incoming and outgoing paths. We calculate the number of paths leaving an item (out-degree) and the number of paths terminating at that item (in-degree).
 
-Any item you can reach directly by following just one line is considered a neighbor. In a one-way map, we separate neighbors you can travel *to* from neighbors that can travel *to you*.
+In our example, if the App Server (1) receives data from the Web Server (0) and sends data to the Database (2), the App Server has an in-degree of 1 and an out-degree of 1.
 
-### What can we learn by following multiple lines?
+### What can we learn by tracing paths?
 
-When you travel from item to item by following the connected lines, you create a route. Sometimes, a route circles all the way back to the exact item where you started without visiting any other item twice.
+When data travels from item to item across multiple links, it forms a route or path. Tracing these paths allows us to see if two distant items can communicate. For instance, the Web Server (0) can reach the Database (2) by tracing a path through the App Server (1).
 
-In a map of two-way streets, you might find a large group of items that can all reach each other. Even a single, completely lonely item with zero connections counts as its own little independent group.
+### How should we store this network?
 
-### How should we store this map in code?
+To represent this map in software, we must translate these connections into memory. A highly efficient approach is a two-dimensional grid (a table) mapping every possible pair of items. We check the intersection of a row and column to see if a one-way connection exists from the row's item to the column's item.
 
-There are a few ways to remember all these connections. We could write down a simple list of every single line. Or, for each item, we could collect a list of its specific neighbors. Another clever way is to draw a grid (like a multiplication table) for every possible pair of items, checking a box if a connection exists.
+### What about the node connected to itself?
 
-If we only use a simple list of lines, it's very hard to notice if there is a lonely item with no connections. Because of this, we also need to keep a separate count of the total number of items.
+In some scenarios, an item might connect directly back to itself. This is known as a self-loop. For instance, a webpage might contain a button that simply reloads its own page. Depending on the rules of your specific system, you can choose to allow or forbid these self-loops.
 
-This chapter will use a fixed grid to store a maximum of 16 items.
+### Preview: Adding Weights to Links
 
-```text
-grid[start][end] == true   (Connection exists)
-grid[start][end] == false  (Connection does not exist)
-
-```
-
-### Why do two-way streets use two spaces in the grid?
-
-A two-way connection must be easy to find no matter which side you start from. If we connect item 2 and item 4, we must mark "true" for the path from 2 to 4, *and* mark "true" for the path from 4 to 2. This creates a perfectly mirrored grid, where the top right side is an exact reflection of the bottom left side.
-
-### What kinds of lines do we reject?
-
-The map in this chapter will not allow an item to draw a line directly back to itself. We also won't allow drawing the exact same line twice. If you want to delete a line, you must make sure that line actually exists first.
-
-Finally, we are not storing how long the paths are or how much they cost to travel. We are only storing a simple "yes" or "no" for whether a line exists.
+In many real-world scenarios, connections are not all equal. A road between two cities has a specific distance or travel time. To model this, advanced graphs assign a numerical value—known as a weight or cost—to each connection, allowing algorithms to find the shortest or fastest paths. In this chapter, we only care if a connection exists, so we just use a simple `1` (yes) or `0` (no).
 
 ## Calculating Efficiency
 
 ### Efficiency of adding or removing a connection
 
-We change one box in the grid for a one-way street, or two boxes for a two-way street. Because we can jump straight to the exact box, this takes the exact same tiny amount of time regardless of how many items there are.
+To add or remove a link, we just go to the specific row and column in our grid and change a `0` to a `1` (or vice versa). Because the computer can calculate exactly where that box is instantly, this takes constant time, no matter how massive the map is.
 
-### Efficiency of checking one connection
+### Efficiency of checking specific connection
 
-We instantly read one box in the grid using the starting and ending numbers. This is instantly fast.
+We instantly read one spot in the grid using the starting and ending numbers. This is instantly fast.
 
-### Efficiency of counting connections or finding neighbors
+### Efficiency of finding neighbors
 
 To find neighbors, we have to scan every single box in one entire row or column. This means the amount of work grows steadily in proportion to the total number of items we currently have.
 
-### Efficiency of checking the whole map
+### Efficiency of analyzing the entire topology
 
-We have to look at every single box in the entire grid that is currently in use. Because the grid size is items multiplied by items, the amount of work increases very rapidly, like the square of the data.
+We have to look at every single spot in the entire grid that is currently in use. The grid size is the square of the number of items.
 
 ### Memory efficiency
 
-Even if there are very few connections, we still have to build a giant grid with boxes for every possible pair of items. The memory space needed grows based on the total items squared. The code in this chapter locks in a 16 × 16 space from the beginning, so it takes up a fixed amount of memory even if we use fewer items.
+Even if there are very few connections, we still have to build a giant grid with boxes for every possible pair of items. The memory space needed grows based on the total items squared. 
 
 ## Glossary
 
 ### Graph
 
-A structure showing vertices and the edges that connect them.
+A data structure showing items and the connections among them.
 
-### Vertex (Plural: Vertices)
+### Vertex
 
 Each individual item that makes up a graph.
 
@@ -96,11 +86,7 @@ A graph that doesn't distinguish between the start and end of an edge.
 
 ### Degree
 
-The number of edges touching a single vertex.
-
-### Out-degree and In-degree
-
-In a directed graph, the number of edges going out from, or coming into, a single vertex.
+The number of edges touching a single vertex. In a directed graph, out-degree is the number of edges going out from a single vertex. Also, in-degree is the number of edges coming into a single vertex.
 
 ### Path
 
@@ -138,106 +124,132 @@ A graph that only stores whether an edge exists or not, without storing distance
 
 A grid where the values are perfectly mirrored across the diagonal line (used for undirected graphs).
 
+## Invariant
+
+### What is the invariant (the golden rule) in this data structure?
+
+1. The Boundary Rule: The total number of active items must never exceed the absolute size of the grid we carved out in memory.
+
+2. The Clean Slate Rule (No Ghost Connections): If a machine is removed or doesn't exist yet, its entire row and column must remain strictly `0`. We cannot leave leftover `1`s from old data, or the computer will think a ghost machine is sending data.
+
+3. The Self-Loop Rule: If our specific network rules forbid a machine from connecting to itself, the diagonal line running down the center of the grid (where row 0 meets column 0, row 1 meets column 1, etc.) must permanently remain `0`.
+
+## Example: Modeling a 3-Tier Web Architecture
+
+Imagine we are managing network firewalls for three servers: a Web Server (Item 0), an App Server (Item 1), and a Database (Item 2). We start with a 3x3 grid of all `0`s.
+
+1. Web talks to App: We open a connection from Web (0) to App (1). We go to Row 0, Column 1, and write a `1`.
+
+2. App talks to Database: We open a connection from App (1) to Database (2). We go to Row 1, Column 2, and write a `1`.
+
+3. App replies to Web: We open a connection from App (1) back to Web (0). We go to Row 1, Column 0, and write a `1`.
+
+If we look at Row 1 (the App server's outgoing rules), we see `[1, 0, 1]`. This instantly tells us the App server sends data to the Web server (Column 0) and the Database (Column 2), but not to itself (Column 1).
+
 ## Coding Plan
 
-### Preparing the Map
+### Initializing the Network Topology
 
-* **Check bounds:** Make sure the number of items is between 0 and 16.
-* **Check type:** Make sure it is either a one-way or two-way map.
-* **Initialize grid:** Set all 16 × 16 boxes to `false`, even the unused ones.
-* **Save state:** Store the number of items and the map type.
+- Validate bounds: Make sure the number of items fits in the prepared memory.
+- Zero-initialize grid: Use a double loop to visit every single box and set it to `0`, ensuring no phantom connections exist. 
+- Save metadata: Store the total number of active items.
 
 ### Adding a Connection
 
-* **Check numbers:** See if the two items are within the range we are currently using.
-* **Reject loops:** Fail if the two item numbers are exactly the same.
-* **Reject duplicates:** Do not add a connection if its box is already `true`.
-* **Set boxes:** Make `[from][to]` `true` for one-way maps. For two-way maps, also make the mirrored box `true`.
+- Check numbers: See if the two items are within the range we are currently using.
+- Reject loops: Fail if the two item numbers are exactly the same.
+- Update matrix: Make the value at [from][to] equal `1` to record the one-way link. 
 
 ### Deleting a Connection
 
-* **Check numbers:** Look at the range of the two items.
-* **Check existence:** Fail if the connection doesn't exist.
-* **Clear boxes:** Make the target box (and the mirrored box if needed) `false`.
+- Check numbers: Look at the range of the two items.
+- Clear spot: Make the value at [from][to] equal `0`.
 
-### Checking Connections and Counting
+### Counting Outgoing Traffic (Out-Degree)
 
-* **Check connection:** Read `[from][to]` and use it as the result.
-* **Count outgoing:** Count the `true` boxes in that item's row.
-* **Count incoming:** Count the `true` boxes in that item's column.
-* **Save neighbors:** Find the `true` destination items in the row, starting from the smallest number, and put them in the result.
+- Check numbers: Ensure the requested item actually exists.
+- Scan row: Loop through every column in that item's specific row. Every time you see a 1, increase your count.
 
-### Checking the Whole Map
+## New C Syntax Explained
 
-* **Check size:** Make sure the item count is not over 16.
-* **Check loops:** Make sure all diagonal boxes where an item connects to itself are `false`.
-* **Check symmetry:** In a two-way map, make sure `[a][b]` and `[b][a]` have the exact same value.
-* **Determine completion:** If even one rule is broken, trigger an error.
+### `[][]` (Two-Dimensional Arrays)
+
+To create a grid in C, you use two sets of square brackets. For example, `grid[10][10]` sets aside a square of memory with 10 rows and 10 columns (100 boxes total). To access a specific box, you provide the row number first, then the column number: `grid[2][5]` accesses the box in row 2, column 5.
+
+### `size_t`
+
+`size_t` is a special type of unsigned integer in C. It is specifically designed to represent the size of objects in memory or to count items. Because you can never have a negative amount of memory or a negative number of items in an array, `size_t` cannot hold negative numbers.
 
 ## C Code
 
-### Making the Adjacency Matrix
+### Designing the Grid
 
 ```c
-#define GRAPH_MAX_VERTICES 16U
+#define GRAPH_MAX_VERTICES 16
 
-typedef enum {
-        GRAPH_DIRECTED = 0,
-        GRAPH_UNDIRECTED
-} GraphKind;
-
-typedef struct {
+struct DirectedGraph {
         size_t vertex_count;
-        GraphKind kind;
-        bool adjacency[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
-} Graph;
+        int grid[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
+};
 ```
 
-### Adding and Checking Edges
+### Initializing the Grid
 
 ```c
-Graph graph;
-bool has_edge = false;
+struct DirectedGraph network;
+network.vertex_count = 3; /* Web, App, Database */
 
-if (graph_init(&graph, 6U, GRAPH_DIRECTED) != GRAPH_OK) {
-        return 1;
-}
-
-if (graph_add_edge(&graph, 0U, 1U) != GRAPH_OK ||
-    graph_add_edge(&graph, 0U, 2U) != GRAPH_OK ||
-    graph_add_edge(&graph, 1U, 3U) != GRAPH_OK ||
-    graph_has_edge(&graph, 0U, 2U, &has_edge) != GRAPH_OK) {
-        return 1;
+/* Use a double loop to visit every row and column, setting all to 0 */
+for (size_t row = 0; row < GRAPH_MAX_VERTICES; row = row + 1) {
+        for (size_t col = 0; col < GRAPH_MAX_VERTICES; col = col + 1) {
+                network.grid[row][col] = 0;
+        }
 }
 ```
 
-### Finding Degrees and Neighbors
+### Adding Connections
 
 ```c
-size_t in_degree = 0U;
-size_t out_degree = 0U;
-GraphNeighbors neighbors;
+size_t from = 0; /* Web Server */
+size_t to = 1;   /* App Server */
 
-if (graph_in_degree(&graph, 3U, &in_degree) != GRAPH_OK ||
-    graph_out_degree(&graph, 0U, &out_degree) != GRAPH_OK ||
-    graph_out_neighbors(&graph, 0U, &neighbors) != GRAPH_OK) {
-        return 1;
+/* Ensure the servers exist and are not the same machine */
+if (from < network.vertex_count && to < network.vertex_count && from != to) {
+        /* Set the specific box to 1 (Yes) */
+        network.grid[from][to] = 1;
+}
+
+/* App talks to Database */
+network.grid[1][2] = 1;
+
+/* App replies to Web */
+network.grid[1][0] = 1;
+```
+
+### Removing a Connection
+
+```c
+size_t cut_from = 1; /* App Server */
+size_t cut_to = 2;   /* Database */
+
+if (cut_from < network.vertex_count && cut_to < network.vertex_count) {
+        /* Set the specific box to 0 (No) */
+        network.grid[cut_from][cut_to] = 0;
 }
 ```
 
-### Checking an Undirected Graph
+### Counting Outgoing Connections (Out-Degree)
 
 ```c
-Graph undirected;
+size_t target_server = 1; /* App Server */
+size_t outgoing_count = 0;
 
-if (graph_init(&undirected, 5U, GRAPH_UNDIRECTED) != GRAPH_OK ||
-    graph_add_edge(&undirected, 2U, 4U) != GRAPH_OK) {
-        return 1;
-}
-
-if (undirected.adjacency[2][4] &&
-    undirected.adjacency[4][2] &&
-    graph_validate(&undirected) == GRAPH_OK) {
-        /* Both mirrored boxes are the same. */
+if (target_server < network.vertex_count) {
+        /* Lock in the row, and loop through all the columns */
+        for (size_t col = 0; col < network.vertex_count; col = col + 1) {
+                if (network.grid[target_server][col] == 1) {
+                        outgoing_count = outgoing_count + 1;
+                }
+        }
 }
 ```

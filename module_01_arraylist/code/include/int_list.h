@@ -1,100 +1,51 @@
 #ifndef INT_LIST_H
 #define INT_LIST_H
 
-#include <stdbool.h>
-#include <stddef.h>
+/*
+ * A list uses a caller-owned array and two separate integers:
+ * size counts active elements; capacity is the fixed usable array bound.
+ * Valid metadata satisfies 0 <= size <= capacity. Capacity may be zero.
+ *
+ * Every array argument must refer to a live array with at least capacity
+ * elements. The functions cannot discover the actual array extent. The
+ * caller is responsible for meeting this precondition.
+ */
 
-typedef struct {
-    int *data;
-    size_t size;
-    size_t capacity;
-} IntList;
-
-typedef enum {
-    INT_LIST_OK = 0,
-    INT_LIST_ERR_INVALID_ARGUMENT,
-    INT_LIST_ERR_OUT_OF_RANGE,
-    INT_LIST_ERR_ALLOCATION,
-    INT_LIST_ERR_OVERFLOW
-} IntListStatus;
+/* Returns 1 for valid metadata and 0 <= index < size; otherwise returns 0. */
+int int_list_valid_index(int size, int capacity, int index);
 
 /*
- * Creates the canonical empty state: { NULL, 0, 0 }.
- * Call only for an uninitialized or previously destroyed IntList.
+ * Appends value when metadata is valid and size < capacity.
+ * Returns size + 1 on success. On rejection, returns the original size and
+ * leaves the entire array unchanged. The caller stores the returned size.
  */
-IntListStatus int_list_init(IntList *list);
+int int_list_append(int array[], int size, int capacity, int value);
 
 /*
- * Releases owned storage and restores the canonical empty state.
- * Passing NULL is a no-op. A non-NULL argument must refer to a valid
- * initialized or previously destroyed IntList, not arbitrary storage.
+ * Inserts value at an index in [0, size], shifting the suffix right.
+ * Requires valid metadata and spare capacity. Returns size + 1 on success;
+ * otherwise returns the original size and leaves the array unchanged.
  */
-void int_list_destroy(IntList *list);
-
-/*
- * Checks the observable shape of the representation. It cannot prove
- * allocation extent, pointer liveness, initialized elements, or unique
- * ownership.
- */
-bool int_list_is_valid(const IntList *list);
-
-/*
- * Ensures capacity is at least minimum_capacity. Never shrinks or changes
- * size. On failure, the previous valid list remains unchanged.
- */
-IntListStatus int_list_reserve(
-    IntList *list,
-    size_t minimum_capacity
-);
-
-/*
- * Copies the element at index into out_value.
- * Requires index < size and a non-NULL output pointer.
- * out_value must not point anywhere inside the list's allocation.
- */
-IntListStatus int_list_get(
-    const IntList *list,
-    size_t index,
-    int *out_value
-);
-
-/*
- * Adds value at the end. On failure, the previous valid list remains
- * unchanged.
- */
-IntListStatus int_list_append(
-    IntList *list,
+int int_list_insert(
+    int array[],
+    int size,
+    int capacity,
+    int index,
     int value
 );
 
 /*
- * Extension: inserts at index. The valid insertion range is [0, size].
+ * Removes the element at an index in [0, size), shifting the suffix left.
+ * Returns size - 1 on success. Invalid metadata or an invalid index leaves
+ * the array unchanged and returns the original size. The inactive tail
+ * does not need to be cleared.
  */
-IntListStatus int_list_insert(
-    IntList *list,
-    size_t index,
-    int value
-);
+int int_list_remove(int array[], int size, int capacity, int index);
 
 /*
- * Extension: removes the element at index. out_value may be NULL when the
- * caller does not need the removed integer. A non-NULL out_value must not
- * point inside the list's allocation. Removal does not shrink.
+ * Read-only linear search. Returns the first matching active index or -1
+ * when value is absent or metadata is invalid.
  */
-IntListStatus int_list_remove(
-    IntList *list,
-    size_t index,
-    int *out_value
-);
-
-const char *int_list_status_name(IntListStatus status);
-
-#ifdef INT_LIST_TESTING
-/*
- * Instructor-test seam. The next allocation request returns NULL.
- * This declaration and its implementation are absent from production builds.
- */
-void int_list_test_fail_next_allocation(void);
-#endif
+int int_list_find(const int array[], int size, int capacity, int value);
 
 #endif

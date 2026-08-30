@@ -1,79 +1,95 @@
-# Segfault Autopsy — Unsafe Growth
+# Bounds and Invariant Autopsy — One Slot Too Far
 
 ## Case
 
-Analyze this fragment before running the supplied demonstration:
+An **autopsy** is an investigation of the first incorrect step, not just the
+final symptom. The supplied `code/autopsy/faulty_append.c` demonstration uses
+this faulty condition:
 
 ```c
-list->data = realloc(
-    list->data,
-    list->capacity * 2 * sizeof *list->data
-);
-list->capacity *= 2;
-list->data[list->size++] = value;
-return true;
+if (size <= capacity) {
+    array[size] = value;
+    return size + 1;
+}
+return size;
 ```
+
+The usable capacity is 10 and all ten list positions are occupied:
+`[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]`.
+The attempted append value is `1100`.
+
+For safe observation, the demonstration declares one extra physical slot.
+Index 10 starts with a **guard value** of `-999`. That guard is not usable
+list capacity. It lets the demonstration show an incorrect write without
+accessing memory outside its actual eleven-slot test array.
+
+## Before running
+
+Predict the returned count and the guard value after the faulty call.
+Preserve your prediction.
+
+____________________________________________________________________
 
 ## Incident report
 
-### 1. Trigger
+### 1. Starting state
 
-Describe at least one starting state or allocator outcome that makes this code unsafe.
+- usable capacity:
+- current size:
+- valid current-item indexes:
+- guard index and initial value:
 
-____________________________________________________________________
+### 2. First incorrect condition
 
-### 2. First invalid assumption
-
-Do not report only the final crash. Identify the earliest assumption that stops being valid.
-
-____________________________________________________________________
-
-### 3. Memory state
-
-Show the state immediately before and after the first invalid operation. Include:
-
-- old allocation address;
-- result returned by `realloc`;
-- `data`;
-- `size`;
-- `capacity`;
-- ownership of the old allocation.
+Why does `size <= capacity` accept a request that should be rejected?
 
 ____________________________________________________________________
 
-### 4. Consequences
+### 3. Exact write
 
-Check every consequence that can occur and explain:
-
-- [ ] lost allocation/leak;
-- [ ] `NULL` dereference or invalid write;
-- [ ] capacity no longer describes owned storage;
-- [ ] multiplication overflow;
-- [ ] zero-capacity growth remains zero;
-- [ ] size increases without a stored logical element.
-
-Explanation:
+Which array index receives `1100`? What value occupied that position before
+the write?
 
 ____________________________________________________________________
 
-### 5. Patch
+### 4. Broken invariant
 
-Write pseudocode for a failure-atomic repair. Identify the commit point.
+State the returned size and explain which count rule it breaks.
 
 ____________________________________________________________________
 
-### 6. Regression tests
+### 5. Why the guard is not a fix
 
-Write at least two tests that would distinguish the faulty and repaired versions.
+Would changing the real application from ten slots to eleven solve the
+boundary-check defect? Explain what would happen when that new capacity
+became full.
+
+____________________________________________________________________
+
+Why might this deliberately guarded demonstration finish normally even
+though the list contract was broken?
+
+____________________________________________________________________
+
+### 6. Repair
+
+State the corrected acceptance condition. Explain what the function must
+return and preserve when the list is full.
+
+____________________________________________________________________
+
+### 7. Regression tests
+
+A **regression test** checks that a repaired error does not return. Write one
+test for the last available slot and one for a full-list rejection.
 
 1. _________________________________________________________________
 2. _________________________________________________________________
 
-### 7. Categorize the error
+## After observation
 
-Label each discovered error as one or more of:
+Label each correction `bounds`, `count`, or `unchanged state`.
 
-`bounds` · `arithmetic` · `allocation` · `ownership` · `ordering` · `invariant`
+The evidence that changed or confirmed my model was:
 
 ____________________________________________________________________
-

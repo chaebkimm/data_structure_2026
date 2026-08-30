@@ -1,20 +1,26 @@
 # Week 1 — Keeping Data Together in One Place
 
-The frozen Chapter 1 textbook defines the core scope. Questions about the
-repository's `IntList` interface are grouped separately as lab extensions.
+The revised Chapter 1 textbook defines the core scope: a fixed array, a
+separate item count, checked access, search, append, insertion, and deletion.
+The lab packages the same actions into functions with plain array parameters.
 
 ## Textbook vocabulary
 
 | Term | Question |
 |---|---|
+| data | What values does this collection store? |
+| data structure | How does a storage rule help us use and change data? |
 | contiguous memory | What does it mean for memory positions to be next to one another? |
-| array | What stays fixed after an array's memory has been set aside? |
+| array | What stays fixed after `int array[10]` is declared? |
 | list | What does it mean for stored data to have an order? |
-| ArrayList | How can an array represent a list? |
-| dynamic array | What happens when its current memory space is full? |
+| ArrayList | How can a fixed array and an item count represent a list? |
 | index | How does an index locate an item? |
 | element | What is one stored item called? |
+| capacity | How many slots are available to this list? |
+| size | How many items currently belong to this list? |
 | invariant | Which placement rule must insertion and deletion preserve? |
+| indexed access | How can an index locate an item without searching by value? |
+| linear search | Why might finding a value require checking each item in order? |
 
 ## Core questions
 
@@ -22,44 +28,42 @@ repository's `IntList` interface are grouped separately as lab extensions.
 
 - Why can an item be found directly when its index is known?
 - Why can searching for a value require checking every stored item?
-- Which positions are part of the collection when the allocated space also
-  contains unused slots?
+- Which positions belong to the list when size is 3 and capacity is 10?
 - Why do stored items begin at index 0 in this design?
 
 ### Insertion and deletion
 
-- After deleting the item at index 1, which items must move?
+- After deleting index 1 from `[100, 500, 300]`, which items must move?
 - Why does insertion shift items from back to front?
 - How much work can insertion at the front require?
 - How much work can deletion at the end require?
 
-### Expansion
+### Fixed capacity and invariants
 
-- What condition means that a new memory space is required?
-- In what order should the old items be copied?
-- When may the old memory space be released?
-- Why would growing by only one slot cause repeated copying?
-- Why does doubling make copying happen less often?
-- Across many additions, why does the average work per addition remain small?
+- How do size and capacity differ?
+- What must remain unchanged when an addition is attempted on a full list?
+- Why is index 10 not a slot in `int array[10]`?
+- How does deleting an item make room without changing capacity?
+- Why can zero be a stored value rather than an empty-slot marker?
+- What goes wrong if size includes a slot that has not been initialized as a list item?
 
 ### C connection
 
-- What does `sizeof(int)` report?
-- What information does a pointer store?
-- What does `malloc` return when it cannot provide the requested space?
-- Why must allocated memory eventually be passed to `free`?
-- Why is the pointer reset to `NULL` after the final `free` in the chapter?
+- Which conditions must be checked before reading or updating `array[index]`?
+- Why can insertion accept index equal to size while removal cannot?
+- Why must the caller assign the size returned by a mutating function?
+- What does `int_list_find` return for a missing value or duplicate matches?
+- What does `const` promise about the array passed to `int_list_find`?
 
-## Lab-extension questions
+## Lab and testing questions
 
-These questions assess the supplied implementation task, not prerequisite
-textbook understanding.
+These questions connect the textbook actions to the required lab. Extra
+boundary and operation-sequence tests are the optional extension.
 
-- How do the textbook's starting address and two tracking numbers map to
-  `IntList`?
-- Why does checked access compare an index with the number of stored items?
-- How does `int_list_reserve` implement the textbook's expansion step?
-- What must the lab implementation preserve if allocation fails?
-- Why does the lab reject an allocation size that cannot be represented?
-- Which tests demonstrate append, access, expansion, and cleanup?
-- How do insertion and removal preserve the textbook's no-gap invariant?
+- How do the textbook's array, size, and capacity map to the function arguments?
+- Which test distinguishes an unused array slot from a valid list index?
+- How can a snapshot prove that a rejected operation changed no array slot?
+- What happens when size is negative or greater than capacity?
+- Why must the caller ensure capacity does not exceed the actual array length?
+- Which operation sequence demonstrates that deletion makes room for another addition?
+- How does the guard-slot autopsy expose a bad full check without accessing outside its physical array?

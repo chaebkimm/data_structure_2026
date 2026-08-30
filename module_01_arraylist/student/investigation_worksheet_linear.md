@@ -1,159 +1,174 @@
-# Investigation Worksheet — Linear Accessible Format
+# Stage C — Investigation: Linear Accessible Format
 
-This version has the same targets as the standard worksheet without a response
-table. It is suitable for screen readers, keyboard navigation, speech input,
+This version has the same targets as the standard worksheet without response
+tables. It is suitable for screen readers, keyboard navigation, speech input,
 or a plain-text response.
 
-## D. Keep the invariant
+Open it after completing and preserving the Cognitive Pause.
 
-Starting state: indexes 0 through 3 contain 10, 50, 20, and 30. Indexes 4 and
-5 are empty.
+## D. Trace one list through its operations
 
-### D1. Golden rule
+The array has ten slots. Initially, `size` is 3 and the current list is
+100, 200, 300. Only indexes below `size` contain current items.
 
-State the golden rule for where stored items belong.
+### D1. Operation sequence
 
-Response:
+For each step, state any value read, the logical list afterward, and the new
+size. Apply the steps in order:
 
-### D2. Delete
-
-Delete the item at index 1. Describe the final packed state.
-
-Response:
-
-### D3. Deletion direction
-
-Why must deletion move later items to the left?
+1. Read index 1.
+2. Change index 1 to 500.
+3. Delete index 1.
+4. Insert 600 at index 1.
+5. Append 200.
 
 Response:
 
-### D4. Insert
+### D2. Count changes
 
-Insert 99 at index 2. In what direction must existing items move?
-
-Response:
-
-### D5. Safe insertion order
-
-Why must insertion move items from the back toward the target position?
+Which steps change the count?
 
 Response:
 
-## E. Compare operations
+### D3. Movement direction
 
-For each operation, describe how its work changes as the amount of stored data
-grows and explain why.
-
-### E1. Find by index
+Which step moves a later item toward index 0? Which step moves an item toward
+a higher index?
 
 Response:
 
-### E2. Find by value
+### D4. Insertion order
+
+Why must insertion shift from the final item toward the target?
 
 Response:
 
-### E3. Add at the end when space remains
+### D5. Unused tail
+
+Why does deletion not need to erase the unused tail afterward?
 
 Response:
 
-### E4. Insert at the front
+## E. Separate valid indexes from available storage
+
+### E1. Independent requests
+
+Start each case with a ten-slot array containing 100, 200, 300 and `size == 3`.
+Classify each request and explain:
+
+1. Read index 2.
+2. Read index 3.
+3. Update index -1.
+4. Insert at index 3.
+5. Insert at index 4.
+6. Delete index 3.
 
 Response:
 
-### E5. Delete at the end
+### E2. Invariant
+
+An invariant is a rule every valid state follows. State the smallest and
+largest valid size. State which indexes contain current items. Explain why
+the count, not a special integer value, decides list membership.
 
 Response:
 
-### E6. Delete at the front
+### E3. Full-list rejection
+
+What must append and insertion return for a full list? Which array values
+may they change?
 
 Response:
 
-### E7. Expand the memory space
+## F. Search for a value
+
+A linear search checks current items from index 0 upward and returns the
+index of the first match. It returns `-1` if no current item matches. The
+result is an index, not an item value.
+
+Use the current list 100, 600, 300, 600 in ten slots.
+
+### F1. First match
+
+Which indexes are examined when searching for 600, and which is returned?
 
 Response:
 
-## F. Explain doubling
+### F2. Missing value
 
-### F1. One-slot growth
-
-Why would adding only one new slot cause repeated copying?
+How many current items are examined when searching for 999?
 
 Response:
 
-### F2. Doubling
+### F3. Unused matching value
 
-Why does doubling make expansion happen less often?
-
-Response:
-
-### F3. Average work
-
-Across many additions, what happens to the average work for one addition?
+Suppose an unused slot contains 999 from an earlier operation. May the search
+count that value as a match? Explain.
 
 Response:
 
-## G. Connect the idea to C
+### F4. Negative data
 
-### G1. sizeof
-
-What job does `sizeof` perform?
-
-Response:
-
-### G2. Pointer
-
-What does a pointer store?
+If a current item stores `-1`, is it valid data? How is that different from a
+search result of `-1`?
 
 Response:
 
-### G3. malloc
+## G. Count the work
 
-What job does `malloc` perform?
+For each operation, count item reads, writes, or moves and explain. Do not
+use elapsed clock time. Assume successful operations use valid input and that
+a removal starts with a nonempty list.
 
-Response:
-
-### G4. NULL
-
-What does `NULL` tell the program after a memory request?
-
-Response:
-
-### G5. free
-
-What job does `free` perform?
+1. Read or update a valid index.
+2. Search for a missing value.
+3. Append when space remains.
+4. Insert at index 0.
+5. Delete the final item.
+6. Delete index 0.
+7. Reject an addition when full.
 
 Response:
 
-### G6. Expansion order
-
-Place these actions in order: copy every stored item; obtain a larger memory
-space; release the old memory space; start using the new memory space; add the
-new item.
+Why does a ten-slot array still use ten slots when `size` is only 3?
 
 Response:
 
-## H. Exit ticket
+## H. Connect the model to C
 
-### H1. Direct indexing
+### H1. Expressions
 
-Why can an index locate an item directly?
+Explain each expression:
 
-Response:
-
-### H2. Value search
-
-Why does searching by value require checking items one by one?
-
-Response:
-
-### H3. Expansion condition
-
-What condition means expansion is required?
+1. `int array[10];`
+2. `array[1]`
+3. `size`
+4. `capacity`
+5. `index >= 0 && index < size`
 
 Response:
 
-### H4. Safe release
+### H2. Returned count
 
-What must happen before the old memory space is freed?
+Mutating functions return the resulting count. Rejection returns the original
+count and leaves the array unchanged. Why must the caller save the result in
+`size = int_list_append(array, size, capacity, 600);`?
+
+Response:
+
+### H3. Declared array length
+
+Why must the supplied capacity never exceed the array’s declared length?
+
+Response:
+
+## I. Exit ticket
+
+1. What is the difference between size and capacity?
+2. Why is index `size` invalid for reading but valid for insertion when space
+   remains?
+3. What stays unchanged after a full-list rejection?
+4. What does search return when two current items match?
+5. Why do unused tail values not belong to the list?
 
 Response:

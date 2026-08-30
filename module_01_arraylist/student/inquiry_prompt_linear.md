@@ -1,10 +1,11 @@
-# Initial Inquiry — Linear Accessible Format
+# Stage A — Initial Inquiry: Linear Accessible Format
 
 This version has the same questions as the standard initial inquiry. It is
 suitable for screen readers, keyboard navigation, speech input, or a
 plain-text response.
 
-Preserve each initial answer. Add a labeled correction later.
+Preserve each initial answer. Add a labeled correction later. Do not open
+later-stage materials yet.
 
 ## Student information
 
@@ -12,66 +13,95 @@ Name:
 
 Date:
 
-## A. Start with one memory space
+## A. Distinguish the list from its storage
 
-Starting state: index 0 contains 10, index 1 contains 50, index 2 contains 20,
-index 3 contains 30, and index 4 is empty.
+There are ten neighboring integer slots, numbered 0 through 9. These numbers
+are indexes. The list contains 100 at index 0, 200 at index 1, and 300 at
+index 2. Slots 3 through 9 are not part of the current list. “Unused” is a
+description of a slot’s role, not a special integer value.
 
-### A1. Index 2
+### A1. Index 1
 
-Which value is stored at index 2?
-
-Response:
-
-### A2. Stored indexes
-
-Which indexes currently contain stored data?
+Which value is stored at index 1?
 
 Response:
 
-### A3. Direct access
+### A2. List indexes
 
-How could you find the value at index 3 without checking earlier indexes?
+Which indexes belong to the current list?
+
+Response:
+
+### A3. Item count
+
+How many values are in the list?
+
+Response:
+
+### A4. Maximum count
+
+How many values can these ten slots hold at most?
+
+Response:
+
+### A5. Direct access
+
+Could the program read index 2 without checking indexes 0 and 1 first?
+Explain.
 
 Response:
 
 ## B. Keep the data packed together
 
-### B1. Delete 50
+Consider these changes in order.
 
-After removing 50, where is the gap?
+### B1. Remove 200
 
-Response:
-
-### B2. Close the gap
-
-What must move so the remaining values stay together?
+Which later value must move so the list has no gap?
 
 Response:
 
-### B3. Insert 99
+### B2. Remaining list
 
-Starting from 10, 20, 30 followed by two empty slots, insert 99 between 20
-and 30. Which value must move first, and why?
+State the remaining list and its new item count.
 
 Response:
 
-## C. When the memory space becomes full
+### B3. Insert 600
+
+Insert 600 between 100 and 300. Which value must move before 600 can be
+stored?
+
+Response:
+
+### B4. List order
+
+Does this operation sort the numbers, or preserve the requested list order?
+Explain.
+
+Response:
+
+## C. Decide what happens when the ten slots are full
+
+The number of slots cannot change in this activity. All ten slots now belong
+to the list, and a request arrives to add one more value.
 
 ### C1. Unsafe write
 
-Why is writing beyond the final allocated slot unsafe?
+Why is writing at index 10 unsafe?
 
 Response:
 
-### C2. Continue safely
+### C2. Report the result
 
-Describe how the program can continue without losing the existing order.
+What should the program report to the caller—the code requesting the
+addition?
 
 Response:
 
-### C3. Old memory
+### C3. Preserve the state
 
-What should happen to the old memory after every value has been copied?
+Which values and count should remain unchanged when the request cannot be
+completed?
 
 Response:

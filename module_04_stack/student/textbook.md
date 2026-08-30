@@ -2,220 +2,289 @@
 
 ## Thinking Logically
 
-### How do we remember the most recently opened symbol?
+### Why do we need a special order?
 
-Read the following text from left to right.
+In the chapter on trees, you learned about recursion. When a function pauses to call a new function, the computer needs to remember exactly where to resume later. Because the most recently called function must always finish first, we must store these "return addresses" so that the last one saved is the very first one we take back out.
 
-```text
-A(B[C]{D})
-```
+### The Top-Only Method
 
-When you read `]`, you must pair it with the most recently opened `[`. You should not pair it with the earlier opened `(`. We need a special storage space to remember the unclosed opening symbols in the exact order we found them.
+If you put items in and take them out from only one single end, the very last item you put in will always be the very first one to come out. Think of it like a tall container for plates—you always place a new plate on the very top, and when you need a plate, you always take the one sitting right on top.
 
-### Which side should we use to put in and take out values?
+### How do we find where to return?
 
-If you put items in and take them out from only one single end, the very last item you put in will always be the very first one to come out. Think of it like a tall container for plates—you always place a new plate on the very top, and when you need a plate, you take the one sitting right on top.
+Since the program only ever cares about the most recently paused function, the computer doesn't need to search through all the saved data one by one. It simply looks directly at the item sitting on the very top of the container to see what it is, without actually removing it.
 
-We have three main actions we can do at this top opening:
+### How do we remove data?
 
-* **Add** a new item directly onto the top.
-* **Look** at the top item to see what it is, without removing it.
-* **Remove** the top item completely.
+When a function finishes running, its saved information is no longer needed. You remove the top item completely from the container. The item directly underneath it instantly becomes the new top, telling the computer exactly where to return next. After deleting, the final number of items goes down by one.
 
-An empty container has absolutely nothing on top. So, if you try to look at or remove an item from an empty container, it should stop and trigger an error without giving you any value.
+### How do we add data?
 
-### In what order do we check grouping symbols?
+Every time a new function is called, you simply add its return information (a new "frame") directly onto the very top of your existing pile. No other existing data needs to be shifted, moved, or changed. After adding it, the final number of items goes up by one.
 
-Characters that open and close groups, like `(`, `[`, and `{`, act like matching pairs. As we read the text, we follow these simple rules:
+### What should we check when adding or removing?
 
-1. Put every opening symbol into the container.
-2. When you meet a closing symbol, look at the symbol currently sitting on top of the container. Check if they are a perfect match.
-3. If they match perfectly, remove that opening symbol from the container.
-4. When you finish reading the entire text, the container must be completely empty (meaning every pair was perfectly matched and closed).
+When adding data, check that the container hasn't reached its strict maximum depth limit. When looking at or removing data, check that the container actually has something in it. An empty container means the program has finished running completely.
 
-Normal letters do not affect this matching process at all, so we completely ignore them.
+### What happens if the space is full?
 
-| Read Character | Action | Inside the Container (Bottom to Top) |
-| --- | --- | --- |
-| `(` | Add | `(` |
-| `[` | Add | `(`, `[` |
-| `]` | Check and Remove | `(` |
-| `{` | Add | `(`, `{` |
-| `}` | Check and Remove | `(` |
-| `)` | Check and Remove | Empty |
-
-### Where do wrong inputs show up?
-
-If you read a closing symbol but the container is completely empty, it means you have a closing symbol that has no opening partner. If the closing symbol is a different shape than the one on top of the container, it is a mismatched pair. If you reach the very end of the text but there are still symbols sitting inside, it means some groups were never closed.
-
-We set a strict limit on how deeply these groups can be placed inside one another (how many can be open at the exact same time). If a new opening symbol breaks this limit, we stop checking right at that spot. An empty text, or a text with only normal letters, is considered perfectly fine, even if our limit is set to zero.
-
-### Where do we store the container's values?
-
-We line the characters up in a continuous row in the computer's memory. If the row gets completely filled up, we get a new, larger row and move the characters over. To manage this, our container needs to remember four things: where the row starts, exactly how many characters are currently in it, the total size of the current row, and the absolute maximum size the row is legally allowed to grow to.
-
-```c
-typedef struct {
-    char *data;
-    size_t size;
-    size_t capacity;
-    size_t limit;
-} CharStack;
-```
-
-When there is at least one character in the row, the top character is always the very last one currently sitting in the row (`data[size - 1]`). The current size must never exceed the current total capacity, and the capacity must never exceed the strict limit. In our code, the maximum limit is 1024.
-
-When we first need space, we make a row that fits 4 characters. Every time it gets full, we double its size. However, this new doubled size can never go over the maximum limit. If the computer fails to give us a bigger row, we safely keep the old row, its old characters, and its old sizes exactly as they were.
-
-This memory row belongs to one container and one container only. You should only run the setup process on a brand-new container that hasn't been used yet, or one that has been officially cleaned up and destroyed. If you blindly copy a container that is currently in use, or try to run the setup process on it again, you will scramble the memory.
+If a recursive function forgets its stopping rule, it will keep calling itself and adding new items until the container is completely full. If it tries to add one more item when the space is full, it triggers a fatal error—an Overflow—and stops the program immediately. Similarly, trying to remove an item when the container is already empty triggers an Underflow error.
 
 ## Calculating Efficiency
 
-### How long does it take to look at or remove the top value?
+### Memory Efficiency
 
-Looking at or removing the top item only ever deals with one single spot—the very end of the row (`data[size - 1]`). Because the computer jumps straight to it, both actions take an instant amount of time, written as `O(1)`.
+The stack reserves its full capacity even when only some slots are in use. The remaining slots simply sit empty, waiting outside the current stack limits.
 
-### How long does it take to add a value?
+### Efficiency of Adding Data
 
-If there is empty space left in the row, we just drop the character into the next empty spot, taking an instant `O(1)`. If the row is full and we have to expand it, we must carefully move all `n` existing characters to the new row, which takes time proportional to the amount of items, `O(n)`. However, because we double the size every time, this moving process happens very rarely. When you average it out over many additions, the cost is basically an instant `O(1)` per item.
+If you have leftover space, adding a new function call directly to the very top is super fast because no other existing data needs to move or shift out of the way. Because a stack strictly forbids adding items into the middle or the bottom, the amount of work is always instantly finished. 
 
-### How long does it take to check the symbols?
+### Efficiency of Deleting Data
 
-Because we check each character of a text of length `m` exactly once from left to right, it takes an amount of time proportional to the text length, `O(m)`. If there are `d` symbols open at the exact same time, we need `O(d)` memory space. We know `d` will never grow larger than our strict depth limit.
+Removing a function call when it finishes is instantly finished. Unlike an array list where deleting from the front forces you to pull everything else forward, a stack only ever removes the most recently added item from the very top. There is absolutely no need to shift or reorganize the older data underneath it.
+
+### Efficiency of Reading the Top Data
+
+In a stack, you are strictly restricted to finding one specific piece of data: the item sitting on the very top. Because the computer keeps a running count of exactly how many items are currently stored, it can instantly calculate the top item's exact position in memory and jump straight to it. 
 
 ## Glossary
 
 ### Stack
 
-A data structure where you put in and take out values from only one end.
+A data structure where you put in and take out items from only one end.
 
 ### Last-In, First-Out (LIFO)
 
-The order where the last value put in is the first one taken out.
+The order where the last item put in is the first one taken out.
 
 ### Top
 
-The end of the stack where the next value is put in or taken out.
+The single active end of the stack where all reading, adding, and removing happens.
 
 ### Push
 
-Putting a new value on the top of the stack.
-
-### Peek
-
-Reading the top value without removing it.
+The action of adding a new item directly onto the top of the stack.
 
 ### Pop
 
-Reading and removing the top value completely.
+The action of completely removing the top item from the stack.
+
+### Peek
+
+The action of looking at the top item's value without removing it.
+
+### Call Frame
+
+The package of data saved on the stack that remembers a paused function's exact return address and local variables.
+
+### Capacity
+
+The fixed maximum number of items the stack's underlying memory can hold.
+
+### Stack Overflow
+
+A fatal error that happens when a program tries to push a new item onto the stack, but the fixed memory capacity is already completely full.
 
 ### Underflow
 
 The error state when you try to read or remove a value from an empty stack.
 
-### Delimiter
+## Invariant
 
-A character that shows the start or end of a group, like `(` and `)`.
+### What is the invariant (the golden rule) in this data structure?
 
-### Nesting Depth
+You must only ever interact with the very top of the stack. All adding (pushing), removing (popping), and reading (peeking) must happen exclusively at this single active end. The older data trapped underneath the top is completely off-limits and cannot be touched until the items above it are removed.
 
-The number of opening symbols that have not been closed yet.
+### What is the benefit from the invariant?
 
-### Depth Limit
+It guarantees perfect Last-In, First-Out (LIFO) order. By restricting all access to just the top, the stack flawlessly tracks nested sequences—like paused recursive functions—ensuring the computer always returns to the most recently paused task first. It also guarantees that every single action is incredibly fast, because no time is ever wasted searching through the data or shifting items around.
 
-The maximum number of delimiters that can be open at the same time.
+### How is the invariant maintained during insertion?
+
+When you push a new item, you simply place it in the very first empty spot directly above the current data. This new item instantly becomes the new top. You are strictly forbidden from sneaking the new item into the middle or bottom of the existing pile.
+
+### How the invariant is kept during deletion?
+
+When you remove data, you are only allowed to pop the single item currently sitting at the very top. You never pull an item out from the middle. By taking only the top item, the piece of data immediately below it is safely exposed and naturally becomes the new top.
+
+### What happens if the invariant is broken?
+
+Imagine you could reach into the middle of the stack to change or remove an older paused function without popping the newer ones on top of it first.
+
+If you allow this to happen, the purpose of the stack breaks down in two major ways:
+
+- The Order is Destroyed: The stack's entire job is to remember the exact reverse order of events. If you pull an older function out from the middle, you break the chain of return addresses. When the newer functions on top finally finish running, the computer will look down for its next step, find a missing link, and crash.
+
+- Loss of Instant Speed: If we allowed adding or removing items from the middle, we would suddenly have to push and pull the remaining data to close the empty gaps, just like an Array List. This extra work destroys the elegant, instant speed of the stack.
+
+By strictly enforcing the top-only rule—even when it feels restricting—we guarantee that our data's timeline is always perfectly ordered, safe, and instantly accessible.
 
 ## Coding Plan
 
 ### Making an Empty Stack
 
-* **Check:** Make sure the stack's memory address exists and the limit is 1024 or less.
-* **Setup:** Set the data row to empty (`NULL`), set the current size and total capacity to 0, and record the requested limit.
-* **Fail:** If the request breaks the rules, do not change the structure at all.
+- Set Capacity: Note the fixed maximum number of function calls the stack's memory can hold.
+- Initialize Count: Set the total count of stored items (the current size) to 0, meaning the container is completely empty.
 
-### Pushing a Value
+### Pushing a Value (Function Call)
 
-* **Check:** Make sure the fields are correct and the current size is strictly smaller than the limit.
-* **Expand:** If there is no empty space left, grab space for 4 characters. If it gets full again, double it, but never go past the limit.
-* **Write:** Put the new character into the next empty spot (`data[size]`) and increase the size by 1.
-* **Fail:** If it hits the limit or the computer runs out of memory, leave the stack exactly as it was.
+- Check Space: Make sure the current size is strictly less than the total capacity.
+- Save Data: Put the new function ID into the underlying array exactly at the spot matching the current size.
+- Increase Count: Increase the total size count by 1 so the new item officially becomes the new top.
+- Fail: If the stack is already full, reject the addition and stop the program to prevent a Stack Overflow.
 
-### Reading and Popping the Top Value
+### Reading the Top Value (Peek)
 
-* **Check:** Make sure the stack and the output addresses are correct, and the size is not 0 (not empty).
-* **Read:** Copy the character at `data[size - 1]` into the output variable.
-* **Remove:** If taking the item completely (popping), decrease the size count by 1. Do not shrink the total capacity of the row.
-* **Fail:** If the stack is empty, do not change the output variable or the stack.
+- Check Empty: Make sure the size is greater than 0 so there is actually a paused function to look at.
+- Read Data: Look at the function ID stored at exactly one spot below the current size (size - 1). Do not change the size count.
+- Fail: If the stack is empty, reject the read because there is nothing to check.
 
-### Checking Delimiters
+### Removing the Top Value (Pop / Return)
 
-* **Open:** Check the depth limit before putting a new opening symbol into the stack.
-* **Close:** Check if the stack is completely empty. If not, check if the symbol matches the one on top.
-* **Finish:** It is a perfect success if the stack is completely empty at the end. If symbols are still left inside, record the total length of the string as the location of the error.
-* **Clean up:** Give the temporary stack's memory back to the computer, regardless of whether the check succeeded or failed halfway through.
-
-### Destroying the Stack
-
-* **Free:** Give the array memory owned by the stack back to the computer.
-* **Reset:** Turn all the numbers back to 0 and set the data address back to empty (`NULL`).
+- Check Empty: Make sure the size is greater than 0.
+- Decrease Count: Decrease the total size count by 1. You do not need to physically erase the old data in the array; decreasing the count safely hides it and automatically makes the item below it the new top.
+- Fail: If the stack is already empty, reject the removal to prevent an Underflow error.
 
 ## C Code
 
-### How do we use the stack?
+### Making an Empty Stack
 
 ```c
-CharStack stack;
-char value;
+/* Set Capacity */
+int stack[10];
+int capacity = 10;
 
-if (char_stack_init(&stack, 6U) != STACK_OK) {
-    return 1;
-}
-
-if (char_stack_push(&stack, '(') != STACK_OK ||
-    char_stack_push(&stack, '[') != STACK_OK) {
-    char_stack_destroy(&stack);
-    return 1;
-}
-
-if (char_stack_peek(&stack, &value) == STACK_OK) {
-    printf("top: %c\n", value);   /* [ */
-}
-
-if (char_stack_pop(&stack, &value) != STACK_OK) {
-    char_stack_destroy(&stack);
-    return 1;
-}
-char_stack_destroy(&stack);
+/* Initialize Count */
+int size = 0;
 ```
 
-### How do we check matches?
+### Pushing a Value (Function Call)
 
 ```c
-static bool delimiters_match(char open, char close)
-{
-    return (open == '(' && close == ')') ||
-           (open == '[' && close == ']') ||
-           (open == '{' && close == '}');
+/* The ID of the new function being called */
+int new_function = 100;
+
+/* Check Space */
+if (size < capacity) {
+        
+        /* Save Data */
+        stack[size] = new_function;
+
+        /* Increase Count */
+        size = size + 1;
 }
 ```
 
-When you meet a closing symbol, always check the top value first, and only remove it if they match perfectly. If you remove it *before* checking, you might permanently lose an opening symbol you actually needed, even if you just found a wrong match.
-
-### How do we get the location of the check result?
+### Reading the Top Value (Peek)
 
 ```c
-size_t error_index = 0U;
-DelimiterStatus status = delimiter_validate(
-    "A(B[C]{D})",
-    2U,
-    &error_index
-);
-
-if (status == DELIMITER_OK) {
-    printf("valid\n");            /* error_index == SIZE_MAX */
-} else {
-    printf("error at %zu\n", error_index);
+/* Check Empty */
+if (size > 0) {
+        
+        /* Read Data */
+        int top_function = stack[size - 1];
 }
 ```
 
-If there is a closing symbol with no opening partner or a mismatched pair, the code leaves behind the exact position of that bad closing symbol. If there are unclosed opening symbols left over at the end, it leaves behind the total length of the string. If a symbol tries to go over the maximum depth limit, it leaves behind the exact position of that opening symbol.
+### Removing the Top Value (Pop / Return)
+
+```c
+/* Check Empty */
+if (size > 0) {
+        
+        /* Decrease Count */
+        size = size - 1;
+}
+```
+
+## Coding Exercise: Evaluating an Expression
+
+### Handling Operator Precedence
+
+If you calculate `1 + 2 * 3` strictly left to right, you get `9`. However, multiplication has a higher priority than addition. The computer must put the `1 +` on hold, safely remembering it until `2 * 3` is calculated.
+
+To process equations properly, the computer uses two stacks: one for numbers and one for operators. It assigns a priority level to each symbol (e.g., `*` is high, `+` is low) and follows one golden rule: Before pushing a new operator, calculate any waiting operators that have equal or higher priority.
+
+### The C Code
+
+To make this easy to read, we use a loop to process a simple string of characters (`"1+2*3"`). We also use a small helper function to check the priority of the math symbols.
+
+```c
+/* Helper function to check priority level */
+int get_priority(char operator) {
+        if (operator == '*') return 2;
+        if (operator == '+') return 1;
+        return 0;
+}
+```
+
+Here is the main logic using the two stacks side-by-side:
+
+```c
+/* Create the two stacks */
+int num_stack[10];
+int num_size = 0;
+
+char op_stack[10];
+int op_size = 0;
+
+/* The equation to solve (no spaces for simplicity) */
+char equation[] = "1+2*3";
+
+/* Read the equation left to right */
+for (int i = 0; equation[i] != '\0'; i = i + 1) {
+        char current = equation[i];
+
+        /* If it is a number (between '0' and '9') */
+        if (current >= '0' && current <= '9') {
+                /* Convert character to integer and push to Number Stack */
+                num_stack[num_size] = current - '0';
+                num_size = num_size + 1;
+        } 
+        /* If it is an operator (*, +) */
+        else {
+                /* While the top operator is STRONGER or EQUAL to the current one */
+                while (op_size > 0 && get_priority(op_stack[op_size - 1]) >= get_priority(current)) {
+                        
+                        /* Pop the operator */
+                        op_size = op_size - 1;
+                        char op = op_stack[op_size];
+
+                        /* Pop the right and left numbers */
+                        num_size = num_size - 1;
+                        int right = num_stack[num_size];
+
+                        num_size = num_size - 1;
+                        int left = num_stack[num_size];
+
+                        /* Calculate and push result back */
+                        if (op == '*') num_stack[num_size] = left * right;
+                        if (op == '+') num_stack[num_size] = left + right;
+                        num_size = num_size + 1;
+                }                
+                /* Now it is safe to push the current operator */
+                op_stack[op_size] = current;
+                op_size = op_size + 1;
+        }
+}
+
+/* End of Equation: Apply any remaining operators left in the stack */
+while (op_size > 0) {
+        op_size = op_size - 1;
+        char op = op_stack[op_size];
+
+        num_size = num_size - 1;
+        int right = num_stack[num_size];
+
+        num_size = num_size - 1;
+        int left = num_stack[num_size];
+
+        if (op == '*') num_stack[num_size] = left * right;
+        if (op == '+') num_stack[num_size] = left + right;
+        num_size = num_size + 1;
+}
+
+/* The final answer is sitting at the bottom of the number stack */
+int final_answer = num_stack[0]; /* 7 */
+```

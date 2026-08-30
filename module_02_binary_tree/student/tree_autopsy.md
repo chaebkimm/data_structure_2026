@@ -1,94 +1,121 @@
-# Tree Structure Autopsy — One Child, Two Parents
+# Tree Structure Autopsy — One Operand Object in Two Branches
 
-## What an autopsy means here
+## Case
 
-An **autopsy** is a careful investigation after something goes wrong. The
-goal is to find the first broken rule, not merely the final incorrect output.
+An autopsy identifies the first broken rule behind an unexpected result.
 
-The supplied program builds links that are individually inside the arena and
-stored in empty child slots. It then reports more node visits than the arena
-actually contains.
+The standalone program `code/autopsy/faulty_cascade.c` uses six initialized
+local node variables. They remain alive throughout the demonstration.
+
+| Variable | Initial data | Left address | Right address |
+|---|---:|---|---|
+| `root` | `'*'` | `&plus` | `&minus` |
+| `plus` | `'+'` | `&three` | `&shared_five` |
+| `minus` | `'-'` | `&shared_five` | `&two` |
+| `three` | `3` | `NULL` | `NULL` |
+| `shared_five` | `5` | `NULL` | `NULL` |
+| `two` | `2` | `NULL` | `NULL` |
+
+The malformed expression resembles `(3 + 5) * (5 - 2)`, but both written
+occurrences of `5` lead to the same `shared_five` object. They are not two
+separate objects that happen to store equal data. The fixture intentionally
+violates the unshared-tree precondition. It contains no cycle or
+ended-lifetime address, so this specific demonstration can be observed
+safely.
+
+The program supplies a correct recursive `tree_clear`. It then runs:
+
+```c
+tree_clear(root.left);
+root.left = NULL;
+```
 
 ## Before running
 
-Predict:
+Predict all four results and preserve your first answers.
 
-1. Which node might be reached by two different parent links?
-2. Which completed-tree rule would that break?
-3. Why might a simple counting function count that node twice?
-
-Preserve your prediction.
+1. `root.left`: ___________________________________________________
+2. `root.right`: __________________________________________________
+3. `minus.left`: __________________________________________________
+4. `minus.left->data`: ____________________________________________
 
 ## Incident report
 
-### 1. Relationship table
+### 1. First invalid state
 
-Record every parent-to-child link created by the program.
-
-| Parent index | Side | Child index |
-|---:|---|---:|
-| | | |
-| | | |
-| | | |
-| | | |
-
-### 2. First invalid completed state
-
-Identify the assignment after which the links can no longer describe a pure
-tree.
+Inspect the source. Which initializer first gives one object two incoming
+child links?
 
 ____________________________________________________________________
 
-### 3. Broken rule
+### 2. Broken precondition
 
-State the exact completed-tree rule that is broken.
-
-____________________________________________________________________
-
-### 4. Local versus global checking
-
-Why can each individual assignment pass an empty-slot and in-range check?
+State the rule violated by the two routes to `shared_five`. Explain why an
+empty-side check would not detect this relationship defect.
 
 ____________________________________________________________________
 
-Why does detecting the defect require information from more than one parent?
+### 3. Observable consequence
+
+Run the program. Record the pointer and data results, then compare them with
+your prediction.
 
 ____________________________________________________________________
 
-### 5. Observable consequence
+Which nodes does clearing the `plus` branch reach? How can that change a
+value later reached through the `minus` branch?
 
-A **visit** means that a function reaches a node while following links.
-Explain why four stored nodes can produce five visits.
+____________________________________________________________________
+
+### 4. Object lifetime
+
+Did the `shared_five` variable stop existing, or did its fields change?
+Explain using the variable's declaring scope and the actions performed by
+`tree_clear`.
+
+____________________________________________________________________
+
+Why can the program finish normally even though its tree precondition was
+broken?
+
+____________________________________________________________________
+
+### 5. Operation versus caller responsibility
+
+Is the defect in the clearing algorithm or in how the caller linked the
+objects? Explain why these two functions do not automatically validate the
+whole structure.
 
 ____________________________________________________________________
 
 ### 6. Repair
 
-Choose one repair:
-
-- remove one parent link and keep a pure tree; or
-- intentionally model shared relationships as a graph in a later module.
-
-Explain your choice:
+Describe a repair that restores one incoming link per non-root node. If both
+branches need an operand with data `5`, explain how two distinct local node
+objects differ from two links to one object.
 
 ____________________________________________________________________
 
-### 7. Regression tests
+Relationships that intentionally share objects need a different model. A
+later module introduces that model; do not add a whole-structure validator
+here.
 
-A **regression test** is a test kept to prevent a repaired defect from
-returning.
+### 7. Regression-test idea
 
-Write two tests:
+A regression test checks that a repaired defect does not return. Describe a
+valid version of `(3 + 5) * (5 - 2)` with two distinct nodes storing `5` that
+proves clearing and detaching the `plus` branch leaves the `minus` branch's
+data and side unchanged.
 
-1. _________________________________________________________________
-2. _________________________________________________________________
+____________________________________________________________________
+
+This may be the rationale for one of your three student tests. No fourth
+coded test is required by the autopsy.
 
 ## After observation
 
-Label each correction with one of:
+Label corrections `address`, `invariant`, `clearing`, or `lifetime`.
 
-`address` · `parent` · `reachability` · `invariant` · `tree-to-graph`
-
-The evidence that changed my model was:
+The evidence that changed or confirmed my model was:
 
 ____________________________________________________________________

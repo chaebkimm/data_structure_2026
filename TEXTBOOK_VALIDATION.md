@@ -2,6 +2,112 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Module 1 Revision Note — August 27, 2026
+
+Chapter 1 and Module 1 now use a fixed integer array with separate size and
+capacity. Access/update, linear search, append, insertion, and removal are
+core. A full or invalid mutation leaves the array and count unchanged.
+Allocation, release, dynamic growth, and their failure-injection tests are
+not part of this module. Earlier dynamic-ArrayList observations in
+`textbook_pilot/` remain historical records, not validation of this revision.
+
+The reference implementation passes 8 core and 5 extension tests with
+warning-as-error checks, AddressSanitizer, and UndefinedBehaviorSanitizer.
+The four Chapter 1 C blocks compile and run together with assertions for
+the textbook trace. The guarded bounds autopsy also runs without sanitizer
+errors while demonstrating the intended broken logical bound. The starter
+compiles cleanly and intentionally fails 7 of the 8 core tests.
+
+PowerShell build and packaging files were inspected, not executed, because
+PowerShell is unavailable on this host. No student ZIPs were published.
+A fresh beginner reading pilot is still required; these technical checks do
+not establish an actual human-validation pass.
+
+Chapter 2's separate locally declared-node alignment is recorded below.
+
+## Module 2 Revision Note — August 29, 2026
+
+Chapter 2 and Module 2 now carry the expression `(3 + 5) * 2` through the
+canonical diagram, local-node construction, recursive search trace, branch
+clearance, tests, and evidence. Its five live local nodes store `'*'`, `'+'`,
+`3`, `5`, and `2`; the character constants are portable integer labels, not
+an expression-evaluation interface. The fresh Stage C transfer fixture is
+`(8 - 3) * (4 + 2)`.
+
+The underlying contract remains a generic binary tree: `struct TreeNode`
+contains `data`, `left`, and `right`, and only `tree_find` and `tree_clear`
+are public library functions. Initialization, guarded attachment, and
+explicit detachment are direct field operations. A generic node may have
+zero, one, or two children; a completed binary expression additionally
+requires two operands per operator and none below a numeric operand. The
+library does not evaluate or validate that semantic expression rule.
+
+The reference implementation passes 8 core and 5 extension tests with
+warning-as-error checks, AddressSanitizer, and UndefinedBehaviorSanitizer.
+The six Chapter 2 C blocks compile in a composed strict-C11 check covering
+the canonical construction, search, selected-branch clearance, opposite-side
+preservation, and still-live cleared objects. The standalone shared-operand
+autopsy also runs without sanitizer errors: clearing one branch changes the
+fields observed through another invalid shared link, but no object's lifetime
+ends. The starter compiles cleanly and intentionally fails 7 of 8 core tests.
+
+Student activities, instructor guides, diagrams, release source paths,
+question banks, and course references use the same expression fixture and
+generic-tree boundary. The five-stage release keeps vocabulary in Stage B
+and worked autopsy results out of student prediction materials. PowerShell
+build and packaging files were inspected, not executed, because PowerShell
+is unavailable on this host. No student ZIPs were published.
+
+Earlier Chapter 2 records in `textbook_pilot/` and the superseded note
+below are historical, not validation of this revision. A fresh beginner
+reading pilot is still required; technical checks do not establish an
+actual human-validation pass.
+
+## Superseded Module 2 Revision Note — August 26, 2026
+
+Chapter 2 was redesigned after the original validation date. That version
+taught a dynamically allocated, five-child general tree with parent links,
+recursive preorder search, checked shared-root comparison, and cascading
+deletion. It was replaced by the August 27 local binary-tree revision above.
+The former Chapter 2 binary-tree, fixed-arena, and BST observations in
+`textbook_pilot/` remain historical records.
+
+At that time, the extracted C blocks compiled with warning-as-error checks
+and ran successfully. Its reference suite passed 9 core and 7 extension
+tests, including AddressSanitizer and UndefinedBehaviorSanitizer runs.
+Those results do not validate the current code or chapter.
+
+## Module 3 Revision Note — August 28, 2026
+
+Chapter 3 and Module 3 now use a fixed directed, unweighted integer
+adjacency matrix. The representation is an explicit `struct DirectedGraph`
+with `vertex_count` and a 16 by 16 `grid`. Only `graph_init`,
+`graph_add_edge`, `graph_remove_edge`, and `graph_out_degree` are public
+library functions. Guarded matrix lookup remains direct caller code.
+Undirected mutation, Boolean storage, graph-kind and status enums,
+whole-graph validation, neighbor containers, graph search, and dynamic
+adjacency lists are not part of this implementation.
+
+The reference implementation passes 8 core and 5 extension tests with
+warning-as-error checks, AddressSanitizer, and UndefinedBehaviorSanitizer.
+The five Chapter 3 C blocks compile and run together with assertions for
+full-grid initialization, the Web/App/Database matrix, directed removal,
+and the final out-degree. The standalone ghost-connection autopsy also runs
+without sanitizer errors while demonstrating the logical inactive-cell
+defect. The starter compiles cleanly and intentionally fails 7 of the 8
+core tests.
+
+Student activities, instructor guides, diagrams, release paths, the Week 3
+question bank, and later DFS prerequisites now use the same boundary. The
+five-stage release keeps vocabulary in Stage B and the exact autopsy outcome
+out of Stage D. PowerShell build and packaging files were inspected, not
+executed, because PowerShell is unavailable on this host. No student ZIPs
+were published.
+
+Earlier Chapter 3 observations in `textbook_pilot/` are historical records,
+not validation of this revision. A fresh beginner reading pilot is still
+required; technical checks do not establish an actual human-validation pass.
+
 ## Beginner Reading Validation
 
 We read through the text by dividing into three reader roles.

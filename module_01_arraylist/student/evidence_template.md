@@ -1,112 +1,127 @@
 # Module 1 Evidence Record
 
 Name: ____________________________
-Toolchain: _______________________
-Core or extension submission: _______________________
+Compiler or approved test environment: _____________________________
 
 ## 1. Textbook-to-code mapping
 
-Explain how the textbook's starting address, number of stored items, and
-number of available slots map to the three `IntList` fields.
+Explain the roles of `int array[10]`, `size`, and `capacity`.
+
+____________________________________________________________________
+
+Why can a slot exist in the array without being a current list item?
 
 ____________________________________________________________________
 
 ## 2. Representation invariant
 
-State the complete invariant:
+State the permitted size range and where current items must be stored:
 
 ____________________________________________________________________
 
-How does the implementation preserve it:
+Explain how the rules are preserved:
 
-- before an operation? _____________________________________________
-- after success? __________________________________________________
-- after failure? __________________________________________________
+- after a successful insertion: ____________________________________
+- after a successful deletion: _____________________________________
+- after a rejected full-list addition: _____________________________
 
-## 3. Operation costs
+## 3. One operation sequence
 
-| Operation | Cost | Evidence/reason |
+Start with `[100, 200, 300]` in ten slots. Show the list and count after
+updating index 1 to 500, removing index 1, and inserting 600 at index 1.
+
+____________________________________________________________________
+
+For one call, show how the caller stores the returned count:
+
+____________________________________________________________________
+
+## 4. Operation costs
+
+| Operation | Items read, written, or moved | Reason |
 |---|---:|---|
-| `get` | | |
-| append with spare capacity | | |
-| one growth append | | |
-| append, amortized | | |
-| insert/remove near front | | |
+| Read or update a valid index | | |
+| Search for a missing value | | |
+| Append with room | | |
+| Insert at the front | | |
+| Delete at the front | | |
+| Reject an addition when full | | |
 
-## 4. Test evidence
+## 5. Test evidence
 
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
-| Empty get | | | |
+| Read check on an empty list | | | |
+| Read or update at index `size` | | | |
 | First append | | | |
-| Repeated growth | | | |
-| Invalid index | | | |
-| Overflow request | | | |
-| Forced allocation failure (instructor/CI) | | | |
-| Destroy/reset | | | |
-| Other | | | |
+| Full append preserves array and size | | | |
+| Full insertion preserves array and size | | | |
+| Negative or otherwise invalid index | | | |
+| Insertion preserves suffix order | | | |
+| Deletion compacts current items | | | |
+| Search returns the first duplicate | | | |
+| Search ignores an unused matching value | | | |
+| Invalid size/capacity preserves state | | | |
 
-### Student-authored tests
+### Three student-authored tests
 
-For each test, state the claim it checks and why the supplied tests alone did
-not make your evidence complete.
+For each test, state the claim it checks and why it adds evidence beyond the
+supplied tests.
 
 1. Test and rationale:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
 2. Test and rationale:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
 3. Test and rationale:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-## 5. Engineering and resource-policy evidence
+## 6. Tool evidence
 
-Compiler warnings:
-
-```text
-paste output here
-```
-
-Sanitizer, debugger, or instructor-CI result:
+Warning-enabled build command and result:
 
 ```text
 paste output here
 ```
 
-Dynamic growth protects the representation, but it does not authorize
-unlimited retention. State one concrete maximum, eviction, sampling, or
-backpressure policy for authentication-event ingestion:
+Student-test command and result:
+
+```text
+paste output here
+```
+
+Sanitizer, debugger, or approved instructor-test evidence:
+
+```text
+paste output here
+```
+
+## 7. Bounds and Invariant Autopsy
+
+- starting size and usable capacity:
+- first incorrect condition:
+- guard value before and after the write:
+- size after the faulty call:
+- why the extra guard slot is not a fix:
+- repair:
+- regression test:
+
+## 8. Explain the boundary
+
+How would a caller tell that an addition was rejected, and how should the
+caller report it without pretending the new item was stored?
 
 ____________________________________________________________________
 
-What happens when that policy limit is reached, and how is the event or error
-reported rather than silently lost?
+Why may zero or `-1` be valid list data rather than an “empty” marker?
 
 ____________________________________________________________________
 
-## 6. Segfault Autopsy summary
-
-- Trigger:
-- First invalid assumption:
-- Memory state:
-- Repair:
-- Regression test:
-
-## 7. Textbook connection
-
-Which lab operation implements the textbook's expansion sequence?
-
-____________________________________________________________________
-
-How does the implementation preserve the textbook's no-gap rule?
-
-____________________________________________________________________
-
-## 8. Correction note
+## 9. Correction note
 
 My initial misconception:
 

@@ -1,47 +1,44 @@
-#include "tree_arena.h"
+#include "binary_tree.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 
-typedef bool (*TestFunction)(void);
-
-static unsigned int tests_run = 0U;
-static unsigned int tests_failed = 0U;
+static int tests_run = 0;
+static int tests_failed = 0;
 
 /*
- * Replace each placeholder with a test you designed. Your three cases must
- * test risks not already demonstrated by test_core.c. Give each test a clear
- * name and keep every TreeNode array alive for as long as its TreeArena is
- * used.
+ * Replace each placeholder with a test you designed. Keep every linked node
+ * variable alive throughout the test. Normal recursive tests must use finite,
+ * acyclic trees without shared children. Do not test an actual cycle by
+ * passing it to tree_find or tree_clear.
  */
-static bool test_student_case_1(void)
+static int test_student_case_1(void)
 {
-    /* TODO: test one justified boundary or invalid input. */
-    return false;
+    /* TODO: test a justified search boundary or duplicate-value preorder. */
+    return 0;
 }
 
-static bool test_student_case_2(void)
+static int test_student_case_2(void)
 {
-    /* TODO: test a sequence of local assignments plus global validation. */
-    return false;
+    /* TODO: test expression-node linking, an occupied side, or detachment. */
+    return 0;
 }
 
-static bool test_student_case_3(void)
+static int test_student_case_3(void)
 {
-    /* TODO: test another distinct promise from tree_arena.h. */
-    return false;
+    /* TODO: test cascading clearance and reuse of still-live node objects. */
+    return 0;
 }
 
-static void run_test(const char *name, TestFunction test)
+static void run_test(const char *name, int (*test)(void))
 {
-    bool passed;
+    int passed;
 
-    tests_run += 1U;
+    tests_run = tests_run + 1;
     passed = test();
     if (passed) {
         (void)printf("PASS %s\n", name);
     } else {
-        tests_failed += 1U;
+        tests_failed = tests_failed + 1;
         (void)printf("FAIL %s\n", name);
     }
 }
@@ -53,9 +50,9 @@ int main(void)
     run_test("student-designed case 3", test_student_case_3);
 
     (void)printf(
-        "\n%u student test(s), %u failure(s)\n",
+        "\n%d student test(s), %d failure(s)\n",
         tests_run,
         tests_failed
     );
-    return tests_failed == 0U ? 0 : 1;
+    return tests_failed == 0 ? 0 : 1;
 }

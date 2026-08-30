@@ -352,7 +352,7 @@ another mapped failure.
 1. Success: `GRAPH_DFS_OK`
 2. Required pointer is `NULL`: `GRAPH_DFS_INVALID_ARGUMENT`
 3. Source is not active: `GRAPH_DFS_OUT_OF_RANGE`
-4. Module 3 graph rules are broken: `GRAPH_DFS_INVALID_GRAPH`
+4. The supplied Module 6 graph rules are broken: `GRAPH_DFS_INVALID_GRAPH`
 5. Component count receives directed input:
    `GRAPH_DFS_REQUIRES_UNDIRECTED`
 6. Stack bound cannot be met: `GRAPH_DFS_LIMIT`
@@ -648,7 +648,7 @@ Students complete three algorithm areas in `starter/graph_dfs.c`:
 3. TODO 3, `graph_count_connected_components`, with one visited array across
    the outer sweep.
 
-The Module 3 graph operations and typed vertex Stack are supplied. Students
+The Module 6 graph operations and typed vertex Stack are supplied. Students
 must use the public Stack operations rather than inspect or change its
 fields inside DFS.
 

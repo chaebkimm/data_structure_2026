@@ -7,7 +7,7 @@ Before starting the course, first read about what data structures and efficiency
 | Week | Chapter | Student Textbook | Teaching Guide |
 | --- | --- | --- | --- |
 | 1 | 1 | [Keeping Data Together in One Place](https://www.google.com/search?q=module_01_arraylist/student/textbook.md) | [Chapter 1 Guide](https://www.google.com/search?q=instructor_guide/chapter_01.md) |
-| 2 | 2 | [Connecting Data Up and Down](https://www.google.com/search?q=module_02_binary_tree/student/textbook.md) | [Chapter 2 Guide](https://www.google.com/search?q=instructor_guide/chapter_02.md) |
+| 2 | 2 | [Organizing Data in a Hierarchy](https://www.google.com/search?q=module_02_binary_tree/student/textbook.md) | [Chapter 2 Guide](https://www.google.com/search?q=instructor_guide/chapter_02.md) |
 | 3 | 3 | [Storing Relationships in Multiple Directions](https://www.google.com/search?q=module_03_graph/student/textbook.md) | [Chapter 3 Guide](https://www.google.com/search?q=instructor_guide/chapter_03.md) |
 | 4 | 4 | [Taking Out the Last Value First](https://www.google.com/search?q=module_04_stack/student/textbook.md) | [Chapter 4 Guide](https://www.google.com/search?q=instructor_guide/chapter_04.md) |
 | 5 | 5 | [Following One Path to the End](https://www.google.com/search?q=module_05_tree_dfs/student/textbook.md) | [Chapter 5 Guide](https://www.google.com/search?q=instructor_guide/chapter_05.md) |

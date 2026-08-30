@@ -1,11 +1,15 @@
 # Module 2 — Stage C: Structural Investigation
 
-Open one investigation version after the timed Cognitive Pause and the
-instructor's relationship explanation.
+Open this stage after the Cognitive Pause and instructor calibration.
 
 - `investigation_worksheet.md` is the standard format.
-- `investigation_worksheet_linear.md` has the same targets without dense
-  tables.
+- `investigation_worksheet_linear.md` has the same questions in a linear
+  accessible format.
 
-The investigation supplies questions, not expert answers. It distinguishes
-local pointer checks from rules that require the whole structure.
+Translate the fresh expression tree `(8 - 3) * (4 + 2)`, track the lifetime
+of its local node variables, and distinguish direct side checks from the
+caller's whole-tree rules. Trace recursive search, cascading clearance, and
+caller-side removal. Left and right retain their operand identities
+throughout.
+
+Save your core attempt before opening Stage D.

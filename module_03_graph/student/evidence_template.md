@@ -1,87 +1,53 @@
 # Module 3 Evidence Record
 
-Complete this record after the Stage D notes and Stage E lab. It asks you
-to use the technical words already introduced there. You may replace any
-table with a numbered list that uses the same headings.
+Complete this record after the Stage E lab. A numbered list may replace any
+table if it uses the same headings.
 
 Name: ____________________________  
-Compiler used—the program that translates C into a program the computer can
-run: ____________________________
+Compiler or approved CI: ____________________________
 
-## 1. Vocabulary in your own words
+## 1. One graph in three forms
 
-A graph:
-
-____________________________________________________________________
-
-A vertex:
+Show the Web/App/Database graph as a diagram or line-by-line arrow description,
+the directed edge set, and three active matrix rows. Explain why they agree.
 
 ____________________________________________________________________
 
-An edge:
+## 2. Stored representation
+
+Complete the meaning of each field or name:
+
+- `vertex_count`:
+- `grid[from][to]`:
+- `GRAPH_MAX_VERTICES`:
+
+Why are `grid[from][to]` and `grid[to][from]` separate facts?
 
 ____________________________________________________________________
 
-Directed versus undirected:
+## 3. Invariant evidence
+
+State the rules for the vertex count and active indexes, values in grid cells,
+inactive rows and columns, and diagonal cells. For one rejected request, state
+what remained unchanged.
 
 ____________________________________________________________________
 
-Weighted versus unweighted:
+## 4. Core operation trace
 
-____________________________________________________________________
-
-## 2. Three representations
-
-Show the same small graph as:
-
-1. a diagram or verbal description;
-2. an edge set;
-3. an adjacency matrix.
-
-____________________________________________________________________
-
-## 3. Matrix meaning
-
-Explain `adjacency[2][4]`:
-
-____________________________________________________________________
-
-Why must an undirected matrix be symmetric?
-
-____________________________________________________________________
-
-## 4. Completed-graph invariant
-
-State every rule required by the course's bounded simple graph:
-
-____________________________________________________________________
-
-Which checks concern only one selected edge?
-
-____________________________________________________________________
-
-Which checks require the full active matrix?
-
-____________________________________________________________________
-
-## 5. Test evidence
-
-| Case | Expected result | Actual result | Pass? |
+| Step | Expected evidence | Actual evidence | Pass? |
 |---|---|---|---|
-| Empty graph | | | |
-| Directed add/query/remove | | | |
-| Undirected mirrored edge | | | |
-| Duplicate edge | | | |
-| Self-loop | | | |
-| Out-of-range vertex | | | |
-| In-degree and out-degree | | | |
-| Ordered neighbor report | | | |
-| Asymmetric undirected matrix | | | |
-| Maximum vertex count | | | |
+| Initialize three vertices | Full grid is zero | | |
+| Add `0 → 1`, `1 → 2`, `1 → 0` | Canonical active matrix | | |
+| Guarded lookup of one directed edge | Correct `0` or `1` | | |
+| Count App out-degree | Correct row count | | |
+| Remove `1 → 2` | Only selected cell changes | | |
+| Count App out-degree again | Correct new count | | |
+| Reject a self-loop or inactive index | State/output preserved | | |
 
-### Student-authored tests
+## 5. Exactly three student-authored tests
 
-For each test, state the new claim it checks.
+For each test, record a distinct claim and why it adds evidence.
 
 1. Test and rationale:
 
@@ -95,46 +61,40 @@ For each test, state the new claim it checks.
 
    ____________________________________________________________________
 
-## 6. Representation costs
+## 6. Cost and representation choice
 
-| Representation | One-edge query | Storage | Useful when |
-|---|---|---|---|
-| Adjacency matrix | | | |
-| Edge list | | | |
-| Adjacency list | | | |
+- one direct edge lookup:
+- one add or remove:
+- one out-degree count:
+- physical storage:
 
-Why can a matrix waste space when few edges exist?
+Give one situation in which an edge list or adjacency list could avoid unused
+matrix cells:
 
 ____________________________________________________________________
 
-## 7. Matrix Symmetry Autopsy
+## 7. Ghost-connection autopsy
 
-- first one-sided update:
+- first invalid cell:
 - invariant broken:
-- contradictory observation:
+- delayed symptom:
 - repair:
-- regression test:
+- regression claim:
 
-## 8. Model boundary
+## 8. Model boundary and transfer
 
-Why does an edge representing a communication permission not prove that a
-service was contacted or exploited?
+Why does a stored permission edge not prove that communication occurred or
+that a service was exploited?
 
 ____________________________________________________________________
 
-## 9. Spiral 1 structure choice
+Choose a fixed ArrayList, a binary tree, or a directed graph for each and give
+one reason: an ordered event sequence; a left/right hierarchy; communication
+permissions that can contain shared destinations or cycles.
 
-**Spiral 1** is the course's first Linear → Tree → Graph sequence.
-For each scenario, choose ArrayList, tree, or graph. State one representation
-rule, one operation cost, and one safety or correctness risk.
+____________________________________________________________________
 
-| Scenario | Choice and reason | Central rule | One cost | One risk |
-|---|---|---|---|---|
-| Ordered event log | | | | |
-| One-parent directory hierarchy | | | | |
-| Services with shared and returning links | | | | |
-
-## 10. Correction note
+## 9. Correction note
 
 My initial model:
 

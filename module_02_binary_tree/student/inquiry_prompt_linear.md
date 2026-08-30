@@ -1,17 +1,15 @@
 # Stage A — Initial Inquiry: Linear Accessible Format
 
-## How to use this version
+This version has the same questions as the standard inquiry. It avoids
+response tables and drawing requirements. Use a screen reader, keyboard,
+speech input, or a plain-text response.
 
-This version has the same learning targets as the standard inquiry. It avoids
-tables, drawing requirements, and long blank lines. It is suitable for a
-**screen reader**—software that reads on-screen text aloud—keyboard
-navigation, speech input, or a response containing only text.
+Preserve each first answer. Add a labeled correction later. Use only this
+file during the initial inquiry.
 
-Preserve your first answers. Later, add a labeled correction instead of
-replacing an initial answer. Use only this file during the initial inquiry.
-
-A **hierarchy** is an arrangement in levels: one item can lead to items below
-it. An **immediate relationship** connects two items with no item between them.
+A hierarchy arranges items in levels. An immediate relationship connects two
+items with no item between them. The starting example represents
+`(3 + 5) * 2`. Each item has a left position and a right position below it.
 
 ## Student information
 
@@ -21,20 +19,18 @@ Date:
 
 ## A. Reconstruct the hierarchy
 
-The arrangement contains these facts:
+The symbols and numbers are stored data. The side records an operand
+position; the data does not sort the items.
 
-1. Security Lab has no item above it.
-2. Logs is immediately below Security Lab.
-3. Reports is immediately below Security Lab.
-4. Login Events is immediately below Logs.
-5. Firewall Events is immediately below Logs.
-6. Daily Summary is immediately below Reports.
-7. Incident Summary is immediately below Reports.
+- `'*'` is the starting item.
+- `'+'` is the left item below `'*'`.
+- `2` is the right item below `'*'`.
+- `3` is the left item below `'+'`.
+- `5` is the right item below `'+'`.
 
-### A1. Describe the arrangement
+### A1. Connections
 
-Describe the hierarchy line by line. You may use phrases such as “Security
-Lab leads to Logs and Reports.”
+Describe every connection, including its side.
 
 Response:
 
@@ -50,84 +46,96 @@ Which items have nothing below them?
 
 Response:
 
-### A4. One route
+### A4. Route
 
-State one route from Security Lab to an item at the bottom.
+Write the route from `'*'` to `5`.
+
+Response:
+
+### A5. Number of positions
+
+How many immediate items may sit below one item?
 
 Response:
 
 ## B. Find rules that preserve the hierarchy
 
-Consider each change separately.
+Consider each change separately, starting from the original arrangement.
 
-### B1. One item in two places
+### B1. One object in two places
 
-Firewall Events is placed directly below both Logs and Reports. What becomes
-unclear?
-
-Response:
-
-### B2. A route that loops back
-
-A relationship is added from Login Events back to Security Lab. Following
-relationships can now return to an earlier item. What problem might this
-cause?
+For this general two-position-rule question, ignore expression meaning. The
+same item storing `5` is also connected below the item storing `2` on its
+empty left side. What changes when two different items lead to that one
+object?
 
 Response:
 
-### B3. An unreachable item
+### B2. A downward route that loops back
 
-Daily Summary is removed from below Reports but is still claimed to be part
-of the hierarchy. How could anyone reach it from the starting item?
+The item storing `3` has its empty left side connected back to the starting
+item storing `'*'`. What happens if the program keeps following that route
+downward?
+
+Response:
+
+### B3. The remaining side
+
+The left branch below the starting item is removed. Should its right branch,
+beginning at the item storing `2`, move to the left position? Is the remaining
+shape valid under the general two-position rules, and is it still a completed
+expression? Explain.
 
 Response:
 
 ### B4. Two rules
 
-State two rules followed by the original arrangement.
+Write two rules that the original arrangement follows.
 
 First rule:
 
 Second rule:
 
-## C. Macro-Question
+## C. The question for this module
 
-An **object** is one stored thing that groups related information. A **graph**
-is a general network of items and relationships; it may contain shared items
-or routes that loop back. **Computer memory** is the working storage in which
-a running program keeps values.
+An object is one stored thing that groups related information. Computer
+memory is the working storage used by a running program.
 
-How can separate objects in computer memory represent a hierarchy, and what
-rules prevent their links from becoming an arbitrary graph?
+How can links between separate objects represent this hierarchy while
+preserving the meaning of the left and right positions?
 
 Initial explanation:
 
 ## D. Storage brainstorm
 
-Do not write C code yet. **C** is the programming language used in this
-course, and **code** means instructions written for a computer.
+Do not write C code yet.
 
 ### D1. Remembering lower items
 
-What fact must the program store for each item so it can find the items
-directly below it?
+What must an object remember so the program can reach its left and right
+items?
 
 Response:
 
-### D2. Showing that no item exists
+### D2. An unused position
 
-How could the program show that an item has no item below it on one side?
+How could the program show that one position has no item?
 
 Response:
 
 ### D3. Memory position
 
-Must two related items be next to each other in computer memory? Explain your
-current thinking.
+Must two related objects be next to each other in memory? Explain.
 
 Response:
 
-### D4. Open question
+### D4. Equal values
+
+If two separate items store `5`, does that make them the same object?
+
+Response:
+
+### D5. Open question
 
 What question does your model not yet answer?
 

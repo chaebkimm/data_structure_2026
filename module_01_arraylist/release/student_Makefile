@@ -25,7 +25,7 @@ starter-student-tests: | $(BUILD_DIR)
 
 autopsy: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_append.c -o $(BUILD_DIR)/autopsy
-	@echo "Built $(BUILD_DIR)/autopsy; run it separately because it intentionally faults."
+	$(BUILD_DIR)/autopsy
 
 clean:
 	$(RM) -r $(BUILD_DIR)

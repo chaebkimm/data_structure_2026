@@ -1,14 +1,10 @@
-#include "tree_arena.h"
+#include "binary_tree.h"
 
 #include <limits.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 
-typedef bool (*TestFunction)(void);
-
-static unsigned int tests_run = 0U;
-static unsigned int tests_failed = 0U;
+static int tests_run = 0;
+static int tests_failed = 0;
 
 #define REQUIRE(condition)                                                   \
     do {                                                                     \
@@ -20,263 +16,164 @@ static unsigned int tests_failed = 0U;
                 __LINE__,                                                    \
                 #condition                                                   \
             );                                                               \
-            return false;                                                    \
+            return 0;                                                        \
         }                                                                    \
-    } while (false)
+    } while (0)
 
-static void run_test(const char *name, TestFunction test)
+static int node_is_cleared(const struct TreeNode *node)
 {
-    bool passed;
+    return node->data == 0 && node->left == NULL && node->right == NULL;
+}
 
-    tests_run += 1U;
+static void run_test(const char *name, int (*test)(void))
+{
+    int passed;
+
+    tests_run = tests_run + 1;
     passed = test();
     if (passed) {
         (void)printf("PASS %s\n", name);
     } else {
-        tests_failed += 1U;
+        tests_failed = tests_failed + 1;
         (void)printf("FAIL %s\n", name);
     }
 }
 
-static bool test_links_and_root_must_stay_inside_arena(void)
+static int test_deep_finite_left_chain(void)
 {
-    TreeArena arena;
-    TreeNode storage[1];
-    TreeNode outside = { 99, NULL, NULL };
-    const int keys[1] = { 10 };
+    enum { NODE_COUNT = 128 };
+    struct TreeNode nodes[NODE_COUNT];
+    int index;
 
-    REQUIRE(
-        tree_arena_init(&arena, storage, keys, 1U, 0U) == TREE_OK
-    );
-    storage[0].left = &outside;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(tree_validate_bst(&arena) == TREE_ERR_INVALID_STRUCTURE);
-
-    storage[0].left = NULL;
-    arena.root = &outside;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    return true;
-}
-
-static bool test_maximum_length_chain(void)
-{
-    TreeArena arena;
-    TreeNode storage[TREE_ARENA_MAX_NODES];
-    int keys[TREE_ARENA_MAX_NODES];
-    size_t index;
-    TreeFamily family;
-
-    for (index = 0U;
-         index < (size_t)TREE_ARENA_MAX_NODES;
-         ++index) {
-        keys[index] = (int)index;
+    for (index = 0; index < NODE_COUNT; index = index + 1) {
+        nodes[index].data = index + 1;
+        nodes[index].left = NULL;
+        nodes[index].right = NULL;
+    }
+    for (index = 0; index + 1 < NODE_COUNT; index = index + 1) {
+        nodes[index].left = &nodes[index + 1];
     }
 
-    REQUIRE(
-        tree_arena_init(
-            &arena,
-            storage,
-            keys,
-            (size_t)TREE_ARENA_MAX_NODES,
-            0U
-        ) == TREE_OK
-    );
+    REQUIRE(tree_find(&nodes[0], NODE_COUNT) == &nodes[NODE_COUNT - 1]);
+    REQUIRE(tree_find(&nodes[0], -1) == NULL);
+    tree_clear(&nodes[0]);
+    for (index = 0; index < NODE_COUNT; index = index + 1) {
+        REQUIRE(node_is_cleared(&nodes[index]));
+    }
+    return 1;
+}
 
-    for (index = 0U;
-         index + 1U < (size_t)TREE_ARENA_MAX_NODES;
-         ++index) {
-        storage[index].right = &storage[index + 1U];
+static int test_alternating_left_and_right_chain(void)
+{
+    enum { NODE_COUNT = 33 };
+    struct TreeNode nodes[NODE_COUNT];
+    int index;
+
+    for (index = 0; index < NODE_COUNT; index = index + 1) {
+        nodes[index].data = index + 1;
+        nodes[index].left = NULL;
+        nodes[index].right = NULL;
+    }
+    for (index = 0; index + 1 < NODE_COUNT; index = index + 1) {
+        if (index % 2 == 0) {
+            nodes[index].left = &nodes[index + 1];
+        } else {
+            nodes[index].right = &nodes[index + 1];
+        }
     }
 
-    REQUIRE(tree_validate_structure(&arena) == TREE_OK);
-    REQUIRE(tree_validate_bst(&arena) == TREE_OK);
-    REQUIRE(
-        tree_immediate_family(
-            &arena,
-            (size_t)TREE_ARENA_MAX_NODES - 1U,
-            &family
-        ) == TREE_OK
-    );
-    REQUIRE(
-        family.parent_index ==
-        (size_t)TREE_ARENA_MAX_NODES - 2U
-    );
-    REQUIRE(family.left_child_index == TREE_NO_INDEX);
-    REQUIRE(family.right_child_index == TREE_NO_INDEX);
-    return true;
+    for (index = 0; index < NODE_COUNT; index = index + 1) {
+        REQUIRE(tree_find(&nodes[0], index + 1) == &nodes[index]);
+    }
+    tree_clear(&nodes[0]);
+    for (index = 0; index < NODE_COUNT; index = index + 1) {
+        REQUIRE(node_is_cleared(&nodes[index]));
+    }
+    return 1;
 }
 
-static bool test_integer_extremes_and_duplicate_policy(void)
+static int test_integer_extremes_are_unsorted_data(void)
 {
-    TreeArena arena;
-    TreeNode storage[3];
-    const int keys[3] = { INT_MIN, 0, INT_MAX };
+    struct TreeNode left = { INT_MAX, NULL, NULL };
+    struct TreeNode right = { INT_MIN, NULL, NULL };
+    struct TreeNode root = { 0, &left, &right };
 
-    REQUIRE(
-        tree_arena_init(&arena, storage, keys, 3U, 1U) == TREE_OK
-    );
-    storage[1].left = &storage[0];
-    storage[1].right = &storage[2];
-    REQUIRE(tree_validate_structure(&arena) == TREE_OK);
-    REQUIRE(tree_validate_bst(&arena) == TREE_OK);
-
-    storage[2].key = 0;
-    REQUIRE(tree_validate_bst(&arena) == TREE_ERR_NOT_BST);
-    return true;
+    REQUIRE(tree_find(&root, INT_MAX) == &left);
+    REQUIRE(tree_find(&root, INT_MIN) == &right);
+    REQUIRE(tree_find(&root, 0) == &root);
+    tree_clear(&root);
+    REQUIRE(node_is_cleared(&root));
+    REQUIRE(node_is_cleared(&left));
+    REQUIRE(node_is_cleared(&right));
+    return 1;
 }
 
-static bool test_unreachable_node_is_rejected(void)
+static int test_repeated_clear_preserves_independent_tree(void)
 {
-    TreeArena arena;
-    TreeNode storage[3];
-    const int keys[3] = { 10, 5, 15 };
+    struct TreeNode child = { 20, NULL, NULL };
+    struct TreeNode root = { 10, &child, NULL };
+    struct TreeNode other_child = { 40, NULL, NULL };
+    struct TreeNode other_root = { 30, NULL, &other_child };
 
-    REQUIRE(
-        tree_arena_init(&arena, storage, keys, 3U, 0U) == TREE_OK
-    );
-    storage[0].left = &storage[1];
+    tree_clear(&root);
+    tree_clear(&root);
+    tree_clear(NULL);
 
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(tree_validate_bst(&arena) == TREE_ERR_INVALID_STRUCTURE);
-    return true;
+    REQUIRE(node_is_cleared(&root));
+    REQUIRE(node_is_cleared(&child));
+    REQUIRE(other_root.data == 30);
+    REQUIRE(other_root.left == NULL);
+    REQUIRE(other_root.right == &other_child);
+    REQUIRE(other_child.data == 40);
+    REQUIRE(tree_find(&other_root, 40) == &other_child);
+    return 1;
 }
 
-static bool test_disconnected_cycle_is_rejected(void)
+static int test_clear_saved_detached_subtree(void)
 {
-    TreeArena arena;
-    TreeNode storage[4];
-    const int keys[4] = { 10, 5, 20, 30 };
+    struct TreeNode three = { 3, NULL, NULL };
+    struct TreeNode five = { 5, NULL, NULL };
+    struct TreeNode plus = { '+', &three, &five };
+    struct TreeNode two = { 2, NULL, NULL };
+    struct TreeNode root = { '*', &plus, &two };
+    struct TreeNode *selected = root.left;
 
-    REQUIRE(
-        tree_arena_init(&arena, storage, keys, 4U, 0U) == TREE_OK
-    );
+    root.left = NULL;
+    tree_clear(selected);
 
-    storage[0].left = &storage[1];
-    storage[2].right = &storage[3];
-    storage[3].left = &storage[2];
-
-    /*
-     * Every non-root node has one incoming link, but nodes 2 and 3 cannot
-     * be reached by following child links from the root.
-     */
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(tree_validate_bst(&arena) == TREE_ERR_INVALID_STRUCTURE);
-    return true;
-}
-
-static bool test_malformed_container_states_and_unknown_status(void)
-{
-    TreeNode storage[1] = { { 10, NULL, NULL } };
-    TreeNode outside = { 20, NULL, NULL };
-    TreeArena arena;
-    TreeFamily unchanged = { 70U, 71U, 72U };
-
-    REQUIRE(
-        tree_validate_structure(NULL) == TREE_ERR_INVALID_ARGUMENT
-    );
-    REQUIRE(tree_validate_bst(NULL) == TREE_ERR_INVALID_ARGUMENT);
-
-    arena.nodes = storage;
-    arena.count = 0U;
-    arena.root = NULL;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-
-    arena.nodes = NULL;
-    arena.count = 0U;
-    arena.root = &outside;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-
-    arena.nodes = NULL;
-    arena.count = 1U;
-    arena.root = NULL;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-
-    arena.nodes = storage;
-    arena.count = 1U;
-    arena.root = NULL;
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-
-    arena.nodes = storage;
-    arena.count = (size_t)TREE_ARENA_MAX_NODES + 1U;
-    arena.root = &storage[0];
-    REQUIRE(
-        tree_validate_structure(&arena) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(tree_validate_bst(&arena) == TREE_ERR_INVALID_STRUCTURE);
-    REQUIRE(
-        tree_assign_child(&arena, 0U, TREE_SIDE_LEFT, 0U) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(
-        tree_immediate_family(&arena, 0U, &unchanged) ==
-        TREE_ERR_INVALID_STRUCTURE
-    );
-    REQUIRE(unchanged.parent_index == 70U);
-    REQUIRE(unchanged.left_child_index == 71U);
-    REQUIRE(unchanged.right_child_index == 72U);
-
-    REQUIRE(
-        strcmp(
-            tree_status_name((TreeStatus)999),
-            "unknown TreeStatus"
-        ) == 0
-    );
-    return true;
+    REQUIRE(node_is_cleared(&plus));
+    REQUIRE(node_is_cleared(&three));
+    REQUIRE(node_is_cleared(&five));
+    REQUIRE(root.data == '*');
+    REQUIRE(root.left == NULL);
+    REQUIRE(root.right == &two);
+    REQUIRE(two.data == 2);
+    REQUIRE(tree_find(&root, '+') == NULL);
+    REQUIRE(tree_find(&root, 2) == &two);
+    return 1;
 }
 
 int main(void)
 {
+    run_test("deep finite left chain", test_deep_finite_left_chain);
     run_test(
-        "links and root stay inside arena",
-        test_links_and_root_must_stay_inside_arena
-    );
-    run_test("maximum-length chain", test_maximum_length_chain);
-    run_test(
-        "integer extremes and duplicate policy",
-        test_integer_extremes_and_duplicate_policy
+        "alternating left and right chain",
+        test_alternating_left_and_right_chain
     );
     run_test(
-        "unreachable node is rejected",
-        test_unreachable_node_is_rejected
+        "integer extremes are unsorted data",
+        test_integer_extremes_are_unsorted_data
     );
     run_test(
-        "disconnected cycle is rejected",
-        test_disconnected_cycle_is_rejected
+        "repeated clear preserves independent tree",
+        test_repeated_clear_preserves_independent_tree
     );
-    run_test(
-        "malformed containers and unknown status",
-        test_malformed_container_states_and_unknown_status
-    );
+    run_test("clear saved detached subtree", test_clear_saved_detached_subtree);
 
     (void)printf(
-        "\n%u extension test(s), %u failure(s)\n",
+        "\n%d extension test(s), %d failure(s)\n",
         tests_run,
         tests_failed
     );
-    return tests_failed == 0U ? 0 : 1;
+    return tests_failed == 0 ? 0 : 1;
 }

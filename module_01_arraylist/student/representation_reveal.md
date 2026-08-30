@@ -1,38 +1,63 @@
-# Memory-Space Reveal — Label Before Expansion
+# Stage B — Representation Reveal: Ten Slots and One Count
 
 Open this file only when the instructor releases it.
 
-## 1. Label the state
+## 1. Separate capacity from size
 
-```text
-allocated memory = [10] [50] [20] [30] [ ]
-stored items = 4
-available slots = 5
+The list needs storage and a count of how much storage it currently uses.
+
+```c
+int array[10];
+int capacity = 10;
+int size = 3;
+
+array[0] = 100;
+array[1] = 200;
+array[2] = 300;
 ```
 
-Which positions belong to the ordered collection? ___________________
+**Capacity** is the maximum item count: 10. **Size** is the current item
+count: 3. The list occupies indexes 0 through 2. The remaining slots exist,
+but the program must not read them as list items.
 
-Which position is allocated but not yet part of the collection? _____
+| Index | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---:|---:|---:|---|---|---|---|---|---|---|
+| List value | 100 | 200 | 300 | unused | unused | unused | unused | unused | unused | unused |
 
-What condition tells us that the memory space is full? ______________
+An unused slot may contain an old value. Neither zero nor any other integer
+marks an unused slot. The count determines which positions belong to the
+list.
 
-## 2. State the golden rule
+## 2. State the invariant
+
+An **invariant** is a rule that every valid list state follows:
+
+- `size` is between 0 and 10, including both limits.
+- The current items occupy indexes 0 through `size - 1` in list order.
+- There are no unused positions between those current items.
+- Capacity stays 10 throughout this example.
+
+When `size` is 0, the list has no valid item index. When `size` is 10, the
+list is full.
 
 Complete the sentence:
 
-> The stored items begin at index ______ and follow one another with no
-> ____________________________.
+> A slot can be inside the array but outside the current list when
+> ________________________________________________________________.
 
-## 3. Prepare for expansion
+## 3. Distinguish the operations
 
-Suppose the allocated memory is now full:
+Reading or updating an item requires `0 <= index < size`. Inserting allows
+`index == size` because that position is immediately after the last item.
+Insertion also requires `size < capacity`.
 
-```text
-[10] [50] [20] [30]
-```
+Searching for a value checks current items from index 0 upward and stops at
+the first match. It must not examine unused slots.
 
-Predict the three major actions needed before adding another item:
+## 4. Reject an addition when full
 
-1. _________________________________________________________________
-2. _________________________________________________________________
-3. _________________________________________________________________
+If `size == capacity`, append and insertion report that the list is full.
+They do not write a value or change the count. A **rejected operation** leaves
+the previous list unchanged.
+
+Do not solve the Cognitive Pause until the instructor releases it.

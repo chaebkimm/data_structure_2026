@@ -3,7 +3,9 @@
 ## Source-of-truth contract
 
 The public headers, not slides or prose summaries, are the implementation
-source of truth. Module 6 reuses Module 3’s bounded adjacency-matrix graph:
+source of truth. Module 6 retrieves Module 3's row-as-source matrix idea, then
+introduces a broader instructor-supplied Boolean graph type with a direction
+kind and validation support:
 
 ```c
 #define GRAPH_MAX_VERTICES 16U
@@ -80,9 +82,9 @@ successful `GraphDfsOrder`.
 ## Validation and status mapping
 
 Every DFS public function validates the complete active graph before doing
-algorithm work. Map Module 3 validation results as follows:
+algorithm work. Map the supplied support validator's results as follows:
 
-| Module 3 result | DFS result |
+| Support-validator result | DFS result |
 |---|---|
 | `GRAPH_OK` | Continue |
 | `GRAPH_ERR_INVALID_ARGUMENT` | `GRAPH_DFS_INVALID_ARGUMENT` |
@@ -98,7 +100,7 @@ Component counting has no source index. It accepts an empty undirected graph
 and writes zero on success. A valid directed graph returns
 `GRAPH_DFS_REQUIRES_UNDIRECTED` without changing its output.
 
-The standalone self-loop test should verify the Module 3 constructor
+The standalone self-loop test should verify the Module 6 support constructor
 contract:
 
 ```text
@@ -434,7 +436,7 @@ public DFS operation.
 
 Keep responsibilities explicit:
 
-- supplied retrieval support: Module 3 graph operations and validation;
+- supplied retrieval support: Module 6 graph operations and validation;
 - supplied infrastructure: the complete typed vertex-ID Stack;
 - TODO 1: complete the private `recursive_visit` helper; the supplied public
   `graph_dfs_recursive` wrapper validates, creates local state, calls the
@@ -472,7 +474,7 @@ The full verification matrix should include:
 13. directed component rejection with unchanged count;
 14. maximum 16-vertex paths/cycles;
 15. status-name coverage including unknown values; and
-16. standalone Module 3 self-loop rejection.
+16. standalone Module 6 support self-loop rejection.
 
 Testing allocation hooks are one-shot and available only under
 `GRAPH_DFS_TESTING`. They are deterministic teaching seams, not production
@@ -564,6 +566,6 @@ until its three TODOs are completed.
 - [ ] One seen array is reused for the full component sweep.
 - [ ] Empty undirected graph reports zero components.
 - [ ] Matrix and adjacency-list costs are stated correctly.
-- [ ] The self-loop test checks the Module 3 API independently.
+- [ ] The self-loop test checks the supplied Module 6 graph API independently.
 - [ ] The autopsy is bounded.
 - [ ] No example overstates synthetic policy reachability.

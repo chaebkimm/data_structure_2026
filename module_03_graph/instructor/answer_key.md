@@ -1,704 +1,354 @@
-# Instructor Answer Key — Module 3 Graph
+# Instructor Answer Key — Module 3
 
-## Release control
+Keep this file instructor-only. Students preserve Stage A, Cognitive Pause,
+Stage C, and autopsy predictions before seeing worked answers.
 
-Keep this file instructor-only through the student submission window. Stage A
-answers are intentionally broad because students have not yet received graph
-terminology. Evaluate whether the relationship facts are preserved, not
-whether a student guesses the professional words.
+## Macro-question synthesis
 
-The canonical six-vertex model used after Stage A is:
+A directed adjacency matrix stores one yes-or-no fact for every ordered pair
+of active vertex IDs. Row identifies the source, column the destination.
+Graphs allow several incoming edges and routes that return to an earlier
+vertex, so they represent relationships that do not fit the Module 2 tree.
 
-| ID | Vertex label | Directed out-neighbors |
-|---:|---|---|
-| `0` | Gateway | `1, 2` |
-| `1` | Web | `3` |
-| `2` | Admin | `3` |
-| `3` | Database | `4` |
-| `4` | Monitor | `1` |
-| `5` | Archive | none |
+The implemented graph is fixed, directed, and unweighted. Comparisons with
+other graph forms do not expand the four-function API.
 
-Its directed edge set is:
+## Stage A — Initial inquiry
+
+### A. Three-tier system
 
 ```text
-{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 1)}
+Web 0 -----> App 1 -----> Database 2
+  ^           |
+  +-----------+
 ```
 
-An **edge set** is the mathematical collection of graph edges. It is not the
-same object as an **edge-list representation**, which is a stored sequence of
-endpoint records. The ordered pairs inside the set preserve edge direction;
-the order in which the set’s pairs are written has no graph meaning.
+Immediate directed relationships:
 
----
+- Web to App, or `0 -> 1`;
+- App to Database, or `1 -> 2`; and
+- App to Web, or `1 -> 0`.
 
-# Stage A — Initial Inquiry
+Do not add Database to App or another unstated reverse edge.
 
-## A. Reconstruct the starting arrangement
+### B. Direction
 
-Accept a drawing or text equivalent to:
+Starting at Web, the repeating route is Web -> App -> Web -> App and so on.
+The edge App -> Database gives no evidence for Database -> App. Web -> App
+and App -> Web have opposite sources and destinations and therefore require
+two separate facts.
+
+### C. Tree limits
+
+App -> Web creates the returning route Web -> App -> Web, which conflicts
+with a tree's no-cycle rule. If both Web and App led to Database, Database
+would have two incoming relationships, conflicting with the one-incoming-link
+tree rule.
+
+### D–E. Storage brainstorm
+
+The program must remember whether a relationship exists from each selected
+source to each selected destination. Rows can name sources and columns can
+name destinations. A missing relationship stores 0. Accept equivalent
+plain-language models without requiring graph terms during Stage A.
+
+## Stage B — Matrix reveal and Cognitive Pause
+
+Canonical matrix:
 
 ```text
-Gateway leads to Web.
-Gateway leads to Admin.
-Web leads to Database.
-Database leads to Monitor.
-Archive is separate.
+       to
+       0  1  2
+from 0 0  1  0
+     1 1  0  1
+     2 0  0  0
 ```
 
-- starting item: `Gateway`;
-- separate item: `Archive`;
-- route from Gateway to Monitor before the cross-link:
-  `Gateway, Web, Database, Monitor`.
+### Target 1
 
-Do not require vertex, edge, graph, path, or isolated at this stage.
+The rows are `[0, 1, 0]`, `[1, 0, 1]`, and `[0, 0, 0]`.
+Cells `[0][1]` and `[1][0]` represent different directed questions. Both
+happen to contain 1 because both opposite edges were explicitly supplied.
 
-## B. Add relationships beyond the hierarchy
+### Target 2
 
-After `Admin` leads to `Database`:
+Removing `1 -> 2` changes only `grid[1][2]` from 1 to 0. New row 1 is
+`[1, 0, 0]`; its out-degree is 1.
 
-- two immediate ways lead into Database: one from Web and one from Admin;
-- Database no longer has one unique item directly above it;
-- the relationship therefore does not fit the course tree rule of exactly
-  one parent for every non-root node.
+### Target 3
 
-After `Monitor` leads to `Web`, the repeating route is:
+Consider each request from the original three-vertex state:
 
-```text
-Web, Database, Monitor, Web, Database, Monitor, ...
-```
-
-A program that follows this route without remembering prior work or applying
-a stopping rule may repeat forever and never finish.
-
-## C. Direction
-
-“Web leads to Database” does not prove “Database leads to Web.” The first
-statement is one-way.
-
-Accept any internally consistent examples. Common answers include:
-
-- one-way: a software permission, web link, prerequisite, or one-way street;
-- two-way: a direct friendship in a simplified model or a two-way road.
-
-The quality test is whether reversing the endpoints preserves the intended
-meaning.
-
-## D. Macro-Question
-
-Accept a first model that separately records:
-
-- every object, including the separate Archive object;
-- which two objects each relationship joins;
-- which direction or directions are allowed; and
-- enough information to preserve cross-links and the returning loop.
-
-A student may invent a table, list, card system, or diagram. Do not require
-the word graph before Gate B.
-
-## E. Storage brainstorm
-
-Expected ideas:
-
-- one-way relationship fact: its starting item and destination;
-- direct yes/no question: consult a table cell, pair record, or equivalent
-  stored fact for that ordered pair;
-- opposite directions: one direction does not automatically prove the
-  reverse, so separate facts may be required;
-- Archive: preserve it in the object collection even though it has no
-  relationship record;
-- open question: answers vary; retain it as evidence of the student’s current
-  model.
-
----
-
-# Stage B — Representation and Cognitive Pause
-
-## Representation-reveal checks
-
-The canonical matrix uses row as source and column as destination:
-
-| from \ to | `0` | `1` | `2` | `3` | `4` | `5` |
-|---:|---:|---:|---:|---:|---:|---:|
-| `0` | 0 | 1 | 1 | 0 | 0 | 0 |
-| `1` | 0 | 0 | 0 | 1 | 0 | 0 |
-| `2` | 0 | 0 | 0 | 1 | 0 | 0 |
-| `3` | 0 | 0 | 0 | 0 | 1 | 0 |
-| `4` | 0 | 1 | 0 | 0 | 0 | 0 |
-| `5` | 0 | 0 | 0 | 0 | 0 | 0 |
-
-There are six arrows, six ordered pairs, and six true cells. Row and column
-`5` are all zero because Archive has no entering or leaving edge.
-
-## Five-minute Cognitive Pause
-
-The activity has exactly three targets.
-
-### Target 1 — Selected cells and row
-
-- `[0][1] = 1` because edge `0 → 1` exists;
-- `[1][0] = 0` because the reverse edge is not in the directed edge set;
-- `[2][3] = 1` because edge `2 → 3` exists;
-- row `5` is `0 0 0 0 0 0` because vertex `5` has no outgoing edge.
-
-Any one of those explanations satisfies the explanation request.
-
-### Target 2 — Added reverse direction
-
-- new ordered pair: `(1, 0)`;
-- changed cell: `[1][0]`;
-- reason: a directed edge is one-way, so `0 → 1` and `1 → 0` are two
-  independent facts.
-
-### Target 3 — Undirected mirror
-
-- cells: `[2][4]` and `[4][2]`;
-- required relationship:
-
-  ```text
-  adjacency[2][4] == adjacency[4][2] == true
-  ```
-
-These cells are mirrors across the matrix diagonal. One undirected edge
-requires both.
-
-Do not deduct for an incorrect timed response when the student preserved it
-and made an evidence-based correction.
-
----
-
-# Stage C — Investigation
-
-The standard and linear worksheets have matching question labels. A verbal
-description that preserves every relationship is equivalent to a diagram.
-
-## Section A — Three curriculum representations
-
-### A1. Diagram or diagram-equivalent description
-
-Required vertices and arrows:
-
-```text
-0 Gateway → 1 Web
-0 Gateway → 2 Admin
-1 Web → 3 Database
-2 Admin → 3 Database
-3 Database → 4 Monitor
-4 Monitor → 1 Web
-5 Archive has no arrow.
-```
-
-### A2. Edge set
-
-```text
-{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 1)}
-```
-
-### A3. Adjacency matrix
-
-Use the six-by-six matrix in the Stage B section above.
-
-### A4. Equivalence
-
-- arrows: `6`;
-- ordered pairs: `6`;
-- true matrix cells in this directed graph: `6`.
-
-Archive appears as a labeled but disconnected mark in the diagram, appears
-through the declared vertex set even though no pair names it, and has an
-all-zero row and column in the matrix.
-
-## Section B — Direction, symmetry, and weight
-
-### B1. One undirected edge
-
-For `{1, 4}`, cells `[1][4]` and `[4][1]` are both `1`.
-
-### B2. Symmetry
-
-An undirected edge can be used both ways, so every true cell must have a true
-mirror. Every false cell likewise has a false mirror in a valid completed
-undirected matrix. The directed edge `0 → 1` does not require `1 → 0`
-because direction is part of the first relationship.
-
-### B3. Weight boundary
-
-No. A Boolean cell has only present and absent states. A 12-millisecond
-delay requires numeric weight storage and an unambiguous way to distinguish
-“no edge” from an edge whose weight is a number. The Module 3 C type is not
-changed.
-
-## Section C — Immediate relationships
-
-### C1. Database, vertex 3
-
-- in-neighbors: `1, 2`;
-- out-neighbor: `4`.
-
-### C2. Web, vertex 1
-
-- in-degree: `2`, counting `0 → 1` and `4 → 1`;
-- out-degree: `1`, counting `1 → 3`.
-
-### C3. Archive, vertex 5
-
-In-degree `0`; out-degree `0`.
-
-### C4. Undirected degree
-
-Degree `3`, one for each edge touching the selected vertex.
-
-## Section D — Routes, paths, cycles, and reachability
-
-A **route** may revisit vertices. A **path** is a route that does not repeat
-a vertex. A **cycle** returns to its start without repeating another vertex.
-
-### D1. Path
-
-Yes. `0 → 1`, `1 → 3`, and `3 → 4` all exist, and the vertex sequence
-contains no repeat.
-
-### D2. Cycle
-
-Yes. `1 → 3`, `3 → 4`, and `4 → 1` exist. The route returns to `1` and does
-not repeat another vertex.
-
-### D3. Reachability from Gateway
-
-```text
-{0, 1, 2, 3, 4}
-```
-
-Vertex `0` reaches itself with zero edges. Vertex `5` is not reachable from
-`0`.
-
-### D4. Direction matters
-
-One path from `2` to `1` is:
-
-```text
-2 → 3 → 4 → 1
-```
-
-Vertex `1` cannot reach vertex `2` in the given model. Its reachable
-vertices are `1, 3, 4`; the cycle among them creates no edge to `2`.
-
-## Section E — Undirected connected components
-
-### E1. Groups
-
-For undirected edges `{0, 1}`, `{1, 2}`, and `{3, 4}` with isolated vertex
-`5`, the connected components are:
-
-```text
-{0, 1, 2}
-{3, 4}
-{5}
-```
-
-An isolated vertex forms a one-vertex connected component.
-
-### E2. Directed language
-
-Preferred sentence:
-
-> Starting at vertex 0 and following directed edges, vertices 0, 1, 2, 3,
-> and 4 are reachable; vertex 5 is not.
-
-Direction makes the unqualified word “connected” unclear because a route
-from `u` to `v` does not guarantee a route from `v` to `u`. This module does
-not introduce advanced directed-component definitions.
-
-## Section F — Course rules
-
-### F1. Proposed additions
-
-| Request | Decision | Rule |
+| Addition | Result | Reason |
 |---|---|---|
-| `2 → 2` | reject | self-loop |
-| another `0 → 1` | reject | duplicate existing edge |
-| `1 → 0` | accept | valid separate reverse edge in a directed graph |
-| `4 → 0` | accept | endpoints are active, distinct, and edge is absent |
-| an edge using index `6` when count is `6` | reject | active indexes are only `0` through `5` |
+| `2 -> 2` | reject, return 0 | self-loop addition |
+| `3 -> 1` | reject, return 0 | vertex 3 is inactive |
+| `2 -> 0` | accept, return 1 | distinct active endpoints |
 
-### F2. Boolean limitation
+A rejection changes no metadata or cell. Successful `2 -> 0` sets only
+`grid[2][0]` to 1.
 
-One Boolean cell records only “edge absent” or “edge present.” It has no
-count field for two parallel copies.
+## Stage C — Investigation
 
-### F3. Whole-model check
+### A1. Equivalent representations
 
-An undirected defect may occur at any active endpoint pair, so a
-whole-graph validator must compare active mirrored cells throughout the
-matrix. Checking only one selected edge cannot prove whole-matrix symmetry.
-
-## Section G — Three storage choices
-
-### G1. Sparse model
-
-A matrix reserves one cell for every possible ordered pair, even when most
-cells are false. A large graph with few edges therefore reserves many cells
-for absent relationships.
-
-### G2. Frequent direct questions
-
-The adjacency matrix gives the most direct edge query: inspect
-`adjacency[u][v]`.
-
-### G3. Process every edge
-
-An edge-list representation is especially direct when the task reads every
-stored edge once.
-
-### G4. Neighbor work
-
-An adjacency-list representation directly stores one vertex’s neighbors and
-can avoid scanning an entire matrix row when that list is short.
-
-Accept this comparison:
-
-| Representation | Typical one-edge query | Storage description |
-|---|---:|---|
-| Adjacency matrix | `O(1)` | `V × V` Boolean cells |
-| Edge-list representation | `O(E)` basic scan | `E` endpoint records |
-| Adjacency-list representation | scan the selected neighbor list | `V` list heads plus edge entries |
-
-`O(1)` means fixed work. `O(E)` means work proportional to the number of
-edges. This is a conceptual comparison; students do not implement the two
-list forms in Module 3.
-
-## Section H — Tree transfer
-
-### H1. Shared destination
-
-Edges `1 → 3` and `2 → 3` give vertex `3` two incoming relationships. That
-violates the course tree rule that every non-root node has exactly one
-parent.
-
-### H2. Back-link
-
-`4 → 1` completes the cycle `1 → 3 → 4 → 1`. A course tree has no cycle.
-
-### H3. Shared correctness rule
-
-Accept one accurate rule, such as:
-
-- indexes must remain within the fixed storage;
-- the selected active count must not exceed capacity;
-- the representation’s completed-state invariant must hold; or
-- a failed checked operation must not leave a partial change.
-
-Do not accept “both forbid cycles”; the graph allows cycles.
-
-### H4. Transfer sentence
-
-Example:
-
-> A tree is useful when the relationships form one rooted, one-parent,
-> cycle-free hierarchy; a general graph is needed when relationships may
-> share destinations, return to earlier objects, or leave separate groups.
-
-## Section I — Security-model boundary
-
-### I1. Supported conclusion
-
-The invented model permits communication from Web, vertex `1`, to Database,
-vertex `3`.
-
-### I2. Unsupported conclusion
-
-The edge does not prove any of the following:
-
-- communication actually occurred;
-- a real network route currently works;
-- a service is running;
-- credentials are available;
-- a vulnerability exists;
-- a vulnerability can be exploited; or
-- an attack would succeed.
-
-One accurate unsupported claim is sufficient.
-
-## Section J — Synthesis
-
-### J1. Manual reachability record
-
-One valid record is:
+Diagram:
 
 ```text
-0: start vertex; zero-edge route
-1: 0 → 1
-2: 0 → 2
-3: 0 → 1 → 3
-4: 0 → 1 → 3 → 4
+0 -----> 1 -----> 2
+^        |
++--------+
 ```
 
-The alternative route `0 → 2 → 3` also justifies vertex `3`. No route
-justifies vertex `5`. Students are inspecting the tiny model manually, not
-implementing a general search.
+Ordered edge set:
 
-### J2. Structure choices
+```text
+{(0, 1), (1, 2), (1, 0)}
+```
 
-1. arrival-ordered event codes: ArrayList;
-2. strict one-parent folder hierarchy: tree;
-3. permissions with several routes and loops: graph.
+Matrix:
 
-### J3. Exit sentence
+| From \ To | 0 | 1 | 2 |
+|---:|---:|---:|---:|
+| 0 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 1 |
+| 2 | 0 | 0 | 0 |
 
-Example:
+There are three arrows, three ordered pairs, and three cells containing 1.
 
-> The model is no longer a tree because Database has several incoming
-> relationships and Web lies on a cycle; the Boolean matrix records whether
-> each possible direct directed edge exists.
+### A2. Row and column
 
----
+Row 1 asks which edges leave App. Its 1 cells are `grid[1][0]` and
+`grid[1][2]`. Column 1 asks which edges enter App; its only 1 is
+`grid[0][1]`.
 
-# Stage E — C Lab
+`grid[0][1]` records only `0 -> 1`; it does not imply `1 -> 0`.
+The reverse happens to exist because it is separately in the edge set.
 
-## Exact type choices
+### B1. Degree
+
+- App out-degree: 2, counting `grid[1][0]` and `grid[1][2]`.
+- Web in-degree: 1, counting `grid[1][0]` in column 0.
+
+In-degree is conceptual here; there is no matching required function.
+
+### B2. Removal
+
+After removing `1 -> 2`:
+
+```text
+0 1 0
+1 0 0
+0 0 0
+```
+
+Only cell `[1][2]` changes. App out-degree becomes 1. All other cells,
+including the independent reverse pair `[0][1]` and `[1][0]`, remain
+unchanged.
+
+### B3. Idempotence
+
+Setting an existing edge cell to 1 again produces the requested existing-edge
+state. Setting an absent edge cell to 0 again produces the requested
+absent-edge state. Both are successful requests returning 1, with no further
+state change.
+
+### C1. Active versus physical
+
+For count 3, active IDs are 0, 1, and 2. Index 3 is below the physical bound
+16 but is not below `vertex_count`, so it cannot be used as an endpoint.
+
+### C2. Completed-state classifications
+
+| Stored fact | Classification | Rule |
+|---|---|---|
+| `grid[2][0] == 1` | valid | distinct active endpoints; edge `2 -> 0` |
+| `grid[2][2] == 1` | invalid | active diagonal must remain zero |
+| `grid[3][1] == 1` with count 3 | invalid | a cell involving an inactive ID must be zero |
+| `grid[0][2] == 2` | invalid | every cell must be exactly 0 or 1 |
+
+These are state classifications, not requests to pass malformed objects to
+ordinary functions.
+
+### C3. Full clearing and preservation
+
+Initialization must clear all 16 rows and 16 columns so a previously stored
+inactive cell cannot become a ghost edge if a later graph uses more vertices.
+
+A rejected add or remove preserves the complete graph. A rejected out-degree
+request preserves a non-null caller output. Initialization with count above
+16 preserves a supplied graph.
+
+### D1. Routes and cycles
+
+One route from Web to Database is `0 -> 1 -> 2`. Web and App form
+`0 -> 1 -> 0`. A later traversal must remember visited vertices or it could
+revisit this cycle forever. This is conceptual preparation, not a required
+Chapter 3 search algorithm.
+
+### D2. Shared destination
+
+Edges `0 -> 2` and `1 -> 2` are both valid graph relationships. Vertex 2
+then has two incoming edges, whereas the child-only tree requires one
+incoming link for each non-root node.
+
+### D3. Isolated active vertex
+
+An isolated active vertex has zero in every active cell of its row and
+column. Its ID is still below `vertex_count`. An inactive index is not a
+vertex at all, and every physical cell involving it is also required to be
+zero.
+
+### E1. Directed, undirected, and weighted
+
+A conceptual undirected relationship between 0 and 1 can be represented by
+two matching opposite cells, both 1. The implemented structure has no kind
+field and its mutation functions always update one directed cell; the
+comparison does not add an undirected mode.
+
+A binary cell stores existence only. A delay or cost requires an additional
+value and a different contract.
+
+### E2. Representation comparison
+
+| Question | Matrix | Edge list | Adjacency list |
+|---|---|---|---|
+| one direct edge lookup | direct cell, `O(1)` | scan pairs, `O(E)` | scan source's list, commonly `O(out-degree)` |
+| outgoing neighbors | scan row, `O(V)` | scan edges, `O(E)` | inspect source's list, `O(out-degree)` |
+| storage with few edges | reserves pair grid, `O(V²)` conceptually | `O(E)` | `O(V + E)` |
+
+For a small fixed graph with frequent direct-edge questions, the matrix is a
+reasonable choice because lookup is direct. Its tradeoff is reserved storage
+for every possible pair.
+
+### E3. Transfer and boundary
+
+1. Fixed ArrayList: event codes kept in numbered sequence.
+2. Binary tree: hierarchy with meaningful left and right child positions.
+3. Directed graph: permissions that may return to an earlier service.
+
+A permission edge establishes only the modeled permission. It does not prove
+a vulnerability, successful exploit, authenticated identity, or actual
+end-to-end route.
+
+A suitable exit sentence is: “The matrix cell at row `from`, column `to`
+records the directed edge `from -> to`; a valid completed graph also keeps
+all cells binary, its diagonal zero, and inactive cells zero.”
+
+## Exact C contract answers
 
 ```c
-#define GRAPH_MAX_VERTICES 16U
+#define GRAPH_MAX_VERTICES 16
 
-typedef enum {
-    GRAPH_DIRECTED = 0,
-    GRAPH_UNDIRECTED
-} GraphKind;
+struct DirectedGraph {
+    size_t vertex_count;
+    int grid[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
+};
 
-typedef enum {
-    GRAPH_OK = 0,
-    GRAPH_ERR_INVALID_ARGUMENT,
-    GRAPH_ERR_OUT_OF_RANGE,
-    GRAPH_ERR_SELF_LOOP,
-    GRAPH_ERR_EDGE_EXISTS,
-    GRAPH_ERR_EDGE_ABSENT,
-    GRAPH_ERR_INVALID_GRAPH
-} GraphStatus;
+int graph_init(struct DirectedGraph *graph, size_t vertex_count);
+int graph_add_edge(struct DirectedGraph *graph, size_t from, size_t to);
+int graph_remove_edge(struct DirectedGraph *graph, size_t from, size_t to);
+int graph_out_degree(
+    const struct DirectedGraph *graph,
+    size_t vertex,
+    size_t *out_degree
+);
 ```
 
-The exact public declarations are in `graph_matrix.h`. Do not accept a
-changed capacity, reversed matrix convention, or renamed public function as
-an equivalent submission unless an accommodation explicitly authorizes it.
+### Initialization
 
-## `graph_init`
+- Null graph: return 0.
+- Count greater than 16: return 0 and preserve a supplied graph.
+- Valid count including zero: clear all 256 cells, store count, return 1.
 
-Required results:
+### Addition
 
-- `NULL` graph: `GRAPH_ERR_INVALID_ARGUMENT`;
-- count greater than 16: `GRAPH_ERR_OUT_OF_RANGE`;
-- unknown kind: `GRAPH_ERR_INVALID_ARGUMENT`;
-- success: assign count and kind, clear all `16 × 16` cells, return
-  `GRAPH_OK`;
-- every failure with a non-`NULL` destination: leave the `Graph` unchanged.
+Validate graph pointer, metadata, and both active endpoints before writing.
+Reject equal endpoints with 0. For valid distinct endpoints, set exactly
+`grid[from][to] = 1` and return 1, including when it was already 1.
 
-Checks must happen before the first write.
+### Removal
 
-## `graph_validate`
+Validate pointer, metadata, and endpoints. For valid endpoints, including
+equal endpoints, set exactly `grid[from][to] = 0` and return 1, including
+when it was already 0.
 
-This is the whole-graph check. Expected results:
+### Out-degree
 
-- `NULL`: `GRAPH_ERR_INVALID_ARGUMENT`;
-- stored count above 16 or stored unknown kind:
-  `GRAPH_ERR_INVALID_GRAPH`;
-- true active diagonal cell: `GRAPH_ERR_INVALID_GRAPH`;
-- unequal active mirror cells in an undirected graph:
-  `GRAPH_ERR_INVALID_GRAPH`;
-- otherwise: `GRAPH_OK`.
+Reject a null output, null graph, invalid metadata, or inactive vertex with
+0 and leave any non-null output unchanged. Count active-row cells exactly
+equal to 1, commit the local result, and return 1.
 
-Only the active `V × V` square is validated. A true inactive cell does not
-make the graph invalid. Initialization still clears all physical cells.
+### Direct lookup
 
-## Add, remove, and query
+There is no fifth query function. Establish a valid graph and check both IDs
+against `vertex_count` before reading `grid[from][to]`. The read is
+constant time and makes no change.
 
-Common status order:
+## Complexity answers
 
-1. a required `NULL` pointer gives `GRAPH_ERR_INVALID_ARGUMENT`;
-2. malformed stored count or kind gives `GRAPH_ERR_INVALID_GRAPH`;
-3. an inactive endpoint gives `GRAPH_ERR_OUT_OF_RANGE`;
-4. equal endpoints give `GRAPH_ERR_SELF_LOOP`;
-5. inspect the selected directed cell or selected undirected mirror pair.
+Let `V` be active count and `M = 16` be the fixed bound.
 
-For a directed graph:
-
-- add absent edge: set one cell, `GRAPH_OK`;
-- add present edge: `GRAPH_ERR_EDGE_EXISTS`;
-- remove present edge: clear one cell, `GRAPH_OK`;
-- remove absent edge: `GRAPH_ERR_EDGE_ABSENT`;
-- query: report the selected cell.
-
-For an undirected graph:
-
-- unequal relevant mirror cells: `GRAPH_ERR_INVALID_GRAPH`;
-- add absent edge: set both mirrors;
-- add present edge from either endpoint order:
-  `GRAPH_ERR_EDGE_EXISTS`;
-- remove present edge from either endpoint order: clear both mirrors;
-- remove absent edge: `GRAPH_ERR_EDGE_ABSENT`;
-- query: report the agreed cell value.
-
-No failure changes the graph or query output.
-
-## Degree and neighbor answers
-
-- out-degree scans one row;
-- in-degree scans one column;
-- both are equal for a valid undirected graph;
-- `graph_out_neighbors` scans one row and reports true-column indexes in
-  increasing order;
-- a relevant true diagonal or relevant asymmetric undirected pair gives
-  `GRAPH_ERR_INVALID_GRAPH`;
-- failures preserve the output.
-
-For the canonical directed graph:
-
-| Vertex | Out-degree | In-degree | Out-neighbor result |
-|---:|---:|---:|---|
-| `0` | `2` | `0` | `[1, 2]` |
-| `1` | `1` | `2` | `[3]` |
-| `2` | `1` | `1` | `[3]` |
-| `3` | `1` | `2` | `[4]` |
-| `4` | `1` | `1` | `[1]` |
-| `5` | `0` | `0` | empty |
-
-## Status-name text
-
-The reference strings are:
-
-| Status | Text |
-|---|---|
-| `GRAPH_OK` | `ok` |
-| `GRAPH_ERR_INVALID_ARGUMENT` | `invalid argument` |
-| `GRAPH_ERR_OUT_OF_RANGE` | `vertex count or index out of range` |
-| `GRAPH_ERR_SELF_LOOP` | `self-loops are not allowed` |
-| `GRAPH_ERR_EDGE_EXISTS` | `edge already exists` |
-| `GRAPH_ERR_EDGE_ABSENT` | `edge does not exist` |
-| `GRAPH_ERR_INVALID_GRAPH` | `graph does not satisfy required representation rules` |
-| unknown status value | `unknown GraphStatus` |
-
-## Required operation costs
-
-| Operation | Time cost |
+| Operation | Cost |
 |---|---:|
-| full `graph_validate` | `O(V²)` |
-| add one edge | `O(1)` |
-| remove one edge | `O(1)` |
-| query one edge | `O(1)` |
-| in-degree or out-degree | `O(V)` |
-| out-neighbors | `O(V)` |
+| initialize | `O(M²)`, exactly 256 writes |
+| add | `O(1)` |
+| remove | `O(1)` |
+| guarded direct lookup | `O(1)` |
+| out-degree | `O(V)` |
+| inspect active topology | `O(V²)` |
+| fixed storage | `O(M²)`, 256 integers |
 
-Do not give full credit to an implementation that calls
-`graph_validate` inside every add, remove, or query. That changes the
-operation from constant work to matrix-wide work. Local operations check the
-metadata and relevant cells; explicit validation checks the whole active
-matrix.
+## Ghost-Connection Autopsy — instructor answers
 
-## Student-authored tests
+The fixture starts with four active vertices and `grid[3][1] == 1`.
+The first bad completed state occurs when faulty code changes only
+`vertex_count` from 4 to 3. At that moment vertex 3 is inactive but
+`grid[3][1]` remains 1.
 
-The student template requests:
+Expected output:
 
-1. a directed edge whose reverse has a separate result;
-2. an undirected update that checks both mirrors and a preserving failure;
-3. a degree, ascending-neighbor, or boundary case tied to a stated contract.
+```text
+before shrinking: vertex 3 -> 1 = 1
+after shrinking to 3 vertices:
+vertex 3 is inactive: yes
+inactive cell [3][1] is still 1
+after growing back to 4 without clearing:
+ghost connection 3 -> 1 reappears: yes
+```
 
-Accept different tests when all three are accurate, use a new input or
-combination rather than copying a public case, and explain a distinct claim.
-Merely changing vertex numbers in a public test is not new evidence.
+The capacity makes the access physically in bounds; it does not make vertex 3
+active. The later change back to count 4 reveals the stale connection but is
+not the first cause.
 
----
+For this module, use `graph_init` for a new vertex count; it clears all 256
+cells. A hypothetical resize operation would need its own contract that
+clears every newly inactive row and column before committing a smaller count
+and preserves state on failure. No such resize is a required API.
 
-# Matrix Symmetry Autopsy
+A regression can initialize four vertices, add `3 -> 1`, initialize the same
+object with count 3, assert all 256 cells are zero, initialize with count 4,
+and assert that `grid[3][1]` is still zero. This may be a rationale attached
+to one of the three student tests; the autopsy does not require a fourth.
 
-The intended undirected relationship is `{0, 1}`.
+## Assessment alignment
 
-1. required cells: `[0][1]` and `[1][0]`;
-2. first invalid completed state: immediately after
-   `graph.adjacency[0][1] = true;`;
-3. broken rule:
+| Criterion | Points |
+|---|---:|
+| Directed representation and vocabulary | 15 |
+| Initialization | 20 |
+| Directed edge operations | 20 |
+| Out-degree and direct lookup | 15 |
+| Invariants and boundary safety | 10 |
+| Tests and tool evidence | 15 |
+| Ghost autopsy and reflection | 5 |
+| Total | 100 |
 
-   ```text
-   adjacency[0][1] == adjacency[1][0]
-   ```
+The three authored-test slots cover full initialization including inactive
+cells; a coherent directed/idempotent/lookup/degree sequence; and rejected
+self-loop/inactive mutation with a preserved graph or a rejected degree query
+with a preserved output. Require distinct claims and rationales.
 
-4. predicted printed results:
-
-   ```text
-   Gateway reports Web as connected: yes
-   Web reports Gateway as connected: no
-   mirror cells agree: no
-   ```
-
-5. a row-counted degree would report degree `1` for vertex `0` and degree
-   `0` for vertex `1`, even though the intended undirected edge touches both;
-6. missing repair:
-
-   ```c
-   graph.adjacency[1][0] = true;
-   ```
-
-7. suitable regression tests:
-   - add one undirected edge and verify both mirror cells plus queries in
-     both endpoint orders;
-   - form an asymmetric pair directly and require
-     `graph_validate` to return `GRAPH_ERR_INVALID_GRAPH`.
-
-“Update both as one operation” means perform all rejection checks first and
-then write both cells, so no caller-visible successful state contains only
-one half of an undirected edge.
-
----
-
-# Evidence Record and Rubric Guidance
-
-## Completed-graph invariant
-
-The complete answer must include:
-
-- count no greater than 16;
-- kind is one of the two named choices;
-- active indexes are `0` through `vertex_count - 1`;
-- active diagonal cells are false;
-- active mirror cells are equal for an undirected graph;
-- a Boolean cell stores at most one edge fact.
-
-Cycles, isolated vertices, and several incoming directed edges are allowed.
-Only the full validator proves all active diagonal and symmetry rules.
-Ordinary operations check their requested pair, row, or column.
-
-## Representation-cost table
-
-| Representation | One-edge query | Storage | Useful when |
-|---|---|---|---|
-| Adjacency matrix | `O(1)` | `O(V²)` cells | frequent direct queries or many edges |
-| Edge-list representation | basic `O(E)` scan | `O(E)` records | processing every edge in sequence |
-| Adjacency-list representation | scan one endpoint’s neighbor list | `O(V + E)` conceptual storage | few edges and frequent neighbor work |
-
-## Spiral 1 structure choices
-
-| Scenario | Choice | Central rule | Example cost | Example risk |
-|---|---|---|---|---|
-| Ordered event log | ArrayList | logical items occupy indexes below size | indexed access `O(1)` | confusing size with capacity or unsafe growth |
-| One-parent directory hierarchy | tree | one root, one parent per other node, no cycle | direct child field read `O(1)` | shared child, cycle, or invalid pointer |
-| Services with shared and returning links | graph | active bounds, false diagonal, and undirected symmetry when applicable | matrix edge query `O(1)` | reversed direction, asymmetric update, or out-of-range index |
-
-Equivalent accurate rules, costs, and risks receive credit.
-
-## Security-model sentence
-
-Full-credit example:
-
-> The edge records a permission in invented data. It does not show that
-> communication occurred or provide the service state, credentials,
-> vulnerability, defenses, or other evidence needed to establish
-> exploitability.
-
-## Grading cautions
-
-- Grade the preserved-and-corrected pause as evidence of revision, not as a
-  speed test.
-- Accept diagrams, exact text equivalents, tactile demonstrations, or spoken
-  descriptions.
-- Do not reward use of “connected component” for a directed reachable set.
-- Do not require adjacency-list C code.
-- Do not require a weighted matrix extension.
-- Do not require DFS, BFS, or any formal graph search.
-- Do not accept a statement that a synthetic edge proves an exploitable
-  route.
+Accept standard or linear responses, everyday vocabulary, and approved
+compiler, debugger, or instructor-CI evidence. Do not penalize an initial
+misconception that was preserved and meaningfully corrected.

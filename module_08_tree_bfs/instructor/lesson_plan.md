@@ -26,7 +26,7 @@ trace but no Module 8 code TODO.
 This module is the Tree stage of the third
 Linear → Tree → Graph spiral. It retrieves:
 
-- the valid binary-tree representation from Module 2;
+- the valid binary-tree representation from Module 5;
 - traversal, depth, height, and depth-first search (DFS) from Module 5; and
 - first-in, first-out (FIFO) Queue behavior from Module 7.
 

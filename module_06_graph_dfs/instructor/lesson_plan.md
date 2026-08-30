@@ -28,7 +28,7 @@ practical, but a second implementation is not added outside its scope.
 
 This module completes the second Linear → Tree → Graph spiral. It retrieves:
 
-- the adjacency-matrix graph from Module 3;
+- the directed integer adjacency-matrix idea from Module 3;
 - the last-in, first-out Stack behavior from Module 4; and
 - recursive and explicit-Stack depth-first traversal from Module 5.
 
@@ -38,7 +38,7 @@ again. A **scheduled vertex** is one that is either waiting to be processed
 or has already been processed. Recording is separate: recursive DFS records
 on entry, while iterative DFS records on pop.
 
-The canonical directed graph is the Module 3 synthetic service graph:
+The canonical directed graph is an expanded Module 6 synthetic service graph:
 
 ```text
 0 Gateway   1 Web   2 Admin   3 Database   4 Monitor   5 Archive
@@ -164,7 +164,7 @@ completion window.
 
 | Minutes | Activity | Instructor move | Evidence |
 |---:|---|---|---|
-| 0–7 | Retrieve the graph | Reconstruct the Module 3 six-service graph, direction, out-neighbors, and cycle. Retrieve only the plain idea of following one route deeply; do not reveal seen tracking or the explicit Stack procedure. | Correct vertices and edges |
+| 0–7 | Retrieve the graph | Recall Module 3's three-server directed matrix, then construct this module's six-service graph, out-neighbors, and cycle. Retrieve only the plain idea of following one route deeply; do not reveal seen tracking or the explicit Stack procedure. | Correct vertices and edges |
 | 7–20 | Gate A inquiry | Release one accessible format. Require an individual preserved response before discussion. Let the unguarded route expose `1 → 3 → 4 → 1`. | Initial stopping/memory model |
 | 20–30 | Compare without erasing | Ask what repeats, what one-bit fact would prevent repetition, and why source 0 misses Archive. Accept speech, cards, typing, or drawing. | Annotated first model |
 | 30–41 | Gate B representation | Define graph DFS, seen marks, ascending neighbor scanning, recursive entry, and explicit scheduling. Keep vocabulary closed. | Labeled state model |
@@ -357,7 +357,7 @@ GraphDfsStatus graph_count_connected_components(
 const char *graph_dfs_status_name(GraphDfsStatus status);
 ```
 
-`GRAPH_MAX_VERTICES` remains 16 from Module 3. `GraphDfsOrder.count` is from
+`GRAPH_MAX_VERTICES` keeps Module 3's capacity of 16. `GraphDfsOrder.count` is from
 zero through the graph’s active vertex count. Each reachable vertex appears
 exactly once. Unused array positions have no public meaning.
 
@@ -510,7 +510,7 @@ instructor check. Instructor tests must exercise only published behavior.
 - [ ] The Stage B vocabulary remains closed during the pause.
 - [ ] The pause has exactly three targets and uses its distinct five-vertex
       graph.
-- [ ] The canonical directed graph exactly matches Module 3.
+- [ ] The canonical directed graph is identified as Module 6's expanded fixture.
 - [ ] Recursive DFS scans ascending and visits `0,1,3,4,2`.
 - [ ] Iterative DFS scans descending, marks after successful push, and gives
       the required Stack states.

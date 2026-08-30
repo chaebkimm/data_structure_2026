@@ -1,139 +1,177 @@
 # Module 2 Evidence Record
 
-Name: ____________________________  
-Compiler used—the program that translates C into a program the computer can
-run:
-____________________________
+Name: ____________________________
+Compiler or approved test environment: _____________________________
 
-## 1. Vocabulary in your own words
+## 1. Representation in your own words
 
-A node:
+Explain the node's three fields:
 
-____________________________________________________________________
+- `data`: _________________________________________________________
+- `left`: _________________________________________________________
+- `right`: ________________________________________________________
 
-A root:
-
-____________________________________________________________________
-
-A parent and child:
+Distinguish `root`, `&root`, and `root.left`.
 
 ____________________________________________________________________
 
-A leaf:
+Show the canonical five-node tree for `(3 + 5) * 2` as a drawing or
+side-labeled description. `root` stores `'*'` and links to `plus` and `two`;
+`plus` stores `'+'` and links to `three` and `five`.
 
 ____________________________________________________________________
 
-A pointer:
+Why may a general binary-tree node have a right child and no left child? Why
+would that shape not be a completed binary operator in this expression model?
 
 ____________________________________________________________________
 
-## 2. Three representations of one tree
+## 2. Invariants and caller preconditions
 
-Show the same tree as:
-
-1. a diagram or verbal description;
-2. an index table;
-3. C pointer expressions.
+State the one-root, one-incoming-link, and no-cycle rules.
 
 ____________________________________________________________________
 
-## 3. Completed-tree invariant
-
-State every rule that makes the completed structure a tree rather than an
-arbitrary collection of links:
+What must the caller ensure about initialization and node lifetime?
 
 ____________________________________________________________________
 
-What can a local child assignment check?
+What does an empty-side guard check? Which whole-tree conditions does it
+not establish?
 
 ____________________________________________________________________
 
-What requires whole-tree validation?
+## 3. Direct node operations
+
+Show the direct C statements for:
+
+1. initializing one local node's data and both links;
+2. attaching a fresh child to a chosen empty side; and
+3. clearing and detaching a selected left child.
+
+____________________________________________________________________
+
+When the chosen side is occupied, what must a guarded attachment leave
+unchanged?
+
+____________________________________________________________________
+
+After removing the left branch, why must the right child keep its side?
 
 ____________________________________________________________________
 
 ## 4. Test evidence
 
+Use the supplied tests and your own cases. Do not run cyclic or shared
+structures as ordinary recursive-function tests.
+
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
-| Leaf with no children | | | |
-| Node with two children | | | |
-| Out-of-range index | | | |
-| Occupied child slot | | | |
-| Shared child | | | |
-| Cycle | | | |
-| Disconnected node | | | |
-| Valid BST | | | |
-| Global BST violation | | | |
-| Duplicate key | | | |
+| Data and both links initialized before use | | | |
+| Right-only child | | | |
+| Occupied-side guard keeps the existing child | | | |
+| Search finds the current node | | | |
+| Search returns the first matching address | | | |
+| Search handles data on either side without a sorting rule | | | |
+| Missing or `NULL` search | | | |
+| Zero is ordinary searchable data | | | |
+| Clearing resets all selected nodes | | | |
+| Clearing alone leaves the outside parent's link intact | | | |
+| Caller detachment leaves the opposite side unchanged | | | |
+| Cleared local variables remain usable within their lifetime | | | |
 
-### Student-authored tests
+### Three student-authored tests
 
-For each test, state the new claim it checks.
+State the new claim each test checks. Explain why its local node variables
+remain alive through all checks.
 
-1. Test and rationale:
+1. Search boundary, duplicate, or ordering case:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-2. Test and rationale:
+2. Direct initialization, guarded linking, or detachment case:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-3. Test and rationale:
+3. Recursive clearing and still-live node reuse case:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-## 5. Pointer state
+## 5. Search and removal traces
 
-For one nonnull child link:
+Start with the canonical tree. Trace these searches without changing it.
 
-- parent index:
-- child index:
-- pointer expression:
-- address stored:
-- why the nodes need not be adjacent:
+| Target | Data checked in order | Returned address or `NULL` |
+|---:|---|---|
+| `2` | | |
+| 404 | | |
 
-## 6. BST range trace
+Now remove the left branch:
 
-For each visited node in the supplied example, record the allowed lower and
-upper key limits.
+```c
+tree_clear(root.left);
+root.left = NULL;
+```
 
-| Node key | Lower limit | Upper limit | Accepted? | Reason |
-|---:|---:|---:|---|---|
-| | | | | |
-| | | | | |
-| | | | | |
-| | | | | |
+- node variables whose fields are reset:
+- their final data and links:
+- `root.left` after clearing but before detachment:
+- `root.left` after detachment:
+- `root.right` after both actions:
+- why the cleared node objects still exist:
 
-Why are immediate parent-child comparisons insufficient?
+If the caller retained the address of a cleared node, could a search for
+zero find that node while it remains alive? Explain.
 
 ____________________________________________________________________
+
+## 6. Operation costs
+
+Count the fields or nodes processed.
+
+- initialize one node:
+- attach a fresh node to a known empty side:
+- search for an absent value in a tree of `n` nodes:
+- clear a subtree of `k` nodes:
+- detach an already cleared child:
+- why deeper recursion needs more temporary call storage:
 
 ## 7. Tree Structure Autopsy
 
-- first assignment that breaks the pure-tree model:
-- rule broken:
-- later incorrect result:
-- repair:
-- regression test:
+- first initializer that creates the shared-operand relationship:
+- tree precondition it violates:
+- prediction before running:
+- observed `root.left`, `minus.left`, and shared-operand data changes:
+- why the result does not mean a node's lifetime ended:
+- why the correct clearing function is not a whole-tree validator:
+- repair and a regression-test idea:
 
-## 8. Tree-to-graph transfer
+## 8. Tool evidence
 
-A valid tree permits one parent per non-root node. Give a realistic
-relationship that may need more than one incoming connection:
+Warning-enabled build command and core-test result:
 
-____________________________________________________________________
+```text
+paste output here
+```
 
-Why does that requirement lead toward a graph rather than a pure tree?
+Student-test command and result:
 
-____________________________________________________________________
+```text
+paste output here
+```
+
+Sanitizer, debugger, or approved instructor-test evidence:
+
+```text
+paste output here
+```
 
 ## 9. Correction note
 
-My initial model:
+My initial misconception:
 
 ____________________________________________________________________
 
-The evidence that changed or strengthened it:
+The evidence that changed or confirmed my reasoning:
 
 ____________________________________________________________________

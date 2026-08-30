@@ -21,10 +21,15 @@ guide and this delivery-role note control the required 14-week path.
 
 ## Beginner-first rule
 
-Students are not expected to know traversal orders, recursion, call frames,
-or depth-first search before this module. Each student-facing technical term
+Students have traced recursive binary-tree search and field clearance in Module 2, but are
+not expected to compare traversal orders or understand call frames and
+depth-first search before this module. Each student-facing technical term
 is explained in ordinary language when first needed. Assessment rewards
 accurate reasoning, not memorized wording.
+
+Module 2 used local node variables. This module's supplied constructor
+introduces individually allocated nodes and their matching release path;
+clearing fields is not a substitute for releasing those allocations.
 
 ## Module question
 
@@ -41,7 +46,7 @@ Students will be able to:
 4. explain what an active recursive call must remember;
 5. implement recursive preorder traversal;
 6. reproduce left-first preorder with a typed `const TreeNode *` Stack;
-7. complete strict binary-search-tree search from the Module 2 ordering rule;
+7. learn strict binary-search-tree ordering and complete its search;
 8. explain and test the supplied insertion baseline;
 9. destroy individually allocated nodes in postorder; and
 10. analyze traversal as `O(n)` time and `O(h)` extra space.

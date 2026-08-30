@@ -1,5 +1,6 @@
 #include "int_list.h"
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -8,20 +9,6 @@ typedef bool (*TestFunction)(void);
 
 static unsigned int tests_run = 0U;
 static unsigned int tests_failed = 0U;
-static IntList *active_list = NULL;
-
-static void track_active_list(IntList *list)
-{
-    active_list = list;
-}
-
-static void release_active_list(void)
-{
-    if (active_list != NULL) {
-        int_list_destroy(active_list);
-        active_list = NULL;
-    }
-}
 
 #define REQUIRE(condition)                                                   \
     do {                                                                     \
@@ -33,10 +20,21 @@ static void release_active_list(void)
                 __LINE__,                                                    \
                 #condition                                                   \
             );                                                               \
-            release_active_list();                                           \
             return false;                                                    \
         }                                                                    \
     } while (false)
+
+static bool same_values(const int actual[], const int expected[], int count)
+{
+    int index;
+
+    for (index = 0; index < count; index = index + 1) {
+        if (actual[index] != expected[index]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static void run_test(const char *name, TestFunction test)
 {
@@ -52,211 +50,193 @@ static void run_test(const char *name, TestFunction test)
     }
 }
 
-static bool require_values(
-    const IntList *list,
-    const int *expected,
-    size_t expected_size
-)
+static bool test_zero_usable_capacity(void)
 {
-    size_t i;
+    int array[1] = { 77 };
 
-    REQUIRE(int_list_is_valid(list));
-    REQUIRE(list->size == expected_size);
-    for (i = 0U; i < expected_size; ++i) {
-        int actual = 0;
-
-        REQUIRE(int_list_get(list, i, &actual) == INT_LIST_OK);
-        REQUIRE(actual == expected[i]);
-    }
-
+    REQUIRE(int_list_append(array, 0, 0, 10) == 0);
+    REQUIRE(int_list_insert(array, 0, 0, 0, 10) == 0);
+    REQUIRE(int_list_remove(array, 0, 0, 0) == 0);
+    REQUIRE(int_list_find(array, 0, 0, 77) == -1);
+    REQUIRE(array[0] == 77);
     return true;
 }
 
-static bool test_insert_positions(void)
+static bool test_smaller_capacity_preserves_guard_slots(void)
 {
-    IntList list;
-    const int expected[] = { 5, 10, 15, 20, 25 };
+    int array[5] = { 0, 0, 0, 777, 888 };
+    const int expected[5] = { 10, 20, 30, 777, 888 };
+    int size = 0;
+    int capacity = 3;
 
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_insert(&list, 0U, 15) == INT_LIST_OK);
-    REQUIRE(int_list_insert(&list, 0U, 10) == INT_LIST_OK);
-    REQUIRE(int_list_insert(&list, 0U, 5) == INT_LIST_OK);
-    REQUIRE(int_list_insert(&list, 3U, 25) == INT_LIST_OK);
-    REQUIRE(int_list_insert(&list, 3U, 20) == INT_LIST_OK);
-    REQUIRE(
-        require_values(
-            &list,
-            expected,
-            sizeof expected / sizeof expected[0]
-        )
-    );
+    size = int_list_append(array, size, capacity, 10);
+    size = int_list_append(array, size, capacity, 20);
+    size = int_list_append(array, size, capacity, 30);
+    REQUIRE(size == 3);
+    REQUIRE(int_list_append(array, size, capacity, 40) == 3);
+    REQUIRE(int_list_insert(array, size, capacity, 1, 40) == 3);
+    REQUIRE(same_values(array, expected, 5));
 
-    release_active_list();
+    size = int_list_remove(array, size, capacity, 1);
+    REQUIRE(size == 2);
+    size = int_list_insert(array, size, capacity, 1, 20);
+    REQUIRE(size == 3);
+    REQUIRE(same_values(array, expected, 5));
     return true;
 }
 
-static bool test_remove_positions_and_discard(void)
+static bool test_integer_extremes_and_invalid_metadata(void)
 {
-    IntList list;
-    const int before[] = { 10, 20, 30, 40, 50 };
-    const int after[] = { 20, 40 };
-    size_t i;
-    int removed = 0;
+    int array[3] = { INT_MIN, 0, INT_MAX };
+    const int expected[3] = { INT_MIN, 0, INT_MAX };
 
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    for (i = 0U; i < sizeof before / sizeof before[0]; ++i) {
-        REQUIRE(int_list_append(&list, before[i]) == INT_LIST_OK);
-    }
-
-    REQUIRE(int_list_remove(&list, 0U, &removed) == INT_LIST_OK);
-    REQUIRE(removed == 10);
-    REQUIRE(int_list_remove(&list, 1U, &removed) == INT_LIST_OK);
-    REQUIRE(removed == 30);
-    REQUIRE(
-        int_list_remove(&list, list.size - 1U, NULL) ==
-        INT_LIST_OK
-    );
-    REQUIRE(
-        require_values(
-            &list,
-            after,
-            sizeof after / sizeof after[0]
-        )
-    );
-
-    release_active_list();
+    REQUIRE(int_list_find(array, 3, 3, INT_MIN) == 0);
+    REQUIRE(int_list_find(array, 3, 3, INT_MAX) == 2);
+    REQUIRE(int_list_valid_index(INT_MAX, INT_MAX, INT_MAX - 1) == 1);
+    REQUIRE(int_list_valid_index(INT_MIN, 3, 0) == 0);
+    REQUIRE(int_list_valid_index(3, INT_MIN, 0) == 0);
+    REQUIRE(int_list_insert(array, 3, 3, INT_MAX, 1) == 3);
+    REQUIRE(int_list_remove(array, 3, 3, INT_MIN) == 3);
+    REQUIRE(int_list_append(array, INT_MAX, 3, 1) == INT_MAX);
+    REQUIRE(int_list_find(array, INT_MAX, 3, 0) == -1);
+    REQUIRE(same_values(array, expected, 3));
     return true;
 }
 
-static bool test_invalid_operations_preserve_state(void)
+static bool test_inactive_tail_is_not_part_of_the_list(void)
 {
-    IntList list;
-    int *old_data;
-    size_t old_size;
-    size_t old_capacity;
-    int output = 123;
+    int array[4] = { 10, 20, 30, 999 };
+    int size = 3;
 
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
-    REQUIRE(int_list_append(&list, 7) == INT_LIST_OK);
-    REQUIRE(int_list_append(&list, 8) == INT_LIST_OK);
+    size = int_list_remove(array, size, 4, 1);
+    REQUIRE(size == 2);
+    REQUIRE(array[0] == 10);
+    REQUIRE(array[1] == 30);
 
-    old_data = list.data;
-    old_size = list.size;
-    old_capacity = list.capacity;
-
-    REQUIRE(
-        int_list_insert(&list, list.size + 1U, 9) ==
-        INT_LIST_ERR_OUT_OF_RANGE
-    );
-    REQUIRE(list.data == old_data);
-    REQUIRE(list.size == old_size);
-    REQUIRE(list.capacity == old_capacity);
-
-    REQUIRE(
-        int_list_remove(&list, list.size, &output) ==
-        INT_LIST_ERR_OUT_OF_RANGE
-    );
-    REQUIRE(output == 123);
-    REQUIRE(list.data == old_data);
-    REQUIRE(list.size == old_size);
-    REQUIRE(list.capacity == old_capacity);
-
-    release_active_list();
+    array[2] = 777;
+    REQUIRE(int_list_find(array, size, 4, 777) == -1);
+    size = int_list_append(array, size, 4, 40);
+    REQUIRE(size == 3);
+    REQUIRE(array[2] == 40);
+    REQUIRE(array[3] == 999);
     return true;
-}
-
-static uint32_t next_random(uint32_t *state)
-{
-    *state = *state * UINT32_C(1664525) + UINT32_C(1013904223);
-    return *state;
 }
 
 static bool test_deterministic_differential_sequence(void)
 {
-    enum {
-        REFERENCE_CAPACITY = 256,
-        STEPS = 1000
-    };
-
-    IntList list;
-    int reference[REFERENCE_CAPACITY];
-    size_t reference_size = 0U;
+    enum { CAPACITY = 10, PHYSICAL_SLOTS = 12, STEPS = 1000 };
+    int array[PHYSICAL_SLOTS] = { 0 };
+    int before[PHYSICAL_SLOTS];
+    int reference[CAPACITY] = { 0 };
+    int size = 0;
+    int reference_size = 0;
     uint32_t state = UINT32_C(0xC0FFEE);
     int step;
 
-    REQUIRE(int_list_init(&list) == INT_LIST_OK);
-    track_active_list(&list);
+    array[CAPACITY] = 12345;
+    array[CAPACITY + 1] = -12345;
 
-    for (step = 0; step < STEPS; ++step) {
-        uint32_t random_value = next_random(&state);
-        unsigned int operation = (unsigned int)(random_value % 3U);
+    for (step = 0; step < STEPS; step = step + 1) {
+        int operation;
+        int index;
+        int value;
+        int position;
+        bool rejected = false;
 
-        if (reference_size == 0U) {
-            operation = 0U;
-        } else if (reference_size >= (size_t)REFERENCE_CAPACITY) {
-            operation = 2U;
+        state = state * UINT32_C(1664525) + UINT32_C(1013904223);
+        operation = (int)(state % UINT32_C(5));
+        value = (int)((state >> 8U) % UINT32_C(41)) - 20;
+        index = (int)(state % (uint32_t)(reference_size + 3)) - 1;
+        for (position = 0;
+             position < PHYSICAL_SLOTS;
+             position = position + 1) {
+            before[position] = array[position];
         }
 
-        if (operation == 0U) {
-            int value = (int)(random_value & UINT32_C(0x7FFF));
-
-            REQUIRE(int_list_append(&list, value) == INT_LIST_OK);
-            reference[reference_size] = value;
-            reference_size += 1U;
-        } else if (operation == 1U) {
-            size_t index =
-                (size_t)(random_value % (uint32_t)(reference_size + 1U));
-            int value = (int)(next_random(&state) & UINT32_C(0x7FFF));
-            size_t i;
-
-            REQUIRE(
-                int_list_insert(&list, index, value) ==
-                INT_LIST_OK
-            );
-
-            for (i = reference_size; i > index; --i) {
-                reference[i] = reference[i - 1U];
+        if (operation == 0) {
+            size = int_list_append(array, size, CAPACITY, value);
+            if (reference_size < CAPACITY) {
+                reference[reference_size] = value;
+                reference_size = reference_size + 1;
+            } else {
+                rejected = true;
             }
-            reference[index] = value;
-            reference_size += 1U;
+        } else if (operation == 1) {
+            size = int_list_insert(array, size, CAPACITY, index, value);
+            if (reference_size < CAPACITY &&
+                index >= 0 && index <= reference_size) {
+                for (position = reference_size;
+                     position > index;
+                     position = position - 1) {
+                    reference[position] = reference[position - 1];
+                }
+                reference[index] = value;
+                reference_size = reference_size + 1;
+            } else {
+                rejected = true;
+            }
+        } else if (operation == 2) {
+            size = int_list_remove(array, size, CAPACITY, index);
+            if (index >= 0 && index < reference_size) {
+                for (position = index + 1;
+                     position < reference_size;
+                     position = position + 1) {
+                    reference[position - 1] = reference[position];
+                }
+                reference_size = reference_size - 1;
+            } else {
+                rejected = true;
+            }
+        } else if (operation == 3) {
+            if (int_list_valid_index(size, CAPACITY, index)) {
+                array[index] = value;
+            }
+            if (index >= 0 && index < reference_size) {
+                reference[index] = value;
+            }
         } else {
-            size_t index =
-                (size_t)(random_value % (uint32_t)reference_size);
-            int removed = 0;
-            size_t i;
+            int expected_index = -1;
 
-            REQUIRE(
-                int_list_remove(&list, index, &removed) ==
-                INT_LIST_OK
-            );
-            REQUIRE(removed == reference[index]);
-
-            for (i = index; i + 1U < reference_size; ++i) {
-                reference[i] = reference[i + 1U];
+            for (position = 0;
+                 position < reference_size;
+                 position = position + 1) {
+                if (reference[position] == value) {
+                    expected_index = position;
+                    break;
+                }
             }
-            reference_size -= 1U;
+            REQUIRE(
+                int_list_find(array, size, CAPACITY, value) == expected_index
+            );
+            REQUIRE(same_values(array, before, PHYSICAL_SLOTS));
         }
 
-        REQUIRE(require_values(&list, reference, reference_size));
+        REQUIRE(size == reference_size);
+        REQUIRE(size >= 0 && size <= CAPACITY);
+        REQUIRE(same_values(array, reference, size));
+        REQUIRE(array[CAPACITY] == 12345);
+        REQUIRE(array[CAPACITY + 1] == -12345);
+        if (rejected) {
+            REQUIRE(same_values(array, before, PHYSICAL_SLOTS));
+        }
     }
-
-    release_active_list();
     return true;
 }
 
 int main(void)
 {
-    run_test("insert positions", test_insert_positions);
+    run_test("zero usable capacity", test_zero_usable_capacity);
     run_test(
-        "remove positions and discard",
-        test_remove_positions_and_discard
+        "smaller capacity preserves guard slots",
+        test_smaller_capacity_preserves_guard_slots
     );
     run_test(
-        "invalid operations preserve state",
-        test_invalid_operations_preserve_state
+        "integer extremes and invalid metadata",
+        test_integer_extremes_and_invalid_metadata
+    );
+    run_test(
+        "inactive tail is not part of the list",
+        test_inactive_tail_is_not_part_of_the_list
     );
     run_test(
         "deterministic differential sequence",

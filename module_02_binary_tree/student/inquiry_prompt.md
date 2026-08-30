@@ -1,59 +1,58 @@
-# Stage A — Initial Inquiry: Remembering a Hierarchy
+# Stage A — Initial Inquiry: Two Positions Below Each Item
 
-Name: ____________________________  
+Name: ____________________________
 Date: ____________________________
 
 Use only this file during the initial inquiry. Preserve your first answers.
-Later, add labeled corrections instead of erasing your original thinking.
+Add labeled corrections later instead of erasing your original thinking.
 
-A **hierarchy** is an arrangement in levels: one item can lead to items below
-it. An **immediate relationship** connects two items with no item between them.
+A hierarchy arranges items in levels. An immediate relationship connects two
+items with no item between them. The starting example represents
+`(3 + 5) * 2`. Each item has a left position and a right position below it.
 
 ## A. Reconstruct the hierarchy
 
-A training lab stores reports in this arrangement:
+The symbols and numbers below are stored data. The side records an operand
+position; the data does not sort the items.
 
-| Item | Immediate item above it |
-|---|---|
-| Security Lab | none |
-| Logs | Security Lab |
-| Reports | Security Lab |
-| Login Events | Logs |
-| Firewall Events | Logs |
-| Daily Summary | Reports |
-| Incident Summary | Reports |
+| Item | Immediate item above it | Side |
+|---|---|---|
+| `'*'` | none | starting item |
+| `'+'` | `'*'` | left |
+| `2` | `'*'` | right |
+| `3` | `'+'` | left |
+| `5` | `'+'` | right |
 
-Draw the arrangement, or describe it line by line.
+1. Draw the arrangement or describe every connection, including its side.
 
-____________________________________________________________________
+   _________________________________________________________________
 
-____________________________________________________________________
-
-Which item is the single starting item? _____________________________
-
-Which items have nothing below them? _______________________________
-
-Write one route from `Security Lab` to an item at the bottom:
-
-____________________________________________________________________
+2. Which item is the single starting item? _________________________
+3. Which items have nothing below them? ____________________________
+4. Write the route from `'*'` to `5`. ______________________________
+5. How many immediate items may sit below one item? ________________
 
 ## B. Find rules that preserve the hierarchy
 
-Consider each change separately.
+Consider each change separately, starting from the original arrangement.
 
-1. `Firewall Events` is placed directly below both `Logs` and `Reports`.
-   What becomes unclear?
-
-   _________________________________________________________________
-
-2. A relationship is added from `Login Events` back to `Security Lab`.
-   Following relationships can now return to an earlier item. What problem
-   might this cause?
+1. For this general two-position-rule question, ignore expression meaning.
+   The same item storing `5` is also connected below the item storing `2` on
+   its empty left side. What changes when two different items lead to that
+   one object?
 
    _________________________________________________________________
 
-3. `Daily Summary` is removed from below `Reports` but is still claimed to be
-   part of the hierarchy. How could anyone reach it from the starting item?
+2. The item storing `3` has its empty left side connected back to the starting
+   item storing `'*'`. What happens if the program keeps following that route
+   downward?
+
+   _________________________________________________________________
+
+3. The left branch below the starting item is removed. Should its right branch,
+   beginning at the item storing `2`, move to the left position? Is the
+   remaining shape valid under the general two-position rules, and is it still
+   a completed expression? Explain.
 
    _________________________________________________________________
 
@@ -62,40 +61,38 @@ Write two rules that the original arrangement follows:
 1. _________________________________________________________________
 2. _________________________________________________________________
 
-## C. Macro-Question
+## C. The question for this module
 
-An **object** is one stored thing that groups related information. A **graph**
-is a general network of items and relationships; it may contain shared items
-or routes that loop back. **Computer memory** is the working storage in which
-a running program keeps values.
+An object is one stored thing that groups related information. Computer
+memory is the working storage used by a running program.
 
-> How can separate objects in computer memory represent a hierarchy, and what
-> rules prevent their links from becoming an arbitrary graph?
+> How can links between separate objects represent this hierarchy while
+> preserving the meaning of the left and right positions?
 
 Your initial explanation:
 
 ____________________________________________________________________
 
-____________________________________________________________________
-
 ## D. Storage brainstorm
 
-Do not write C code yet. **C** is the programming language used in this
-course, and **code** means instructions written for a computer.
+Do not write C code yet.
 
-What fact must the program store for each item so it can find the items
-directly below it?
+1. What must an object remember so the program can reach its left and right
+   items?
 
-____________________________________________________________________
+   _________________________________________________________________
 
-How could the program show that an item has no item below it on one side?
+2. How could the program show that one position has no item?
 
-____________________________________________________________________
+   _________________________________________________________________
 
-Must two related items be next to each other in computer memory? Explain your
-current thinking.
+3. Must two related objects be next to each other in memory? Explain.
 
-____________________________________________________________________
+   _________________________________________________________________
+
+4. If two separate items store `5`, does that make them the same object?
+
+   _________________________________________________________________
 
 One question your model does not yet answer:
 

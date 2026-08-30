@@ -1,18 +1,25 @@
-# Lab — Safe Authentication-Event ArrayList
+# Lab — A Checked List in Ten Array Slots
 
-## Purpose
+## Purpose and scope
 
-Translate the textbook's dynamic-array model into the supplied `IntList`
-interface. Implement checked access and append, finish the scaffolded growth
-path, and verify the result with tests.
+Use an ordinary C integer array, a current item count, and a fixed capacity.
+Read and update by index, find the first matching value, append, insert, and
+delete. Every operation is core.
 
-The textbook supplies the conceptual model: stored items occupy consecutive
-positions from index 0, additions grow the memory space before an out-of-range
-write, and old values keep their order. This lab adds API-specific safety
-contracts needed by the repository implementation. Treat those contracts as
-engineering extensions, not as missing prerequisites from the textbook.
+The values are invented event codes. No live systems or sensitive data are
+used. The lab requires only arrays, integer variables, conditions, loops,
+and functions.
 
-The values represent synthetic authentication-event codes. No live systems or sensitive data are used.
+## Two 90-minute meetings
+
+| Meeting | Activity | Minutes |
+|---|---|---:|
+| A — Conceptual stages | Initial inquiry, representation reveal, pause and correction, investigation, and exit ticket | 90 |
+| B — Stage E lab | Retrieve the model; implement all core operations; complete tests, bounds autopsy, and submission evidence | 90 |
+| **Total** | | **180** |
+
+Stage D's textbook and notes become available after Meeting A's investigation
+and exit ticket. Stage E's code and lab materials are released for Meeting B.
 
 ## Files
 
@@ -23,173 +30,149 @@ You receive:
 - `code/tests/test_core.c`
 - `code/tests/test_extension.c`
 - `code/tests/test_student.c`
+- `code/autopsy/faulty_append.c`
 - `code/build.ps1`
 - `code/Makefile`
 
-Work in `code/starter/int_list.c` and `code/tests/test_student.c`. Do not change
-the public header or instructor tests unless the instructor explicitly
-authorizes it.
+Edit only `code/starter/int_list.c` and `code/tests/test_student.c`. Do not
+change the public header or supplied tests unless the instructor authorizes
+it.
 
-## Public API
+## Representation and API
+
+The chapter’s example starts with:
 
 ```c
-typedef struct {
-    int *data;
-    size_t size;
-    size_t capacity;
-} IntList;
+int array[10] = {100, 200, 300};
+int size = 3;
+int capacity = 10;
+```
 
-typedef enum {
-    INT_LIST_OK = 0,
-    INT_LIST_ERR_INVALID_ARGUMENT,
-    INT_LIST_ERR_OUT_OF_RANGE,
-    INT_LIST_ERR_ALLOCATION,
-    INT_LIST_ERR_OVERFLOW
-} IntListStatus;
+The initializer gives the remaining slots zero values, but those slots are
+not list items. `size`, not a special integer, determines list membership.
 
-IntListStatus int_list_init(IntList *list);
-void int_list_destroy(IntList *list);
-bool int_list_is_valid(const IntList *list);
-IntListStatus int_list_reserve(IntList *list, size_t minimum_capacity);
-IntListStatus int_list_get(
-    const IntList *list,
-    size_t index,
-    int *out_value
+The header declares these five functions:
+
+```c
+int int_list_valid_index(int size, int capacity, int index);
+int int_list_append(int array[], int size, int capacity, int value);
+int int_list_insert(
+    int array[], int size, int capacity, int index, int value
 );
-IntListStatus int_list_append(IntList *list, int value);
-IntListStatus int_list_insert(
-    IntList *list,
-    size_t index,
-    int value
-);
-IntListStatus int_list_remove(
-    IntList *list,
-    size_t index,
-    int *out_value
+int int_list_remove(int array[], int size, int capacity, int index);
+int int_list_find(
+    const int array[], int size, int capacity, int value
 );
 ```
 
-`insert` and `remove` are extension functions. The core test target does not require them.
+`const` tells you that the search function does not change its array
+parameter. Reading and updating remain direct `array[index]` operations after
+a successful `int_list_valid_index` check.
 
-## Required representation contract
+### Required contract
 
-- `size <= capacity`.
-- `capacity == 0` means `data == NULL` and `size == 0`.
-- Positive capacity means `data` owns enough space for at least `capacity` integers.
-- Only `[0, size)` contains logical elements.
-- A failed operation leaves the prior valid list unchanged.
-- Destroy releases the allocation and resets all fields.
-- No saved interior pointer is used across a potentially growing operation.
-- Call `int_list_init` only on an uninitialized or previously destroyed object.
-  Reinitializing a live list loses its allocation.
-- Call `int_list_destroy` only with `NULL` or a valid initialized/destroyed
-  object; an arbitrary or uninitialized pointer is not safe.
-- Do not shallow-copy an `IntList`. Two structs containing the same owning
-  pointer would create duplicate cleanup responsibility.
-- A nonnull `out_value` for `get` or `remove` must not point inside the list's
-  allocation.
+- Valid counts satisfy `0 <= size <= capacity` and `capacity >= 0`.
+- Current items occupy indexes 0 through `size - 1` in list order.
+- An array argument must name an existing array with at least `capacity`
+  slots. The functions cannot discover its declared length. Never claim a
+  capacity larger than the real array.
+- Capacity is fixed for each list. The main example uses 10; an edge test may
+  use a smaller fixed usable bound, including zero.
+- Append, insertion, and removal return the resulting count on success.
+  Rejection returns the original count and leaves the entire array unchanged.
+- The caller saves the returned count in `size`.
+- Removal does not need to clear inactive tail values.
+- All integer data values are valid, including zero, negative numbers, and
+  duplicates.
 
 ## Core checkpoints
 
-### 1. Initialize, validate, and destroy
+Edit the marked `TODO(core)` regions. The helper that checks size and capacity
+is supplied. You do not need to rewrite it.
 
-Confirm the starter implementations match the documented canonical empty state. Explain why `destroy(NULL)` is a no-op and why normal callers should pass only valid list objects.
+### 1. Check an index, then read or update
 
-### 2. Checked access
+Complete `int_list_valid_index`. Return 1 only when the counts are valid and
+`0 <= index < size`; otherwise return 0.
 
-Complete `int_list_get`.
+Use that check before reading or updating `array[index]` in a test. Reading
+and updating do not change the count. An index inside the physical array can
+still be outside the current list.
 
-- Reject `NULL` arguments.
-- Reject an invalid list.
-- Require `index < size`.
-- Change `*out_value` only on success.
-- Never inspect an allocated-but-unused slot.
-
-### 3. Reserve/growth
-
-Complete the allocator-call step in `int_list_reserve`, then explain the
-provided capacity-selection scaffold.
-
-- Return success without allocation when capacity is already sufficient.
-- Use initial capacity four and geometric doubling.
-- Reject element or byte counts that overflow.
-- Replace the allocator wrapper's `NULL` placeholder with the currently owned
-  allocation so successful growth preserves existing values.
-- Change `data` and `capacity` only after success.
-- Never change `size`.
-
-The course wrapper delegates to `realloc` in normal builds and lets an
-instructor test force one deterministic failure. Do not bypass it.
-
-### 4. Append
+### 2. Append when space remains
 
 Complete `int_list_append`.
 
-1. Validate the list.
-2. Check whether `size + 1` is representable.
-3. Reserve before writing.
-4. Write at the old `size`.
-5. Increment `size` only after the write.
+- Reject invalid counts or a full list before any write.
+- On success, write at the old `size` and return `size + 1`.
+- On rejection, return the original `size` without changing an array element.
 
-### 5. Run core tests
+The caller uses the result like this:
 
-Core tests cover:
+```c
+size = int_list_append(array, size, capacity, 600);
+```
 
-- canonical initialization;
-- access on an empty list;
-- first append;
-- spare-capacity append;
-- first and repeated growth;
-- value preservation;
-- invalid argument/range behavior;
-- explicit reserve;
-- overflow rejection with state preservation;
-- cleanup and reset.
+For an addition, an unchanged returned count means the request was rejected.
 
-An instructor-only target additionally forces the real reserve path to report
-allocation failure and checks that pointer, size, capacity, and values are all
-unchanged.
+### 3. Insert at a chosen position
+
+Complete `int_list_insert`.
+
+- Permit indexes from 0 through `size`, including both endpoints.
+- Require room for one more item.
+- Complete every check before moving any values.
+- Shift from the final current item toward the target index.
+- Store the new value and return the increased count.
+
+Inserting at `size` has the same list effect as appending.
+
+### 4. Remove and compact
+
+Complete `int_list_remove`.
+
+- Require a current item index: `0 <= index < size`.
+- Move each later current item one position toward index 0.
+- Return the decreased count.
+- Leave the inactive tail alone. It is no longer part of the list.
+
+A rejected removal returns the original count and changes no array element.
+
+### 5. Find the first matching value
+
+Complete `int_list_find`.
+
+- Scan current indexes from 0 upward.
+- Return as soon as the first matching item is found.
+- Return `-1` when the value is absent or the counts are invalid.
+- Do not read unused slots or change the array.
+
+The result is an index. A stored value of `-1` is not the same thing as the
+search result `-1`.
 
 ### 6. Design three tests
 
-Inspect the supplied tests, then complete the three generic functions in
-`code/tests/test_student.c` with cases that are not direct copies. Together,
-your tests must include:
+Add three cases in `code/tests/test_student.c` that are not direct copies of
+the supplied tests:
 
-- one boundary or malformed-input path not already asserted directly;
-- one state-preservation or sequence property;
-- one additional API-contract risk you identify and justify.
+- one boundary or invalid-count/index case;
+- one rejected-state or operation-sequence case; and
+- one additional contract case, such as first-match behavior or shift order.
 
-For each test, record why the case adds evidence beyond the supplied core
-tests. Merely renaming or repeating a visible test does not count. If your
-test initializes a list, clean it up on every return path.
+For each case, state the new claim it checks. Use initialized arrays when
+comparing all slots before and after a rejection. Tests must respect the
+actual array-length requirement.
 
-## Extension checkpoints
+## Optional additional edge cases
 
-After the core submission works:
-
-### Insert
-
-- Allow `index <= size`.
-- Reserve first.
-- Shift `[index, size)` one position right with `memmove`.
-- Store the new value and then increment `size`.
-
-### Remove
-
-- Require `index < size`.
-- Copy the removed value when `out_value != NULL`.
-- Shift later elements one position left.
-- Decrement `size`.
-- Do not shrink in this module.
-
-Run `test_extension`.
+After the required core and student tests pass, you may run the extension
+tests. They exercise additional boundaries and operation sequences using the
+same five functions. Extension output is not part of the required submission;
+insertion and removal are already required by the core tests.
 
 ## Build and test
 
-### PowerShell
-
-From the `code` directory:
+From the `code` directory in PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
@@ -197,56 +180,46 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target starter -StudentTests
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target starter -Extensions
-```
-
-When Clang or GCC supports sanitizers:
-
-```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target starter -Sanitize
+  -Target autopsy
 ```
 
-The execution-policy option applies only to this child PowerShell process.
+When the compiler supports sanitizers, add `-Sanitize` to a test command. A
+sanitizer checks for some invalid accesses while the program runs. The
+execution-policy option applies only to this child PowerShell process.
 
-### GNU Make in Git Bash, MSYS2, WSL, Linux, or macOS
+In Git Bash, MSYS2, WSL, Linux, or macOS:
 
 ```sh
 make starter-core
 make starter-student-tests
 make starter-extension
+make autopsy
 ```
 
-The Makefile uses POSIX shell commands and defaults to GCC. For Clang, use
-`make CC=clang starter-core`. If sanitizers are unavailable locally, submit
-the strongest warning/debugger evidence your approved environment supports.
-Instructor CI output is an acceptable accessibility/toolchain alternative.
+The Makefile defaults to GCC. Use `make CC=clang starter-core` for Clang.
+If a local tool is unavailable, use approved debugger or instructor-CI
+evidence. CI means another computer runs the submitted tests.
 
-## Required evidence
+## Required submission
 
-Submit:
-
-1. completed `int_list.c`;
-2. core test transcript;
+1. completed `int_list.c` with all five core functions;
+2. a passing core-test transcript;
 3. three passing student-authored tests with a rationale for each;
-4. warning and sanitizer/debugger evidence;
-5. completed evidence template, including a bounded-ingestion policy;
-6. Segfault Autopsy;
+4. warning-enabled and approved diagnostic evidence;
+5. completed evidence record;
+6. Bounds and Invariant Autopsy;
 7. corrected Cognitive Pause.
 
-## Constraints
+## Constraints and completion
 
 - Do not change tests merely to turn failures into passes.
-- Do not read unused slots.
-- Do not use a sentinel integer to report failure.
-- Do not assign `realloc` directly to `list->data`.
-- Do not grow by exactly one slot per append.
-- Do not use live authentication logs.
+- Do not read unused slots as current list items.
+- Do not use an integer value as an unused-slot marker.
+- Do not write at index `capacity` or change the capacity to accept a request.
+- Reject before writing or shifting when counts, index, or space are invalid.
+- Keep the original array and count unchanged on rejection.
 
-## Completion criteria
-
-Core completion requires:
-
-- all core tests pass;
-- no compiler warnings in student-controlled code;
-- no detected invalid access, use-after-free, or leak in the tested path;
-- written invariant and failure explanation are accurate.
+Completion means every core operation passes the supplied and student tests,
+student-controlled code has no compiler warnings, and the written explanation
+correctly distinguishes size, capacity, and current item indexes.

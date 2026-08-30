@@ -3,7 +3,8 @@
 ## Scope
 
 This module implements depth-first traversal for a valid, heap-owned binary
-tree. It revisits Module 2's node links and strict-BST ordering, then reuses
+tree. It reuses Module 2's binary `left`/`right` links, introduces
+allocated-node lifetime and strict-BST ordering, and then reuses
 Module 4's Stack contract with a new item type: `const TreeNode *`.
 
 The teaching fixture is synthetic:
@@ -394,10 +395,11 @@ insertion changes `*root` from `NULL` to the new leaf. The insertion baseline
 is inspected and tested here; students implement insertion and balancing in
 Module 15.
 
-Module 2 used pointers into a caller-owned fixed arena; those nodes were not
-individually freed. Module 5 nodes are individually allocated, owned through
-the root after insertion, and individually released during destruction.
-Mixing the two ownership models is an error.
+Module 2 used local node variables and reset their fields without releasing
+storage. Module 5 adds a different node layout and an allocation/release
+contract: nodes are owned through the root after insertion and released
+during destruction. Do not pass Module 2's local nodes to these release
+functions or mix the two node types and APIs.
 
 ## Strict-BST search
 
