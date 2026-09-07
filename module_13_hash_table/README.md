@@ -328,9 +328,9 @@ system security.
 
 ## Relationship to the course spiral
 
-- **Revisits:** Module 1 contiguous storage and bounds, Module 4 array growth and failure preservation, direct
-  indexing in graph representations, exact lookup, invariants, and bounded
-  loops.
+- **Revisits:** Module 1 contiguous storage and bounds, Module 4 failure
+  preservation, growable-array maintenance from Modules 10–11, direct indexing
+  in graph representations, exact lookup, invariants, and bounded loops.
 - **Contrasts:** direct indexing uses key-sized address space; a linked list
   scans; separate chaining stores collision groups in linked nodes; an AVL
   tree supplies sorted order and worst-case logarithmic search; this table

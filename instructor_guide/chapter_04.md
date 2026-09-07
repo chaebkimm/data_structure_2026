@@ -1,64 +1,79 @@
-# Chapter 4. Take Out the Last Added Value First
+# Chapter 4. Taking Out the Last Value First
 
 ## Starting Question
 
-> "When we read a closing symbol, which opening symbol should we pair it with?"
+> When several function calls are paused, which saved call must finish first?
 
-**Expected Answer:** Students should say that among the opening symbols that are not yet closed, we must check the most recent one first.
+**Expected answer:** The newest unfinished call must finish before the older
+calls below it can resume.
 
 ## Why We Need This
 
-When opening symbols overlap, a single variable cannot remember all the remaining symbols. We must close the most recently opened group before we close the groups that were opened earlier. We need a rule to take out the last added value first. Here, we introduce the name "stack."
+A fixed array can store saved function IDs, but an access rule is still
+needed. New IDs enter at one end. Only the newest ID may be inspected or
+removed. This is the Stack rule: last in, first out.
+
+The runtime call stack is a motivating model, not the `int` Stack object that
+students implement. The course Stack is an ordinary caller-owned array with a
+separate `size` and `capacity`.
 
 ## Board Walkthrough
 
-Read `A(B[C]{D})` from left to right. Write the stack from bottom to top.
+Use capacity 10. Write states from bottom to top.
 
-| Read Character | Action | Stack State |
-| --- | --- | --- |
-| Start | None | Empty |
-| `A` | None | Empty |
-| `(` | `push` | `(` |
-| `B` | None | `(` |
-| `[` | `push` | `(`, `[` |
-| `C` | None | `(`, `[` |
-| `]` | `pop` after checking pair | `(` |
-| `{` | `push` | `(`, `{` |
-| `D` | None | `(`, `{` |
-| `}` | `pop` after checking pair | `(` |
-| `)` | `pop` after checking pair | Empty |
+| Request | Report | State | Size |
+|---|---|---|---:|
+| start | none | empty | 0 |
+| push 100 | none | 100 | 1 |
+| push 200 | none | 100, 200 | 2 |
+| push 300 | none | 100, 200, 300 | 3 |
+| peek | 300 | 100, 200, 300 | 3 |
+| pop | 300 | 100, 200 | 2 |
+| pop | 200 | 100 | 1 |
 
-When `size = 2`, the top is not the very last slot of the entire array, but exactly `data[size - 1]`.
+When `size` is 3, the top is `stack[size - 1]`, or `stack[2]`.
+`stack[size]` is the next inactive slot.
 
-Let's predict:
-
-* When both `(` and `[` are in the stack, what is the next opening symbol to check?
-* If we read the `]` in `A(B]`, what happens to the stack and the final result?
-* If the input is finished but a `(` is still left in the stack, what do we need to check?
+Then trace the textbook expression `1+2*3` with a number Stack and an
+operator Stack. Multiplication waits above addition. At the end, apply `*`
+before `+`; the sole result is 7.
 
 ## Common First Thoughts
 
-* "The top is always the very last slot of the allocated array."
-* "`peek` also reads and removes the top value."
-* "A closing symbol just needs to be paired with the same type from any of the remaining opening symbols."
-* "If `limit == 0`, we cannot even check an empty string."
+- “The top is at `stack[size]`.”
+- “Pop must erase the old array cell.”
+- “Peek and pop perform the same mutation.”
+- “A full push can write first and report failure afterward.”
+- “The expression evaluator accepts spaces, parentheses, or multi-digit
+  operands.”
+- “The program-controlled Stack and runtime call bookkeeping are the same
+  object.”
 
 ## Neutral Questions
 
-* What value did you use to calculate the top position just now?
-* Can you tell me the `size` before and after this action?
-* When we read up to the character where the error happened, what is left in the stack?
+- What is `size` before and after this request?
+- Which indexes belong to the active Stack?
+- Which value is at `size - 1`?
+- What must remain unchanged when the request is rejected?
+- Which waiting operator has equal or greater precedence?
 
 ## Vocabulary Rules
 
-**Words we can use:** Fixed-capacity array-based list, size, capacity, pointers, keeping the state after a rejected operation, and amount of work.
+**Words we can use:** Fixed arrays, indexes, size, capacity, active prefix,
+pointers, character constants, invariants, rejection preservation, and simple
+recursive calls.
 
-**Names we will introduce in this chapter:** Growable array, checked expansion, doubling, array ownership, delimiter, top, Last-In-First-Out (LIFO), stack, `push`, `peek`, `pop`, underflow, abstract data type, and nesting limit.
+**Names introduced here:** Stack, last in first out (LIFO), top, push, peek,
+pop, underflow, call frame, operator, operand, precedence, and expression
+evaluation.
 
-**Words we won't use yet:** We will only mention "running function call storage" and "depth-first search" by name. We will not explain how they work or how to build them yet.
+**Words deferred:** Allocation, release, ownership, geometric growth,
+amortized cost, tree traversal orders, and graph depth-first search.
 
 ## Final Check
 
-> "Can you use the stack state to explain why `]` cannot be paired with `(` in the string `A(B]`?"
+> Why does the evaluator for `1+2*3` leave `+` waiting when `*` arrives?
 
-**Minimum Expected Answer:** Students should say that the most recently left opening symbol at the top of the stack is `(`, and since it is a different type from the closing symbol `]`, it is not removed and the pairing fails.
+**Minimum answer:** The incoming `*` has greater precedence than the `+` at
+the operator Stack's top, so `*` is pushed. At the end, `*` is popped and
+applied before `+`, producing 7.

@@ -2,8 +2,8 @@
 
 ## Starting Question
 
-> How can local node variables represent the expression `(3 + 5) * 2` as a
-> hierarchy with distinct left and right positions?
+> How can a tree record which operation happens first, and how can the same
+> function calculate the answer for every subtree?
 
 **Expected answer:** The final `*` operation is the root. Its left child is
 the `+` sub-expression and its right child is `2`; the `+` node links to `3`
@@ -18,11 +18,16 @@ node may have zero, one, or two children, with left and right remaining
 distinct. In a completed binary expression tree, an operator has exactly two
 operands and a numeric operand is a leaf.
 
-The example uses the portable C character constants `'*'` and `'+'`, which
-have type `int`, in the same `data` field as the small numeric operands. This
-is a simplified structural model, not a type-safe expression evaluator. The
-lab introduces structs, addresses, pointers, and recursive processing; it
-does not introduce allocated node storage or expression evaluation.
+The examples use portable C character constants such as `'*'` and `'+'`,
+which have type `int`, in the same `data` field as small numeric operands.
+The textbook now carries this model through recursive expression building
+and evaluation. Number leaves hold values `0` through `9`; the parser
+converts a digit character by subtracting `'0'`.
+
+The existing lab still introduces structs, addresses, recursive search, and
+field clearance using local nodes. The additional textbook program uses a
+global array of 20 nodes. It requires no dynamic allocation and does not
+change the lab's two required functions.
 
 ## Board Walkthrough
 
@@ -55,6 +60,48 @@ After detachment, the links still form a valid generic binary tree, but the
 root no longer represents a complete binary expression. Keep that semantic
 expression rule separate from the structural rules enforced by the caller.
 
+## From Text to a Tree
+
+Contrast the manually grouped `(3 + 5) * 2` with the parser input `3+5*2`.
+The first has `*` at the root and gives `16`. The second has `+` at the root,
+with `3` on the left and the subtree `5*2` on the right, and gives `13`.
+Use the second expression throughout the parser and evaluation trace.
+
+Write one shared cursor under the input. The top call starts with minimum
+precedence `1`. After reading `3` and consuming `+`, it calls the right
+parser with minimum `2`. That call consumes `5*2`; its child call at minimum
+`3` reads `2` and returns. Assemble `*`, then `+`, while the calls return.
+
+Trace `8-3-2` next. The right call at minimum `2` must leave the second `-`
+unconsumed. The outer call then attaches the completed `8-3` tree on the
+left of the second subtraction. Ask why removing the `+ 1` from the minimum
+would change the result. Use `8/4/2` to check the same reasoning for division.
+
+The accepted language is single-digit operands joined by binary `+`, `-`,
+`*`, and `/`, with no spaces or parentheses. Do not present the manually
+grouped example as accepted parser input. The checked node helper rejects
+exhausted capacity before indexing outside the array. A failed build resets
+the used count and returns `NULL`; it does not preserve an earlier tree.
+Every build reuses the same array.
+
+## Recursion and a First DFS Trace
+
+For `3+5*2`, record entry order `+, 3, *, 5, 2` separately from result order
+`3, 5, 2, *, +`. The `+` call retains its own left result `3` while the `*`
+call computes `10`. Only then can the root produce `13`.
+
+Introduce recursion through the smaller-subtree problem and the number-leaf
+base case. Explain depth-first search as finishing one branch before moving
+to an unfinished branch. Name preorder for current-node-first search and
+postorder for child-results-first evaluation. Keep the three-order
+comparison and explicit-stack implementation for Chapter 5.
+
+Use the two explicit child-call statements in `eval_tree` to show exactly
+where the parent resumes. Each call has its own `left` and `right` locals.
+The evaluator uses `double`, so `3/2` gives `1.5`, and rejects division by
+zero without overwriting the caller's prior result. Do not equate an
+operator's entry with applying its arithmetic.
+
 ## Core Invariant and Caller Duties
 
 A valid nonempty tree has one root. Every other node appears in exactly one
@@ -79,7 +126,14 @@ operand.
 - “A binary tree always has zero or two children.” That is the completed
   expression example's semantic rule, not the generic representation rule.
 - “The character `'*'` needs a different field.” A C character constant has
-  type `int`; this chapter uses that simplified encoding without evaluating it.
+  type `int`; number leaves hold numeric values, and operator branches hold
+  character constants. The parser converts `'5'` into `5` with `- '0'`.
+- “The next operator always becomes the root immediately.” Its precedence
+  determines which call consumes it and how far its right operand extends.
+- “The right call may consume another equal-precedence operator.” Passing
+  precedence plus one leaves that operator for the earlier call.
+- “Every recursive call shares the same local answer variables.” Each call
+  has separate locals; only the parser's reading position is shared through `q`.
 - “Clearing a child also removes the parent's link.” The caller must detach it.
 - “Clearing destroys the node variable.” Its fields reset; its storage remains live.
 - “Zero means no node.” Zero is ordinary data; only a `NULL` link means no child.
@@ -93,13 +147,17 @@ bounds, and invariants from Chapter 1.
 **Introduce here:** hierarchy, expression-tree example, binary tree, node,
 root, parent, child, left/right operand position, sibling, ancestor,
 descendant, leaf, subtree, path, depth, height, address, pointer, `struct`,
-`&`, `.`, `->`, `NULL`, character constants used as integer labels, node
-lifetime, recursion, a stopping case, and cascading clearance.
+`&`, `.`, `->`, `NULL`, character constants used as integer labels, digit
+conversion, node lifetime, recursion, a stopping case, brief DFS, preorder
+search, postorder evaluation, precedence, left associativity, parsing, a
+shared `char **` reading position, and cascading clearance.
 
-**Deferred:** expression evaluation and typed expression payloads, node
-allocation and release, parent-pointer/root-comparison APIs, status-code
-interfaces, binary-search ordering, rotations, and balance. Formal DFS and
-named traversal-order comparisons belong to Module 5.
+**Deferred:** multi-digit and parenthesized parsing, unary operators, typed
+expression payloads, dynamic node allocation and release,
+parent-pointer/root-comparison APIs, binary-search ordering, rotations, and
+balance. Detailed preorder/inorder/postorder comparisons and explicit-stack
+traversal belong to Module 5. A `1`/`0` success return and an output pointer
+are explained locally for the textbook evaluator.
 
 ## Operation Summary
 
@@ -110,10 +168,19 @@ named traversal-order comparisons belong to Module 5.
 | `tree_find` | Check current node, then left and right subtrees | Proportional to the number of searched nodes |
 | `tree_clear` | Clear children before resetting the current node | Proportional to the selected subtree size |
 | Detach a child | Set the selected parent link to `NULL` | Constant |
+| `build_expression` | Consume characters and link one fresh node per character | Proportional to accepted input length |
+| `eval_tree` | Get both child results, then apply the operator | Proportional to expression-tree size |
 
 Search and clearance can each use temporary call-stack space proportional
 to tree height. Initialization, attachment, and detachment remain direct
 operations. Only `tree_find` and `tree_clear` are library functions.
+
+Evaluation also needs temporary call space proportional to height. With
+only two precedence levels and no parentheses, parser calls nest at
+minimum values `1`, `2`, and `3`; a long chain of equal-precedence operators
+does not make its call depth grow with the tree height. The lecture program
+is in `module_02_binary_tree/code/lecture/expression_tree.c`; its build and
+run commands are in the textbook.
 
 ## Final Check
 
@@ -136,3 +203,16 @@ cannot rule out either subtree.
 **Minimum answer:** A non-root node must appear in only one child position.
 Clearing through one link would unexpectedly change the node seen through
 the other link.
+
+> Why does the parser build `3+5*2` with `+` at the root, and why is that
+> operator evaluated last?
+
+**Minimum answer:** The right parser at minimum `2` consumes `5*2` as one
+subtree. The outer call attaches it below `+`. Evaluation then waits for
+the left result `3` and the right result `10` before returning `13`.
+
+> What does `char **q` share, and what remains separate between calls?
+
+**Minimum answer:** It shares the cursor pointing at the next unread
+character. Each parser call still has its own `node`, `parent`, and minimum
+precedence. Each evaluator call has its own child results.

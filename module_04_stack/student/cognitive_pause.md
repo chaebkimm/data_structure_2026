@@ -11,63 +11,51 @@ not assessed. Preserve the initial response when correction begins.
 
 ## Starting state and needed words
 
-A **Stack** is a collection with access at one end, called the **top**.
-**Last in, first out (LIFO)** means the item added most recently is the first
-item that may be removed.
+A Stack allows access at one end, called the top. Last in, first out means the
+most recently added item is the first item removed. `push` adds at the top,
+`peek` reports the top without removing it, and `pop` removes and reports it.
 
-- `push` adds one item at the top.
-- `peek` reports the top item without removing it.
-- `pop` removes and reports the top item.
-- **empty** means the Stack has no item and therefore no top.
-- **underflow** is an attempt to `peek` or `pop` an empty Stack.
-
-This character Stack uses an ArrayList as its **backend**, meaning its
-lower-level storage. `size` counts current items. If `size > 0`, the top is
-stored at `data[size - 1]`. In every response, list Stack items from bottom
-to top.
-
-A **delimiter** is a mark that begins or ends a group. The matching pairs are
-`()`, `[]`, and `{}`. Ordinary letters do not change the Stack. Push an
-opening delimiter. For a closing delimiter, check the top opening and pop it
-only when the pair matches.
-
-The **nesting limit** is the maximum number of openings the Stack may hold.
-For this activity, the limit is 2.
+This activity uses `int stack[10]`, `size`, and `capacity`. Logical items
+occupy indexes 0 through `size - 1`. If `size > 0`, the top is
+`stack[size - 1]`. A rejected operation leaves the entire prior array, size,
+and any required output unchanged.
 
 ## Complete exactly three targets
 
-### Target 1 — Trace a complete expression
+### Target 1 — Trace the function IDs
 
-For `A(B[C]{D})`, record the Stack state after each delimiter. State the
-greatest value reached by `size` and the final state.
+Start empty with capacity 10. Trace:
 
-Response:
+```text
+push(100), push(200), push(300), peek, pop, pop, pop
+```
 
-____________________________________________________________________
-
-### Target 2 — Distinguish two closing failures
-
-Consider `A(B]` and `A)B` independently.
-
-For each input, state:
-
-- the symbol at which failure is known;
-- the Stack state just before that symbol is handled; and
-- whether the failure is a mismatched pair or a closing delimiter with no
-  opening available.
+Record every reported value, every new size, and every bottom-to-top state.
 
 Response:
 
 ____________________________________________________________________
 
-### Target 3 — Enforce the boundary and check the end
+### Target 2 — Preserve state at both boundaries
 
-Consider each input independently with nesting limit 2.
+Consider each case independently.
 
-1. For `A([B{C}])`, identify the symbol at which the limit prevents an
-   operation and state the unchanged Stack state.
-2. For `A(B`, state the final Stack state and explain why reaching the end
-   does not mean the input is complete.
+1. A capacity-3 Stack contains 100, 200, 300. State the result of
+   `push(400)` and everything that remains unchanged.
+2. An empty Stack is asked to `peek` into an output currently holding 999.
+   State the result and the final output value.
+3. An empty Stack is asked to `pop` into the same output. State the returned
+   size and the final output value.
+
+Response:
+
+____________________________________________________________________
+
+### Target 3 — Transfer LIFO to an expression
+
+For `1+2*3`, explain why multiplication is completed before addition. State
+the final value. Then decide whether `1++2` is accepted and what must happen
+to a preexisting output value when it is rejected.
 
 Response:
 
@@ -75,13 +63,11 @@ ____________________________________________________________________
 
 ## Calibration
 
-**Calibration** means comparing an initial response with an accurate model.
-When the instructor releases that model:
+When the instructor releases the accurate model:
 
 1. preserve your initial response;
-2. place a check beside reasoning that remains correct;
-3. label each correction `trace`, `closing failure`, `limit`, or `final
-   state`; and
+2. mark reasoning that remains correct;
+3. label each correction `trace`, `boundary`, or `expression`; and
 4. finish the sentence below.
 
 Correction:

@@ -31,7 +31,7 @@ By the end of the course, students will be able to:
 2. Specify an abstract data type independently of its underlying representation.
 3. Implement, test, and safely destroy core data structures in C.
 4. State and check the representation invariant that makes each structure correct.
-5. Implement recursive tree DFS, iterative graph DFS, and graph BFS; trace tree BFS and the alternate graph-DFS form to explain how frontier control transfers between trees and graphs.
+5. Build and evaluate expression trees recursively, use explicit stacks for tree DFS, and implement iterative graph DFS and graph BFS; trace tree BFS and the alternate graph-DFS form to explain how frontier control transfers between trees and graphs.
 6. Implement and analyze hash-table, BST, AVL-tree, binary-heap, and disjoint-set operations.
 7. Implement Dijkstra and one complete minimum-spanning-tree algorithm, finish and test bounded decision checkpoints in an instructor-supplied implementation of the other, and trace and compare both Prim and Kruskal under their required input assumptions.
 8. Analyze worst-case, expected/average-case where assumptions justify it, amortized, and representation-sensitive costs.
@@ -55,12 +55,12 @@ By the end of the course, students will be able to:
 This map contains deliberate previews and returns:
 
 - The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Modules 8 and 9 form one breadth-first week, and Modules 10 and 11 form one priority/Heap week.
-- Module 13 is an associative-index bridge between Spirals 4 and 5. It revisits Module 1's array bounds and Module 4's growable-array storage, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
-- Linked local node variables appear in Module 2. Allocation is introduced with the Stack in Module 4 and with individual tree nodes in Module 5, then retrieved through bounded implementation and repair in Module 14.
-- Module 2 uses an expression tree to introduce binary-tree links, node lifetime, and simple recursive processing. Module 5 formalizes traversal orders and introduces binary-search ordering before Module 15 strengthens that ordering with AVL balance.
+- Module 13 is an associative-index bridge between Spirals 4 and 5. It revisits Module 1's array bounds and the growable-array work in Modules 10–11, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
+- Linked local node variables appear in Module 2. Allocation and release are introduced with individually allocated tree nodes in Module 5, then retrieved through later container work and bounded repair in Module 14.
+- Module 2 uses expression trees to introduce binary-tree links, node lifetime, recursive construction and evaluation, and a brief DFS model. The Module 5 textbook develops preorder, inorder, and postorder using explicit stacks without recursion.
 - Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
-- Stack precedes DFS; Queue precedes BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find precedes Kruskal.
+- Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Queue precedes BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find precedes Kruskal.
 
 ---
 
@@ -227,13 +227,13 @@ to the autopsy.
 **Revisits:** plain arrays, indexing, conditions, loops, and function calls.
 
 **Forward:** linked node variables in Module 2, graph matrices in Module 3,
-growable Stack backing storage introduced in Module 4, and checked Hash Table
-storage in Module 13. Allocation and release belong to the later Stack and
-owned-node labs, not this chapter.
+the fixed-capacity Stack in Module 4, allocated nodes in Module 5, and checked
+Hash Table storage in Module 13. Allocation and release belong to later
+owned-node and container labs, not this chapter.
 
 ---
 
-## Module 2 — Tree: Expression-tree model, binary-tree links, and recursive clearance
+## Module 2 — Tree: Recursion, expression-tree construction, and evaluation
 
 Production materials: [Module 2 teaching package](module_02_binary_tree/README.md)
 
@@ -243,6 +243,9 @@ Students will:
 
 - identify root, parent, child, sibling, ancestor, descendant, leaf, path, depth, height, and subtree;
 - map the expression `(3 + 5) * 2` to a five-node binary tree while distinguishing expression rules from generic binary-tree rules;
+- trace recursive expression-tree construction from compact single-digit input using `+`, `-`, `*`, and `/`, operator precedence, and left associativity;
+- evaluate an expression tree recursively, finishing the two operand subtrees before applying their operator;
+- explain recursion's stopping case and the depth-first pattern of completing one branch before the next;
 - translate between a binary-tree diagram and local node variables with distinct left/right links;
 - explain the one-incoming-link and no-cycle invariants, including the caller's responsibility for them;
 - initialize nodes and attach a fresh child only to an empty chosen side;
@@ -262,6 +265,9 @@ Students will:
 - Why is a right-only child valid, and why must it stay on the right?
 - Why can two parents not share a child even without a cycle?
 - What stops the recursive search or clearance?
+- How does a minimum precedence limit the part of an expression handled by one recursive call?
+- Why does the right-subtree call use the current operator's precedence plus one?
+- Why must an operator wait for both operand values before returning its result?
 - Why can an unsorted-tree search need to inspect every node?
 - Why does clearing a child not automatically detach the parent's link?
 
@@ -276,7 +282,16 @@ root `'*'` has left child `'+'` with children `3` and `5`, and right child
 Stage C transfers the same reasoning to `(8 - 3) * (4 + 2)`. Vocabulary
 belongs to Stage B; Stage D notes do not reveal the later autopsy's result.
 
-Meeting B implements exactly the two functions shown in the textbook:
+The textbook also follows a compact expression through recursive construction
+in a fixed node array and recursive evaluation. That parser accepts alternating
+single digits and `+`, `-`, `*`, or `/`; parentheses, spaces, unary operators,
+and multi-digit numbers are outside its stated input contract. The existing
+parenthesized examples above are direct-link fixtures, not parser inputs.
+Students trace the shared input position, precedence threshold, recursive
+return values, and the depth-first pattern. The example introduces neither
+dynamic allocation nor a separate Stack implementation.
+
+The existing Meeting B lab implements these two functions:
 
 ```c
 struct TreeNode *tree_find(struct TreeNode *node, int target);
@@ -299,7 +314,8 @@ the generic two-position limit, but the library does not validate the
 expression-specific arity rule. After removing one operand, the links may
 still form a valid tree even though they no longer encode a complete expression.
 
-Formal DFS and named traversal-order comparisons belong to Module 5.
+The textbook introduces the DFS idea briefly here. Detailed named traversal
+orders and their nonrecursive Stack implementations belong to Module 5.
 Allocation, parent pointers, shared-root queries, status-code interfaces,
 binary-search ordering, and balancing are not Module 2 work.
 
@@ -324,6 +340,7 @@ actual cycle or deliberately exhaust call-stack space.
 ### Evidence of learning
 
 - expression-diagram-to-left/right-field translation and a separate generic right-only-child case;
+- textbook traces of precedence-based tree construction and recursive evaluation;
 - direct local initialization and occupied-side preservation;
 - correct recursive search, including duplicate values and absence;
 - branch clearance with explicit detachment and unchanged opposite branch;
@@ -336,12 +353,13 @@ actual cycle or deliberately exhaust call-stack space.
 **Revisits:** variables, conditions, loops, fixed storage, and invariants.
 
 **Introduces:** an expression-tree application, self-referential structs,
-node addresses and lifetimes, distinct left/right links, recursive search,
-and recursive field clearance.
+node addresses and lifetimes, distinct left/right links, recursion and its
+stopping cases, a brief DFS model, precedence-based tree construction,
+recursive expression evaluation, recursive search, and recursive field clearance.
 
-**Forward:** graph relationships in Module 3; allocation and growable storage
-in Module 4; formal DFS and allocated-node destruction in Module 5; BFS in
-Module 8; BST/AVL synthesis in Module 15.
+**Forward:** graph relationships in Module 3; fixed-capacity LIFO storage in
+Module 4; nonrecursive preorder, inorder, and postorder in Module 5;
+BFS in Module 8; BST/AVL synthesis in Module 15.
 
 ---
 
@@ -425,9 +443,9 @@ Students choose among ArrayList, tree, and graph for three short scenarios. For 
 
 ---
 
-# Spiral 2 — LIFO and Depth-First Exploration
+# Spiral 2 — LIFO and Deferred Work
 
-## Module 4 — Linear: Stack ADT
+## Module 4 — Linear: Fixed-capacity Stack ADT
 
 Production materials: [Module 4 teaching package](module_04_stack/README.md)
 
@@ -436,58 +454,69 @@ Production materials: [Module 4 teaching package](module_04_stack/README.md)
 Students will:
 
 - specify the LIFO contract independently of its backend;
-- implement a checked ArrayList-backed Stack;
-- trace growable-array storage and checked geometric growth introduced in this module;
+- implement a checked fixed-capacity integer Stack over caller-owned storage;
 - trace mixed `push`, `pop`, and `peek` operations;
-- use a Stack to validate nested delimiters;
+- use separate fixed number and operator Stacks to evaluate expressions in
+  the chapter's small grammar with multiplication precedence;
+- preserve the complete Stack and checked outputs after rejected operations;
 - distinguish a Stack ADT from the C runtime call stack.
 
 ### Macro-Question
 
-> If the most recently opened task must be completed first, what access rule should the structure enforce?
+> If the newest saved task must be completed first, what access rule should
+> the structure enforce?
 
 ### Micro-Questions
 
 - Which item may be removed next?
 - How should underflow be reported?
-- Why must clients not bypass the Stack API and index the backing ArrayList?
-- How can a replaceable backing array preserve prior state when a growth request fails?
-- Why does doubling reduce the frequency of complete copies during repeated pushes?
-- Why does nested structure require LIFO matching?
+- Why is the top at `stack[size - 1]` instead of `stack[size]`?
+- What must remain unchanged when a push is requested at fixed capacity?
+- Why does pop decrease size without shifting or erasing the inactive slot?
+- How do operator precedence and LIFO order interact in `1+2*3`?
 - How does recursion also depend on stack-like saved state?
 
 ### C lab and cybersecurity context
 
-Implement a character Stack and validate delimiters in simplified security-policy expressions. Test empty input, deep nesting, an unmatched closing delimiter, a mismatched delimiter, leftover openings, and an explicit resource limit.
+Implement checked integer Stack operations over a caller-owned fixed array.
+Then evaluate expressions made from alternating single digits and the
+operators `+` and `*`. The evaluator uses two fixed local Stacks, applies
+operators of equal or greater precedence before pushing the next operator,
+rejects malformed input and arithmetic overflow, and changes its output only
+on success.
 
-Growable-array storage, replacement-buffer ownership, and checked geometric
-growth are introduced here. Students carry forward Module 1's active-prefix
-and bounds rules while learning how a successful growth changes capacity and
-how a failed growth preserves prior state. They distinguish an individual
-copying push from the amortized cost of repeated pushes under a doubling
-policy. These are new Stack-backend requirements, not Chapter 1 tasks.
+The representation reuses Module 1's active-prefix and bounds rules. Valid
+metadata satisfies `0 <= size <= capacity`. Push, peek, and pop are constant
+work; none allocates, shifts, or releases storage. The isolated autopsy reads
+`stack[size]`, an allocated but inactive slot, to expose the difference
+between physical capacity and the logical top without causing an out-of-bounds
+access.
 
-Malformed input must fail safely. The module explicitly distinguishes stack-buffer vulnerabilities, runtime call frames, and the Stack ADT.
-
-Because C has no automatic generic container, later modules receive separately typed `const TreeNode *` and vertex-ID Stack scaffolds with the same contract. Pointer-weak students are not required to design a `void *` generic Stack. A linked-node backend is an extension and an early retrieval opportunity for Module 14.
+The module distinguishes a program-controlled Stack ADT from runtime call
+bookkeeping. Later tree and graph modules receive separately typed Stack
+scaffolds with the same LIFO behavior; their storage policy is specified in
+those later modules.
 
 ### Evidence of learning
 
 - stack-state trace;
 - API and implementation;
-- parser boundary tests;
-- push/pop and full-parser complexity;
+- full/empty and invalid-metadata preservation tests;
+- expression precedence and malformed-input tests;
+- push/pop and expression-scan complexity;
 - ADT-versus-runtime-stack explanation.
 
 ### Spiral links
 
-**Revisits:** Module 1's contiguous storage, size/capacity distinction, and
-bounds checks; node addresses, fields, and local-variable lifetime from Module 2.
+**Revisits:** Module 1's fixed contiguous storage, size/capacity distinction,
+active prefix, bounds checks, and unchanged state after rejection; simple
+character constants and pointers from Module 2.
 
-**Introduces:** allocation and release, growable-array storage, checked
-doubling, owned storage, Stack encapsulation, and its error contract.
+**Introduces:** Stack encapsulation, LIFO access, top, push, peek, pop,
+underflow, operator precedence, and a two-Stack expression trace.
 
-**Forward:** tree DFS and graph DFS.
+**Forward:** the LIFO behavior reused by tree and graph DFS. Later modules
+state their own item type and storage policy.
 
 ---
 
@@ -495,20 +524,18 @@ doubling, owned storage, Stack encapsulation, and its error contract.
 
 Production materials: [Module 5 teaching package](module_05_tree_dfs/README.md)
 
-**14-week role:** required Week 5 tree-DFS unit. Recursive traversal, BST-search tracing, and postorder cleanup are core. Explicit-stack tree traversal remains available in the package as an extension, not a second required implementation.
+**14-week role:** required Week 5 tree-DFS unit. The textbook focuses on preorder, inorder, and postorder using explicit stacks without recursion. The existing package lab remains separate; its submission requirements are unchanged by this textbook revision.
 
 ### Learning objectives
 
 Students will:
 
-- identify recursive base cases and saved state;
+- retrieve Module 2's recursive stopping cases and identify the state to save explicitly;
 - trace preorder, inorder, and postorder;
-- implement recursive preorder, inorder, and postorder traversal;
-- trace an explicit-stack preorder traversal and explain its correspondence to call frames;
-- distinguish the binary-tree representation and trace scaffolded BST search before completing it;
-- inspect and test an instructor-provided BST insertion baseline that returns in Module 15;
-- use postorder to destroy a dynamically allocated tree safely;
-- analyze traversal as `O(n)` time and `O(h)` auxiliary space.
+- follow and run nonrecursive preorder, inorder, and postorder C examples;
+- explain right-before-left pushes in preorder, saved ancestors in inorder, and completed-subtree tracking in postorder;
+- connect each explicit Stack state to the work that a recursive call would remember;
+- analyze traversal as `O(n)` work and at most `O(h + 1)` used stack entries, distinguishing used entries from fixed reserved storage.
 
 ### Macro-Question
 
@@ -517,33 +544,37 @@ Students will:
 ### Micro-Questions
 
 - What is the smallest valid subtree?
-- What must a recursive call remember?
+- What information must the explicit stack remember between iterations?
 - How does visit placement create preorder, inorder, or postorder?
 - Why is the right child pushed first for left-first iterative preorder?
-- Why is postorder suitable for freeing nodes?
+- Which ancestors must wait while inorder follows the left branch?
+- How does postorder distinguish an unvisited right subtree from a completed one?
 
 ### C lab and cybersecurity context
 
-Traverse a synthetic in-memory directory or policy tree:
+The textbook traces all three traversal orders on an expression tree and
+shows standalone C examples using explicit stacks of node addresses.
+The examples reuse the package's existing node representation. Students
+follow the stack and current-node state after each step; recursion is the
+connection back to Module 2, not the implementation of these examples.
 
-- report flagged nodes using recursive preorder;
-- trace the frontier of an instructor-provided typed `const TreeNode *` Stack; implementing the explicit-stack traversal is an extension;
-- perform an inorder trace and complete scaffolded BST search;
-- destroy a heap-allocated test tree in postorder.
-
-The instructor supplies the allocated-node fixture and constructor. Students reuse Module 2's binary `left`/`right` links while learning that these nodes now require matching release calls. Module 2 only reset local node fields; Module 5 destroys individually allocated nodes. Real filesystem traversal is not required. Students document that aliases or symbolic links would require graph-style visited tracking.
+The existing package lab separately exercises expression-tree copying,
+printing, and evaluation with its caller-owned node pool. This textbook
+revision does not replace that lab or change its code contracts. Neither
+real filesystem traversal nor a new allocation exercise is part of the
+textbook change.
 
 ### Evidence of learning
 
-- call-stack and explicit-stack traces;
-- recursive C traversal and cleanup implementation;
-- empty, single-node, balanced, and skewed tests;
-- cleanup evidence;
-- time/space analysis using `n` and `h`.
+- exact preorder, inorder, and postorder sequences for the same tree;
+- explicit-stack traces explaining why each node is processed once;
+- runnable nonrecursive C traversal examples;
+- empty, single-node, balanced, and skewed-tree reasoning;
+- time/space analysis using `n` and `h`, with fixed capacity accounted for separately.
 
 ### Spiral links
 
-**Revisits:** Stack, tree representation, `NULL`, ownership.  
+**Revisits:** Stack, tree representation, `NULL`, recursion, and expression evaluation.
 **Forward:** graph DFS, BST inorder reasoning, and AVL height.
 
 ---
@@ -559,7 +590,8 @@ Production materials: [Module 6 teaching package](module_06_graph_dfs/README.md)
 Students will:
 
 - explain why graph DFS requires visited state;
-- implement iterative DFS with the Module 4 Stack and trace its recursive equivalent;
+- implement iterative DFS with a supplied vertex-ID Stack that preserves
+  Module 4's LIFO behavior, and trace its recursive equivalent;
 - determine reachability and count connected components in an undirected graph;
 - trace frontier and visited state on cyclic and disconnected graphs;
 - distinguish matrix-based `O(V^2)` traversal from adjacency-list `O(V+E)` traversal.
@@ -583,11 +615,12 @@ Module 3's fixed-matrix idea, implement iterative DFS, report all vertices
 reachable from a selected source, and count connected components only for an
 undirected graph. The broader graph kind and whole-graph validation belong to
 Module 6 support, not the Module 3 implementation. The implementation uses
-an instructor-provided vertex-ID Stack with the Module 4 contract. Students
-trace the equivalent recursive control flow; implementing that second form
-is an extension. Test a cycle, an isolated vertex, a disconnected graph, and
-a single vertex. A separate faulty-input test verifies that the Module 6
-support API rejects a self-loop.
+an instructor-provided vertex-ID Stack that preserves Module 4's LIFO and
+output-preservation behavior while defining its own growable-storage policy.
+Students trace the equivalent recursive control flow; implementing that
+second form is an extension. Test a cycle, an isolated vertex, a disconnected
+graph, and a single vertex. A separate faulty-input test verifies that the
+Module 6 support API rejects a self-loop.
 
 The Week 6 practical collects this implementation, trace, repair, and transfer evidence. There is no additional ordinary Module 6 submission in the 14-week path.
 
@@ -1023,8 +1056,8 @@ Let `n` be live entries and `m` be capacity. Expected lookup, insertion, and del
 ### Bridge links
 
 **Revisits:** Module 1's contiguous storage, bounds, and unchanged state after
-rejection; Module 4's growable-array storage, doubling, and failed-growth
-preservation; modular indexing; and Module 12's dense internal vertex IDs.
+rejection; growable-array storage and checked commit from Modules 10–11;
+modular indexing; and Module 12's dense internal vertex IDs.
 
 **Forward:** Module 14 contrasts open-addressed slots with separately allocated nodes; Module 15 contrasts expected exact lookup with ordered `O(log n)` lookup; the capstone can map sparse external labels to validated dense graph IDs.
 
@@ -1443,8 +1476,9 @@ Near-peer mentors or teaching assistants should normalize debugging difficulty w
 All submitted implementations use a consistent engineering contract. Apply
 representation-specific requirements when they are introduced: Chapter 1
 uses fixed-array bounds and plain integer counts. Module 2 introduces local
-node variables, pointer links, and recursive field clearance. Module 4 adds
-allocation and replaceable array storage; Module 5 adds allocated tree nodes.
+node variables, pointer links, and recursive field clearance. Module 4 adds a
+top-only fixed-array contract and checked output preservation. Module 5 adds
+allocated tree nodes and explicit release.
 Module 2's recursive functions assume valid trees: inspect malformed cycles
 with diagrams, not by running recursive operations on them.
 
@@ -1474,15 +1508,16 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Fixed-array bounds, active prefix, shifts, and first-match search | Module 1 | Stack, matrices, Hash Table, Heap |
 | Addresses and pointers | Module 2 | Later node and container implementations |
 | `struct` and local-node lifetime | Module 2 | Later node and container implementations |
-| Allocation, release, and owned storage | Module 4 array storage; Module 5 individual nodes | Later containers and linked-node implementations |
+| Allocation, release, and owned storage | Module 5 individual nodes | Later containers and linked-node implementations |
 | Linked-node mental model | Module 2 tree representation; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
 | Binary-tree representation and recursive field clearance | Module 2 | Graph contrast, DFS, BFS |
 | BST-ordering preview | Module 5 | AVL |
 | Graph representation | Module 3 | All graph algorithms |
 | Stack | Module 4 | Tree and graph DFS |
-| Growable-array storage and checked doubling | Module 4 | Priority Queue, Heap, Hash Table |
-| Recursive base cases and bottom-up field clearance | Module 2 | Formal traversal and later tree algorithms |
-| Traversal orders and explicit call frames | Module 5 recursive core; explicit-stack tree traversal as extension | Tree and graph algorithms |
+| Growable-array storage and checked doubling | Module 5 support, then required Module 10 backend work | Priority Queue, Heap, Hash Table |
+| Recursive base cases, expression-tree construction/evaluation, and bottom-up field clearance | Module 2 | Explicit-stack traversal and later tree algorithms |
+| Depth-first search idea | Module 2 recursive examples | Module 5 traversal orders and Module 6 graph DFS |
+| Named traversal orders and explicit traversal stacks | Module 5 textbook core: nonrecursive preorder, inorder, and postorder | Tree and graph algorithms |
 | Queue | Module 7 | Tree and graph BFS |
 | Tree level-order transfer | Module 8 bridge in combined Week 8 | Graph BFS |
 | Height and balance | Module 15 | AVL validation and rotation |
@@ -1500,8 +1535,9 @@ Scope controls:
 - Every teaching week has a hard 180-minute contact budget. A complete package may contain extension, make-up, or longer-calendar materials beyond that budget.
 - Module 1 requires checked indexed read/update, first-match search, append,
   insertion, and removal in a fixed array. Its extensions add tests only;
-  growable-array storage is introduced in Module 4.
-- Module 5 requires recursive tree DFS; explicit-stack tree traversal is an extension. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
+  Module 4 reuses fixed storage for a Stack, while later modules introduce
+  allocation and growable storage in their own contracts.
+- Module 2's textbook introduces recursion through expression-tree construction and evaluation, with a brief DFS explanation. Module 5's textbook focuses on explicit-stack preorder, inorder, and postorder without recursion; existing package labs remain separate. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
 - Modules 8 and 9 share one Week 8 submission. The Module 8 core is a short level-order trace and supplied-code inspection; graph BFS, predecessor state, and path reconstruction are the main implementation.
 - Modules 10 and 11 share one Week 9 submission. The Module 10 unsorted-array implementation is supplied; the Heap backend and comparison are the main implementation.
 - Module 13 uses a scaffolded transactional rebuild, and Module 14 requires one bounded list repair plus DSU; their complete package menus are not assigned as hidden homework.
@@ -1519,10 +1555,10 @@ Scope controls:
 | Week | Primary topic | Package use and major artifact |
 |---:|---|---|
 | 1 | Keeping data together with a fixed-capacity ArrayList | Module 1; checked operations and bounds/invariant autopsy |
-| 2 | Expression-tree model and binary-tree links | Module 2; local-node construction, search, and clearance evidence |
+| 2 | Recursion, binary-tree links, and expression trees | Module 2 textbook construction/evaluation traces; existing local-node search and clearance lab |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
-| 4 | Stack | Module 4; growable backend and nested-input Micro-CTF |
-| 5 | Tree DFS | Module 5 recursive core; explicit-stack implementation is extension |
+| 4 | Fixed-capacity Stack | Module 4; LIFO operations, top-index autopsy, and `1+2*3` evaluator |
+| 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
 | 7 | Queue | Module 7; circular-buffer incident analysis |
 | 8 | BFS from trees to graphs | Module 8 trace and supplied-code inspection + Module 9 graph-BFS lab; one combined submission |

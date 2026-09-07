@@ -1,10 +1,12 @@
-# Module 4 — Stage D: Beginner Notes and Models
+# Module 4 — Stage D: Textbook and Stack Models
 
-Open these materials after completing and preserving the Stage C core
-attempt.
+Open these materials only after completing and preserving the Stage C core.
 
-- `textbook.md` teaches from worked examples and explains each new technical
-  term when it is needed.
-- `diagrams/stack_models.md` supplies diagrams and exact text equivalents.
+- `textbook.md` develops the top-only rule, invariant, fixed array operations,
+  and the reduced `1+2*3` evaluator.
+- `diagrams/stack_models.md` supplies physical and logical models with exact
+  text equivalents.
 
-Add corrections beside preserved initial work instead of erasing it.
+Add corrections beside preserved initial work instead of erasing it. This
+stage does not contain the Stack-Top Autopsy answer, reference code, extension
+tests, or instructor materials.

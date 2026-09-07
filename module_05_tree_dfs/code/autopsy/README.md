@@ -1,19 +1,6 @@
-# Isolated Autopsy Program
+# Copy-Failure Autopsy
 
-`faulty_preorder.c` is a complete, standalone program. It does not use the
-student implementation and contains no undefined behavior.
-
-The program intends to perform preorder on this tree:
-
-```text
-        50
-       /  \
-     30    70
-    /  \
-   20  40
-```
-
-It contains one deliberate behavior defect. Build it, predict the complete
-output before running it, locate the earliest decision that causes the
-difference, and then compare the result with the required preorder
-`50,30,20,40,70`.
+`faulty_preorder.c` ignores the result of `tree_node_create`. When the pool is
+full, the returned pointer remains `NULL`; the next child assignment
+dereferences it. Diagnose the unchecked result, then explain why the correct
+copy restores the pool's `used` count and preserves the caller's output.

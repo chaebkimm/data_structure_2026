@@ -54,24 +54,45 @@ $stages = @(
             @{ Source = "release\student_code_README.md"; Entry = "code/README.md" },
             @{ Source = "release\student_build.ps1"; Entry = "code/build.ps1" },
             @{ Source = "release\student_Makefile"; Entry = "code/Makefile" },
-            @{ Source = "code\include\char_stack.h"; Entry = "code/include/char_stack.h" },
-            @{ Source = "code\include\delimiter_validator.h"; Entry = "code/include/delimiter_validator.h" },
-            @{ Source = "code\starter\char_stack.c"; Entry = "code/starter/char_stack.c" },
-            @{ Source = "code\starter\delimiter_validator.c"; Entry = "code/starter/delimiter_validator.c" },
+            @{ Source = "code\include\int_stack.h"; Entry = "code/include/int_stack.h" },
+            @{ Source = "code\include\expression_evaluator.h"; Entry = "code/include/expression_evaluator.h" },
+            @{ Source = "code\starter\int_stack.c"; Entry = "code/starter/int_stack.c" },
+            @{ Source = "code\starter\expression_evaluator.c"; Entry = "code/starter/expression_evaluator.c" },
             @{ Source = "code\tests\test_core.c"; Entry = "code/tests/test_core.c" },
             @{ Source = "code\tests\test_student.c"; Entry = "code/tests/test_student.c" },
             @{ Source = "code\autopsy\README.md"; Entry = "code/autopsy/README.md" },
-            @{ Source = "code\autopsy\faulty_delimiters.c"; Entry = "code/autopsy/faulty_delimiters.c" }
+            @{ Source = "code\autopsy\faulty_top.c"; Entry = "code/autopsy/faulty_top.c" }
         )
     }
 )
 
 New-Item -ItemType Directory -Force -Path $distDirectory | Out-Null
 
+$duplicateStageNames = $stages |
+    Group-Object -Property Name |
+    Where-Object { $_.Count -gt 1 }
+if ($duplicateStageNames) {
+    throw "Release stage archive names must be unique."
+}
+
 foreach ($stage in $stages) {
     $archivePath = Join-Path $distDirectory $stage.Name
     if (Test-Path -LiteralPath $archivePath) {
         throw "Refusing to overwrite existing archive: $archivePath"
+    }
+
+    $duplicateEntries = $stage.Entries |
+        Group-Object -Property Entry |
+        Where-Object { $_.Count -gt 1 }
+    if ($duplicateEntries) {
+        throw "Duplicate archive entry in $($stage.Name)."
+    }
+
+    $duplicateSources = $stage.Entries |
+        Group-Object -Property Source |
+        Where-Object { $_.Count -gt 1 }
+    if ($duplicateSources) {
+        throw "Duplicate release source in $($stage.Name)."
     }
 
     foreach ($item in $stage.Entries) {

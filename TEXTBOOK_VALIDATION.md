@@ -108,6 +108,47 @@ Earlier Chapter 3 observations in `textbook_pilot/` are historical records,
 not validation of this revision. A fresh beginner reading pilot is still
 required; technical checks do not establish an actual human-validation pass.
 
+## Module 4 Revision Note — August 29, 2026
+
+Chapter 4 and Module 4 now use a caller-owned fixed integer array with
+separate size and capacity. Valid metadata satisfies `0 <= size <= capacity`,
+and a nonempty Stack's top is `stack[size - 1]`. The public library contains
+checked `int_stack_push`, `int_stack_peek`, and `int_stack_pop` operations.
+Rejected operations preserve the complete array and any checked output; pop
+decreases the logical size without erasing the newly inactive cell.
+
+The canonical trace pushes function IDs 100, 200, and 300. The transfer
+application evaluates the textbook expression `1+2*3` with fixed ten-position
+number and operator Stacks. Its grammar permits only alternating single digits
+and the operators `+` and `*`, with normal precedence and left associativity.
+Input length is not separately capped; every live push is checked. Malformed
+input, an internal capacity failure, or a result outside the C `int` range
+leaves the caller's result unchanged.
+
+The reference implementation passes 8 core and 5 extension tests with both
+Clang and GCC warning-as-error builds. Clang AddressSanitizer and
+UndefinedBehaviorSanitizer runs also pass. The composed textbook Stack and
+`1+2*3` code runs with strict C11 checks. The isolated, memory-safe top-index
+autopsy reports correct top 20 and faulty inactive value 777 without a
+sanitizer error. The starter compiles cleanly and intentionally fails 4 of 8
+core tests; its three student-test placeholders also fail intentionally.
+
+Student activities, instructor materials, diagrams, course references, active
+Chapter 4 pilot questions, and the five-stage release now use the same fixed
+Stack boundary. Release stages contain 3, 4, 3, 3, and 16 unique existing
+source-entry pairs. Stage A contains no formal Stack vocabulary, Stage D
+contains no autopsy answer, and Stage E excludes solutions, instructor files,
+and extension tests. The Week 4 bank contains 44 vocabulary placements, 40
+required questions, and 4 optional questions with matching consolidated
+question text.
+
+PowerShell build and packaging files were inspected, not executed, because
+PowerShell is unavailable on this host. No student ZIPs were published. Old
+delimiter, growable-Stack, and `CharStack` observations under
+`textbook_pilot/simulation/` are superseded historical records, not validation
+of this revision. A fresh beginner reading pilot is still required; technical
+checks do not establish an actual human-validation pass.
+
 ## Beginner Reading Validation
 
 We read through the text by dividing into three reader roles.

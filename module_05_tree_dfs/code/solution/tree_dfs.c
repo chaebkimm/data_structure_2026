@@ -1,309 +1,174 @@
 #include "tree_dfs.h"
-#include "tree_node_stack.h"
 
-static TreeDfsStatus append_visit(
-    TreeOrder *order,
-    const TreeNode *node
+#include <limits.h>
+#include <stdbool.h>
+
+static bool is_digit(char data) { return data >= '0' && data <= '9'; }
+static bool is_operator(char data) { return data == '+' || data == '*'; }
+
+static int priority(char data)
+{
+    if (data == '*') return 2;
+    if (data == '+') return 1;
+    return 3;
+}
+
+static TreeDfsStatus copy_node(
+    const Node *original,
+    NodePool *destination,
+    Node **out_copy
 )
 {
-    if (order->count == (size_t)TREE_DFS_MAX_NODES) {
-        return TREE_DFS_LIMIT;
-    }
+    Node *copy;
+    TreeDfsStatus status;
 
-    order->items[order->count].key = node->key;
-    order->items[order->count].flagged = node->flagged;
-    order->count += 1U;
+    if (original == NULL) {
+        *out_copy = NULL;
+        return TREE_DFS_OK;
+    }
+    status = tree_node_create(destination, original->data, &copy);
+    if (status != TREE_DFS_OK) return status;
+    status = copy_node(original->left, destination, &copy->left);
+    if (status != TREE_DFS_OK) return status;
+    status = copy_node(original->right, destination, &copy->right);
+    if (status != TREE_DFS_OK) return status;
+    *out_copy = copy;
     return TREE_DFS_OK;
 }
 
-/*
- * Count a reached non-NULL node before following either child. This keeps
- * recursive descent bounded even when a traversal records the node later.
- */
-static TreeDfsStatus count_reached_node(size_t *seen)
+TreeDfsStatus tree_copy_preorder(
+    const Node *original,
+    NodePool *destination,
+    Node **out_copy
+)
 {
-    if (*seen == (size_t)TREE_DFS_MAX_NODES) {
-        return TREE_DFS_LIMIT;
-    }
+    size_t used_before;
+    Node *candidate = NULL;
+    TreeDfsStatus status;
 
-    *seen += 1U;
+    if (destination == NULL || out_copy == NULL) {
+        return TREE_DFS_INVALID_ARGUMENT;
+    }
+    used_before = destination->used;
+    status = copy_node(original, destination, &candidate);
+    if (status != TREE_DFS_OK) {
+        destination->used = used_before;
+        return status;
+    }
+    *out_copy = candidate;
     return TREE_DFS_OK;
 }
 
-static TreeDfsStatus preorder_visit(
-    const TreeNode *node,
-    TreeOrder *order,
-    size_t *seen
-)
+typedef struct {
+    char *data;
+    size_t capacity;
+    size_t length;
+} TextOutput;
+
+static TreeDfsStatus append_character(TextOutput *output, char character)
 {
-    TreeDfsStatus status;
-
-    if (node == NULL) {
-        return TREE_DFS_OK;
+    if (output->length + 1U >= output->capacity) {
+        return TREE_DFS_OUTPUT_TOO_SMALL;
     }
-
-    status = count_reached_node(seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = append_visit(order, node);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = preorder_visit(node->left, order, seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    return preorder_visit(node->right, order, seen);
-}
-
-TreeDfsStatus tree_preorder_recursive(
-    const TreeNode *root,
-    TreeOrder *out_order
-)
-{
-    TreeOrder candidate = {0};
-    size_t seen = 0U;
-    TreeDfsStatus status;
-
-    if (out_order == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    status = preorder_visit(root, &candidate, &seen);
-    if (status == TREE_DFS_OK) {
-        *out_order = candidate;
-    }
-    return status;
-}
-
-static TreeDfsStatus inorder_visit(
-    const TreeNode *node,
-    TreeOrder *order,
-    size_t *seen
-)
-{
-    TreeDfsStatus status;
-
-    if (node == NULL) {
-        return TREE_DFS_OK;
-    }
-
-    status = count_reached_node(seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = inorder_visit(node->left, order, seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = append_visit(order, node);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    return inorder_visit(node->right, order, seen);
-}
-
-TreeDfsStatus tree_inorder_recursive(
-    const TreeNode *root,
-    TreeOrder *out_order
-)
-{
-    TreeOrder candidate = {0};
-    size_t seen = 0U;
-    TreeDfsStatus status;
-
-    if (out_order == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    status = inorder_visit(root, &candidate, &seen);
-    if (status == TREE_DFS_OK) {
-        *out_order = candidate;
-    }
-    return status;
-}
-
-static TreeDfsStatus postorder_visit(
-    const TreeNode *node,
-    TreeOrder *order,
-    size_t *seen
-)
-{
-    TreeDfsStatus status;
-
-    if (node == NULL) {
-        return TREE_DFS_OK;
-    }
-
-    status = count_reached_node(seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = postorder_visit(node->left, order, seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    status = postorder_visit(node->right, order, seen);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    return append_visit(order, node);
-}
-
-TreeDfsStatus tree_postorder_recursive(
-    const TreeNode *root,
-    TreeOrder *out_order
-)
-{
-    TreeOrder candidate = {0};
-    size_t seen = 0U;
-    TreeDfsStatus status;
-
-    if (out_order == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    status = postorder_visit(root, &candidate, &seen);
-    if (status == TREE_DFS_OK) {
-        *out_order = candidate;
-    }
-    return status;
-}
-
-static TreeDfsStatus map_stack_failure(NodeStackStatus status)
-{
-    if (status == NODE_STACK_LIMIT) {
-        return TREE_DFS_LIMIT;
-    }
-    if (status == NODE_STACK_ALLOCATION) {
-        return TREE_DFS_ALLOCATION;
-    }
-    return TREE_DFS_INVALID_ARGUMENT;
-}
-
-TreeDfsStatus tree_preorder_iterative(
-    const TreeNode *root,
-    size_t stack_limit,
-    TreeOrder *out_order
-)
-{
-    TreeNodeStack stack;
-    TreeOrder candidate = {0};
-    NodeStackStatus stack_status;
-    TreeDfsStatus status = TREE_DFS_OK;
-
-    if (out_order == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    stack_status = tree_node_stack_init(&stack, stack_limit);
-    if (stack_status != NODE_STACK_OK) {
-        return map_stack_failure(stack_status);
-    }
-
-    if (root != NULL) {
-        stack_status = tree_node_stack_push(&stack, root);
-        if (stack_status != NODE_STACK_OK) {
-            status = map_stack_failure(stack_status);
-        }
-    }
-
-    while (status == TREE_DFS_OK) {
-        const TreeNode *node = NULL;
-
-        stack_status = tree_node_stack_pop(&stack, &node);
-        if (stack_status == NODE_STACK_UNDERFLOW) {
-            break;
-        }
-        if (stack_status != NODE_STACK_OK) {
-            status = map_stack_failure(stack_status);
-            break;
-        }
-
-        status = append_visit(&candidate, node);
-        if (status != TREE_DFS_OK) {
-            break;
-        }
-
-        if (node->right != NULL) {
-            stack_status = tree_node_stack_push(&stack, node->right);
-            if (stack_status != NODE_STACK_OK) {
-                status = map_stack_failure(stack_status);
-                break;
-            }
-        }
-
-        if (node->left != NULL) {
-            stack_status = tree_node_stack_push(&stack, node->left);
-            if (stack_status != NODE_STACK_OK) {
-                status = map_stack_failure(stack_status);
-                break;
-            }
-        }
-    }
-
-    tree_node_stack_destroy(&stack);
-    if (status == TREE_DFS_OK) {
-        *out_order = candidate;
-    }
-    return status;
-}
-
-TreeDfsStatus tree_bst_search(
-    const TreeNode *root,
-    int target,
-    const TreeNode **out_node
-)
-{
-    const TreeNode *current;
-
-    if (out_node == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    current = root;
-    while (current != NULL) {
-        if (target < current->key) {
-            current = current->left;
-        } else if (target > current->key) {
-            current = current->right;
-        } else {
-            *out_node = current;
-            return TREE_DFS_OK;
-        }
-    }
-
-    return TREE_DFS_NOT_FOUND;
-}
-
-static void destroy_nodes_postorder(TreeNode *node)
-{
-    if (node == NULL) {
-        return;
-    }
-
-    destroy_nodes_postorder(node->left);
-    destroy_nodes_postorder(node->right);
-    tree_node_release(node);
-}
-
-TreeDfsStatus tree_destroy_postorder(TreeNode **root)
-{
-    if (root == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    destroy_nodes_postorder(*root);
-    *root = NULL;
+    output->data[output->length++] = character;
+    output->data[output->length] = '\0';
     return TREE_DFS_OK;
+}
+
+static TreeDfsStatus print_node(const Node *node, TextOutput *output)
+{
+    TreeDfsStatus status;
+    bool parentheses;
+
+    if (node == NULL) return TREE_DFS_INVALID_EXPRESSION;
+    if (is_digit(node->data)) {
+        if (node->left != NULL || node->right != NULL) {
+            return TREE_DFS_INVALID_EXPRESSION;
+        }
+        return append_character(output, node->data);
+    }
+    if (!is_operator(node->data) || node->left == NULL || node->right == NULL) {
+        return TREE_DFS_INVALID_EXPRESSION;
+    }
+
+    parentheses = is_operator(node->left->data) &&
+        priority(node->left->data) < priority(node->data);
+    if (parentheses && (status = append_character(output, '(')) != TREE_DFS_OK) return status;
+    status = print_node(node->left, output);
+    if (status != TREE_DFS_OK) return status;
+    if (parentheses && (status = append_character(output, ')')) != TREE_DFS_OK) return status;
+    status = append_character(output, node->data);
+    if (status != TREE_DFS_OK) return status;
+
+    parentheses = is_operator(node->right->data) &&
+        priority(node->right->data) <= priority(node->data);
+    if (parentheses && (status = append_character(output, '(')) != TREE_DFS_OK) return status;
+    status = print_node(node->right, output);
+    if (status != TREE_DFS_OK) return status;
+    if (parentheses) return append_character(output, ')');
+    return TREE_DFS_OK;
+}
+
+TreeDfsStatus tree_print_inorder(
+    const Node *root,
+    char *output,
+    size_t output_capacity
+)
+{
+    TextOutput candidate;
+    TreeDfsStatus status;
+
+    if (root == NULL || output == NULL || output_capacity == 0U) {
+        return TREE_DFS_INVALID_ARGUMENT;
+    }
+    candidate = (TextOutput){output, output_capacity, 0U};
+    output[0] = '\0';
+    status = print_node(root, &candidate);
+    if (status != TREE_DFS_OK) output[0] = '\0';
+    return status;
+}
+
+static TreeDfsStatus evaluate_node(const Node *node, int *out_value)
+{
+    int left;
+    int right;
+    TreeDfsStatus status;
+
+    if (node == NULL) return TREE_DFS_INVALID_EXPRESSION;
+    if (is_digit(node->data)) {
+        if (node->left != NULL || node->right != NULL) {
+            return TREE_DFS_INVALID_EXPRESSION;
+        }
+        *out_value = (int)(node->data - '0');
+        return TREE_DFS_OK;
+    }
+    if (!is_operator(node->data) || node->left == NULL || node->right == NULL) {
+        return TREE_DFS_INVALID_EXPRESSION;
+    }
+    status = evaluate_node(node->left, &left);
+    if (status != TREE_DFS_OK) return status;
+    status = evaluate_node(node->right, &right);
+    if (status != TREE_DFS_OK) return status;
+
+    if (node->data == '+') {
+        if (left > INT_MAX - right) return TREE_DFS_ARITHMETIC_OVERFLOW;
+        *out_value = left + right;
+    } else {
+        if (left != 0 && right > INT_MAX / left) {
+            return TREE_DFS_ARITHMETIC_OVERFLOW;
+        }
+        *out_value = left * right;
+    }
+    return TREE_DFS_OK;
+}
+
+TreeDfsStatus tree_evaluate_postorder(const Node *root, int *out_value)
+{
+    int candidate;
+    TreeDfsStatus status;
+
+    if (root == NULL || out_value == NULL) return TREE_DFS_INVALID_ARGUMENT;
+    status = evaluate_node(root, &candidate);
+    if (status == TREE_DFS_OK) *out_value = candidate;
+    return status;
 }

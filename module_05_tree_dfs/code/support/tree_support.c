@@ -1,131 +1,39 @@
 #include "tree_dfs.h"
 
-#include <stdbool.h>
-#include <stdlib.h>
-
-#ifdef TREE_DFS_TESTING
-static bool tree_fail_next_node_allocation = false;
-static size_t tree_live_node_count = 0U;
-
-void tree_dfs_test_fail_next_node_allocation(void)
+void node_pool_init(NodePool *pool)
 {
-    tree_fail_next_node_allocation = true;
-}
-
-size_t tree_dfs_test_live_node_count(void)
-{
-    return tree_live_node_count;
-}
-#endif
-
-static TreeNode *tree_allocate_node(void)
-{
-#ifdef TREE_DFS_TESTING
-    if (tree_fail_next_node_allocation) {
-        tree_fail_next_node_allocation = false;
-        return NULL;
+    if (pool != NULL) {
+        pool->used = 0U;
     }
-#endif
-
-    return malloc(sizeof(TreeNode));
 }
 
-TreeDfsStatus tree_node_create(
-    int key,
-    bool flagged,
-    TreeNode **out_node
-)
+TreeDfsStatus tree_node_create(NodePool *pool, char data, Node **out_node)
 {
-    TreeNode *candidate;
+    Node *node;
 
-    if (out_node == NULL) {
+    if (pool == NULL || out_node == NULL) {
         return TREE_DFS_INVALID_ARGUMENT;
     }
-
-    candidate = tree_allocate_node();
-    if (candidate == NULL) {
-        return TREE_DFS_ALLOCATION;
+    if (pool->used >= (size_t)TREE_DFS_POOL_CAPACITY) {
+        return TREE_DFS_POOL_FULL;
     }
-
-    candidate->key = key;
-    candidate->flagged = flagged;
-    candidate->left = NULL;
-    candidate->right = NULL;
-
-#ifdef TREE_DFS_TESTING
-    tree_live_node_count += 1U;
-#endif
-
-    *out_node = candidate;
-    return TREE_DFS_OK;
-}
-
-void tree_node_release(TreeNode *node)
-{
-    if (node == NULL) {
-        return;
-    }
-
-#ifdef TREE_DFS_TESTING
-    if (tree_live_node_count > 0U) {
-        tree_live_node_count -= 1U;
-    }
-#endif
-
-    free(node);
-}
-
-TreeDfsStatus tree_bst_insert(
-    TreeNode **root,
-    int key,
-    bool flagged
-)
-{
-    TreeNode **link;
-    TreeNode *candidate;
-    TreeDfsStatus status;
-
-    if (root == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    link = root;
-    while (*link != NULL) {
-        if (key < (*link)->key) {
-            link = &(*link)->left;
-        } else if (key > (*link)->key) {
-            link = &(*link)->right;
-        } else {
-            return TREE_DFS_DUPLICATE;
-        }
-    }
-
-    candidate = NULL;
-    status = tree_node_create(key, flagged, &candidate);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-
-    *link = candidate;
+    node = &pool->nodes[pool->used++];
+    node->data = data;
+    node->left = NULL;
+    node->right = NULL;
+    *out_node = node;
     return TREE_DFS_OK;
 }
 
 const char *tree_dfs_status_name(TreeDfsStatus status)
 {
     switch (status) {
-        case TREE_DFS_OK:
-            return "ok";
-        case TREE_DFS_INVALID_ARGUMENT:
-            return "invalid argument";
-        case TREE_DFS_LIMIT:
-            return "tree or Stack limit reached";
-        case TREE_DFS_ALLOCATION:
-            return "allocation failed";
-        case TREE_DFS_DUPLICATE:
-            return "duplicate key";
-        case TREE_DFS_NOT_FOUND:
-            return "key not found";
-        default:
-            return "unknown TreeDfsStatus";
+        case TREE_DFS_OK: return "ok";
+        case TREE_DFS_INVALID_ARGUMENT: return "invalid argument";
+        case TREE_DFS_POOL_FULL: return "node pool is full";
+        case TREE_DFS_INVALID_EXPRESSION: return "invalid expression tree";
+        case TREE_DFS_OUTPUT_TOO_SMALL: return "output buffer is too small";
+        case TREE_DFS_ARITHMETIC_OVERFLOW: return "arithmetic overflow";
+        default: return "unknown TreeDfsStatus";
     }
 }

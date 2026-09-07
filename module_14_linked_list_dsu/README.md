@@ -334,8 +334,8 @@ also cannot remove an old relationship or reconstruct the relationship path.
 ## Relationship to the course spiral
 
 - **Revisits:** Module 1 contiguous storage and bounds checks, Module 2
-  linked nodes, allocation contracts from the Stack lab, graph components,
-  implicit trees, and Module 13's open-addressed table slots.
+  linked nodes, Module 5 allocation contracts, graph components, implicit
+  trees, and Module 13's open-addressed table slots.
 - **Contrasts:** an ArrayList owns one contiguous block; a linked list owns
   separate nodes. Module 13 resolves collisions by probing array slots; this
   module follows explicit links between separately owned nodes. A DSU answers

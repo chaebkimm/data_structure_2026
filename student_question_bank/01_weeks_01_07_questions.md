@@ -193,77 +193,84 @@
 - What new support must Module 6 add before it can operate on undirected graphs?
 - How do the ArrayList, tree, and graph representations differ in their central invariant?
 
-## Week 4 — Stack and Nested Delimiters
+## Week 4 — Fixed-Capacity Stack and Expression Precedence
 
 ### Meaning and mental model
 
-- What behavior makes a collection a Stack regardless of how it is stored?
-- Why does “last in, first out” match nested opening and closing delimiters?
-- What is the difference among the Stack ADT, the C runtime call stack, and a stack-allocated array?
-- Why is the top at `data[size - 1]` rather than `data[size]`?
+- Why must the newest saved item leave before older items?
+- How do push, peek, and pop differ?
+- Why is only one end called the top?
+- How is the course Stack related to, but different from, runtime call bookkeeping?
 
 ### Representation and invariants
 
-- Which relationships among `data`, `size`, `capacity`, and `limit` must always hold?
-- What is the valid representation of a zero-limit Stack?
-- Why may capacity be below limit without making the Stack invalid?
-- What facts about pointer liveness, allocation extent, and unique ownership can `char_stack_validate` not establish?
+- Which array indexes belong to a Stack with size 3 and capacity 10?
+- Why is the top at `stack[size - 1]` rather than `stack[size]`?
+- Why may an inactive slot still contain an old integer?
+- What goes wrong when size is negative or greater than capacity?
 
-### Operations, C API, and ownership
+### Operations and C API
 
-- What must `push`, `pop`, and `peek` do when passed an invalid Stack or invalid output pointer?
-- Why must `pop` and `peek` leave `out_value` unchanged on underflow or any other failure?
-- Why must `out_value` not point into the Stack’s character allocation?
-- How does `char_stack_destroy` reset ownership, and when is calling it legal?
+- What does push return when the Stack is full or metadata is invalid?
+- Why must peek leave size and every array slot unchanged?
+- Why can pop remove an item by decreasing size without erasing its cell?
+- Which failures must leave the caller's output value unchanged?
 
 ### Tracing
 
-- How do `data`, `size`, `capacity`, and top change across pushes that trigger growth?
-- What Stack trace results from the text `a[(b)]`, including ignored characters?
-- At which index should the validator report an unmatched close, mismatch, unclosed open, or depth-limit failure?
-- What state should remain after a forced allocation failure during `push`?
+- What states result from pushing 100, 200, and 300 in that order?
+- What do peek and two pops report after those three pushes?
+- What remains active after the first pop, and what remains physically stored?
+- How can a snapshot prove that a rejected push changed nothing?
+
+### Expression evaluation
+
+- Why does `1+2*3` evaluate to 7 rather than 9?
+- What is stored in the number and operator Stacks after each character?
+- When must a waiting operator be applied before a new operator is pushed?
+- Why are spaces, parentheses, multi-digit numbers, and other operators rejected?
 
 ### Tests and debugging
 
-- Which separate tests exercise underflow, exact limit, growth to a clipped capacity, and allocation failure?
-- How can a test prove `peek` observes the top without removing it?
-- In the Stack Autopsy, why does reading `data[size]` inspect the slot after the top?
-- Which stack-level and delimiter-level regression tests would catch that off-by-one defect?
+- Which tests distinguish empty, one-item, and full Stack states?
+- How can a test prove that zero is ordinary Stack data?
+- Why does the faulty-top autopsy read an inactive slot without leaving the array?
+- Which malformed-expression tests exercise token order and unsupported characters?
 
 ### Complexity
 
-- Why are `pop` and `peek` worst-case `O(1)`?
-- Why is `push` amortized `O(1)` but not worst-case `O(1)` in this representation?
-- For text length `n` and maximum nesting depth `d`, why are the validator’s time and extra space expressed separately?
-- How would a linked Stack change growth behavior, allocation frequency, and cache locality?
+- Why do checked push, peek, and pop each take `O(1)` time?
+- Why does pop require no shifting?
+- Why does evaluating an expression of length `n` take `O(n)` time?
+- Why does this evaluator use bounded additional space even for a longer valid input?
 
-### Cybersecurity and interpretation
+### Safety and interpretation
 
-- Why is an explicit nesting-depth limit useful when input is untrusted?
-- Could a syntactically balanced delimiter string still contain malicious or invalid content?
-- How can ignored non-delimiter characters affect what security claim the validator is allowed to make?
-- Why must allocation failure and excessive nesting produce distinct, checked statuses?
+- Why must the caller's array contain at least capacity elements?
+- Why can a function validate metadata but not discover the array's physical length?
+- How does checked integer arithmetic prevent undefined signed overflow?
+- Why does a valid result establish only the supported arithmetic grammar and value?
 
 ### Assignment and evidence
 
-- Which `char_stack.c` and `delimiter_validator.c` TODOs are required for Week 4?
-- What three student-test categories would demonstrate distinct Stack and validator claims?
-- Why must every initialized temporary Stack be destroyed on every return path?
-- What should the Stack-to-depth-first-exploration explanation establish without implementing DFS yet?
+- Which `int_stack.c` and `expression_evaluator.c` TODOs are required?
+- What three student-test categories provide nonduplicate evidence?
+- Which warning and sanitizer commands should be recorded?
+- What must the corrected autopsy explanation distinguish about size and capacity?
 
 ### Transfer and prerequisites
 
-- Which ArrayList growth and failure-atomicity ideas are reused in the Stack backend?
-- What changes when a later typed Stack stores vertex IDs or node pointers instead of characters?
-- How can a Stack remember unfinished branches during depth-first exploration?
-- Which C concepts should I review if pointer/output contracts in `pop` and `peek` are unclear?
+- Which Chapter 1 active-prefix and rejection rules are reused?
+- How will later Stacks change the item type while preserving LIFO behavior?
+- How can LIFO storage remember unfinished choices in later traversal work?
+- Which pointer concepts should I review for checked output parameters?
 
 ### Extension questions — optional
 
-- How would a fixed-array Stack differ from this growable Stack when the limit is known in advance?
-- Could the validator report the matching opening index as well as the closing error index?
-- How would quoted strings or escaped delimiters change the parsing state beyond a simple Stack?
-- Are parser features beyond `()`, `[]`, `{}`, ignored characters, and the depth policy required this week?
+- How could a checked evaluator support subtraction while preserving operand order?
+- What additional rules would multi-digit operands require?
+- How would parentheses change the operator-Stack algorithm?
+- How would a growable backend change the representation without changing LIFO behavior?
 
 ## Week 5 — Tree DFS with Recursive Core
 
@@ -397,7 +404,7 @@
 
 ### Transfer and prerequisites
 
-- How does the Week 4 Stack control the frontier in iterative graph DFS?
+- How does the Week 4 LIFO rule control which frontier item leaves next in iterative graph DFS?
 - Which Week 5 recursive-tree trace helps explain unfinished graph choices?
 - What new visited invariant is added when a tree becomes a general graph?
 - How will replacing the Stack with a Queue change exploration in the BFS arc?

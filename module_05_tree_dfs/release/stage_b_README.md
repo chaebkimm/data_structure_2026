@@ -1,10 +1,4 @@
-# Module 5 — Stage B: Depth-First Representation and Cognitive Pause
+# Stage B — Representation Reveal
 
-Open `representation_reveal.md` only when the instructor tells you. It
-explains each new term before showing the formal saved-work models.
-
-Then complete exactly the three timed targets in `cognitive_pause.md` before
-calibration—comparison with the instructor model. Keep `vocabulary.md`
-closed until the response is preserved. An approved extended-time or
-separately scheduled response uses the same reasoning targets. Speed and
-drawing quality are not assessed.
+Study preorder, inorder, postorder, the recursive call path, and the fixed
+node-pool representation. Complete the cognitive pause before Stage C.

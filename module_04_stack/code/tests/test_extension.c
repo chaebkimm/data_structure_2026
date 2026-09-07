@@ -1,33 +1,15 @@
-#include "char_stack.h"
-#include "delimiter_validator.h"
+#include "expression_evaluator.h"
+#include "int_stack.h"
 
+#include <limits.h>
 #include <stdbool.h>
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <string.h>
-
-#ifndef CHAR_STACK_TESTING
-#error "Extension tests require -DCHAR_STACK_TESTING."
-#endif
 
 typedef bool (*TestFunction)(void);
 
 static unsigned int tests_run = 0U;
 static unsigned int tests_failed = 0U;
-static CharStack *active_stack = NULL;
-
-static void track_stack(CharStack *stack)
-{
-    active_stack = stack;
-}
-
-static void release_stack(void)
-{
-    if (active_stack != NULL) {
-        char_stack_destroy(active_stack);
-        active_stack = NULL;
-    }
-}
 
 #define REQUIRE(condition)                                                   \
     do {                                                                     \
@@ -39,10 +21,25 @@ static void release_stack(void)
                 __LINE__,                                                    \
                 #condition                                                   \
             );                                                               \
-            release_stack();                                                 \
             return false;                                                    \
         }                                                                    \
     } while (false)
+
+static bool arrays_equal(
+    const int left[],
+    const int right[],
+    size_t length
+)
+{
+    size_t index;
+
+    for (index = 0U; index < length; ++index) {
+        if (left[index] != right[index]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static void run_test(const char *name, TestFunction test)
 {
@@ -58,242 +55,225 @@ static void run_test(const char *name, TestFunction test)
     }
 }
 
-static bool test_every_small_limit_and_capacity_step(void)
+static bool test_every_capacity_through_ten(void)
 {
-    size_t limit;
+    int capacity;
 
-    for (limit = 0U; limit <= 33U; ++limit) {
-        CharStack stack;
-        size_t expected_capacity = 0U;
-        size_t index;
+    for (capacity = 0; capacity <= 10; ++capacity) {
+        int stack[10] = {
+            -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1
+        };
+        int snapshot[10];
+        int size = 0;
+        int index;
 
-        REQUIRE(char_stack_init(&stack, limit) == STACK_OK);
-        track_stack(&stack);
-
-        for (index = 0U; index < limit; ++index) {
-            if (index == expected_capacity) {
-                expected_capacity = expected_capacity == 0U
-                    ? 4U
-                    : expected_capacity * 2U;
-                if (expected_capacity > limit) {
-                    expected_capacity = limit;
-                }
-            }
-
-            REQUIRE(
-                char_stack_push(
-                    &stack,
-                    (char)('A' + (char)(index % 26U))
-                ) == STACK_OK
+        for (index = 0; index < capacity; ++index) {
+            int next_size = int_stack_push(
+                stack,
+                size,
+                capacity,
+                100 + index
             );
-            REQUIRE(stack.size == index + 1U);
-            REQUIRE(stack.capacity == expected_capacity);
+
+            REQUIRE(next_size == size + 1);
+            size = next_size;
+            REQUIRE(stack[size - 1] == 99 + size);
         }
 
-        REQUIRE(char_stack_push(&stack, '!') == STACK_LIMIT);
-        REQUIRE(stack.size == limit);
-        REQUIRE(stack.capacity == expected_capacity);
-        release_stack();
-    }
+        for (index = 0; index < 10; ++index) {
+            snapshot[index] = stack[index];
+        }
+        REQUIRE(int_stack_push(stack, size, capacity, 999) == size);
+        REQUIRE(arrays_equal(stack, snapshot, 10U));
 
+        while (size > 0) {
+            int output = -1;
+            int old_size = size;
+
+            size = int_stack_pop(stack, size, capacity, &output);
+            REQUIRE(size == old_size - 1);
+            REQUIRE(output == 99 + old_size);
+            REQUIRE(arrays_equal(stack, snapshot, 10U));
+        }
+    }
     return true;
 }
 
 static bool test_deterministic_stack_model(void)
 {
-    CharStack stack;
-    char model[31];
-    size_t model_size = 0U;
+    int stack[17] = { 0 };
+    int model[17] = { 0 };
+    int size = 0;
     unsigned int state = 2463534242U;
-    size_t step;
-
-    REQUIRE(char_stack_init(&stack, 31U) == STACK_OK);
-    track_stack(&stack);
+    unsigned int step;
 
     for (step = 0U; step < 1000U; ++step) {
         unsigned int choice;
-        char output = '#';
+        int output = -777;
 
         state = state * 1664525U + 1013904223U;
         choice = state % 3U;
 
         if (choice == 0U) {
-            char value = (char)('a' + (char)(step % 26U));
-            StackStatus expected = model_size == 31U
-                ? STACK_LIMIT
-                : STACK_OK;
+            int value = (int)(step % 101U);
+            int expected_size = size == 17 ? size : size + 1;
+            int actual_size = int_stack_push(stack, size, 17, value);
 
-            REQUIRE(char_stack_push(&stack, value) == expected);
-            if (expected == STACK_OK) {
-                model[model_size] = value;
-                model_size += 1U;
+            REQUIRE(actual_size == expected_size);
+            if (size < 17) {
+                model[size] = value;
             }
+            size = actual_size;
         } else if (choice == 1U) {
-            StackStatus expected = model_size == 0U
-                ? STACK_UNDERFLOW
-                : STACK_OK;
+            int expected_size = size == 0 ? 0 : size - 1;
+            int actual_size = int_stack_pop(stack, size, 17, &output);
 
-            REQUIRE(char_stack_pop(&stack, &output) == expected);
-            if (expected == STACK_OK) {
-                model_size -= 1U;
-                REQUIRE(output == model[model_size]);
+            REQUIRE(actual_size == expected_size);
+            if (size == 0) {
+                REQUIRE(output == -777);
             } else {
-                REQUIRE(output == '#');
+                REQUIRE(output == model[size - 1]);
             }
+            size = actual_size;
         } else {
-            StackStatus expected = model_size == 0U
-                ? STACK_UNDERFLOW
-                : STACK_OK;
+            int success = int_stack_peek(stack, size, 17, &output);
 
-            REQUIRE(char_stack_peek(&stack, &output) == expected);
-            if (expected == STACK_OK) {
-                REQUIRE(output == model[model_size - 1U]);
+            REQUIRE(success == (size > 0 ? 1 : 0));
+            if (size == 0) {
+                REQUIRE(output == -777);
             } else {
-                REQUIRE(output == '#');
+                REQUIRE(output == model[size - 1]);
             }
         }
 
-        REQUIRE(char_stack_validate(&stack) == STACK_OK);
-        REQUIRE(stack.size == model_size);
-        if (model_size > 0U) {
-            REQUIRE(memcmp(stack.data, model, model_size) == 0);
-        }
+        REQUIRE(arrays_equal(stack, model, 17U));
     }
-
-    release_stack();
     return true;
 }
 
-static bool test_maximum_delimiter_depth(void)
+static bool test_valid_expression_case_table_and_long_input(void)
 {
-    char text[2U * CHAR_STACK_MAX_LIMIT + 1U];
-    size_t index;
-    size_t error_index = 42U;
-
-    for (index = 0U;
-         index < (size_t)CHAR_STACK_MAX_LIMIT;
-         ++index) {
-        text[index] = '(';
-        text[(size_t)CHAR_STACK_MAX_LIMIT + index] = ')';
-    }
-    text[2U * (size_t)CHAR_STACK_MAX_LIMIT] = '\0';
-
-    REQUIRE(
-        delimiter_validate(
-            text,
-            (size_t)CHAR_STACK_MAX_LIMIT,
-            &error_index
-        ) == DELIMITER_OK
-    );
-    REQUIRE(error_index == SIZE_MAX);
-
-    error_index = 42U;
-    REQUIRE(
-        delimiter_validate(
-            text,
-            (size_t)CHAR_STACK_MAX_LIMIT - 1U,
-            &error_index
-        ) == DELIMITER_DEPTH_LIMIT
-    );
-    REQUIRE(
-        error_index ==
-        (size_t)CHAR_STACK_MAX_LIMIT - 1U
-    );
-    return true;
-}
-
-static bool test_delimiter_case_table(void)
-{
-    struct DelimiterCase {
-        const char *text;
-        size_t limit;
-        DelimiterStatus expected_status;
-        size_t expected_index;
+    struct ExpressionCase {
+        const char *expression;
+        int expected;
     };
-    static const struct DelimiterCase cases[] = {
-        { "[]{}()", 1U, DELIMITER_OK, SIZE_MAX },
-        { "{[()]}", 3U, DELIMITER_OK, SIZE_MAX },
-        { "x]y", 4U, DELIMITER_UNMATCHED_CLOSE, 1U },
-        { "{)", 4U, DELIMITER_MISMATCH, 1U },
-        { "[}", 4U, DELIMITER_MISMATCH, 1U },
-        { "prefix{[", 4U, DELIMITER_UNCLOSED_OPEN, 8U },
-        { "{{x}}", 1U, DELIMITER_DEPTH_LIMIT, 1U },
-        { "no delimiters", 0U, DELIMITER_OK, SIZE_MAX }
+    static const struct ExpressionCase cases[] = {
+        { "0", 0 },
+        { "9", 9 },
+        { "0*9+8", 8 },
+        { "1+2*3+4*5", 27 },
+        { "9*9*9", 729 },
+        { "1+2+3+4", 10 }
     };
+    char long_expression[202];
     size_t case_index;
+    size_t operand_index;
+    size_t write_index = 0U;
+    int result = -1;
 
     for (case_index = 0U;
          case_index < sizeof cases / sizeof cases[0];
          ++case_index) {
-        size_t error_index = 700U;
-        DelimiterStatus actual = delimiter_validate(
-            cases[case_index].text,
-            cases[case_index].limit,
-            &error_index
+        REQUIRE(
+            expression_evaluate(cases[case_index].expression, &result) == 1
         );
-
-        REQUIRE(actual == cases[case_index].expected_status);
-        REQUIRE(error_index == cases[case_index].expected_index);
+        REQUIRE(result == cases[case_index].expected);
     }
 
+    for (operand_index = 0U; operand_index < 101U; ++operand_index) {
+        if (operand_index > 0U) {
+            long_expression[write_index] = '+';
+            write_index += 1U;
+        }
+        long_expression[write_index] = '0';
+        write_index += 1U;
+    }
+    long_expression[write_index] = '\0';
+
+    REQUIRE(expression_evaluate(long_expression, &result) == 1);
+    REQUIRE(result == 0);
     return true;
 }
 
-static bool test_status_names_cover_public_values(void)
+static bool test_invalid_expression_case_table(void)
 {
-    StackStatus stack_status;
-    DelimiterStatus delimiter_status;
+    static const char *const invalid_expressions[] = {
+        " ",
+        "1\t+2",
+        "1/2",
+        "1*",
+        "*1",
+        "1**2",
+        "01",
+        "a",
+        "1+(2)",
+        "-1"
+    };
+    size_t index;
+    int result = 808;
 
-    for (stack_status = STACK_OK;
-         stack_status <= STACK_INVALID_STATE;
-         stack_status = (StackStatus)((int)stack_status + 1)) {
-        REQUIRE(stack_status_name(stack_status) != NULL);
-        REQUIRE(strlen(stack_status_name(stack_status)) > 0U);
+    for (index = 0U;
+         index < sizeof invalid_expressions / sizeof invalid_expressions[0];
+         ++index) {
+        REQUIRE(
+            expression_evaluate(invalid_expressions[index], &result) == 0
+        );
+        REQUIRE(result == 808);
     }
-    REQUIRE(
-        strcmp(
-            stack_status_name((StackStatus)999),
-            "unknown StackStatus"
-        ) == 0
-    );
+    return true;
+}
 
-    for (delimiter_status = DELIMITER_OK;
-         delimiter_status <= DELIMITER_ALLOCATION;
-         delimiter_status =
-            (DelimiterStatus)((int)delimiter_status + 1)) {
-        REQUIRE(delimiter_status_name(delimiter_status) != NULL);
-        REQUIRE(strlen(delimiter_status_name(delimiter_status)) > 0U);
+static bool test_checked_integer_overflow(void)
+{
+    char expression[2U * sizeof(int) * CHAR_BIT + 4U];
+    size_t length = 0U;
+    int expected = 1;
+    int result = -1;
+
+    expression[length] = '1';
+    length += 1U;
+    while (expected <= INT_MAX / 2) {
+        expression[length] = '*';
+        expression[length + 1U] = '2';
+        length += 2U;
+        expected *= 2;
     }
-    REQUIRE(
-        strcmp(
-            delimiter_status_name((DelimiterStatus)999),
-            "unknown DelimiterStatus"
-        ) == 0
-    );
+    expression[length] = '\0';
+
+    REQUIRE(expression_evaluate(expression, &result) == 1);
+    REQUIRE(result == expected);
+
+    expression[length] = '*';
+    expression[length + 1U] = '2';
+    expression[length + 2U] = '\0';
+    result = 909;
+    REQUIRE(expression_evaluate(expression, &result) == 0);
+    REQUIRE(result == 909);
     return true;
 }
 
 int main(void)
 {
     run_test(
-        "every small limit and capacity step",
-        test_every_small_limit_and_capacity_step
+        "every capacity through ten",
+        test_every_capacity_through_ten
     );
     run_test(
         "deterministic stack model",
         test_deterministic_stack_model
     );
     run_test(
-        "maximum delimiter depth",
-        test_maximum_delimiter_depth
+        "valid expression table and long input",
+        test_valid_expression_case_table_and_long_input
     );
     run_test(
-        "delimiter case table",
-        test_delimiter_case_table
+        "invalid expression table",
+        test_invalid_expression_case_table
     );
     run_test(
-        "status names cover public values",
-        test_status_names_cover_public_values
+        "checked integer overflow",
+        test_checked_integer_overflow
     );
 
     (void)printf(

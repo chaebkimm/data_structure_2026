@@ -6,7 +6,7 @@ Open this page after completing and preserving the Cognitive Pause.
 |---|---|
 | state | The information a program currently remembers |
 | data structure | A planned way to organize information in a program |
-| abstract data type (ADT) | A description of a collection through its allowed operations and rules, independent of one storage method |
+| abstract data type (ADT) | A collection described by allowed operations and rules rather than one required storage method |
 | Stack ADT | An ADT that permits adding, inspecting, and removing at one end |
 | top | The one accessible end of a Stack |
 | last in, first out (LIFO) | The most recently added item is the first item that may be removed |
@@ -14,70 +14,33 @@ Open this page after completing and preserving the Cognitive Pause.
 | `push` | Add one item at the top |
 | `peek` | Report the top item without removing it |
 | `pop` | Remove and report the top item |
-| empty Stack | A Stack containing no items and therefore having no top |
-| underflow | An attempt to `peek` or `pop` an empty Stack |
+| empty Stack | A Stack containing no logical item and therefore having no top |
+| underflow | A request to `peek` or `pop` an empty Stack |
+| full-Stack rejection | Refusal to push when size already equals capacity, with the Stack unchanged |
 | representation | A chosen way to store or show information |
-| backend | The lower-level storage used to implement an ADT |
-| ArrayList | A resizable numbered sequence |
-| character | One symbol; C uses the type `char` to store one character |
-| array | A numbered row of matching stored values |
-| index | A numbered position; C begins numbering at zero |
-| address | A value identifying a location in computer memory |
-| pointer | A value that stores an address |
-| `NULL` | A pointer value meaning “no storage address” |
+| fixed-capacity array | An array whose prepared number of positions does not change |
+| integer | A whole-number value stored with a C integer type |
+| call frame | Information kept for one active function call; the course's integer IDs are simplified labels rather than real call frames |
+| array | A numbered row of values of one type |
+| index | A numbered array position; C begins at zero |
+| logical item | A value that currently belongs to the Stack according to `size` |
+| inactive slot | A physical array position that is within capacity but outside the current logical Stack |
 | `size` | The number of logical items currently in the Stack |
-| `capacity` | The number of allocated character slots |
-| `limit` | The greatest Stack size permitted for the task |
-| nesting limit | The maximum number of unresolved openings permitted at once |
-| logical item | A value that currently belongs to a collection |
-| allocation | A block of computer memory obtained while a program runs |
-| ownership | Responsibility for eventually releasing requested storage |
-| shallow copy | A field-by-field copy that duplicates a pointer but not the separate allocation it identifies |
-| invariant | A rule that is true in every valid completed state |
-| contract | Rules stating what an operation accepts, changes, reports, and preserves |
-| status code | A named result reporting success or one kind of failure |
-| caller | The part of a program that asks a function to run |
-| output location | Caller-provided storage in which a function writes a result |
-| failure atomicity | A failed operation leaves the complete prior valid state unchanged |
-| allocation failure | The program could not obtain requested memory |
-| resource boundary | A stated limit on how much time or storage a task may use |
-| resource exhaustion | Input attempts to consume more of a limited resource than permitted |
-| delimiter | A mark that begins or ends a group |
-| opening delimiter | One of `(`, `[`, or `{` in this module |
-| closing delimiter | One of `)`, `]`, or `}` in this module |
-| unresolved opening | An opening delimiter whose closing partner has not appeared |
-| delimiter validator | A procedure that checks grouping marks |
-| unmatched closing delimiter | A closing delimiter encountered when no opening is available |
-| mismatch | A closing delimiter that does not partner with the opening at the top |
-| leftover opening delimiter | An opening delimiter still present when input ends |
-| depth-limit error | Rejection before an opening would exceed the nesting limit |
-| malformed input | Input that breaks stated form rules |
-| error index | The numbered input position at which a validator reports a problem |
-| `out_error_index` | The caller-provided location where the delimiter validator writes an error index |
-| `SIZE_MAX` | The greatest `size_t` value, used here as the success output meaning “there is no error index” |
+| `capacity` | The number of prepared array positions the operations must honor |
+| caller | The program part that creates storage and requests a function |
+| caller-owned storage | An array created and controlled by the caller and borrowed by Stack functions |
+| output parameter | Caller-provided storage through which a function reports an additional result |
+| invariant | A rule true in every valid completed state |
+| contract | Rules stating what a function accepts, changes, returns, and preserves |
+| rejection | Refusal to perform an operation because its requirements are not satisfied |
+| preservation | Keeping required prior state or output unchanged after rejection |
 | trace | A step-by-step record of changing state |
-| time complexity | A description of how work grows as input grows |
-| `O(1)` | A fixed amount of work |
-| `O(n)` | Work that may grow in proportion to an input amount `n` |
-| amortized `O(1)` | Constant average work across a sequence, including occasional expensive operations |
-| runtime call stack | Bookkeeping commonly used by a C implementation for active function calls |
-| call frame | Saved information for one active function call |
-| recursion | A function calling itself directly or through other functions |
-| stack memory | An informal name for a memory region many implementations use for calls and local variables |
-| buffer | A bounded area that stores a sequence of values |
-| stack-buffer overflow | An out-of-bounds write past a buffer in the commonly named stack-memory region |
-| algorithm | A precise, step-by-step method |
-| depth-first search (DFS) | A later tree/graph exploration algorithm that can use LIFO storage for unfinished work |
-| `STACK_OK` | The Stack operation succeeded |
-| `STACK_INVALID_ARGUMENT` | A required Stack or output location was invalid |
-| `STACK_LIMIT` | `push` would exceed the explicit limit, or initialization requested a limit above 1024 |
-| `STACK_UNDERFLOW` | `peek` or `pop` was requested while empty |
-| `STACK_ALLOCATION` | The ArrayList could not obtain needed storage |
-| `STACK_INVALID_STATE` | The stored fields broke the Stack invariant |
-| `DELIMITER_OK` | The complete input has valid delimiters |
-| `DELIMITER_INVALID_ARGUMENT` | A required validator argument was invalid |
-| `DELIMITER_UNMATCHED_CLOSE` | A closing delimiter appeared while the Stack was empty |
-| `DELIMITER_MISMATCH` | A closing delimiter did not partner with the opening at the top |
-| `DELIMITER_UNCLOSED_OPEN` | Input ended with at least one opening delimiter left |
-| `DELIMITER_DEPTH_LIMIT` | An opening delimiter would have exceeded the nesting limit |
-| `DELIMITER_ALLOCATION` | The validator's character Stack could not obtain needed storage |
+| function ID | An integer label used in the canonical example to identify one function |
+| expression | A sequence of operands and operators that describes a calculation |
+| digit | One character from `'0'` through `'9'` |
+| operand | A value used by an operator |
+| operator | A symbol such as `+` or `*` that requests a calculation |
+| operator precedence | The rule that determines which different operator is applied first |
+| left associativity | The rule that equal-precedence operators are applied from left to right |
+| integer overflow | A calculation whose mathematical result is outside the C `int` range |
+| regression test | A test kept so that a repaired defect does not return |

@@ -1,5 +1,5 @@
-#include "char_stack.h"
-#include "delimiter_validator.h"
+#include "expression_evaluator.h"
+#include "int_stack.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -13,13 +13,12 @@ static unsigned int tests_failed = 0U;
  * Replace each placeholder with a test you designed. A test is a small
  * experiment that compares an observed result with an expected result.
  * Use different inputs or combinations instead of copying a supplied case.
- * Destroy every initialized stack on every return path.
  */
 static bool test_student_case_1(void)
 {
     /*
-     * TODO: Test a push/peek/pop sequence and explain how it demonstrates
-     * last-in, first-out order.
+     * TODO: Test a push, peek, and pop sequence. Explain how the outputs
+     * demonstrate last-in, first-out order.
      */
     return false;
 }
@@ -27,8 +26,8 @@ static bool test_student_case_1(void)
 static bool test_student_case_2(void)
 {
     /*
-     * TODO: Test one boundary or failure. Check both the returned status and
-     * the promise that state or output is preserved.
+     * TODO: Test one full, empty, invalid-metadata, or NULL failure. Verify
+     * that the array or output remains unchanged.
      */
     return false;
 }
@@ -36,8 +35,8 @@ static bool test_student_case_2(void)
 static bool test_student_case_3(void)
 {
     /*
-     * TODO: Test a delimiter mismatch, unmatched close, unclosed open, or
-     * depth limit. Verify the exact reported index.
+     * TODO: Test one valid expression and one malformed or overflowing
+     * expression. Check the result-preservation rule on failure.
      */
     return false;
 }

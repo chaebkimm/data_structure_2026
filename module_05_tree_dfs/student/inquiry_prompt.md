@@ -1,125 +1,35 @@
-# Stage A — Initial Inquiry: Visiting a Hierarchy
+# Stage A — Initial Inquiry: One Tree, Three Jobs
 
-Name: ____________________________  
-Date: ____________________________
-
-Use only this file during the initial inquiry. Preserve your first answers.
-Later, add labeled corrections instead of erasing your first thinking.
-
-This activity reuses tree words from Module 2. A **tree** is a hierarchy of
-connected items. Its one starting item is the **root**. Each item is a
-**node**. A node may have a **left child** and a **right child** below it. A
-**leaf** is a node with no children.
-
-The example is a synthetic policy tree. **Synthetic** means invented for
-safe practice. A **policy** is a set of rules. A computer **directory**
-organizes entries so stored items can be located. This is not a real
-directory or security policy.
-
-## A. Read the tree
+Use this tree without naming a traversal method yet:
 
 ```text
-50
-├─ left: 30  [review]
-│  ├─ left: 20
-│  └─ right: 40  [review]
-└─ right: 70  [review]
+        *
+       / \
+      +   2
+     / \
+    3   5
 ```
 
-A **review marker** is a stored yes-or-no note saying that an item needs
-attention.
+## A. Copy
 
-List every key in the tree:
+In what order would you create new items so every child has a parent to attach
+to? Record the order of symbols.
 
-____________________________________________________________________
+## B. Print
 
-Which key is the root? _____________________________________________
+In what order would you read the items to place each operator between its two
+operands? Where are parentheses required?
 
-Which keys are leaves? ____________________________________________
+## C. Calculate
 
-Which keys have review markers? ___________________________________
+Which two values must be known before applying an operator? Record the order
+in which completed values become available.
 
-## B. Invent a visiting rule
+## D. Remember unfinished work
 
-To **visit** a node means to stop at it and perform the current task. In this
-activity, the task is to write its key.
+While working at `3`, what work at `+` and `*` remains unfinished? What must
+the computer remember to return correctly?
 
-Invent a repeatable rule that starts at the root, visits every node exactly
-once, and prefers a left choice before a right choice.
+## E. Stop
 
-Your rule:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-Use your rule on the tree. Write the keys in the order visited:
-
-____________________________________________________________________
-
-How will your method know that no node was missed?
-
-____________________________________________________________________
-
-## C. Remember choices not yet taken
-
-Suppose your method begins at key 50, then reaches key 30, then reaches leaf
-20.
-
-At key 20, which parts of the tree still need attention?
-
-____________________________________________________________________
-
-What information must be remembered so the method can return to those
-parts?
-
-____________________________________________________________________
-
-Could one remembered item be completed while another older item is still
-unfinished? Explain.
-
-____________________________________________________________________
-
-## D. Report selected nodes
-
-Now suppose the task is to report only nodes carrying a review marker.
-The method must still inspect enough of the tree to find every marked node.
-
-Which keys should be reported?
-
-____________________________________________________________________
-
-Would changing what gets reported require changing the tree’s child
-relationships? Explain.
-
-____________________________________________________________________
-
-## E. Consider stopping conditions
-
-What should your method do when it reaches a missing child position?
-
-____________________________________________________________________
-
-What should it do after visiting a leaf?
-
-____________________________________________________________________
-
-What would go wrong if the method kept following missing child positions
-forever?
-
-____________________________________________________________________
-
-## F. Macro-Question
-
-> How can one repeatable method visit every node in a tree, remember
-> unfinished choices, and stop safely?
-
-Your initial explanation:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-One question your current method does not settle:
-
-____________________________________________________________________
+What should happen when a child address is `NULL`?

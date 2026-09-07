@@ -5,8 +5,10 @@
 ## Required scope for the 14-week course
 
 Required work is one complete graph DFS implementation: the iterative version
-using the Week 4 Stack. Students trace discovery, handle cycles and disconnected
-input, and justify traversal cost. Recursive graph DFS is extension work.
+using a supplied vertex-ID Stack that preserves Week 4's LIFO behavior under
+a Module 6 storage policy. Students trace discovery, handle cycles and
+disconnected input, and justify traversal cost. Recursive graph DFS is
+extension work.
 **Practical 1 is the only required graded submission for Week 6**; its bounded
 Graph DFS task supplies the week's implementation evidence, so the standalone
 Module 6 lab is not assigned in addition to it.
@@ -130,7 +132,7 @@ part of the required Week 6 implementation.
 
 ### Transfer and prerequisites
 
-- How does the Week 4 Stack control the frontier in iterative graph DFS?
+- How does the Week 4 LIFO rule control which frontier item leaves next in iterative graph DFS?
 - Which Week 5 recursive-tree trace helps explain unfinished graph choices?
 - What new visited invariant is added when a tree becomes a general graph?
 - How will replacing the Stack with a Queue change exploration in the BFS arc?

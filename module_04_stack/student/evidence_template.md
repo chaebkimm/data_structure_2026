@@ -4,8 +4,7 @@ Complete this record after the Stage D notes and Stage E lab. You may replace
 any table with a numbered list using the same headings.
 
 Name: ____________________________  
-Compiler used—the program that translates C into a runnable program:
-____________________________
+Compiler used: ____________________________
 
 ## 1. Stack language
 
@@ -13,11 +12,7 @@ A Stack:
 
 ____________________________________________________________________
 
-LIFO:
-
-____________________________________________________________________
-
-Top:
+LIFO and top:
 
 ____________________________________________________________________
 
@@ -25,124 +20,141 @@ Push, pop, and peek:
 
 ____________________________________________________________________
 
-Underflow:
+Underflow and full-Stack rejection:
 
 ____________________________________________________________________
 
-## 2. Operation trace
+## 2. Canonical operation trace
 
-Trace this sequence. Show the Stack from bottom to top after every operation.
+Trace from bottom to top. Record every return and output.
 
 ```text
-push('A'), push('B'), peek, pop, push('C'), pop, pop
+push(100), push(200), push(300), peek, pop, pop, pop
 ```
 
-| Step | Returned value, if any | Stack from bottom to top |
-|---:|---|---|
-| Start | | |
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
-| 6 | | |
-| 7 | | |
+| Step | Function return | Output, if any | New size | Logical Stack |
+|---:|---:|---:|---:|---|
+| Start | none | none | 0 | empty |
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+| 6 | | | | |
+| 7 | | | | |
 
 ## 3. Representation invariant
 
-State every rule required for a valid completed `CharStack`:
+State the valid relationship among `size`, `capacity`, and the logical index
+range:
 
 ____________________________________________________________________
 
-Which field identifies the top item?
+Which expression identifies the top? Which expression identifies the next
+unused position?
 
 ____________________________________________________________________
 
-Why must clients use the Stack operations instead of changing `data`,
-`size`, or `capacity` directly?
+Why must the caller pass the actual prepared capacity of its array?
 
 ____________________________________________________________________
 
-## 4. Failure behavior
-
-What must remain unchanged after:
-
-- a failed push?
-- pop on an empty Stack?
-- peek on an empty Stack?
-- delimiter validation that cannot allocate memory?
+Why must a `peek` or `pop` output be separate from the Stack array?
 
 ____________________________________________________________________
 
-## 5. Test evidence
+What can remain in an array position after a successful pop, and why is that
+value no longer a logical item?
+
+____________________________________________________________________
+
+## 4. Rejection behavior
+
+State the exact return and everything that remains unchanged after:
+
+- `push` on a full Stack;
+- `push` with invalid size/capacity metadata;
+- `peek` on an empty Stack when its output already contains 999; and
+- `pop` on an empty Stack when its output already contains 999.
+
+____________________________________________________________________
+
+## 5. Expression transfer
+
+Trace the number Stack and operator Stack for `1+2*3`:
+
+____________________________________________________________________
+
+State the complete accepted grammar:
+
+____________________________________________________________________
+
+Why must `expression_evaluate` leave its output unchanged after malformed
+input, internal capacity failure, or checked integer overflow?
+
+____________________________________________________________________
+
+## 6. Test evidence
 
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
-| Empty initialized Stack | | | |
-| Push, peek, and pop | | | |
-| Geometric growth | | | |
-| Pop underflow | | | |
-| Peek underflow | | | |
-| Explicit limit reached | | | |
-| Destroy and reset | | | |
-| Valid `A(B[C]{D})` | | | |
-| Unmatched closing delimiter | | | |
-| Mismatched delimiter | | | |
-| Leftover opening delimiter | | | |
-| Nesting-depth limit | | | |
+| Empty Stack | | | |
+| Canonical 100, 200, 300 LIFO trace | | | |
+| Peek preserves size and array | | | |
+| Pop exposes the previous item | | | |
+| Full push preserves size and logical items | | | |
+| Invalid metadata is rejected | | | |
+| Failed peek preserves output | | | |
+| Failed pop preserves output | | | |
+| `1+2*3` evaluates to 7 | | | |
+| Single digit succeeds | | | |
+| Malformed expression is rejected | | | |
+| Checked arithmetic overflow is rejected | | | |
 
-### Student-authored tests
+### Three student-authored tests
 
-For each test, state the new claim it checks.
+State the new claim checked by each test.
 
-1. Test and rationale:
+1. Canonical or new LIFO sequence:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-2. Test and rationale:
+2. Boundary and preservation case:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-3. Test and rationale:
+3. One expression success and one checked rejection:
 
-   ____________________________________________________________________
+   __________________________________________________________________
 
-## 6. Costs
+## 7. Costs
 
-| Operation | Cost | Reason |
-|---|---|---|
+| Work | Cost | Reason |
+|---|---:|---|
+| Push | | |
 | Peek | | |
 | Pop | | |
-| Push with spare capacity | | |
-| One push that grows | | |
-| Long sequence of pushes | | |
-| Validate an expression of length `n` | | |
+| Evaluate input of length `n` | | |
+| Two fixed ten-position internal arrays | | |
 
-## 7. Three meanings of “stack”
+## 8. Three uses of “stack”
 
-Explain the difference among:
+Distinguish:
 
-1. the Stack abstract data type;
-2. the runtime call stack used by function calls;
-3. a stack-allocated character buffer.
+1. the Stack ADT;
+2. the runtime call stack; and
+3. the local `int stack[10]` buffer used as one Stack representation.
 
 ____________________________________________________________________
 
-## 8. Stack Autopsy
+## 9. Stack-Top Autopsy
 
-- first incorrect state or decision:
-- contract or invariant broken:
-- visible symptom:
+- first incorrect read:
+- logical rule broken:
+- why the read remains inside physical storage:
+- visible wrong value:
 - repair:
-- regression test:
-
-## 9. Forward connection
-
-Depth-first search explores one unfinished route before returning to an
-earlier choice. Explain why a LIFO Stack can remember those unfinished
-choices. Do not write the search algorithm yet.
-
-____________________________________________________________________
+- regression case:
 
 ## 10. Correction note
 

@@ -1,212 +1,134 @@
-# Lab — A Character Stack and Delimiter Checker
+# Lab — A Fixed Integer Stack and Checked Expression Evaluator
 
 ## Purpose
 
-Build a stack of characters, then use it to check whether `()`, `[]`, and
-`{}` are properly nested.
+Implement a Stack of generic integers in caller-owned fixed storage. Then use
+a number Stack and an operator Stack to evaluate the transfer expression
+`1+2*3` with checked input and arithmetic.
 
-Start with this example:
-
-```text
-text: a[(b)]
-read `[`: push `[`
-read `(`: push `(`
-read `)`: peek reports `(`, so pop it
-read `]`: peek reports `[`, so pop it
-result: valid
-```
-
-The latest opening delimiter must close first. That is exactly the rule a
-stack provides.
-
-## Three meanings of “stack”
-
-These phrases are related but not interchangeable:
-
-1. The **Stack abstract data type (ADT)** is the behavior studied here. An
-   abstract data type defines operations and rules without requiring one
-   storage method. Its rule is **last-in, first-out (LIFO)**: the last value
-   added is the first value removed.
-2. The **runtime call stack** is bookkeeping commonly used by C systems to
-   manage active function calls. This lab does not implement or control it.
-3. A **stack buffer** is a fixed-size local array that is commonly stored in a
-   function's runtime call-stack memory. It does not grow like `CharStack`.
-
-In this lab, “Stack” means the ADT unless another meaning is stated.
-
-## The five Stack ideas
-
-- **Push** adds a value at the top.
-- **Pop** removes and reports the top value.
-- **Peek** reports the top without removing it.
-- **Underflow** means trying to pop or peek when the stack is empty.
-- **Top** means the newest logical value.
-
-If the stack contains:
+The canonical Stack trace uses function IDs:
 
 ```text
-data: [ 'A' ][ 'B' ][ 'C' ][ unused ]
-index:    0      1      2       3
-size: 3
+push 100: return size 1; state 100
+push 200: return size 2; state 100, 200
+push 300: return size 3; state 100, 200, 300
+peek: return 1 and report 300; state unchanged
+pop: return size 2 and report 300; state becomes 100, 200
 ```
 
-then the top is `data[size - 1]`, or `data[2]`. `data[size]` is the next
-unused position, not the top.
+Every state is listed from bottom to top.
 
-## How this Stack is stored
+## Stack behavior and fixed representation
 
-`CharStack` extends the fixed-capacity ArrayList from Module 1 with growable storage.
-A **growable array** owns a block of memory that can be replaced by a larger
-block when it fills.
+The Stack abstract data type follows last in, first out (LIFO). `push` adds at
+the top. `peek` reports the top without removing it. `pop` removes and reports
+the top. Underflow is a `peek` or `pop` request on an empty Stack.
+
+This module represents a Stack with three separate pieces of caller state:
 
 ```c
-typedef struct {
-    char *data;
-    size_t size;
-    size_t capacity;
-    size_t limit;
-} CharStack;
+int stack[10];
+int size = 0;
+int capacity = 10;
 ```
 
-- `data` points to the owned character array.
-- `size` is the number of logical characters.
-- `capacity` is the number of character slots currently reserved in memory.
-- `limit` is the greatest permitted size.
+The operations accept any suitable caller-owned integer array. Function IDs
+are only the canonical example; the stored integers are generic data.
 
-An **invariant** is a rule that must remain true between public operations.
-This lab requires:
+An invariant is a rule that is true in every valid completed state:
 
 ```text
-0 <= size <= capacity <= limit <= 1024
+0 <= size <= capacity
 ```
 
-It also requires:
+The caller must pass the actual prepared capacity. The functions cannot infer
+an array's physical length from an array parameter.
 
-- `capacity == 0` means `data == NULL` and `size == 0`;
-- positive capacity means `data != NULL`;
-- logical characters occupy indexes `0` through `size - 1`;
-- the top is `data[size - 1]` when `size > 0`; and
-- a failed operation leaves the previous valid stack unchanged.
+When `size > 0`, logical items occupy indexes 0 through `size - 1`, and the
+top is `stack[size - 1]`. If `size < capacity`, `stack[size]` is allocated but
+inactive. It is the next unused position, not the top.
 
-`char_stack_validate` checks these visible field relationships. It cannot
-prove that a non-null pointer still refers to live memory or that only one
-object owns that memory.
+## Public Stack operations
 
-## Growth rule
-
-The first allocation requests capacity 4. Later growth doubles capacity:
-
-```text
-0 → 4 → 8 → 16 → ...
-```
-
-Growth is **clipped** to `limit`, meaning it stops exactly at the limit when
-doubling would go beyond it. A stack whose limit is 10 grows:
-
-```text
-0 → 4 → 8 → 10
-```
-
-An **allocation** is a block of memory reserved for a program. `realloc` is a
-C library function that attempts to resize one. It can fail and return
-`NULL`. Store its result in a temporary pointer:
+An API is the public set of functions other code may call.
 
 ```c
-char *candidate = realloc(old_pointer, new_bytes);
-```
-
-Commit `candidate` to `stack->data` only after success. A **commit point** is
-the moment new state becomes official. Assigning `realloc` directly to
-`stack->data` can lose the old allocation when growth fails.
-
-Pop never shrinks storage in this module. Removing a value changes `size`,
-but it preserves `data` and `capacity`.
-
-## Public operations
-
-An **API** is the set of public types and functions other code may use.
-
-```c
-StackStatus char_stack_init(CharStack *stack, size_t limit);
-StackStatus char_stack_validate(const CharStack *stack);
-StackStatus char_stack_push(CharStack *stack, char value);
-StackStatus char_stack_pop(CharStack *stack, char *out_value);
-StackStatus char_stack_peek(
-    const CharStack *stack,
-    char *out_value
+int int_stack_push(
+    int stack[],
+    int size,
+    int capacity,
+    int value
 );
-void char_stack_destroy(CharStack *stack);
-const char *stack_status_name(StackStatus status);
-```
 
-A **status** is a named result. `STACK_OK` means success. The other values
-report an invalid argument, a limit reached by `push`, an initialization
-limit above 1024, underflow, allocation failure, or invalid representation
-state.
+int int_stack_peek(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
+);
 
-An **output parameter** is a pointer through which a function reports an
-additional result. `pop` and `peek` change `*out_value` only on success.
-Their output pointer must not point anywhere inside the stack's allocation.
-
-Initialization and cleanup rules:
-
-- `limit` may be zero and may not exceed `CHAR_STACK_MAX_LIMIT` (`1024`);
-- call `char_stack_init` only on an uninitialized or destroyed object;
-- reinitializing a live stack would lose its allocation;
-- call `char_stack_destroy` only on `NULL`, an initialized stack, or an
-  already destroyed stack;
-- destroy releases storage and resets all four fields;
-- do not make a **shallow copy**, meaning a second struct copy that contains
-  the same owning pointer.
-
-## Delimiter checker
-
-A **delimiter** is a character that marks a boundary. This checker recognizes
-three opening delimiters and their matching closers:
-
-```text
-( matches )
-[ matches ]
-{ matches }
-```
-
-A pair is **nested** when one complete pair appears inside another, as in
-`{[()]}`.
-
-The checker scans a **C string**, a character sequence ending with the special
-zero character `'\0'`.
-
-```c
-DelimiterStatus delimiter_validate(
-    const char *text,
-    size_t depth_limit,
-    size_t *out_error_index
+int int_stack_pop(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
 );
 ```
 
-The **depth** is the number of opening delimiters not yet closed. Push each
-opening delimiter. For a closing delimiter:
+### `int_stack_push`
 
-1. peek at the latest opening;
-2. report an unmatched close if the stack is empty;
-3. report a mismatch if the two characters are not a pair; and
-4. pop only after a successful match.
+- Reject a missing array, invalid metadata, or a full Stack.
+- On rejection, return the original size and change no array item.
+- On success, write `value` at `stack[size]` and return `size + 1`.
+- The caller saves the returned size.
 
-Use only the public Stack functions inside the checker. Do not inspect
-`stack.data`, `stack.size`, or other Stack fields there.
+### `int_stack_peek`
 
-Indexes begin at zero. The output rule is:
+- Reject a missing array, missing output, invalid metadata, or empty Stack.
+- The caller must provide output storage separate from the Stack array.
+- On rejection, return 0 and leave the output unchanged.
+- On success, copy `stack[size - 1]` to the output and return 1.
+- Never change the array or size.
 
-| Result | `out_error_index` |
-|---|---:|
-| `DELIMITER_OK` | `SIZE_MAX`, a marker meaning “no error index” |
-| `DELIMITER_UNMATCHED_CLOSE` | closing-delimiter index |
-| `DELIMITER_MISMATCH` | closing-delimiter index |
-| `DELIMITER_UNCLOSED_OPEN` | text length |
-| `DELIMITER_DEPTH_LIMIT` | opening index that would exceed the limit |
-| invalid argument or allocation failure | unchanged |
+### `int_stack_pop`
 
-Characters other than `()[]{}` are ignored.
+- Reject a missing array, missing output, invalid metadata, or empty Stack.
+- The caller must provide output storage separate from the Stack array.
+- On rejection, return the original size and leave the output unchanged.
+- On success, copy `stack[size - 1]` to the output and return `size - 1`.
+- Do not erase the old top. The returned smaller size makes that position
+  inactive.
+
+No Stack operation creates, resizes, or releases the caller's array.
+
+## Checked expression contract
+
+```c
+int expression_evaluate(const char expression[], int *out_result);
+```
+
+The evaluator returns 1 on success and writes the answer. It returns 0 on any
+rejection and leaves the caller's result unchanged.
+
+Accepted input follows all these rules:
+
+- the string is nonempty;
+- tokens alternate single digit, operator, single digit, and so on;
+- the only operators are `+` and `*`;
+- there are no spaces, parentheses, unary operators, or multi-digit numbers;
+- `*` has greater precedence than `+`;
+- equal precedence is processed from left to right;
+- every internal number/operator push fits its ten-position Stack; and
+- every addition and multiplication fits the C `int` range.
+
+The expression string may be longer than ten characters. The limit applies to
+simultaneous occupancy of each internal Stack, not directly to input length.
+
+For `1+2*3`, the evaluator waits with `+`, calculates `2*3`, and then
+calculates `1+6`. The result is 7.
+
+Keep a local candidate result. Commit it to `*out_result` only after parsing,
+Stack operations, final reduction, and overflow checks all succeed.
 
 ## Files
 
@@ -215,12 +137,12 @@ autopsy.
 
 Edit only:
 
-- `code/starter/char_stack.c`;
-- `code/starter/delimiter_validator.c`; and
+- `code/starter/int_stack.c`;
+- `code/starter/expression_evaluator.c`; and
 - `code/tests/test_student.c`.
 
-Do not edit public headers, the supplied core tests, autopsy files, or build
-files unless the instructor explicitly authorizes it.
+Do not edit public headers, supplied core tests, autopsy files, or build files
+unless the instructor explicitly authorizes it.
 
 ## Checkpoints
 
@@ -228,75 +150,70 @@ files unless the instructor explicitly authorizes it.
 
 Read:
 
-- `code/include/char_stack.h`;
-- `code/include/delimiter_validator.h`;
-- the TODO comments in both starter files; and
+- `code/include/int_stack.h`;
+- `code/include/expression_evaluator.h`;
+- all TODO comments in both starter files; and
 - the first failing public-test requirement.
 
-### 2. Finish Stack growth and push
+### 2. Implement `push`
 
-- Validate before using the representation.
-- Report `STACK_LIMIT` before writing when `size == limit`.
-- Select capacity 4 or doubled capacity, clipped to `limit`.
-- Call the supplied allocation wrapper with the old pointer.
-- Keep the result in `candidate`.
-- Commit `data` and `capacity` only after successful allocation.
-- Write at the old `size`, then increase `size`.
+1. Check required pointers and `0 <= size <= capacity`.
+2. Reject when `size == capacity` before indexing the array.
+3. Write the new value at the old `size`.
+4. Return the new size.
+5. Confirm every rejection returns the original size without changing the
+   array.
 
-The supplied wrapper normally calls `realloc`. Public tests can make its next
-call fail once so that failure preservation is observable.
+### 3. Implement `peek` and `pop`
 
-### 3. Finish pop and peek
+1. Check the array, output, and metadata.
+2. Reject underflow before calculating `size - 1`.
+3. Read only `stack[size - 1]`.
+4. Change the output only on success.
+5. Make `peek` return 1 without changing size.
+6. Make `pop` return the smaller size without erasing the array position.
 
-- Reject a null output pointer.
-- Validate the stack.
-- Report underflow before reading an empty stack.
-- Read only `data[size - 1]`.
-- Change the output only on success.
-- Make peek leave every stack field unchanged.
-- Make pop decrease `size` without shrinking.
+### 4. Implement checked expression evaluation
 
-### 4. Finish delimiter matching
+1. Reject missing pointers and empty input.
+2. Alternate between expecting a digit and expecting an operator.
+3. Reject every character outside the exact grammar.
+4. Store digit values in the number Stack and operator character values in the
+   operator Stack.
+5. Before pushing an operator, apply waiting operators with equal or greater
+   precedence.
+6. Pop the right operand before the left operand.
+7. Check addition and multiplication before performing a C `int` operation
+   that would overflow.
+8. Apply all waiting operators at end of input.
+9. Accept only one final number and no remaining operator.
+10. Write the caller's result only after complete success.
 
-Complete `delimiters_match` for the three exact pairs.
+### 5. Run supplied tests
 
-Then complete the scan:
-
-- call `char_stack_push` for an opener;
-- map `STACK_LIMIT` to `DELIMITER_DEPTH_LIMIT` at the current index;
-- leave the caller's output unchanged on allocation failure;
-- use peek, pair comparison, and pop for a closer; and
-- use `char_stack_peek` after the scan to distinguish an empty stack from an
-  unclosed opening delimiter.
-
-Always destroy the temporary Stack created by the checker before returning
-after successful initialization.
-
-### 5. Run core tests
-
-From the `code` directory:
+From the `code` directory in PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
 The starter is intentionally incomplete, so tests fail at first. Work from
-the earliest failure. Do not edit a supplied test just to make it pass.
+the earliest failure. Do not edit a supplied test merely to make it pass.
 
-### 6. Design three tests
+### 6. Design exactly three student tests
 
-Complete `code/tests/test_student.c`.
+Replace the three placeholder bodies in `code/tests/test_student.c`.
 
-Together, your tests must add:
+1. Canonical LIFO test: push 100, 200, and 300; verify peek and pop order.
+2. Rejection test: check a full, empty, invalid-metadata, or missing-output
+   case and verify state or output preservation.
+3. Expression test: verify one valid precedence case and one rejected grammar
+   or arithmetic case, including the unchanged-output promise on rejection.
 
-- one LIFO sequence;
-- one boundary or failure-preservation case; and
-- one delimiter result with its exact error index.
+Use cases that add evidence beyond the supplied tests. Explain each claim in
+a comment.
 
-Explain in comments what each test adds beyond the visible tests. Clean up
-every initialized stack on every return path.
-
-### 7. Run your tests and the autopsy
+### 7. Run student tests and the autopsy
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
@@ -322,34 +239,33 @@ make starter-student-tests
 make autopsy
 ```
 
-## Cost target
+## Cost targets
 
-`peek` and `pop` take **O(1)** time: their work does not grow with stack size.
-Most pushes also take O(1). A growth push copies or moves more storage, but
-geometric doubling makes push **amortized O(1)**—constant average work across
-a long sequence.
+`push`, `peek`, and `pop` each inspect or change a fixed number of values, so
+each takes `O(1)` time. None shifts existing items.
 
-For text length `n` and greatest nesting depth `d`, delimiter validation takes
-O(n) time and O(d) additional memory.
+For input length `n`, expression evaluation scans the input and processes each
+token a bounded number of times. It takes `O(n)` time. The evaluator uses one
+ten-position integer array and one ten-position character array, so its Stack
+storage is `O(1)` for this fixed contract.
 
-## Safe scope and policy boundary
+## Safe scope
 
-Use only instructor-provided or student-created synthetic strings.
-**Synthetic** means made for the exercise rather than taken from a live
-system. Do not paste passwords, tokens, private source code, production
-configuration, or live logs into the lab.
+Use only instructor-provided or student-created expressions. The evaluator is
+not a complete calculator or programming-language parser. It intentionally
+rejects syntax outside its small stated grammar. Success proves only that the
+input satisfies this exercise's rules and that its checked result fits `int`.
 
-This checker answers only whether three delimiter kinds are nested according
-to its simple rules. It does not understand quoted strings, comments, escapes,
-or a complete programming language. A passing result does not prove that text
-is correct, trustworthy, or secure. The depth limit is a bounded-resource
-policy, not an exploit detector or security guarantee.
+## Required submission
 
-## Completion criteria
+1. Completed fixed-Stack and evaluator starter files.
+2. A passing supplied core-test transcript.
+3. Three passing student-authored tests with a rationale for each.
+4. Warning-enabled and approved diagnostic evidence.
+5. Completed evidence record.
+6. Stack-Top Autopsy.
+7. Corrected Cognitive Pause.
 
-- core and student-authored tests pass;
-- warning-enabled compilation reports no warning in student-controlled code;
-- the Stack invariant and top index are correct;
-- failures preserve stack state and required outputs;
-- the checker reports each required index exactly; and
-- the autopsy explanation identifies the first broken rule.
+Completion means the functions satisfy their contracts, student-controlled
+code has no compiler warnings, rejected operations preserve required state,
+and the explanation distinguishes a logical top from an inactive array slot.

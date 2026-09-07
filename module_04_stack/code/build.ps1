@@ -42,17 +42,15 @@ PowerShell, then rerun this command.
 "@
 }
 
-$testingBuild = $false
-
 if ($Target -eq "autopsy") {
     if ($Extensions -or $StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
     }
 
     $sources = @(
-        (Join-Path $codeRoot "autopsy\faulty_delimiters.c")
+        (Join-Path $codeRoot "autopsy\faulty_top.c")
     )
-    $outputName = "delimiter_autopsy"
+    $outputName = "stack_top_autopsy"
 } else {
     if ($Extensions -and $StudentTests) {
         throw "Choose either -Extensions or -StudentTests, not both."
@@ -60,8 +58,8 @@ if ($Target -eq "autopsy") {
 
     $implementationDirectory = Join-Path $codeRoot $Target
     $implementationSources = @(
-        (Join-Path $implementationDirectory "char_stack.c"),
-        (Join-Path $implementationDirectory "delimiter_validator.c")
+        (Join-Path $implementationDirectory "int_stack.c"),
+        (Join-Path $implementationDirectory "expression_evaluator.c")
     )
 
     if ($StudentTests) {
@@ -70,11 +68,9 @@ if ($Target -eq "autopsy") {
     } elseif ($Extensions) {
         $testSource = Join-Path $codeRoot "tests\test_extension.c"
         $outputName = "${Target}_extension"
-        $testingBuild = $true
     } else {
         $testSource = Join-Path $codeRoot "tests\test_core.c"
         $outputName = "${Target}_core"
-        $testingBuild = $true
     }
 
     $sources = $implementationSources + @($testSource)
@@ -91,9 +87,6 @@ if ($compilerKind -eq "msvc") {
         "/I$includeDirectory"
     )
 
-    if ($testingBuild) {
-        $arguments += "/DCHAR_STACK_TESTING"
-    }
     if ($Sanitize) {
         $arguments += @("/Od", "/fsanitize=address")
     }
@@ -112,9 +105,6 @@ if ($compilerKind -eq "msvc") {
         "-I$includeDirectory"
     )
 
-    if ($testingBuild) {
-        $arguments += "-DCHAR_STACK_TESTING"
-    }
     if ($Sanitize) {
         $arguments += @(
             "-fsanitize=address,undefined",

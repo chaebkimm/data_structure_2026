@@ -1,1 +1,7 @@
 *.zip
+
+# macOS metadata
+.DS_Store
+
+# Separate web-textbook repository with its own Git history and remote
+/student-textbook-web/

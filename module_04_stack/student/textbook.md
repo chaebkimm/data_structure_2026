@@ -4,49 +4,75 @@
 
 ### Why do we need a special order?
 
-In the chapter on trees, you learned about recursion. When a function pauses to call a new function, the computer needs to remember exactly where to resume later. Because the most recently called function must always finish first, we must store these "return addresses" so that the last one saved is the very first one we take back out.
+The expression `1 + 2 * 3` cannot be evaluated strictly from left to right. Multiplication must be completed before addition. This rule is called **operator precedence**. The evaluator must delay `1 +` until `2 * 3` is complete. It needs storage that returns the most recently delayed item first.
+
+### How do we find what to calculate next?
+
+If the evaluator delays `+` and then `*`, it must finish `*` before returning to `+`. The needed operator is at the top, so the evaluator does not search through older items. Reading the top without removing it reveals the next waiting step.
 
 ### The Top-Only Method
 
-If you put items in and take them out from only one single end, the very last item you put in will always be the very first one to come out. Think of it like a tall container for plates—you always place a new plate on the very top, and when you need a plate, you always take the one sitting right on top.
-
-### How do we find where to return?
-
-Since the program only ever cares about the most recently paused function, the computer doesn't need to search through all the saved data one by one. It simply looks directly at the item sitting on the very top of the container to see what it is, without actually removing it.
+When items enter and leave through one end, the last item added is the first item removed. A stack of plates follows this rule because both actions happen at the top.
 
 ### How do we remove data?
 
-When a function finishes running, its saved information is no longer needed. You remove the top item completely from the container. The item directly underneath it instantly becomes the new top, telling the computer exactly where to return next. After deleting, the final number of items goes down by one.
+When the most recent saved item is no longer needed, you logically remove it by decreasing the count. Its old bits may remain in the array, but they are no longer part of the Stack. The item below it becomes the new top.
 
 ### How do we add data?
 
-Every time a new function is called, you simply add its return information (a new "frame") directly onto the very top of your existing pile. No other existing data needs to be shifted, moved, or changed. After adding it, the final number of items goes up by one.
+To delay a number or operator, place it at the top. No existing item moves. Increase the item count by one.
+
+### How does the computer use this for paused functions?
+
+In the previous chapter on trees, you learned about recursion. When a function pauses to call a new function, the runtime commonly uses the same Last-In, First-Out behavior. It saves a **call frame** containing what the active call needs in order to resume. The integer function ID used later in this chapter models that order; it is not a real call frame or the runtime's hidden storage.
 
 ### What should we check when adding or removing?
 
-When adding data, check that the container hasn't reached its strict maximum depth limit. When looking at or removing data, check that the container actually has something in it. An empty container means the program has finished running completely.
+When adding data, check that the Stack has not reached its fixed capacity. When looking at or removing data, check that the Stack contains an item.
+
+In this module, the caller creates the fixed array and keeps its `size` and `capacity`. The Stack operations borrow that array without creating, resizing, or releasing it. This arrangement is called **caller-owned storage**.
 
 ### What happens if the space is full?
 
-If a recursive function forgets its stopping rule, it will keep calling itself and adding new items until the container is completely full. If it tries to add one more item when the space is full, it triggers a fatal error—an Overflow—and stops the program immediately. Similarly, trying to remove an item when the container is already empty triggers an Underflow error.
+If a recursive function forgets its stopping rule, it can exhaust the runtime space used for calls. That event is separate from this chapter's checked fixed-array Stack. A push requested when `size == capacity` is rejected before any array cell changes. A peek or pop requested when `size == 0` reports underflow and leaves the checked output unchanged.
+
+### How do two Stacks preserve precedence?
+
+The checked **expression evaluator** uses one Stack for numbers and one for operators. Before pushing a new operator, it applies every waiting operator with equal or greater precedence. Equal-precedence operators therefore run from left to right.
+
+The right end of each list below is the top:
+
+- Start: numbers `[]`; operators `[]`.
+- Read `1`: numbers `[1]`; operators `[]`.
+- Read `+`: numbers `[1]`; operators `[+]`.
+- Read `2`: numbers `[1, 2]`; operators `[+]`.
+- Read `*`: numbers `[1, 2]`; operators `[+, *]`. The waiting `+` has lower precedence.
+- Read `3`: numbers `[1, 2, 3]`; operators `[+, *]`.
+- Reach the end: Apply `*` first, producing numbers `[1, 6]`. Then apply `+`, producing `[7]`.
+
+The evaluator accepts only a nonempty sequence that starts with one digit, alternates between an operator and one digit, and ends with a digit. The only operators are `+` and `*`. It rejects spaces, parentheses, unsupported characters, missing operands, an internal push when its Stack is full, or a mathematical result outside the C `int` range. A result outside that range is called **integer overflow**. Every rejection leaves the caller's previous result unchanged. The two internal Stacks have ten positions each. This limit applies to the number of items currently in each Stack, not directly to expression length.
 
 ## Calculating Efficiency
 
 ### Memory Efficiency
 
-The stack reserves its full capacity even when only some slots are in use. The remaining slots simply sit empty, waiting outside the current stack limits.
+The Stack reserves its full fixed capacity even when only some positions are active. Positions at or above `size` are inactive, even if they still contain old bits. The array uses `O(capacity)` storage.
 
 ### Efficiency of Adding Data
 
-If you have leftover space, adding a new function call directly to the very top is super fast because no other existing data needs to move or shift out of the way. Because a stack strictly forbids adding items into the middle or the bottom, the amount of work is always instantly finished. 
+If space remains, pushing writes one array cell and increases size once. No existing item moves. A checked fixed-capacity push therefore takes `O(1)` time.
 
 ### Efficiency of Deleting Data
 
-Removing a function call when it finishes is instantly finished. Unlike an array list where deleting from the front forces you to pull everything else forward, a stack only ever removes the most recently added item from the very top. There is absolutely no need to shift or reorganize the older data underneath it.
+After its checks, pop reads one array cell and decreases size once. It does not shift the older data, so it takes `O(1)` time.
 
 ### Efficiency of Reading the Top Data
 
-In a stack, you are strictly restricted to finding one specific piece of data: the item sitting on the very top. Because the computer keeps a running count of exactly how many items are currently stored, it can instantly calculate the top item's exact position in memory and jump straight to it. 
+Peek reads one position, `stack[size - 1]`, after checking the metadata and empty state. It takes `O(1)` time.
+
+### Efficiency of Evaluating an Expression
+
+For an expression containing `n` characters, the evaluator scans each character once and applies each operator once. It takes `O(n)` time. Its two fixed ten-position arrays use `O(1)` extra storage.
 
 ## Glossary
 
@@ -68,7 +94,7 @@ The action of adding a new item directly onto the top of the stack.
 
 ### Pop
 
-The action of completely removing the top item from the stack.
+The action of reporting and logically removing the top item from the Stack.
 
 ### Peek
 
@@ -76,55 +102,65 @@ The action of looking at the top item's value without removing it.
 
 ### Call Frame
 
-The package of data saved on the stack that remembers a paused function's exact return address and local variables.
+A runtime record containing what one active function call needs in order to resume. The integer ID in this chapter models call order; it is not a real call frame.
 
 ### Capacity
 
-The fixed maximum number of items the stack's underlying memory can hold.
+The number of usable array positions supplied by the caller.
 
-### Stack Overflow
+### Caller-Owned Storage
 
-A fatal error that happens when a program tries to push a new item onto the stack, but the fixed memory capacity is already completely full.
+A fixed array created and controlled by the caller. The Stack operations borrow it without resizing or releasing it.
+
+### Full-Stack Rejection
+
+A rejected push when `size == capacity`. The Stack remains unchanged. Runtime call-space exhaustion is a different event.
 
 ### Underflow
 
-The error state when you try to read or remove a value from an empty stack.
+The rejected request to peek or pop an empty Stack. The Stack and checked output remain unchanged.
+
+### Operator Precedence
+
+The rule that determines which operator must be applied first.
+
+### Expression Evaluator
+
+A procedure that calculates an expression accepted by its stated rules.
+
+### Integer Overflow
+
+A mathematical result outside the range of C type `int`. The checked evaluator rejects it before committing an output.
 
 ## Invariant
 
 ### What is the invariant (the golden rule) in this data structure?
 
-You must only ever interact with the very top of the stack. All adding (pushing), removing (popping), and reading (peeking) must happen exclusively at this single active end. The older data trapped underneath the top is completely off-limits and cannot be touched until the items above it are removed.
+You must interact with the active Stack through its top. Push adds at index `size`. Peek and pop use index `size - 1`. Valid metadata also satisfies `0 <= size <= capacity`.
 
 ### What is the benefit from the invariant?
 
-It guarantees perfect Last-In, First-Out (LIFO) order. By restricting all access to just the top, the stack flawlessly tracks nested sequences—like paused recursive functions—ensuring the computer always returns to the most recently paused task first. It also guarantees that every single action is incredibly fast, because no time is ever wasted searching through the data or shifting items around.
+It preserves Last-In, First-Out (LIFO) order. The newest active item is always the next item inspected or removed. With the fixed-array representation, push, peek, and pop each use a constant number of checks, reads, writes, or size updates.
 
 ### How is the invariant maintained during insertion?
 
-When you push a new item, you simply place it in the very first empty spot directly above the current data. This new item instantly becomes the new top. You are strictly forbidden from sneaking the new item into the middle or bottom of the existing pile.
+When you push a new item, place it at index `size`, then increase size. If the Stack is full or its metadata is invalid, reject the request before writing.
 
-### How the invariant is kept during deletion?
+### How is the invariant maintained during deletion?
 
 When you remove data, you are only allowed to pop the single item currently sitting at the very top. You never pull an item out from the middle. By taking only the top item, the piece of data immediately below it is safely exposed and naturally becomes the new top.
 
 ### What happens if the invariant is broken?
 
-Imagine you could reach into the middle of the stack to change or remove an older paused function without popping the newer ones on top of it first.
+If code removes an older item while newer items remain, the next pop no longer reports the newest saved item. An expression evaluator can then apply operators in the wrong order and compute the wrong value.
 
-If you allow this to happen, the purpose of the stack breaks down in two major ways:
-
-- The Order is Destroyed: The stack's entire job is to remember the exact reverse order of events. If you pull an older function out from the middle, you break the chain of return addresses. When the newer functions on top finally finish running, the computer will look down for its next step, find a missing link, and crash.
-
-- Loss of Instant Speed: If we allowed adding or removing items from the middle, we would suddenly have to push and pull the remaining data to close the empty gaps, just like an Array List. This extra work destroys the elegant, instant speed of the stack.
-
-By strictly enforcing the top-only rule—even when it feels restricting—we guarantee that our data's timeline is always perfectly ordered, safe, and instantly accessible.
+If the metadata rule breaks, `stack[size - 1]` may name an inactive slot or a position outside the caller's array. The operations prevent these outcomes by checking metadata, full state, and empty state before accessing an element.
 
 ## Coding Plan
 
 ### Making an Empty Stack
 
-- Set Capacity: Note the fixed maximum number of function calls the stack's memory can hold.
+- Set Capacity: Note the fixed maximum number of IDs the prepared array can hold.
 - Initialize Count: Set the total count of stored items (the current size) to 0, meaning the container is completely empty.
 
 ### Pushing a Value (Function Call)
@@ -132,21 +168,52 @@ By strictly enforcing the top-only rule—even when it feels restricting—we gu
 - Check Space: Make sure the current size is strictly less than the total capacity.
 - Save Data: Put the new function ID into the underlying array exactly at the spot matching the current size.
 - Increase Count: Increase the total size count by 1 so the new item officially becomes the new top.
-- Fail: If the stack is already full, reject the addition and stop the program to prevent a Stack Overflow.
+- Fail: If the Stack is full or metadata is invalid, return the original size and leave every array cell unchanged.
 
 ### Reading the Top Value (Peek)
 
 - Check Empty: Make sure the size is greater than 0 so there is actually a paused function to look at.
 - Read Data: Look at the function ID stored at exactly one spot below the current size (size - 1). Do not change the size count.
-- Fail: If the stack is empty, reject the read because there is nothing to check.
+- Fail: If the Stack is empty or metadata is invalid, reject the read and leave the checked output unchanged.
 
 ### Removing the Top Value (Pop / Return)
 
 - Check Empty: Make sure the size is greater than 0.
+- Read Data: Copy the function ID at `size - 1` to the checked output.
 - Decrease Count: Decrease the total size count by 1. You do not need to physically erase the old data in the array; decreasing the count safely hides it and automatically makes the item below it the new top.
-- Fail: If the stack is already empty, reject the removal to prevent an Underflow error.
+- Fail: If the Stack is empty or metadata is invalid, return the original size and leave the checked output unchanged.
+
+### Evaluating the Expression
+
+- Read Left to Right: Expect one digit, then one operator, repeating until the end.
+- Save Work: Push digits onto the number Stack and operators onto the operator Stack.
+- Respect Precedence: Before pushing an operator, apply every waiting operator with equal or greater precedence.
+- Finish: Apply the remaining operators from the top down.
+- Commit or Reject: Write the result only after the input rules, Stack operations, and checked arithmetic all succeed. Otherwise, leave the caller's output unchanged.
+
+## New C Syntax Explained
+
+### Strings and the Null Terminator (`\0`)
+
+In C, text such as `"1+2*3"` is a string literal. It creates an array of characters whose last character is `'\0'`, the null terminator. In the evaluator's loop, `expression[index] != '\0'` means to keep reading until that terminator is reached.
+
+### Single Quotes vs. Double Quotes (`'0'` vs `"1+2*3"`)
+
+In C, single quotes and double quotes mean very different things.
+
+- Double quotes (`""`) are used for strings (an array of characters ending with a hidden `'\0'`).
+
+- Single-quoted forms such as `'0'` and `'+'` represent one individual character. When the evaluator writes `char current = expression[index];`, it is pulling out one character, so it checks that value with forms such as `current == '+'`.
+
+### Character Math (`current - '0'`)
+
+C represents each character with an integer value. The C language guarantees that the digit characters from `'0'` through `'9'` have consecutive values.
+
+After checking that `current` is a digit, subtracting `'0'` converts it to the matching integer. For example, `current - '0'` produces `3` when `current` is `'3'`. This works without assuming a particular character encoding.
 
 ## C Code
+
+The next blocks show the array actions inside the checked Stack operations. In the lab, `int_stack_push`, `int_stack_peek`, and `int_stack_pop` package these actions as functions.
 
 ### Making an Empty Stack
 
@@ -165,9 +232,9 @@ int size = 0;
 /* The ID of the new function being called */
 int new_function = 100;
 
-/* Check Space */
-if (size < capacity) {
-        
+/* Check Valid Metadata and Space */
+if (size >= 0 && size < capacity) {
+
         /* Save Data */
         stack[size] = new_function;
 
@@ -179,112 +246,39 @@ if (size < capacity) {
 ### Reading the Top Value (Peek)
 
 ```c
-/* Check Empty */
-if (size > 0) {
-        
+int top_function = -1; /* Existing output stays unchanged on failure */
+
+/* Check Valid Metadata and Empty State */
+if (size > 0 && size <= capacity) {
+
         /* Read Data */
-        int top_function = stack[size - 1];
+        top_function = stack[size - 1];
 }
 ```
 
 ### Removing the Top Value (Pop / Return)
 
 ```c
-/* Check Empty */
-if (size > 0) {
-        
+int returned_function = -1; /* Existing output stays unchanged on failure */
+
+/* Check Valid Metadata and Empty State */
+if (size > 0 && size <= capacity) {
+
+        /* Read Data */
+        returned_function = stack[size - 1];
+
         /* Decrease Count */
         size = size - 1;
 }
 ```
 
-## Coding Exercise: Evaluating an Expression
+### Calling the Expression Evaluator
 
-### Handling Operator Precedence
-
-If you calculate `1 + 2 * 3` strictly left to right, you get `9`. However, multiplication has a higher priority than addition. The computer must put the `1 +` on hold, safely remembering it until `2 * 3` is calculated.
-
-To process equations properly, the computer uses two stacks: one for numbers and one for operators. It assigns a priority level to each symbol (e.g., `*` is high, `+` is low) and follows one golden rule: Before pushing a new operator, calculate any waiting operators that have equal or higher priority.
-
-### The C Code
-
-To make this easy to read, we use a loop to process a simple string of characters (`"1+2*3"`). We also use a small helper function to check the priority of the math symbols.
+The header `expression_evaluator.h` declares the evaluator function. A caller can use it without seeing the evaluator's internal two-Stack implementation.
 
 ```c
-/* Helper function to check priority level */
-int get_priority(char operator) {
-        if (operator == '*') return 2;
-        if (operator == '+') return 1;
-        return 0;
-}
-```
+int result = -1;
+int success = expression_evaluate("1+2*3", &result);
 
-Here is the main logic using the two stacks side-by-side:
-
-```c
-/* Create the two stacks */
-int num_stack[10];
-int num_size = 0;
-
-char op_stack[10];
-int op_size = 0;
-
-/* The equation to solve (no spaces for simplicity) */
-char equation[] = "1+2*3";
-
-/* Read the equation left to right */
-for (int i = 0; equation[i] != '\0'; i = i + 1) {
-        char current = equation[i];
-
-        /* If it is a number (between '0' and '9') */
-        if (current >= '0' && current <= '9') {
-                /* Convert character to integer and push to Number Stack */
-                num_stack[num_size] = current - '0';
-                num_size = num_size + 1;
-        } 
-        /* If it is an operator (*, +) */
-        else {
-                /* While the top operator is STRONGER or EQUAL to the current one */
-                while (op_size > 0 && get_priority(op_stack[op_size - 1]) >= get_priority(current)) {
-                        
-                        /* Pop the operator */
-                        op_size = op_size - 1;
-                        char op = op_stack[op_size];
-
-                        /* Pop the right and left numbers */
-                        num_size = num_size - 1;
-                        int right = num_stack[num_size];
-
-                        num_size = num_size - 1;
-                        int left = num_stack[num_size];
-
-                        /* Calculate and push result back */
-                        if (op == '*') num_stack[num_size] = left * right;
-                        if (op == '+') num_stack[num_size] = left + right;
-                        num_size = num_size + 1;
-                }                
-                /* Now it is safe to push the current operator */
-                op_stack[op_size] = current;
-                op_size = op_size + 1;
-        }
-}
-
-/* End of Equation: Apply any remaining operators left in the stack */
-while (op_size > 0) {
-        op_size = op_size - 1;
-        char op = op_stack[op_size];
-
-        num_size = num_size - 1;
-        int right = num_stack[num_size];
-
-        num_size = num_size - 1;
-        int left = num_stack[num_size];
-
-        if (op == '*') num_stack[num_size] = left * right;
-        if (op == '+') num_stack[num_size] = left + right;
-        num_size = num_size + 1;
-}
-
-/* The final answer is sitting at the bottom of the number stack */
-int final_answer = num_stack[0]; /* 7 */
+/* success is 1, and result is 7. */
 ```

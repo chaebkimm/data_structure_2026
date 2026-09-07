@@ -1,337 +1,459 @@
-# Chapter 5. Following One Branch to the End
+# Chapter 5. Traversing a Tree with a Stack
 
 ## Thinking Logically
 
-### How do we remember the remaining branches while going down one path?
+### How do we return to an unfinished branch without recursion?
 
-Imagine we want to read every single item in a tree exactly once. If we start at the very top and decide to travel down the left path, we must temporarily memorize the right path so we can explore it later. The deeper we travel down the left side, the more right-side branches we have to memorize to come back to.
+Chapter 2 built and evaluated an expression tree with recursive calls. Each
+unfinished call remembered where to continue after a child returned. Chapter
+4 introduced a stack that stores values and takes the newest value out first.
+We can now store the unfinished tree work in that stack ourselves.
 
-Following one continuous path all the way down until it hits a dead end, and *then* returning to check the branches we skipped, is a specific style of searching. Every time you move down to a lower level, you simply need to remember the item you are currently at and which path to take next.
-
-### What happens if we give the exact same task to the next level?
-
-The job we do at our current item looks exactly the same as the job we need to do for the items below it. If a set of instructions simply tells the computer to run *those exact same instructions again* for the next level down, it perfectly handles this repeating pattern.
-
-```text
-read_item(current item):
-    If there is no item here, just stop and go back.
-    Write down the information for this item.
-    Run read_item on the left path.
-    Run read_item on the right path.
-```
-
-The simple rule to stop and go back when there is no item is an incredibly important stopping condition so the process doesn't run forever. When the computer jumps to the left path, it safely sets aside the unfinished instructions. It perfectly remembers where it was and exactly what line to run next when it eventually comes back to finish the right path.
-
-### What changes depending on when we write down the information?
-
-We will always visit the current item, the left path, and the right path. However, simply changing *when* we write down the information from the current item creates three completely different reading orders.
+Keep the expression `3+5*2` from Chapter 2. Its tree has five nodes.
 
 ```text
-          50
-          / \
-        30   70
-       /  \
-     20    40
+        +
+       / \
+      3   *
+         / \
+        5   2
 ```
 
-* **Write First:** Write down the current item, then check left, then check right. (Order: `50, 30, 20, 40, 70`)
-* **Write in the Middle:** Check left, write down the current item, then check right. (Order: `20, 30, 40, 50, 70`)
-* **Write Last:** Check left, check right, and only write down the current item at the very end. (Order: `20, 40, 30, 70, 50`)
+After reaching `3`, we still need to reach `*` and its children. A variable
+that only holds `3` cannot recover the root because the nodes have no parent
+links. We must save an address before leaving an unfinished branch.
 
-In this chapter, our items contain a number and a simple true/false tag. Our reading process will visit every item and copy both pieces of information to a final list, no matter what the tag says.
+Following one branch before returning to the remaining branches is
+**depth-first search (DFS)**, introduced briefly in Chapter 2. Processing
+every node in a chosen order is a **traversal**. This chapter implements three
+DFS traversal orders using loops and an explicit stack. None of the three
+traversal functions calls itself.
 
-### Where do we save the final list?
+In this chapter, to **visit** a node means to print its stored symbol once.
+Reading a node address or placing it on the stack does not yet visit it.
+That distinction matters when we postpone printing a parent.
 
-To avoid accidentally changing the original tree, we copy the information we read into a separate, safe list. In our setup, this list can hold a maximum of exactly 64 records.
+### What changes when we print the parent first, between, or last?
 
-```c
-typedef struct {
-    int key;
-    bool flagged;
-} TreeVisit;
+The expression tree has a current node, a left subtree, and a right subtree.
+We keep the left subtree before the right subtree. We choose when to print
+the current node relative to those two subtrees.
 
-typedef struct {
-    TreeVisit items[TREE_DFS_MAX_NODES];
-    size_t count;
-} TreeOrder;
-```
+| Order | Position of the current node | Symbols for `3+5*2` |
+| --- | --- | --- |
+| Preorder | Current, left subtree, right subtree | `+ 3 * 5 2` |
+| Inorder | Left subtree, current, right subtree | `3 + 5 * 2` |
+| Postorder | Left subtree, right subtree, current | `3 5 2 * +` |
 
-If we are given an empty tree, we successfully return an empty list. But if we try to read a 65th item, the process completely fails and triggers an error. Even if we aren't planning to *write down* that item until later, we check if we have hit the 64 limit the very moment we arrive at it.
+The node's first arrival and its printing time need not be the same moment.
+For example, postorder reaches `+` first but prints `+` last.
 
-We build our final list in a temporary, hidden workspace first. We only copy it out for the user to see if the entire reading process finishes perfectly. This way, if it fails halfway through, it doesn't leave the user with a broken, half-finished list.
+### How do we print the current node before its children?
 
-Our instructions assume the tree is built correctly—meaning there are no circles looping back around, and two different items never connect downward to the exact same item. A broken tree might cause the computer to get stuck in an endless loop.
+We can print a node as soon as we take its address from the stack. Its
+children become future work. To process the left child next, push the right
+child first and the left child second. The left child is then on top.
 
-### Can we create the same order without repeating the instructions?
+This is **preorder traversal**. Start by pushing the root. Repeatedly pop,
+print, and push the existing children. Do not push `NULL`.
 
-We can recreate the "Write First" order using a normal repeating loop by creating our own temporary container to hold the locations of the items we need to check later.
+In every stack below, the bottom is on the left and the **top is on the
+right**. Each table row shows the state after the listed action.
 
-We take an item out of our container, write its information down, drop its right path into the container *first*, and then drop its left path in *last*. Because the left path went in last, it will be sitting on top, meaning it will be the very first one we take out next.
+| Action | Stack, bottom → top | Symbols printed so far |
+| --- | --- | --- |
+| Push root `+` | `[+]` | Empty |
+| Pop and print `+`; push `*`, then `3` | `[*, 3]` | `+` |
+| Pop and print `3`; it has no children | `[*]` | `+ 3` |
+| Pop and print `*`; push `2`, then `5` | `[2, 5]` | `+ 3 *` |
+| Pop and print `5` | `[2]` | `+ 3 * 5` |
+| Pop and print `2` | `[]` | `+ 3 * 5 2` |
 
-```text
-After checking 50: 70 is waiting, 30 is waiting
-After checking 30: 70 is waiting, 40 is waiting, 20 is waiting
-After checking 20: 70 is waiting, 40 is waiting
-After checking 40: 70 is waiting
-After checking 70: Container is empty
-```
+The stack holds roots of subtrees that have not started. Each popped root is
+printed before its children. Pushing right before left places the entire
+left subtree's work above the waiting right subtree. Reversing the two
+pushes would produce `+ * 2 5 3` on this tree.
 
-This temporary container only owns its own memory space. It does not own the actual tree items themselves. If the container runs out of room while trying to hold locations, the process fails safely without ruining the existing output.
+### How do we delay printing a parent until its left subtree is finished?
 
-### How do we build a tree without knowing the total number of items in advance?
+Preorder prints `+` too early for the usual expression order. We need to
+reach the left subtree while keeping the unprinted parent available.
 
-We can ask the computer for memory space to build one single item at the exact moment we need it. We save the number and the tag, and create an item with empty left and right connections. Once we successfully attach this new item to the tree, the tree becomes its owner.
+Keep a `current` pointer. While `current` is not `NULL`, push its address and
+move left. When the left path ends, pop one saved node and print it. Set
+`current` to that node's right child. Repeat the same steps.
 
-When attaching a new item, we follow strict sorting rules: smaller numbers must always go to the left, and larger numbers must always go to the right. If we try to add a number that already exists, or if the computer refuses to give us memory for the new item, we safely leave the tree exactly as it was.
+This is **inorder traversal**. The stack holds nodes whose own symbols have
+not been printed. Printing a popped node is safe because its left subtree
+has just finished. Its right subtree still needs work.
 
-### Do we have to read all the items to find a specific number?
+| Action | `current` | Stack, bottom → top | Symbols printed so far |
+| --- | --- | --- | --- |
+| Start at root | `+` | `[]` | Empty |
+| Push `+`; move left | `3` | `[+]` | Empty |
+| Push `3`; move left | `NULL` | `[+, 3]` | Empty |
+| Pop and print `3`; move right | `NULL` | `[+]` | `3` |
+| Pop and print `+`; move right | `*` | `[]` | `3 +` |
+| Push `*`; move left | `5` | `[*]` | `3 +` |
+| Push `5`; move left | `NULL` | `[*, 5]` | `3 +` |
+| Pop and print `5`; move right | `NULL` | `[*]` | `3 + 5` |
+| Pop and print `*`; move right | `2` | `[]` | `3 + 5 *` |
+| Push `2`; move left | `NULL` | `[2]` | `3 + 5 *` |
+| Pop and print `2`; move right | `NULL` | `[]` | `3 + 5 * 2` |
 
-Because of our strict sorting rules, we never have to read everything. By comparing the number we are looking for with the number in our current item, we instantly know which single path to follow.
+An empty stack alone does not end this algorithm. After printing `+`, the
+stack is empty but `current` still points to `*`. Stop only when `current`
+is `NULL` **and** the stack is empty.
 
-```text
-Finding 40: 50 → 30 → 40 → Success
-Finding 35: 50 → 30 → 40 → Empty space → Not found
-```
+### How do we know whether a parent's right subtree has finished?
 
-If we successfully find the number, we give back the location of that item. If we hit an empty space without finding it, we return a "not found" error and leave the user's variables exactly as they were.
+Printing a parent after its left subtree is still too early for evaluation.
+The parent operator also needs the right subtree's result. We must keep the
+parent on the stack until both sides have finished.
 
-### In what order should we clean up the items?
+Again, push nodes while moving left. At the end of a left path, inspect the
+top node without removing it. If its right subtree still needs work, move
+right and keep the parent waiting. Otherwise, pop and print the parent.
 
-Since the tree owns the items we created, we have to clean them up properly. You should never use this cleanup process on items that weren't created one by one by the computer's memory allocator.
+This is **postorder traversal**. We need one more pointer,
+`last_visited`, to remember the last node printed. Completing a subtree in
+postorder prints that subtree's root last. Therefore, when inspecting a
+waiting parent, `last_visited == parent->right` tells us that its right
+subtree has finished.
 
-If you delete a parent item first, the connections to its children are destroyed, and you can no longer find them to clean them up! You must completely clean up both the left and right children *before* you delete the parent item. This perfectly matches the "Write Last" order we learned earlier.
+If the right child is `NULL`, there is no right subtree to process. If the
+right child exists and differs from `last_visited`, enter it. In both cases,
+the left subtree has already finished when we reach this decision.
 
-After everything is deleted, we change the starting point of the tree to empty. Cleaning up an already empty tree is also considered a success. This cleanup process doesn't have a 64-item limit, but if the tree is incredibly deep, the computer's background memory for holding the set-aside instructions might run out of space.
+| Action | `current` | Stack, bottom → top | `last_visited` | Symbols printed so far |
+| --- | --- | --- | --- | --- |
+| Start at root | `+` | `[]` | `NULL` | Empty |
+| Push `+`, then `3`, moving left each time | `NULL` | `[+, 3]` | `NULL` | Empty |
+| `3` has no right child: pop and print it | `NULL` | `[+]` | `3` | `3` |
+| Inspect `+`: its right child `*` is unfinished | `*` | `[+]` | `3` | `3` |
+| Push `*`, then `5`, moving left each time | `NULL` | `[+, *, 5]` | `3` | `3` |
+| `5` has no right child: pop and print it | `NULL` | `[+, *]` | `5` | `3 5` |
+| Inspect `*`: its right child `2` is unfinished | `2` | `[+, *]` | `5` | `3 5` |
+| Push `2`; move left | `NULL` | `[+, *, 2]` | `5` | `3 5` |
+| `2` has no right child: pop and print it | `NULL` | `[+, *]` | `2` | `3 5 2` |
+| Inspect `*`: `last_visited` is its right child; pop and print | `NULL` | `[+]` | `*` | `3 5 2 *` |
+| Inspect `+`: `last_visited` is its right child; pop and print | `NULL` | `[]` | `+` | `3 5 2 * +` |
+
+Compare node **addresses**, not stored symbols. Two different nodes can both
+store `'*'`. Equal symbols do not show which subtree has finished.
+
+### Why does each node appear exactly once?
+
+The input must be a valid tree. It has no cycles and no child shared by two
+parents. Every non-root node therefore has exactly one incoming child link.
+The traversal must keep those links and node lifetimes unchanged.
+
+Preorder schedules each child once when its parent is popped. Inorder
+removes a parent before entering its right subtree, so that parent cannot
+schedule the same right subtree again. Postorder keeps a parent until the
+right child is `NULL` or that right subtree's root was last printed. This
+check prevents reentering a completed right subtree.
+
+These are the rules that must remain true during each loop, or its
+**invariants**. They let each algorithm account for the waiting work without
+adding a visited marker to every tree node.
+
+An empty tree prints nothing. A single node is pushed and popped once. Do
+not call `pop` or `peek` on an empty stack. In inorder and postorder, entering
+the branch for `current == NULL` while the outer loop still runs guarantees
+that a saved node exists.
+
+### How do these orders connect to expression trees?
+
+Preorder puts an operator before its operands. It can guide a copy operation
+that creates each parent before connecting its copied children. Saving an
+arbitrary binary tree also needs enough information to recover missing
+children; a bare list of symbols does not always preserve the shape.
+
+Inorder places an operator between its operands. Printing symbols alone does
+not always preserve grouping. A tree for `(3+5)*2` also has the inorder
+sequence `3 + 5 * 2`, although its value is `16` rather than `13`. A formatter
+must add parentheses where the tree's grouping requires them.
+
+Postorder gives `3 5 2 * +` for the running tree. Both operands precede each
+operator. An evaluator can read this sequence with a stack of numbers: push
+`3`, `5`, and `2`; apply `*` to `5` and `2` and push `10`; then apply `+` to
+`3` and `10` to get `13`. Pop the right operand before the left operand.
+Their positions matter for subtraction and division.
+
+The node stack chooses the order in which nodes are visited. A value stack
+would hold intermediate arithmetic results. The C example below prints the
+three orders; recursive construction and evaluation were the main work of
+Chapter 2.
 
 ## Calculating Efficiency
 
-### How long does it take to read all the items?
+### How many stack operations does each traversal perform?
 
-Since the "Write First", "Write in the Middle", and "Write Last" methods all visit every single item exactly once, the time it takes grows steadily based on the total number of items. If there are `n` items, the time is `O(n)`.
+The running tree has five nodes. Each traversal pushes five node addresses,
+pops five addresses, and prints five symbols. Postorder also inspects a
+waiting parent before deciding whether to enter its right subtree or print
+it. Each right subtree is entered only once, so those inspections add a
+bounded amount of work per node.
 
-### How much extra space is needed while reading?
+For a tree with `n` nodes, each traversal performs work proportional to `n`.
+Its running time is `O(n)`. This count treats printing one stored character
+as one fixed-size action.
 
-If the tree is `h` levels deep, the maximum number of paths we have to memorize at one time is `h + 1`. This means the extra memory space needed grows based on the depth of the tree, `O(h)`. If a tree is completely unbalanced and leans entirely to one single side, the depth `h` could be almost as large as the total number of items.
+### How many addresses must be remembered at the same time?
 
-### How long does it take to find a single number?
+The three algorithms need different kinds of waiting work, even on the same
+tree. Count the largest number of addresses present in each trace.
 
-Because the search follows one single downward path, the time depends entirely on the depth of the tree, taking `O(h)` time. A nicely balanced tree keeps this path very short, but a poorly built tree leaning entirely to one side can make the search take as long as `O(n)`.
+| Traversal | Largest stack in the running example | Maximum used entries |
+| --- | --- | --- |
+| Preorder | `[*, 3]` or `[2, 5]` | 2 |
+| Inorder | `[+, 3]` or `[*, 5]` | 2 |
+| Postorder | `[+, *, 5]` or `[+, *, 2]` | 3 |
 
-### How long does it take to delete the entire tree?
+The tree's height is two edges. A root-to-leaf path can therefore contain
+three nodes. More generally, a tree of height `h` has at most `h + 1` nodes
+on such a path. Inorder saves unfinished ancestors. Postorder saves the
+unfinished path. Preorder saves at most one waiting sibling per level plus
+the next node to process.
 
-Because every single item must be deleted exactly once, it takes `O(n)` time, and requires `O(h)` extra memory space to remember the return paths.
+Thus these algorithms use at most `O(h + 1)` stack entries. For nontrivial
+trees this is commonly written `O(h)`. A chain can require `n` entries in
+inorder or postorder, depending on its direction. Preorder needs only one
+entry on a chain because no sibling branch is waiting. Height gives an upper
+bound; it does not force every traversal to fill that many entries.
+
+The sample reserves an array of 100 pointers because
+`TREE_DFS_POOL_CAPACITY` is 100. That array occupies room for all 100 pointers
+even when only two are in use. Distinguish the fixed reserved storage from
+the number of used entries. For a configurable capacity `C`, reserved stack
+storage is `O(C)`. The two extra pointers in postorder take constant space.
+
+### What happens when the fixed stack fills?
+
+Check capacity before storing the next address. A rejected `push` changes
+neither the stored addresses nor `size`. The traversal then returns `false`.
+Its tree remains unchanged, but symbols printed before the failure remain
+on the screen. The example does not roll back console output.
+
+A valid tree with at most 100 nodes fits this sample's stack. A larger tree
+may also fit if its waiting work stays small, but that is not guaranteed.
+Removing recursion does not remove the need to store unfinished work.
 
 ## Glossary
 
-### Tree Traversal
+The names below refer to the actions already traced in this chapter.
 
-A procedure that processes every node in a tree exactly once according to a specific order.
-
-### Depth-First Search (DFS)
-
-A search method that follows one branch all the way to the end before returning to check the remaining branches.
-
-### Recursion
-
-A technique where a function calls itself while it is running.
-
-### Base Case
-
-An input condition that makes the function return without making any more recursive calls.
-
-### Call Frame
-
-Information stored in memory that holds the local values of an unfinished function call and the exact location to return to.
-
-### Preorder Traversal
-
-A traversal that processes the current node *before* its two subtrees (Write First).
-
-### Inorder Traversal
-
-A traversal that processes the current node *between* its left and right subtrees (Write in the Middle).
-
-### Postorder Traversal
-
-A traversal that processes the current node *after* its two subtrees (Write Last).
-
-### Binary Search Tree (BST)
-
-A binary tree that keeps smaller keys on the left, larger keys on the right, and does not allow duplicate keys.
+| Term | Meaning |
+| --- | --- |
+| Traversal | Processing every node in a chosen order. |
+| Visit | Performing the selected action on a node; here, printing its symbol. |
+| Depth-first search | Finishing one branch before returning to remaining branches. |
+| Iterative traversal | A traversal implemented with loops instead of recursive traversal calls. |
+| Explicit stack | A stack whose storage, pushes, and pops appear in our code. |
+| Preorder | Current node, left subtree, right subtree. |
+| Inorder | Left subtree, current node, right subtree. |
+| Postorder | Left subtree, right subtree, current node. |
+| `current` | The root of the next subtree to enter. |
+| `last_visited` | In postorder, the address of the last node printed. |
+| Loop invariant | A rule about stored state and unfinished work that remains true as the loop runs. |
 
 ## Coding Plan
 
-### Recursive Traversal (Repeating Instructions)
+The code follows the same five-node tree and the same stack orientation as
+the hand traces.
 
-* **Stop:** If the node is empty (`NULL`), succeed and return.
-* **Limit:** Check the 64-node limit the instant you arrive at a node.
-* **Progress:** Arrange the data-saving step and the two child calls according to your desired order (Preorder, Inorder, or Postorder).
-* **Complete:** Only copy the temporary workspace result to the final output after the entire process finishes perfectly.
-
-### Iterative Preorder Traversal (Using a Container)
-
-* **Start:** An empty tree succeeds immediately; otherwise, put the starting address into the container.
-* **Loop:** Take an address out of the container and save its data.
-* **Reserve:** Put the right child in first, and the left child in last.
-* **Clean up:** Free the container's memory whether the process succeeds or fails.
-
-### Creating and Inserting Nodes into a BST
-
-* **Create:** Save the key and the tag, and set both child addresses to empty (`NULL`).
-* **Compare:** Go left if the key is smaller, or right if it is larger.
-* **Connect:** Only attach the new node after finding an empty spot.
-* **Fail:** Leave the original tree alone if the key already exists or if the computer refuses to give memory.
-
-### Searching in a BST
-
-* **Compare:** If the target is smaller than the current key, go left. If larger, go right.
-* **Success:** If you find the exact matching key, give back that node's address.
-* **Fail:** If you hit an empty spot (`NULL`), do not change the user's existing output variable.
-
-### Freeing the Entire Tree
-
-* **Go Down:** Travel down to free the left and right children first.
-* **Free:** Delete the current node's memory only after both of its children are completely gone.
-* **Finish:** Change the starting root to empty (`NULL`) when all deleting is complete.
+1. Store `const Node *` addresses in a fixed array. Track the used entries
+   with `size`. Make `push` reject a full array before changing it. Call
+   `pop` and `peek` only when the stack is nonempty.
+2. Implement preorder by pushing the root, then popping and printing one
+   node at a time. Push an existing right child before an existing left
+   child.
+3. Implement inorder with `current`. Save nodes while moving left. Pop and
+   print a node only after the left path ends. Continue at its right child.
+4. Implement postorder with `current` and `last_visited`. Inspect the top
+   before popping it. Keep the parent waiting while its right subtree runs.
+5. Build `3+5*2` with local nodes and run all three traversals. Compare the
+   output and maximum stack sizes with the hand traces. Check an empty tree,
+   a single node, and a tree with only one child at each level.
 
 ## C Code
 
-### How do we build a tree with dynamic nodes?
+### How does the stack store node addresses?
+
+The complete program is
+[`code/lecture/iterative_traversals.c`](../code/lecture/iterative_traversals.c).
+It includes the existing `tree_dfs.h`, whose `Node` contains `char data`,
+`left`, and `right`. This module stores a digit as a character token such as
+`'3'`; Chapter 2's generic `TreeNode` stores the operand's integer value `3`.
+The child-link structure is the same. The lecture sample builds its own nodes
+and does not pass one module's node type to another module's functions.
+
+A `const Node *` lets the traversal read a node without changing that node
+through the pointer. The stack holds copies of addresses; it does not copy
+the nodes.
 
 ```c
-TreeNode *root = NULL;
+#include "tree_dfs.h"
 
-if (tree_bst_insert(&root, 50, false) != TREE_DFS_OK ||
-    tree_bst_insert(&root, 30, true) != TREE_DFS_OK ||
-    tree_bst_insert(&root, 70, true) != TREE_DFS_OK ||
-    tree_bst_insert(&root, 20, false) != TREE_DFS_OK ||
-    tree_bst_insert(&root, 40, true) != TREE_DFS_OK) {
-    tree_destroy_postorder(&root);
-    return 1;
-}
+#include <stdbool.h>
+#include <stdio.h>
 
-```
+typedef struct {
+    const Node *items[TREE_DFS_POOL_CAPACITY];
+    size_t size;
+} NodeStack;
 
-### How do we write a Preorder Traversal?
-
-```c
-static TreeDfsStatus preorder_fill(
-    const TreeNode *node,
-    TreeOrder *order
-)
+static bool push(NodeStack *stack, const Node *node)
 {
-    TreeDfsStatus status;
-
-    if (node == NULL) {
-        return TREE_DFS_OK;
-    }
-    if (order->count == TREE_DFS_MAX_NODES) {
-        return TREE_DFS_LIMIT;
-    }
-
-    order->items[order->count].key = node->key;
-    order->items[order->count].flagged = node->flagged;
-    order->count += 1U;
-
-    status = preorder_fill(node->left, order);
-    if (status != TREE_DFS_OK) {
-        return status;
-    }
-    return preorder_fill(node->right, order);
+    if (stack->size == TREE_DFS_POOL_CAPACITY) return false;
+    stack->items[stack->size++] = node;
+    return true;
 }
 
-TreeDfsStatus tree_preorder_recursive(
-    const TreeNode *root,
-    TreeOrder *out_order
-)
+/* Call pop and peek only when size is greater than zero. */
+static const Node *pop(NodeStack *stack)
 {
-    TreeOrder candidate = {0};
-    TreeDfsStatus status;
+    return stack->items[--stack->size];
+}
 
-    if (out_order == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    status = preorder_fill(root, &candidate);
-    if (status == TREE_DFS_OK) {
-        *out_order = candidate;
-    }
-    return status;
+static const Node *peek(const NodeStack *stack)
+{
+    return stack->items[stack->size - 1U];
 }
 ```
 
-Inorder traversal simply moves the data-saving step below the left call, and Postorder traversal moves it below both child calls. Both functions still check the 64-visit limit the moment they arrive at a node, preventing a 65th visit.
+The Boolean result of `push` reports whether the address was stored. Every
+traversal checks it. `NodeStack stack = {0}` initializes an empty stack.
 
-### How do we keep the order in an Iterative Preorder Traversal?
+### How does preorder make the left child next?
+
+The two child pushes are in the reverse of their processing order. That
+places the left child on top of the waiting right child.
 
 ```c
-while (stack.size > 0U) {
-    const TreeNode *node;
+static bool preorder(const Node *root)
+{
+    NodeStack stack = {0};
 
-    if (tree_node_stack_pop(&stack, &node) != NODE_STACK_OK) {
-        status = TREE_DFS_INVALID_ARGUMENT;
-        break;
-    }
+    if (root == NULL) return true;
+    if (!push(&stack, root)) return false;
 
-    candidate.items[candidate.count].key = node->key;
-    candidate.items[candidate.count].flagged = node->flagged;
-    candidate.count += 1U;
+    while (stack.size > 0U) {
+        const Node *node = pop(&stack);
+        printf("%c ", node->data);
 
-    if (node->right != NULL &&
-        tree_node_stack_push(&stack, node->right) != NODE_STACK_OK) {
-        status = TREE_DFS_LIMIT;
-        break;
+        if (node->right != NULL && !push(&stack, node->right)) return false;
+        if (node->left != NULL && !push(&stack, node->left)) return false;
     }
-    if (node->left != NULL &&
-        tree_node_stack_push(&stack, node->left) != NODE_STACK_OK) {
-        status = TREE_DFS_LIMIT;
-        break;
-    }
+    return true;
 }
 ```
 
-The real function checks whether a container error is a limit issue or a memory failure and converts it to the correct error code. It also strictly checks the 64-visit limit before saving data, and only copies the temporary `candidate` workspace to the final output when it completely succeeds.
+### How does inorder return to an unprinted parent?
 
-### How do we search in a Binary Search Tree?
+The inner loop saves the left path. The outer loop continues as long as
+there is either a subtree to enter or a saved node to resume.
 
 ```c
-const TreeNode *current = root;
+static bool inorder(const Node *root)
+{
+    NodeStack stack = {0};
+    const Node *current = root;
 
-while (current != NULL) {
-    if (target == current->key) {
-        *out_node = current;
-        return TREE_DFS_OK;
+    while (current != NULL || stack.size > 0U) {
+        while (current != NULL) {
+            if (!push(&stack, current)) return false;
+            current = current->left;
+        }
+
+        current = pop(&stack);
+        printf("%c ", current->data);
+        current = current->right;
     }
-    current = target < current->key
-        ? current->left
-        : current->right;
+    return true;
 }
-
-return TREE_DFS_NOT_FOUND;
 ```
 
-### How do we free the tree starting from the children?
+### How does postorder keep the parent until both sides finish?
+
+Looking at the top with `peek` preserves the parent while its right subtree
+runs. Only the branch that prints the node removes it from the stack and
+updates `last_visited`.
 
 ```c
-static void destroy_nodes_postorder(TreeNode *node)
+static bool postorder(const Node *root)
 {
-    if (node == NULL) {
-        return;
+    NodeStack stack = {0};
+    const Node *current = root;
+    const Node *last_visited = NULL;
+
+    while (current != NULL || stack.size > 0U) {
+        if (current != NULL) {
+            if (!push(&stack, current)) return false;
+            current = current->left;
+        } else {
+            const Node *node = peek(&stack);
+
+            if (node->right != NULL && last_visited != node->right) {
+                current = node->right;
+            } else {
+                printf("%c ", node->data);
+                last_visited = pop(&stack);
+            }
+        }
     }
-
-    destroy_nodes_postorder(node->left);
-    destroy_nodes_postorder(node->right);
-    tree_node_release(node);
-}
-
-TreeDfsStatus tree_destroy_postorder(TreeNode **root)
-{
-    if (root == NULL) {
-        return TREE_DFS_INVALID_ARGUMENT;
-    }
-
-    destroy_nodes_postorder(*root);
-    *root = NULL;
-    return TREE_DFS_OK;
+    return true;
 }
 ```
+
+### How do we run the same tree through all three loops?
+
+The following local nodes stay alive throughout `main`. Traversal changes
+only its local stack and pointers. A stack-capacity failure stops the program
+with a nonzero exit status.
+
+```c
+int main(void)
+{
+    Node three = {'3', NULL, NULL};
+    Node five = {'5', NULL, NULL};
+    Node two = {'2', NULL, NULL};
+    Node times = {'*', &five, &two};
+    Node plus = {'+', &three, &times};
+
+    printf("preorder: ");
+    if (!preorder(&plus)) return 1;
+    printf("\ninorder: ");
+    if (!inorder(&plus)) return 1;
+    printf("\npostorder: ");
+    if (!postorder(&plus)) return 1;
+    putchar('\n');
+    return 0;
+}
+```
+
+From `module_05_tree_dfs/code`, compile and run the standalone program:
+
+```sh
+cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow \
+    -Iinclude lecture/iterative_traversals.c -o /tmp/tree_dfs_lecture
+/tmp/tree_dfs_lecture
+```
+
+The output is:
+
+```text
+preorder: + 3 * 5 2
+inorder: 3 + 5 * 2
+postorder: 3 5 2 * +
+```
+
+Each printed line also has a trailing space after the last symbol. The three
+orders agree with the hand traces.
+
+The separate existing lab package uses `tree_copy_preorder`,
+`tree_print_inorder`, and `tree_evaluate_postorder` for expression-tree
+applications. Its current reference implements those operations recursively
+and accepts digit leaves with `+` and `*`. The standalone program above is
+the implementation for this textbook's stack-based traversal lesson.

@@ -1,51 +1,54 @@
-# Stack Autopsy — The Next Unused Slot Is Not the Top
+# Stack-Top Autopsy — The Next Inactive Slot Is Not the Top
 
 ## Case
 
-An **autopsy** is a careful study of a supplied defect. The supplied program
-uses a stack while checking delimiters such as `(` and `)`.
-
-The stack stores:
+An autopsy is a careful study of a supplied defect. The isolated program uses
+a caller-owned four-position integer array:
 
 ```text
-data: [ '(' ][ '[' ][ '?' ][ '?' ][ '?' ]
-index:    0      1      2      3      4
+stack:   [ 10 ][ 20 ][ 777 ][ 888 ]
+index:      0      1      2       3
 size: 2
+capacity: 4
 ```
 
-Only indexes 0 and 1 are **logical elements**—values currently in the stack.
-Index 2 is inside the physical array, but it is the next unused slot.
+Indexes 0 and 1 are logical Stack items. Indexes 2 and 3 are allocated but
+inactive. The sentinel values 777 and 888 make an incorrect read visible and
+repeatable. A sentinel is a chosen marker used for observation.
 
-The faulty operation is:
+The faulty operation reads:
 
 ```c
-return stack->data[stack->size];
+return stack[size];
 ```
+
+Because `size < capacity`, this exact read stays inside the array. The autopsy
+is memory-safe, but its Stack logic is intentionally wrong.
 
 ## 1. Predict before running
 
-What character should a correct `peek` return?
+What value should a correct `peek` report?
 
 ____________________________________________________________________
 
-What character will the faulty `peek` return?
+What value will the faulty `peek` report?
 
 ____________________________________________________________________
 
-Will the faulty validator accept the valid text `([])`? Why?
+Will either peek change `size`? _____________________________________
 
-____________________________________________________________________
+Which position is the next unused position? _________________________
 
 ## 2. Record the observation
 
-Copy the five important output lines:
+Copy the important output lines:
 
 ```text
 size:
-correct top:
-faulty top:
-faulty validator says valid:
-reported index:
+capacity:
+correct top stack[size - 1]:
+faulty top stack[size]:
+faulty read selected the next inactive slot:
 ```
 
 Did the observation match your prediction?
@@ -54,67 +57,67 @@ ____________________________________________________________________
 
 ## 3. Find the first broken rule
 
-Do not begin with the final rejection. State the earliest stack rule that the
+Do not begin with a later wrong decision. State the earliest Stack rule the
 program violates.
 
 ____________________________________________________________________
 
-Complete the two indexes:
+Complete the indexes:
 
 ```text
 top index = size - ___
 next unused index = size
 ```
 
-## 4. Explain why this can hide
+## 4. Separate physical safety from logical correctness
 
-The faulty read stays inside the five-cell demonstration array. Why does
-"inside the physical array" not mean "inside the logical stack"?
-
-____________________________________________________________________
-
-Why might this bug produce different-looking symptoms if an unused cell did
-not contain the predictable character `?`?
+Why does `stack[size]` stay within the physical array in this fixture?
 
 ____________________________________________________________________
 
-## 5. Trace the validator
-
-Trace `([])` one character at a time.
-
-| Index | Character | Stack after an opening is pushed | Value read as top | Decision |
-|---:|:---:|---|:---:|---|
-| 0 | `(` | | | |
-| 1 | `[` | | | |
-| 2 | `]` | | | |
-| 3 | `)` | | | |
-
-At what index does the wrong stack operation first change the validator's
-decision?
+Why does “within capacity” not mean “currently in the logical Stack”?
 
 ____________________________________________________________________
 
-## 6. Repair and regression test
+Would this defect necessarily be caught by a memory sanitizer in this
+fixture? Explain.
 
-Write the corrected one-line `peek` expression:
+____________________________________________________________________
+
+## 5. Explain the caller-visible consequence
+
+Suppose 10 and 20 are IDs for paused functions. Which ID should resume next?
+
+____________________________________________________________________
+
+What false conclusion could a caller make after receiving 777?
+
+____________________________________________________________________
+
+Why is leaving `size == 2` not enough to make the result correct?
+
+____________________________________________________________________
+
+## 6. Repair and prevent recurrence
+
+Write the corrected one-line read:
 
 ```c
 return ________________________________________________;
 ```
 
-A **regression test** is a test kept so that a repaired bug does not return.
-Write two tests: one stack-level test and one delimiter-level test.
+Describe one regression case that would fail if `stack[size]` returned. This
+may become one of your three required student tests; it is not a fourth test.
 
-1. Stack-level: _____________________________________________________
-2. Delimiter-level: _________________________________________________
+____________________________________________________________________
 
-## 7. Separate the three meanings of “stack”
+## 7. Separate related meanings
 
-Which stack appears in this autopsy?
+Which objects appear in this autopsy?
 
-- [ ] the Stack abstract data type used to organize values;
-- [ ] the runtime call stack used by function calls;
-- [ ] a fixed stack buffer, meaning a local fixed-size array.
+- [ ] the Stack ADT access rule;
+- [ ] a caller-owned fixed integer array; and
+- [ ] the runtime call stack used for active C function calls.
 
 More than one box may apply. Explain each choice in one sentence.
 

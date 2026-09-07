@@ -2,49 +2,45 @@
 
 ## How to use this version
 
-This version has the same learning targets as the standard investigation. It
-contains no response table or drawing requirement. It works with a **screen
-reader**, software that reads on-screen text aloud, as well as keyboard
-navigation, speech input, or a text-only response.
+This version has the same questions and learning targets as the standard
+investigation. It contains no response table or drawing requirement. It works
+with a screen reader, keyboard navigation, speech input, or text-only output.
 
 Open it after completing and preserving the Cognitive Pause.
 
 The Stage C core is Sections A through F. Complete and preserve those
-sections before opening Stage D. Sections G through I may be completed during
-the announced independent-work window.
+sections before opening Stage D. Sections G and H may be completed during the
+announced independent-work window.
 
 ## Quick reference
 
-A **Stack** is an abstract data type (ADT) that allows access at one end,
-called the **top**. An ADT describes allowed operations and their rules
-without requiring one storage method. **Last in, first out (LIFO)** means the
-most recently added item is the first item that may be removed.
+A Stack is an abstract data type (ADT) with one accessible end, the top. Last
+in, first out (LIFO) means the most recently pushed item is the first item
+popped. `peek` reports that item without removing it.
 
-`push` adds one item at the top. `peek` reports the top without removing it.
-`pop` removes and reports the top. **Underflow** means attempting `peek` or
-`pop` while empty.
+This module stores generic integers in caller-owned fixed arrays. `size`
+counts logical items and `capacity` counts prepared positions. Valid metadata
+satisfies `0 <= size <= capacity`. When `size > 0`, the top is
+`stack[size - 1]`. A rejected operation preserves the prior array, size, and
+required output.
 
-This module stores characters in an ArrayList backend. An **ArrayList** is a
-resizable numbered sequence, and a **backend** is the lower-level storage
-used to implement an ADT. `size` counts current items; `capacity` counts
-allocated slots; `limit` is the greatest permitted size. When `size` is
-greater than zero, the top is `data[size - 1]`.
+## A. Trace the canonical function IDs
 
-## A. Translate the canonical trace
-
-A **trace** is a step-by-step record of changing state. State Stack items
-from bottom to top. Ordinary letters do not change the Stack.
-
-Input:
-
-```text
-A(B[C]{D})
-```
+A trace is a step-by-step record of changing state. State Stack items from
+bottom to top. Start with `int stack[10]`, `size = 0`, and `capacity = 10`.
 
 ### A1. State sequence
 
-Starting empty, state the action and resulting Stack after each of these
-symbols in order: `A`, `(`, `B`, `[`, `C`, `]`, `{`, `D`, `}`, `)`.
+For each request, state its return, any output value, the new size, and the
+bottom-to-top Stack:
+
+1. `push(100)`.
+2. `push(200)`.
+3. `push(300)`.
+4. `peek`.
+5. `pop`.
+6. `pop`.
+7. `pop`.
 
 Response:
 
@@ -54,395 +50,275 @@ What is the greatest size reached?
 
 Response:
 
-### A3. Exposed item
+### A3. Physical index
 
-Immediately before `]`, what is at the top? Why does processing `]` reveal
-`(` again?
-
-Response:
-
-### A4. Final check
-
-What final state supports accepting the expression?
+Which index stores 300 immediately after the third push?
 
 Response:
 
-## B. Apply the core operation contracts
+### A4. Inspect and remove
 
-A **contract** states what an operation accepts, changes, reports, and
-preserves. A **status code** is a named result reporting success or a kind of
-failure. An **invariant** is a rule that holds in every valid completed
-state.
+Why does `peek` leave 300 present? In what order do the three successful pops
+report the IDs?
 
-The results are:
+Response:
 
-1. `STACK_OK`: success.
-2. `STACK_INVALID_ARGUMENT`: a required Stack or output location is invalid.
-3. `STACK_LIMIT`: `push` would exceed the explicit limit, or initialization
-   requested a limit above 1024.
-4. `STACK_UNDERFLOW`: `peek` or `pop` was requested while empty.
-5. `STACK_ALLOCATION`: the ArrayList could not obtain needed storage.
-6. `STACK_INVALID_STATE`: the stored fields break the Stack invariant.
+## B. Apply the operation contracts
 
-An **output location** is caller-provided storage where an operation writes
-its reported item. For `peek` or `pop`, that location must be separate from
-the Stack's own character storage. The **caller** is the part of the program
-that requests the operation.
+A contract states what a function accepts, changes, returns, and preserves.
+An output parameter is caller-provided storage where a function writes an
+additional result.
 
-The contracts are:
+The public functions are:
 
-1. `char_stack_init` creates an empty character Stack with the stated limit.
-2. `char_stack_validate` reports whether the visible invariant holds and
-   changes nothing.
-3. Successful `char_stack_push(item)` adds `item` as the new top and
-   increases `size` by one. Failure leaves the prior Stack unchanged.
-4. Successful `char_stack_peek(out_value)` copies the top into `out_value`
-   without changing the Stack. Failure leaves both unchanged.
-5. Successful `char_stack_pop(out_value)` copies the top into `out_value` and
-   then decreases `size` by one. Failure leaves both unchanged.
-6. `char_stack_destroy` releases owned ArrayList storage and resets the
-   fields. A missing Stack pointer is a safe no-op.
+```c
+int int_stack_push(
+    int stack[],
+    int size,
+    int capacity,
+    int value
+);
 
-For every case below, begin independently with:
+int int_stack_peek(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
+);
 
-```text
-bottom to top: `(`, `[`
-size: 2
-limit: 3
+int int_stack_pop(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
+);
 ```
 
-### B1. Peek
+For `peek` and `pop`, the output storage must be separate from the Stack
+array.
 
-State the status, reported item, and state after `peek`.
+### B1. Push contract
 
-Response:
-
-### B2. Pop
-
-State the status, reported item, and state after `pop`.
+On success, `push` writes at `stack[size]` and returns `size + 1`. On
+rejection, it returns the original size. State what it preserves.
 
 Response:
 
-### B3. One push
+### B2. Peek contract
 
-State the status and state after `push('{')`.
-
-Response:
-
-### B4. Two pushes
-
-State what happens when `push('X')` and then `push('Y')` are requested.
+On success, `peek` writes the top to the output and returns 1. On rejection,
+it returns 0. State what it preserves.
 
 Response:
 
-### B5. Encapsulation
+### B3. Pop contract
 
-Why must `peek` leave `size` unchanged? Why must clients not read or write
-`data[index]` directly?
-
-Response:
-
-## C. Reason about empty state and underflow
-
-An empty Stack has `size` zero and no top. Its `capacity` may be zero or may
-remain greater than zero after earlier use. Capacity does not tell whether
-an item exists.
-
-### C1. Peek while empty
-
-State the required status, whether `data[size - 1]` may be read, and the
-state afterward.
+On success, `pop` writes the top to the output and returns `size - 1`. On
+rejection, it returns the original size. State what it preserves.
 
 Response:
 
-### C2. Pop while empty
+### B4. Inactive value
 
-State the required status, whether `data[size - 1]` may be read, and the
-state afterward.
-
-Response:
-
-### C3. Zero limit
-
-State the result of `push('(')` on an empty Stack whose limit is zero.
+Why does `pop` receive a `const int stack[]`? What does that say about the
+inactive array position after a pop?
 
 Response:
 
-### C4. Explain the boundary
+### B5. Saved size
 
-Why is `data[size - 1]` invalid when `size` is zero? Why is underflow a
-checked error rather than a character result?
-
-Response:
-
-### C5. Spare storage
-
-A Stack has `size` zero and `capacity` 8. Is it empty? Explain.
+Why must the caller save the returned size after a successful `push` or
+`pop`?
 
 Response:
 
-## D. Diagnose delimiter input
+## C. Check empty, full, and invalid metadata
 
-A **function** is a named block of computer instructions that performs one
-task. A **delimiter validator** is a function that checks grouping marks. A
-**mismatch** occurs when a closing delimiter does not partner with the
-opening at the top. An **unmatched closing delimiter** appears when no
-opening is available. A **leftover opening delimiter** remains when input
-ends. A **depth-limit error** occurs before an opening would make the Stack
-larger than its permitted limit.
+Use output value 999 where an output is needed. For every independent case,
+state whether the request is accepted, its return, the final output, and the
+preserved state.
 
-The validator reports one `DelimiterStatus`: `DELIMITER_OK`,
-`DELIMITER_INVALID_ARGUMENT`, `DELIMITER_UNMATCHED_CLOSE`,
-`DELIMITER_MISMATCH`, `DELIMITER_UNCLOSED_OPEN`,
-`DELIMITER_DEPTH_LIMIT`, or `DELIMITER_ALLOCATION`.
+### C1. Empty peek
 
-An **error index** is the numbered input position at which the problem is
-reported. C begins indexes at zero. `size_t` is C's nonnegative count and
-index type. Success writes `SIZE_MAX`, the greatest value `size_t` can hold,
-to `out_error_index`; this means “no error index.” An unmatched closing,
-mismatch, or depth-limit result reports the responsible delimiter's index.
-An unclosed opening reports the input length, which marks the end. Invalid
-arguments and allocation failure leave the output unchanged.
-
-Use a nesting limit of 2. For each input, state the error index or
-`SIZE_MAX`, the Stack state at the decision, and the exact status.
-
-### D1. Input `A(B[C]{D})`
+Start empty with capacity 10. Request `peek`.
 
 Response:
 
-### D2. Input `A)B`
+### C2. Empty pop
+
+Start empty with capacity 10. Request `pop`.
 
 Response:
 
-### D3. Input `A(B]`
+### C3. Full push
+
+Start with 100, 200, 300, size 3, and capacity 3. Request `push(400)`.
 
 Response:
 
-### D4. Input `A(B`
+### C4. Invalid size
+
+Use size 4 and capacity 3. Request `push(400)`.
 
 Response:
 
-### D5. Input `A([B{C}])`
+### C5. Invalid peek metadata
+
+Use size 2 and capacity 1. Request `peek`.
 
 Response:
 
-### D6. Reason about detection
+### C6. Successful pop
 
-Why should `A(B]` be inspected before anything is removed? Why can `A(B`
-be decided only after input ends? How does handling `peek` underflow avoid
-an invalid `pop` for `A)B`?
+Start with 100, 200, size 2, and capacity 10. Request `pop`.
 
 Response:
 
-## E. Preserve safety at the boundary
+### C7. Explain the checks
 
-**Failure atomicity** means a failed operation leaves the prior valid state
-unchanged. **Allocation failure** means the program could not obtain
-requested memory. **Resource exhaustion** means input tries to consume more
-of a limited resource than the application permits.
+Why must full be checked before writing `stack[size]`? Why does an empty Stack
+have no valid `stack[size - 1]` position? If the physical array has ten
+positions but the caller passes capacity 3, which boundary must the functions
+honor?
 
-Begin with:
+Response:
 
-```text
-bottom to top: `(`, `[`
-size: 2
-limit: 2
+## D. Transfer the rule to `1+2*3`
+
+The evaluator accepts a nonempty alternating sequence of single digits and
+operators. The only operators are `+` and `*`. It accepts no spaces,
+parentheses, unary operators, or multi-digit numbers. Greater precedence is
+applied first. Equal precedence is applied from left to right.
+
+It uses two checked, ten-position Stacks: one for numbers and one for operator
+character values. Input length is not otherwise capped. Every internal push
+must still confirm that its Stack has room.
+
+### D1. Successful trace
+
+Starting with two empty Stacks, state both bottom-to-top states and any
+calculation after each event: read `1`, read `+`, read `2`, read `*`, read `3`,
+and end of input.
+
+Response:
+
+### D2. Public contract
+
+```c
+int expression_evaluate(const char expression[], int *out_result);
 ```
 
-### E1. Limit failure
+It returns 1 only after producing exactly one checked result. On rejection it
+returns 0 and leaves `*out_result` unchanged.
 
-A push of `{` reports `STACK_LIMIT`. State every field or logical item
-that must remain unchanged.
+### D3. Accepted and rejected inputs
 
-Response:
+For each input, state accept or reject, the result if accepted, and the reason:
 
-### E2. Allocation failure
-
-Suppose growth is needed below the limit, but allocation fails. Why must the
-old `data` address, size, capacity, and items remain usable?
-
-Response:
-
-### E3. Fail fast
-
-Why should the delimiter validator reject at the first known failure instead
-of continuing with unreliable state?
+1. `"7"`.
+2. `"1+2*3"`.
+3. `""`.
+4. `"1++2"`.
+5. `"12+3"`.
+6. `"1 +2"`.
+7. `"(1+2)"`.
+8. An expression whose checked arithmetic would exceed the C `int` range.
 
 Response:
 
-### E4. Security claim boundary
+### D4. Commit checked arithmetic
 
-The expressions here are **synthetic**, meaning invented for safe practice.
-A syntactically valid expression follows delimiter form. Does valid delimiter
-form prove that a real security policy grants the intended permissions?
-Explain.
+Why must an overflow check happen before making the calculated value official?
 
 Response:
 
-## F. Separate the ADT from other meanings of “stack”
+## E. Distinguish a physical slot from a logical item
 
-The same word appears in several computer-science phrases, but the phrases do
-not name the same object.
+Use this deliberately prepared state:
 
-A **runtime call stack** is bookkeeping commonly used by a C implementation
-to manage active function calls. A **call frame** is the saved information
-for one active call, such as where execution should return. **Recursion**
-occurs when a function calls itself directly or through other functions.
-Each active recursive call commonly needs another call frame.
+```text
+stack:   [ 10 ][ 20 ][ 777 ][ 888 ]
+index:      0      1      2       3
+size: 2
+capacity: 4
+```
 
-**Stack memory** is an informal name for a memory region that many C
-implementations use for function-call information and local variables. The C
-language does not require every implementation to arrange memory identically.
-A **buffer** is a bounded area that stores a sequence of values. A
-**stack-buffer overflow** is an out-of-bounds write past a buffer placed in
-that commonly named memory region.
+### E1. Classify positions
 
-### F1. Four meanings
-
-For each phrase below, describe what it means and whether `CharStack`
-operations control it:
-
-1. Stack ADT.
-2. Runtime call stack.
-3. Stack memory.
-4. Stack-buffer overflow.
+Which indexes are logical items? Which indexes are allocated but inactive?
 
 Response:
 
-### F2. Function calls
+### E2. Compare peek expressions
 
-Does calling `char_stack_push` create a C function call frame? Explain.
-
-Response:
-
-### F3. Bounds safety
-
-Does a correct Stack ADT automatically prevent every buffer overflow in a
-program? Explain.
+State the correct top, the value read by `stack[size]`, and the expression
+that reads the correct top.
 
 Response:
 
-### F4. Saved work
+### E3. Explain the defect
 
-How can recursion and an explicit Stack both remember unfinished work while
-still being different mechanisms?
-
-Response:
-
-## G. Connect costs to the ArrayList backend
-
-**Time complexity** describes how work grows as input grows. Let `n` mean
-current Stack size. `O(1)` means a fixed amount of work. `O(n)` means work
-may grow in proportion to `n`. **Amortized `O(1)`** means the average work
-per operation stays constant across a long sequence, although an occasional
-operation costs more.
-
-**Geometric growth** means increasing capacity by a fixed factor, such as
-doubling, when more room is needed. Let `m` be an expression's number of
-characters.
-
-### G1. Classify costs
-
-Give the expected cost and one reason for each operation:
-
-1. `peek`.
-2. `pop` without shrinking storage.
-3. `push` with spare capacity.
-4. One `push` that grows the ArrayList.
-5. A long sequence of geometrically growing pushes.
-6. Validating an expression of length `m`.
+Why is `stack[size]` inside the physical array but outside the logical Stack?
+How could that faulty peek make a caller resume the wrong function ID?
 
 Response:
 
-### G2. Occasional growth
+## F. Connect cost to fixed storage
 
-Why can one push cost more than the average push cost?
+Let `n` be expression length. `O(1)` means fixed work. `O(n)` means work grows
+in proportion to `n`.
 
-Response:
+### F1. Classify costs
 
-### G3. Whole input
+Give the cost and one reason for each:
 
-Why is the complete validator `O(m)` even when its pushes are amortized
-`O(1)`?
-
-Response:
-
-## H. Preview depth-first work
-
-An **algorithm** is a precise step-by-step method. **Depth-first search
-(DFS)** is a later algorithm for exploring tree nodes or graph vertices. A
-tree node is one stored item in a tree. A graph vertex is one stored item in
-a graph.
-
-DFS can use the same LIFO contract to remember unfinished work: the most
-recently saved node or vertex is selected next. Later modules provide
-separately typed Stacks for `TreeNode *` values and vertex-ID values. A
-**pointer** stores a memory address. `TreeNode *` is a pointer to one tree
-node. A **vertex ID** is a small number naming one graph vertex.
-
-This section is only a preview. Do not trace or implement DFS here.
-
-### H1. Stable rule
-
-Which part stays the same when a character Stack becomes a Stack of node
-pointers: the LIFO contract or the item type?
+1. Successful or rejected `push`.
+2. Successful or rejected `peek`.
+3. Successful or rejected `pop`.
+4. Scan and evaluate an expression of length `n`.
+5. Extra storage used by two ten-position internal arrays.
 
 Response:
 
-### H2. Item type
+### F2. No shifting
 
-Why is a character Stack not directly suitable for a `TreeNode *` pointer?
-
-Response:
-
-### H3. Transfer sentence
-
-Complete: “The delimiter task and later DFS both need to remember
-__________, but they store different kinds of __________.”
+Why does no Stack operation shift existing logical items?
 
 Response:
 
-## I. Exit ticket
+## G. Separate three uses of “stack”
 
-### I1. Stored top
+The Stack ADT is a behavior rule. The runtime call stack is implementation
+bookkeeping commonly used for active function calls. A local array such as
+`int stack[10]` is one fixed buffer that may represent a Stack ADT. These are
+related ideas, not interchangeable objects.
 
-Where is the top item in a nonempty ArrayList-backed Stack?
+### G1. Function ID versus call frame
 
-Response:
-
-### I2. Access rule
-
-State LIFO in your own words.
-
-Response:
-
-### I3. Inspect or remove
-
-Distinguish `peek` from `pop`.
+Does storing ID 100 in the course Stack create a real C call frame? Explain.
 
 Response:
 
-### I4. Underflow
+### G2. Name versus behavior
 
-What result should `pop` report on an empty Stack?
-
-Response:
-
-### I5. Input failures
-
-Name the four malformed-input or resource cases from Section D.
+Does the name `stack` make an array obey LIFO automatically? Explain.
 
 Response:
 
-### I6. Three counts
+### G3. Enforced operations
 
-Why is `capacity` not the same as `size` or `limit`?
+Which functions enforce LIFO for the caller-owned array?
 
 Response:
 
-### I7. Open question
+## H. Exit ticket
 
-State one question you still have.
+1. Where is the top of a nonempty Stack?
+2. State LIFO in your own words.
+3. Distinguish `peek` from `pop`.
+4. What is preserved after a rejected `peek`?
+5. What is preserved after a rejected `push`?
+6. State the accepted expression grammar.
+7. State one question you still have.
 
 Response:

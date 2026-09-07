@@ -1,4 +1,4 @@
-# Stage A — Initial Inquiry: Closing What Was Opened
+# Stage A — Initial Inquiry: Which Function Resumes First?
 
 Name: ____________________________  
 Date: ____________________________
@@ -6,116 +6,85 @@ Date: ____________________________
 Use only this file during the initial inquiry. Preserve your first thinking.
 Later, add labeled corrections instead of erasing it.
 
-An **expression** is a sequence of symbols that communicates a value or rule.
-A **delimiter** is a mark that shows where a group begins or ends. The
-opening delimiters in this activity are `(`, `[`, and `{`. Their closing
-partners are `)`, `]`, and `}`.
+## A. Follow three function calls
 
-## A. Inspect one candidate expression
+Suppose a program runs these events in order:
 
-Consider:
+1. Function 100 starts.
+2. Function 100 pauses and starts Function 200.
+3. Function 200 pauses and starts Function 300.
+4. Function 300 finishes.
 
-```text
-A(B[C]{D})
-```
-
-Read from left to right.
-
-Circle or list the opening delimiters:
+Which paused function must resume next? Explain.
 
 ____________________________________________________________________
 
-Circle or list the closing delimiters:
+After that function finishes, which function resumes?
 
 ____________________________________________________________________
 
-Draw a line from each closing delimiter to the opening delimiter you think
-it completes, or describe each pair in words.
+## B. Track unfinished functions
 
-____________________________________________________________________
+Complete the table. List unfinished function IDs from the earliest call to the
+most recent call.
 
-What makes you confident that the grouping is complete?
-
-____________________________________________________________________
-
-## B. Track unfinished groups
-
-An **unresolved opening** is an opening delimiter whose closing partner has
-not yet appeared.
-
-Complete the table using your own tracking idea. Ordinary letters do not
-begin or end a group.
-
-| Symbol just read | Unresolved openings before it | What your method does | Unresolved openings after it |
+| Event | Unfinished function IDs before | What changes? | Unfinished function IDs after |
 |---|---|---|---|
-| `A` | | | |
-| `(` | | | |
-| `B` | | | |
-| `[` | | | |
-| `C` | | | |
-| `]` | | | |
-| `{` | | | |
-| `D` | | | |
-| `}` | | | |
-| `)` | | | |
+| Start Function 100 | | | |
+| Function 100 starts Function 200 | | | |
+| Function 200 starts Function 300 | | | |
+| Function 300 finishes | | | |
+| Function 200 finishes | | | |
+| Function 100 finishes | | | |
 
-When a closing delimiter arrives, which unresolved opening should your method
-check? Why?
+Which end of your record changes at every start and finish?
 
 ____________________________________________________________________
 
-____________________________________________________________________
+## C. Test the access rule
 
-## C. Challenge your rule
+Consider each request independently.
 
-**Malformed input** is input that breaks the stated grouping rules.
-Consider each expression independently. Do not assume that every one is
-complete.
+1. The record contains `100, 200, 300`, from earliest to most recent. Which
+   value may be inspected without removing it?
 
-| Expression | First place your method can make a decision | Complete or malformed? | Reason |
-|---|---|---|---|
-| `A(B[C]{D})` | | | |
-| `A)B` | | | |
-| `A(B]` | | | |
-| `A(B` | | | |
+   _________________________________________________________________
 
-Could two different failures be discovered at different times—one while
-reading and one only after the final symbol? Explain.
+2. The same record contains `100, 200, 300`. Which value may be removed next?
 
-____________________________________________________________________
+   _________________________________________________________________
 
-## D. Add a resource boundary
+3. The record is empty. What should happen if the program asks to inspect or
+   remove a value?
 
-A **resource boundary** is a stated limit on how much time or storage a task
-may use. Suppose this activity permits at most two simultaneously unresolved
-openings.
+   _________________________________________________________________
 
-Consider:
-
-```text
-A([B{C}])
-```
-
-At which symbol, if any, should the method reject the input?
+Why would removing 100 before 300 change the required return order?
 
 ____________________________________________________________________
 
-What should happen to information already being tracked when the boundary is
-reached?
+## D. Add a fixed boundary
+
+Suppose the record has ten prepared positions and already contains ten IDs.
+A request arrives to add ID 400.
+
+Should the request be accepted? _____________________________________
+
+What should happen to the ten existing IDs and the current count?
 
 ____________________________________________________________________
 
-Why is a stated boundary useful even when more computer memory is available?
+Suppose a failed inspection was asked to write its answer into a variable
+that already contains 999. What should remain in that variable?
 
 ____________________________________________________________________
 
 ## E. Macro-Question
 
-A **program** is a group of instructions a computer can run. **State** is the
-information a program currently remembers.
+**State** is the information a program currently remembers.
 
-> If the most recently opened task must be completed first, what access rule
-> should the program enforce?
+> If the most recently started unfinished task must finish first, what access
+> rule should the program enforce?
 
 Your initial explanation:
 
@@ -123,20 +92,18 @@ ____________________________________________________________________
 
 ____________________________________________________________________
 
-## F. Tracking brainstorm
+## F. Transfer brainstorm
 
-Do not write C instructions yet. **C** is the programming language used in
-this course.
+Do not write C instructions yet.
 
-What information must be remembered when an opening delimiter arrives?
+The expression `1+2*3` cannot be evaluated strictly from left to right because
+multiplication has higher priority than addition.
 
-____________________________________________________________________
-
-What must be true before a closing delimiter can be accepted?
+What information must wait while `2*3` is calculated?
 
 ____________________________________________________________________
 
-What must be true after the final input symbol?
+How might “use the most recent waiting item first” help?
 
 ____________________________________________________________________
 

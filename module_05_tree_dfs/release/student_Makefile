@@ -4,7 +4,7 @@ CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 CPPFLAGS ?= -Iinclude
 TEST_CPPFLAGS := $(CPPFLAGS) -DTREE_DFS_TESTING
 BUILD_DIR := build
-STARTER_SOURCES := support/tree_support.c support/tree_node_stack.c starter/tree_dfs.c
+STARTER_SOURCES := support/tree_support.c starter/tree_dfs.c
 
 .PHONY: all starter-core starter-student-tests autopsy clean
 
@@ -22,7 +22,7 @@ starter-student-tests: | $(BUILD_DIR)
 	$(BUILD_DIR)/starter_student_tests
 
 autopsy: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) autopsy/faulty_preorder.c -o $(BUILD_DIR)/tree_dfs_autopsy
+	$(CC) $(CFLAGS) $(CPPFLAGS) support/tree_support.c autopsy/faulty_preorder.c -o $(BUILD_DIR)/tree_dfs_autopsy
 	$(BUILD_DIR)/tree_dfs_autopsy
 
 clean:

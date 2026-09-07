@@ -1,487 +1,395 @@
-# Instructor Answer Key - Module 4 Stack ADT
+# Instructor Answer Key — Module 4 Fixed-Capacity Stack
 
 ## Macro-Question synthesis
 
-A **stack** is a collection with one accessible end, called the **top**.
-Its rule is **last in, first out (LIFO)**: the most recently added item that
-remains in the collection is the first item removed.
+A **Stack** permits access at one end, called the **top**. Its rule is **last
+in, first out (LIFO)**: the most recently added item that remains is the first
+item removed. If Function 100 starts 200 and Function 200 starts 300, then
+300 finishes first, 200 resumes next, and 100 resumes after 200 finishes.
 
-For nested delimiters, the newest unmatched opening must be checked first.
-The stack stores openings in their arrival order and exposes them in the
-reverse order needed for closing. This is the access rule the program should
-enforce.
-
-The Stack **abstract data type (ADT)** is this behavior contract. An ADT
-defines allowed operations and results independently of storage. The
-ArrayList is the **backend**, meaning the hidden resizable storage used by
-this implementation.
+The Stack **abstract data type (ADT)** is this behavior contract. This module
+represents it with a caller-owned fixed integer array, a logical `size`, and a
+physical `capacity`. The representation is not the ADT itself.
 
 ## Stage A inquiry
 
-### A. Inspect one candidate expression
+The standard and linear inquiry prompts contain the same questions.
 
-For:
+### A. Follow three function calls
 
-```text
-A(B[C]{D})
-```
+- After Function 300 finishes, Function 200 resumes because it is the most
+  recent unfinished caller.
+- After Function 200 finishes, Function 100 resumes.
 
-- opening delimiters, in input order: `(`, `[`, `{`;
-- closing delimiters, in input order: `]`, `}`, `)`;
-- matching pairs: `[` with `]`, `{` with `}`, and `(` with `)`.
+### B. Track unfinished functions
 
-The grouping is complete because every closing delimiter matches the newest
-unresolved opening, no closing arrives while there is no opening available,
-and no opening remains after the final character.
+List IDs from earliest to most recent:
 
-### B. Track unfinished groups
-
-List unresolved openings from oldest to newest, which is also bottom to top
-in the later stack model.
-
-| Symbol just read | Before | Action | After |
+| Event | Before | Change | After |
 |---|---|---|---|
-| `A` | empty | ignore ordinary character | empty |
-| `(` | empty | remember `(` | `(` |
-| `B` | `(` | ignore ordinary character | `(` |
-| `[` | `(` | remember `[` after `(` | `(`, `[` |
-| `C` | `(`, `[` | ignore ordinary character | `(`, `[` |
-| `]` | `(`, `[` | match and remove newest `[` | `(` |
-| `{` | `(` | remember `{` after `(` | `(`, `{` |
-| `D` | `(`, `{` | ignore ordinary character | `(`, `{` |
-| `}` | `(`, `{` | match and remove newest `{` | `(` |
-| `)` | `(` | match and remove newest `(` | empty |
+| Start 100 | empty | add 100 | 100 |
+| 100 starts 200 | 100 | add 200 | 100, 200 |
+| 200 starts 300 | 100, 200 | add 300 | 100, 200, 300 |
+| 300 finishes | 100, 200, 300 | remove 300 | 100, 200 |
+| 200 finishes | 100, 200 | remove 200 | 100 |
+| 100 finishes | 100 | remove 100 | empty |
 
-When a closing delimiter arrives, check the most recent unresolved opening.
-Checking an older opening would allow crossed pairs such as `([)]`, which
-are not properly nested.
+The most-recent end changes at every start and finish.
 
-### C. Challenge your rule
+### C. Test the access rule
 
-| Expression | First decisive place | Judgment | Reason |
-|---|---|---|---|
-| `A(B[C]{D})` | End of input | complete | Every pair matches and no opening remains |
-| `A)B` | `)` at index 1 | malformed: unmatched close | No opening is available |
-| `A(B]` | `]` at index 3 | malformed: mismatch | The newest opening is `(`, not `[` |
-| `A(B` | End at index 3, the string length | malformed: unclosed opening | `(` remains unresolved |
+1. Inspect 300 without removing it.
+2. Remove 300 next.
+3. Reject an inspection or removal from the empty record; do not invent an
+   ID or change an output.
+4. Removing 100 first would resume the oldest unfinished caller while its
+   nested calls remain unfinished, reversing the required return order.
 
-An **index** is a numbered position beginning at zero. Some failures are
-known during the scan, such as an unmatched close or mismatch. An unclosed
-opening can remain plausible until the input ends, so that failure is known
-only then.
+### D. Add a fixed boundary
 
-### D. Add a resource boundary
-
-With a maximum of two unresolved openings, `A([B{C}])` is rejected at `{`,
-index 4. Just before `{`, the stored openings are `(`, `[`. Accepting `{`
-would create size 3. The already stored information must remain unchanged.
-
-A declared boundary gives predictable resource use and lets the program
-reject safely before storage consumption exceeds policy. Available machine
-memory does not replace an application's stated input limit.
+- A ten-position record already containing ten IDs rejects ID 400.
+- The ten stored IDs and count ten remain unchanged.
+- A failed inspection leaves the output sentinel equal to 999.
 
 ### E. Macro-Question
 
-A representative response is:
+A representative pre-vocabulary response is:
 
-> Preserve unresolved items in arrival order, but permit access only to the
-> newest unresolved item. Add, inspect, and remove at that same end.
+> Add, inspect, and remove at the same end so that the newest unfinished item
+> is handled before older unfinished items.
 
-After formal vocabulary is released, this becomes the LIFO rule.
+After Stage B, name this LIFO.
 
-### F. Tracking brainstorm
+### F. Transfer brainstorm
 
-- When an opening arrives, remember its exact kind and its relative order.
-- Before accepting a close, an unresolved opening must exist and the newest
-  one must be the matching kind.
-- After the final character, no unresolved opening may remain.
-- Student questions vary. Use them to select support about empty input,
-  crossed pairs, end-of-input checks, limits, or storage failure rather than
-  scoring a guessed implementation.
+The value 1 and operator `+` wait while `2*3` is completed. A most-recent-first
+rule lets the later higher-precedence work be completed before returning to
+the waiting addition. Initial questions vary; use them to diagnose confusion
+about precedence, stored values, or the exact grammar rather than scoring a
+guessed algorithm.
 
 ## Stage B Cognitive Pause
 
-### Target 1 - Complete trace
+### Target 1 — canonical trace
 
-Only delimiter characters change the stack:
+States are bottom to top.
 
-| Delimiter | State from bottom to top | `size` |
-|---|---|---:|
-| `(` | `(` | 1 |
-| `[` | `(`, `[` | 2 |
-| `]` | `(` | 1 |
-| `{` | `(`, `{` | 2 |
-| `}` | `(` | 1 |
-| `)` | empty | 0 |
+| Request | Function return | Output | State | New size |
+|---|---:|---:|---|---:|
+| start | none | none | empty | 0 |
+| `push(100)` | 1 | none | 100 | 1 |
+| `push(200)` | 2 | none | 100, 200 | 2 |
+| `push(300)` | 3 | none | 100, 200, 300 | 3 |
+| `peek` | 1 | 300 | 100, 200, 300 | 3 |
+| `pop` | 2 | 300 | 100, 200 | 2 |
+| `pop` | 1 | 200 | 100 | 1 |
+| `pop` | 0 | 100 | empty | 0 |
 
-The greatest size is 2 and the final state is empty.
+The greatest size is three. Immediately after the third push, 300 is at
+index two.
 
-### Target 2 - Two closing failures
+### Target 2 — boundaries and preservation
 
-- For `A(B]`, failure is known at `]`. Just before it is handled, the state
-  is `(` and the next accessible item is `(`. Because `]` requires `[`, the
-  result is a mismatch.
-- For `A)B`, failure is known at `)`. The stack is empty, so there is no next
-  accessible item. The result is an unmatched closing delimiter.
+1. A capacity-three Stack containing 100, 200, 300 rejects `push(400)`,
+   returns the original size three, and preserves all array values.
+2. Empty peek returns zero and leaves the output 999.
+3. Empty pop returns the original size zero and leaves the output 999.
 
-### Target 3 - Boundary and final state
+### Target 3 — expression transfer
 
-- With limit 2, `A([B{C}])` fails at `{`. The unchanged state is `(`, `[`.
-  A third push would exceed the nesting limit, so this is a depth-limit
-  failure.
-- `A(B` reaches the end with state `(`. No closing delimiter caused a
-  mismatch, but one opening remains, so this is an unclosed or leftover
-  opening.
+`2*3` is applied before `1+...` because multiplication has higher precedence.
+The result is seven. `1++2` is rejected because two operators occur where a
+digit is required; every preexisting evaluator output remains unchanged.
 
 ## Stage C investigation
 
-The standard and linear worksheets have the same sections. Linear
-subquestion labels such as A1-A4 correspond to the numbered or tabular
-prompts under the same letter below.
+The standard and linear worksheets have the same sections. Linear labels such
+as A1–A4 correspond to the same-letter standard prompts.
 
-### A. Translate the canonical trace
+### A. Canonical function IDs
 
-| Symbol | Action | State from bottom to top | `size` |
-|---|---|---|---:|
-| start | none | empty | 0 |
-| `A` | ignore | empty | 0 |
-| `(` | push `(` | `(` | 1 |
-| `B` | ignore | `(` | 1 |
-| `[` | push `[` | `(`, `[` | 2 |
-| `C` | ignore | `(`, `[` | 2 |
-| `]` | matching peek, then pop `[` | `(` | 1 |
-| `{` | push `{` | `(`, `{` | 2 |
-| `D` | ignore | `(`, `{` | 2 |
-| `}` | matching peek, then pop `{` | `(` | 1 |
-| `)` | matching peek, then pop `(` | empty | 0 |
+Use the Stage B trace above.
 
-1. Greatest size: `2`.
-2. Immediately before `]`, the top is `[`.
-3. Processing `]` pops `[`, so the older `(` becomes visible at the top
-   again.
-4. The final empty state shows that every opening was closed.
+1. Greatest size: `3`.
+2. Index storing 300: `2`.
+3. Peek leaves 300 present because it reads but does not remove the top and
+   does not change size.
+4. Pop order: `300, 200, 100`.
 
-### B. Apply the core operation contracts
+### B. Operation contracts
 
-The exact public stack statuses are:
-
-```text
-STACK_OK
-STACK_INVALID_ARGUMENT
-STACK_LIMIT
-STACK_UNDERFLOW
-STACK_ALLOCATION
-STACK_INVALID_STATE
-```
-
-Each row begins independently with bottom-to-top state `(`, `[`, size 2,
-and limit 3.
-
-| Request | Status | Reported item | State afterward |
+| Operation | Success | Rejection | Rejection preserves |
 |---|---|---|---|
-| `peek` | `STACK_OK` | `[` | `(`, `[`, size 2 |
-| `pop` | `STACK_OK` | `[` | `(`, size 1 |
-| `push('{')` | `STACK_OK` | none | `(`, `[`, `{`, size 3 |
-| `push('X')`, then `push('Y')` | first `STACK_OK`, then `STACK_LIMIT` | none | `(`, `[`, `X`, size 3; second push changes nothing |
+| `push` | writes at old `stack[size]`; returns `size + 1` | returns original size | every array position |
+| `peek` | writes `stack[size - 1]`; returns 1 | returns 0 | array and output |
+| `pop` | writes `stack[size - 1]`; returns `size - 1` | returns original size | array and output |
 
-`peek` leaves size unchanged because its contract inspects rather than
-removes the top. Clients should not index `data` directly because doing so
-bypasses LIFO access, boundary checks, failure reporting, and the freedom to
-change the backend without changing client code. This separation is called
-**encapsulation**: an object's implementation details are protected behind
-its public operations.
+Pop receives a const array because logical removal changes only the caller's
+saved size. It does not erase the old top cell; those bits become inactive.
 
-### C. Reason about empty state and underflow
+Size is passed by value, so the caller's variable changes only when the
+caller assigns the returned size after a successful push or pop.
 
-| Request | Result | Read `data[size - 1]`? | State afterward |
+### C. Empty, full, and invalid cases
+
+Start each row independently; use output 999 where required.
+
+| Starting state and request | Accepted? | Return | Final output | Final state |
+|---|---|---:|---:|---|
+| empty, capacity 10; peek | no | 0 | 999 | empty; array unchanged |
+| empty, capacity 10; pop | no | 0 | 999 | empty; array unchanged |
+| 100, 200, 300; size 3, capacity 3; push 400 | no | 3 | none | all three values unchanged |
+| size 4, capacity 3; push 400 | no | 4 | none | array unchanged; invalid metadata remains caller's responsibility |
+| size 2, capacity 1; peek | no | 0 | 999 | array unchanged; invalid metadata rejected |
+| 100, 200; size 2, capacity 10; pop | yes | 1 | 200 | logical Stack 100; array bits unchanged |
+
+Explanations:
+
+1. In a full Stack, `stack[size]` equals `stack[capacity]`, one position past
+   the stated boundary. Reject before writing.
+2. With size zero, no index belongs to the logical Stack; `size - 1` is `-1`.
+3. The functions must honor the passed capacity three. A C array parameter
+   does not carry the physical array length, so only the caller can ensure the
+   capacity is truthful.
+
+### D. `1+2*3`
+
+| Input event | Number Stack | Operator Stack | Calculation |
 |---|---|---|---|
-| `peek` | `STACK_UNDERFLOW` | no | unchanged empty state; output unchanged |
-| `pop` | `STACK_UNDERFLOW` | no | unchanged empty state; output unchanged |
-| `push('(')` with limit 0 | `STACK_LIMIT` | no | unchanged empty state |
+| start | empty | empty | none |
+| read `1` | 1 | empty | none |
+| read `+` | 1 | `+` | none |
+| read `2` | 1, 2 | `+` | none |
+| read `*` | 1, 2 | `+`, `*` | none |
+| read `3` | 1, 2, 3 | `+`, `*` | none |
+| end, apply `*` | 1, 6 | `+` | `2 * 3 = 6` |
+| end, apply `+` | 7 | empty | `1 + 6 = 7` |
 
-1. When size is zero, there is no occupied index. Subtracting one from the
-   unsigned `size_t` value also wraps to a very large number, so it cannot
-   name the top.
-2. No special character can unambiguously mean underflow because any `char`
-   value could be legitimate stack data. A separate status reports failure
-   safely.
-3. Yes. Size, not capacity, says how many items exist. Capacity 8 means
-   storage is available for reuse.
+Input classifications:
 
-### D. Diagnose delimiter input
+| Input | Decision | Result | Reason |
+|---|---|---:|---|
+| `"7"` | accept | 7 | one digit is a complete expression |
+| `"1+2*3"` | accept | 7 | valid grammar and precedence |
+| `""` | reject | none | expression is empty |
+| `"1++2"` | reject | none | digit required after first `+` |
+| `"12+3"` | reject | none | operator required after `1`; multi-digit operands are outside grammar |
+| `"1 +2"` | reject | none | spaces are outside grammar |
+| `"(1+2)"` | reject | none | parentheses are outside grammar |
+| result outside `int` | reject | none | checked arithmetic boundary |
 
-Use limit 2.
+Check overflow before performing the signed C operation and before committing
+the calculation. A failed expression leaves the caller's prior output
+unchanged.
 
-| Input | Error index or `SIZE_MAX` | State at decision | Status |
-|---|---:|---|---|
-| `A(B[C]{D})` | `SIZE_MAX` | empty at end | `DELIMITER_OK` |
-| `A)B` | 1 | empty before `)` | `DELIMITER_UNMATCHED_CLOSE` |
-| `A(B]` | 3 | `(` before `]` | `DELIMITER_MISMATCH` |
-| `A(B` | 3 | `(` at end | `DELIMITER_UNCLOSED_OPEN` |
-| `A([B{C}])` | 4 | `(`, `[` before `{` | `DELIMITER_DEPTH_LIMIT` |
+### E. Physical slot versus logical item
 
-For a mismatch, inspect before removing so the unmatched opening remains
-available and state is not falsely advanced. `A(B` cannot be rejected while
-more input might still supply `)`, so the final nonempty check is decisive.
-For `A)B`, checking empty before peek or pop prevents an out-of-range read
-and an underflowing removal.
+For `[10, 20, 777, 888]`, size two, capacity four:
 
-### E. Preserve safety at the boundary
+1. Logical indexes: zero and one.
+2. Correct top: 20.
+3. `stack[size]` reads 777 at index two.
+4. Index two is less than capacity but not less than size, so it is physically
+   allocated and logically inactive.
+5. Correct expression: `stack[size - 1]`, after proving size is positive.
 
-1. After the limit failure, `data` has the same address; size remains 2;
-   capacity remains unchanged; limit remains 2; and the items remain `(`,
-   `[`. No output or unused slot becomes part of the logical stack.
-2. A temporary allocation result is checked before the object is changed.
-   If growth fails, retaining the original pointer is necessary both to keep
-   existing items usable and to release that owned storage later.
-3. Once a known structural or resource failure occurs, later operations
-   would no longer describe validation of the original input contract.
-   Stopping also avoids acting on a fabricated or damaged state.
-4. No. Delimiter validity proves only balanced grouping marks under this
-   simplified rule. It does not prove policy meaning, authorization,
-   identity, permissions, or safe real-world behavior.
+A caller expecting a paused function ID could treat 777 as a real unfinished
+function and make a false resume decision. Leaving size equal to two does not
+repair the incorrect reported value.
 
-### F. Separate the ADT from other meanings of "stack"
+### F. Costs
 
-| Phrase | Meaning | Controlled by `CharStack` operations? |
-|---|---|---|
-| Stack ADT | LIFO collection behavior | yes, for this explicit object |
-| Runtime call stack | Saved information for active function calls | no |
-| Stack memory | Informal name for a region an implementation may use for calls and local objects | no |
-| Stack-buffer overflow | An out-of-bounds write past a local buffer in that region | no |
-
-1. Calling `char_stack_push` is a C function call, so an implementation may
-   create or reuse a call frame for that call. However, the `CharStack`
-   operation does not itself manage the runtime call stack. A **compiler**
-   translates C into a runnable program, and its **optimization** may change
-   the translated instruction arrangement while preserving behavior; that
-   can remove a distinct frame.
-2. No. A correct `CharStack` protects only its own documented operations.
-   Unrelated arrays, pointers, and other program code can still access
-   memory incorrectly.
-3. Recursion saves unfinished work implicitly in runtime-managed call
-   frames. An explicit Stack stores chosen work items through program-called
-   push and pop operations. Both can produce LIFO behavior, but ownership,
-   representation, and control differ.
-
-### G. Connect costs to the ArrayList backend
-
-`n` is current stack size and `m` is expression length.
-
-| Operation | Expected cost | Reason |
+| Work | Cost | Reason |
 |---|---:|---|
-| `peek` | `O(1)` | Read one top slot |
-| `pop` without shrinking | `O(1)` | Read one slot and reduce size |
-| `push` with spare capacity | `O(1)` | Write one slot and increase size |
-| one growing `push` | `O(n)` worst case | Resizing may copy `n` characters |
-| long sequence of geometrically growing pushes | amortized `O(1)` per push | Infrequent doubling spreads copying across many pushes |
-| validate expression of length `m` | `O(m)` | Each character is examined once; total geometric-growth copying is also linear |
+| successful or rejected push | `O(1)` | fixed checks and at most one write |
+| successful or rejected peek | `O(1)` | fixed checks and at most one read |
+| successful or rejected pop | `O(1)` | fixed checks and at most one read |
+| evaluate length `n` | `O(n)` | scan each character; push/apply each token a bounded number of times |
+| two ten-position arrays | `O(1)` | capacity is fixed by the contract |
 
-One growing push can copy existing characters, so it costs more than a push
-into spare capacity. The average remains constant across a long growth
-sequence because each larger resize occurs less frequently.
+No Stack operation shifts items because all access occurs at the last logical
+index.
 
-The full validator is `O(m)` because it makes one left-to-right pass and its
-stack operations have amortized constant cost. It uses `O(d)` additional
-storage, where `d` is maximum unmatched-opening depth and is capped by the
-requested limit.
+### G. Three uses of “stack”
 
-### H. Preview depth-first work
+1. Storing integer 100 does not create a real C call frame. It stores a label
+   chosen for the teaching model.
+2. The variable name `stack` does not enforce LIFO. Behavior comes from
+   restricting access through the operation contracts.
+3. `int_stack_push`, `int_stack_peek`, and `int_stack_pop` enforce the
+   caller-owned array's LIFO access.
 
-1. The LIFO contract stays the same; the item type changes.
-2. A `char` stores one character value, not a `TreeNode *` address. Treating
-   one as the other violates the type and may lose information.
-3. Representative completion: "The delimiter task and later DFS both need
-   to remember unfinished work, but they store different kinds of items."
+The runtime may use call-stack bookkeeping while the C functions run, but
+that object is not the explicit Stack ADT managed by these operations.
 
-Do not require a DFS trace or implementation here.
+### H. Exit ticket
 
-### I. Exit ticket
+1. Top: `stack[size - 1]` when `size > 0`.
+2. LIFO: the newest remaining item leaves first.
+3. Peek reports without removal; pop reports and logically removes.
+4. Rejected peek preserves the entire array and caller output.
+5. Rejected push preserves the entire array and returns original size.
+6. Grammar: a nonempty alternating sequence beginning and ending with one
+   digit, using only `+` and `*`, with no spaces or other syntax; operations
+   and arithmetic must pass fixed-capacity and `int` checks.
+7. Questions vary. Sort them into behavior, representation, boundary,
+   expression, C implementation, or evidence needs.
 
-1. The top is `data[size - 1]` when size is greater than zero.
-2. LIFO means the newest remaining item leaves first.
-3. `peek` reports the top without removing it; `pop` reports and removes it.
-4. Empty pop reports `STACK_UNDERFLOW` and leaves its output unchanged.
-5. Unmatched closing delimiter, mismatch, unclosed opening, and depth limit.
-6. Size counts current items; capacity counts allocated slots; limit is the
-   fixed policy maximum for allowed items.
-7. Questions vary. Sort them into state, operation contract, memory,
-   delimiter, or later-transfer support.
+## Public implementation reference
 
-## Canonical API answers
+### Metadata check
 
-### Initialization and validation
-
-`char_stack_init(&stack, limit)` accepts limits from 0 through 1024. It
-creates:
-
-```text
-data = NULL
-size = 0
-capacity = 0
-limit = requested limit
+```c
+size >= 0 && capacity >= 0 && size <= capacity
 ```
 
-Call it only for an uninitialized or previously destroyed object. It does
-not free a live Stack's allocation before replacing the fields.
+This check does not discover a physical array length. Missing required
+pointers are separate rejection conditions.
 
-A larger requested limit returns `STACK_LIMIT`; a missing stack pointer
-returns `STACK_INVALID_ARGUMENT`. Failure leaves the object unchanged.
+### Push decision
 
-`char_stack_validate` checks:
+Reject when metadata is invalid, `size == capacity`, or `stack == NULL`.
+Otherwise write `stack[size] = value` and return `size + 1`.
+
+### Peek decision
+
+Reject with zero when metadata is invalid, size is zero, or either required
+pointer is null. Otherwise read a local candidate from `stack[size - 1]`,
+write the output, and return one.
+
+### Pop decision
+
+Use the same rejection checks. On success, read `stack[size - 1]`, write the
+output, and return `size - 1`. Do not modify the array.
+
+## Evaluator reference
+
+The parser begins expecting a digit. A valid digit is converted with
+`current - '0'`. After a digit, expect only `+` or `*`. Before pushing the
+current operator, apply every waiting operator whose precedence is greater
+than or equal to the current precedence. Equality is what enforces left
+associativity.
+
+When applying an operator:
+
+1. select the top operator without retiring it;
+2. pop the right operand from a local working size;
+3. pop the left operand;
+4. check the operation against `INT_MAX`;
+5. calculate only after the check;
+6. push the candidate result; and
+7. commit the resulting number size and retire the operator only after all
+   prior steps succeed.
+
+Because digits and the two accepted operations produce nonnegative values,
+the reference overflow checks are:
 
 ```text
-size <= capacity <= limit <= 1024
-capacity == 0 exactly when data == NULL
-size == 0 whenever capacity == 0
+left <= INT_MAX - right                for addition
+left == 0 or right <= INT_MAX / left  for multiplication
 ```
 
-A contradictory object returns `STACK_INVALID_STATE`. The validator cannot
-prove that an arbitrary non-`NULL` pointer is live, large enough, or uniquely
-owned.
-
-### Push growth
-
-The first needed capacity is 4, clipped to the limit. Later growth doubles
-and is clipped again.
-
-| Limit | Capacity sequence when needed |
-|---:|---|
-| 0 | remains 0; push returns `STACK_LIMIT` |
-| 2 | `0 -> 2` |
-| 6 | `0 -> 4 -> 6` |
-| 20 | `0 -> 4 -> 8 -> 16 -> 20` |
-| 1024 | `0 -> 4 -> 8 -> ... -> 1024` |
-
-At the limit, push returns `STACK_LIMIT` without attempting growth. If
-growth fails below the limit, it returns `STACK_ALLOCATION`. A temporary
-pointer protects the original allocation until success is known.
-
-### Pop and peek outputs
-
-Both functions require a non-`NULL` `out_value` that points outside the
-Stack's owned character storage. On
-`STACK_INVALID_ARGUMENT`, `STACK_INVALID_STATE`, or `STACK_UNDERFLOW`, the
-output remains unchanged. Successful peek leaves all stack fields and items
-unchanged. Successful pop decreases size by one but does not shrink
-capacity.
-
-### Destroy and ownership
-
-The stack owns the storage identified by `data`. **Ownership** means
-responsibility for eventually releasing requested storage.
-`char_stack_destroy` releases that buffer and resets `data` to `NULL` and
-all numeric fields to zero. Passing `NULL` is a safe no-op. An ordinary
-structure copy is not a second independent stack because it duplicates the
-pointer rather than the owned characters.
-
-### Delimiter output index
-
-`delimiter_validate(text, depth_limit, &error_index)` uses:
-
-| Result | `error_index` |
-|---|---|
-| `DELIMITER_OK` | `SIZE_MAX`, meaning no error position |
-| `DELIMITER_UNMATCHED_CLOSE` | offending closing index |
-| `DELIMITER_MISMATCH` | offending closing index |
-| `DELIMITER_UNCLOSED_OPEN` | string length |
-| `DELIMITER_DEPTH_LIMIT` | rejected opening index |
-| `DELIMITER_INVALID_ARGUMENT` | unchanged |
-| `DELIMITER_ALLOCATION` | unchanged |
-
-A zero depth limit is valid. Empty or delimiter-free text succeeds with
-`SIZE_MAX`. An opening encountered at limit zero produces
-`DELIMITER_DEPTH_LIMIT` at that opening's index.
+After the final reductions, require one number. Only then write the caller's
+output and return one. Any earlier rejection returns zero without the final
+write.
 
 ## Evidence-record reference
 
-### Operation trace
+Strong evidence includes:
 
-| Step | Returned value | Stack bottom to top |
-|---:|---|---|
-| Start | none | empty |
-| push `A` | none | `A` |
-| push `B` | none | `A`, `B` |
-| peek | `B` | `A`, `B` |
-| pop | `B` | `A` |
-| push `C` | none | `A`, `C` |
-| pop | `C` | `A` |
-| pop | `A` | empty |
+- the exact 100, 200, 300 trace with returns and outputs;
+- the invariant and active/inactive index ranges;
+- full, empty, and invalid-metadata snapshots that remain unchanged;
+- output sentinels that prove failed peek, pop, and evaluation did not write;
+- a complete `1+2*3` two-Stack trace;
+- exact grammar and overflow boundaries;
+- three distinct student-test rationales; and
+- warning-enabled build output plus approved diagnostics.
 
-### Strong student-authored test rationales
+Accept ordinary-language explanations when they preserve these technical
+claims.
 
-Require one nonduplicate test in each lab category:
+## Three student-authored tests
 
-1. a mixed LIFO sequence, such as push `A`, push `B`, pop `B`, push `C`,
-   peek `C`, then pop `C` and `A`;
-2. a boundary or failure-preservation case, such as limit 6 growing through
-   capacities 4 and 6 before the seventh push preserves every field and
-   item; and
-3. a delimiter error with its exact index, such as `{)` reporting
-   `DELIMITER_MISMATCH` at index 1 rather than unmatched close.
+Require exactly one nonduplicate test in each category:
 
-Other cases are acceptable when they satisfy the same three categories and
-do not merely copy a supplied case. For example, a failed peek may use a
-deliberately chosen output character to prove that the output is unchanged,
-and a depth-limit test may check the rejected opening's exact index.
+1. **LIFO:** push 100, 200, 300; verify peek 300 and pop order 300, 200, 100,
+   or extend that sequence with a new push after a pop.
+2. **Rejection/preservation:** use full push, empty peek/pop, invalid metadata,
+   or a missing output and compare the entire array or output sentinel.
+3. **Expression:** add a valid precedence/left-associativity case or reject
+   malformed/overflow input while proving the result sentinel is unchanged.
 
-Tests should state the promise, expected result, observed result, and why the
-case differs from the other two.
+Each comment should name the promise, expected result, observed result, and
+why the case adds evidence beyond supplied tests.
 
-## Stack-top autopsy
+## Stack-Top Autopsy
 
-The isolated program pushes `(` at index 0 and `[` at index 1. Its size is
-2, so:
+Expected predictions and observations:
 
 ```text
-data[0] = '('
-data[1] = '['   <- correct top, data[size - 1]
-data[2] = '?'   <- next unused position, read by the faulty peek
+size: 2
+capacity: 4
+correct top stack[size - 1]: 20
+faulty top stack[size]: 777
+faulty read selected the next inactive slot: yes
 ```
 
-Expected output facts:
+The first broken rule is the logical top expression, not a later caller
+decision. Complete the index statement as:
 
-- `size: 2`;
-- correct top: `[`;
-- faulty top: `?`;
-- the faulty validator says valid: `no`; and
-- reported index: `2`.
+```text
+top index = size - 1
+next unused index = size
+```
 
-For the valid text `([])`, the validator pushes `(` and `[`. When `]`
-arrives at index 2, `faulty_peek` reads the unused `data[2]` question mark
-instead of `data[1]`. It therefore invents a mismatch before removing
-anything.
-
-The first incorrect decision is the read from `data[size]`. It breaks the
-top contract: occupied positions end at `size - 1`. The extra physical cell
-keeps this training read inside the array, but it does not make that cell a
-logical stack item. **Logical** means belonging to the collection according
-to its current size.
+The read is physically safe in the fixture because index two is less than
+capacity four. It is logically wrong because index two is not less than size
+two. A memory sanitizer need not report it.
 
 Repair:
 
 ```c
-return stack->data[stack->size - 1U];
+*out_value = stack[size - 1];
 ```
 
-This expression is legal only after checking that size is greater than zero.
-A strong **regression test**, meaning a retained test that detects the
-return of a repaired defect, pushes two distinct characters, requires peek
-to report the second without changing size, then validates `([])`
-successfully.
+The operation must first prove valid metadata, a nonempty state, and valid
+required pointers. A strong regression fixture deliberately places different
+values at the top and next inactive position, peeks, requires the top value,
+and verifies no mutation.
 
-For the final distinction check, the explicit `TrainingStack` is the Stack
-ADT being exercised. Its `data` field is a fixed-size array inside local
-`TrainingStack` objects, so it is also commonly implemented as a local stack
-buffer. The program calls functions, but it does not implement or control the
-runtime call stack; C also does not require local objects to have one
-particular physical placement.
+For the final distinction, the explicit Stack ADT and caller-owned fixed array
+are both central to the autopsy. C function calls may also involve a runtime
+call stack, but the exercise neither represents nor controls it.
 
-## Forward-transfer answer
+## Expected reference test output
 
-A stack can remember choices that have been discovered but not processed.
-Because the most recently saved choice is selected next, exploration can
-continue deeply along a recent branch and later return to earlier saved
-choices. Tree and graph DFS use typed stacks suited to nodes or vertex IDs;
-the LIFO rule transfers, while the stored item type changes. Graph DFS also
-needs a separate visited record because a graph may contain cycles.
+Core:
+
+```text
+PASS push adds at the top
+PASS peek reads without mutation
+PASS pop reports LIFO without erasing
+PASS full push preserves array
+PASS empty and zero capacity fail safely
+PASS invalid arguments preserve state
+PASS expression precedence and associativity
+PASS invalid expressions preserve result
+
+8 core test(s), 0 failure(s)
+```
+
+Extension:
+
+```text
+PASS every capacity through ten
+PASS deterministic stack model
+PASS valid expression table and long input
+PASS invalid expression table
+PASS checked integer overflow
+
+5 extension test(s), 0 failure(s)
+```
+
+The long valid extension expression demonstrates that ten positions limit
+simultaneous Stack occupancy rather than total input length.

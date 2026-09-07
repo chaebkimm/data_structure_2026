@@ -1,391 +1,331 @@
-# Technical Notes - Module 4 Character Stack
+# Technical Notes — Module 4 Fixed Integer Stack
 
 ## Scope
 
-The production model is a dynamically stored character Stack ADT with an
-explicit maximum size. **Dynamically stored** means that the implementation
-requests and resizes storage while the program runs. The public behavior is
-LIFO: the last character pushed is the first character popped.
-
-**Public** means visible to the other code that uses this module. A
-**pointer** is a value storing a memory address, and **contiguous storage**
-places values in one unbroken memory region.
-
-The implementation revisits Module 1's contiguous storage, separate size and
-capacity, bounds checks, and unchanged state after rejection. Checked growth
-and ownership of a replaceable array are new requirements here, not
-prerequisites from Chapter 1. Students do not build a generic `void *`
-container or a linked-node backend.
-
-The parser recognizes only six delimiter characters:
-
-```text
-( ) [ ] { }
-```
-
-All other characters are ignored. Therefore
-`delimiter_validate` reports only delimiter structure; it does not establish
-that an expression is meaningful, authorized, or safe to execute.
-
-## Canonical public model
-
-The public maximum is:
+The production model for this module is a Stack ADT represented by a
+caller-owned fixed integer array and two separate metadata values. The Stack
+functions borrow fixed storage; they never change its extent or clear it.
 
 ```c
-#define CHAR_STACK_MAX_LIMIT 1024U
+int stack[10];
+int size = 0;
+int capacity = 10;
 ```
 
-The field order and types are:
+The example capacity is ten, but the three public Stack functions operate on
+any caller-supplied nonnegative capacity that accurately describes the
+prepared array. The element values are generic integers. Function IDs 100,
+200, and 300 are the canonical teaching data, not a restriction on values.
+
+The transfer application is a deliberately narrow expression evaluator. It
+does not accept whitespace, parentheses, signs, multi-digit values,
+subtraction, division, variables, or general programming-language syntax.
+
+## Exact public API
 
 ```c
-typedef struct {
-    char *data;
-    size_t size;
-    size_t capacity;
-    size_t limit;
-} CharStack;
-```
+int int_stack_push(int stack[], int size, int capacity, int value);
 
-`data` points to the owned contiguous buffer. `size` counts occupied
-characters. `capacity` counts available character slots. `limit` is the
-policy maximum for that particular stack.
-
-The stack statuses, in public order, are:
-
-```c
-typedef enum {
-    STACK_OK = 0,
-    STACK_INVALID_ARGUMENT,
-    STACK_LIMIT,
-    STACK_UNDERFLOW,
-    STACK_ALLOCATION,
-    STACK_INVALID_STATE
-} StackStatus;
-```
-
-The delimiter statuses, in public order, are:
-
-```c
-typedef enum {
-    DELIMITER_OK = 0,
-    DELIMITER_INVALID_ARGUMENT,
-    DELIMITER_UNMATCHED_CLOSE,
-    DELIMITER_MISMATCH,
-    DELIMITER_UNCLOSED_OPEN,
-    DELIMITER_DEPTH_LIMIT,
-    DELIMITER_ALLOCATION
-} DelimiterStatus;
-```
-
-The exact public declarations are:
-
-```c
-StackStatus char_stack_init(CharStack *stack, size_t limit);
-StackStatus char_stack_validate(const CharStack *stack);
-StackStatus char_stack_push(CharStack *stack, char value);
-StackStatus char_stack_pop(CharStack *stack, char *out_value);
-StackStatus char_stack_peek(
-    const CharStack *stack,
-    char *out_value
+int int_stack_peek(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
 );
-void char_stack_destroy(CharStack *stack);
-const char *stack_status_name(StackStatus status);
 
-DelimiterStatus delimiter_validate(
-    const char *text,
-    size_t depth_limit,
-    size_t *out_error_index
+int int_stack_pop(
+    const int stack[],
+    int size,
+    int capacity,
+    int *out_value
 );
-const char *delimiter_status_name(DelimiterStatus status);
+
+int expression_evaluate(const char expression[], int *out_result);
 ```
 
-`out_error_index` is changed only on delimiter success or a structural
-delimiter result. It receives `SIZE_MAX` on success, the offending closing
-index for unmatched close or mismatch, the string length for unclosed open,
-and the rejected opening index for depth limit. Invalid arguments and
-allocation failure leave it unchanged.
+There is no public Stack structure or status enumeration. Size is threaded
+through push and pop returns; peek and evaluator use Boolean-style 1/0
+results.
 
-## State invariant
+## Numerical invariant and physical precondition
 
-An **invariant** is a rule that must hold whenever a completed object is
-offered to a public operation. The validator should accept exactly the
-documented initialized states and reject contradictory field combinations.
-The central relationships are:
+Valid metadata satisfies exactly:
 
 ```text
-size <= capacity <= limit <= 1024
-capacity == 0 exactly when data == NULL
+0 <= size <= capacity
 ```
 
-When `size > 0`, the top is `data[size - 1]`. Unused slots from `size`
-through `capacity - 1` have no public value requirement.
+This numerical relationship cannot prove the physical length of an array
+received through a C parameter. The caller must ensure that `capacity`
+matches the number of usable positions. Passing a larger number can permit an
+out-of-bounds access that the callee cannot detect.
 
-Do not read through `data` merely to validate where the pointer came from.
-Standard C cannot determine from an arbitrary non-`NULL` pointer whether it
-came from a live compatible allocation. The validator checks representable
-field relationships; ownership and lifetime remain caller obligations. A
-**lifetime** is the period during which an object exists and may be used.
+The operation contracts also require a non-`NULL` array pointer. Peek and pop
+require a non-`NULL` output pointer. The header requires the output location
+to be separate from the Stack array. Keep this caller obligation explicit;
+the functions do not attempt to diagnose aliasing.
 
-An invalid existing object returns `STACK_INVALID_STATE`. A missing required
-pointer argument returns `STACK_INVALID_ARGUMENT`. Keep these
-categories distinct.
+Empty and full are valid completed states:
 
-## Initialization and destruction
+- `size == 0` means no top exists, so peek and pop reject underflow;
+- `size == capacity` means push rejects before writing; and
+- capacity zero is valid metadata, but no push can succeed.
 
-Initialization validates its arguments before writing any field. A
-successful lazy initialization records:
+Negative size, negative capacity, or size greater than capacity is invalid
+metadata. Because a rejected push/pop returns the original size, an invalid
+negative or excessive size is returned unchanged.
+
+## Logical index ranges
+
+For a valid state:
 
 ```text
-data = NULL
-size = 0
-capacity = 0
-limit = requested limit
+logical items:       stack[0] through stack[size - 1]
+top when nonempty:   stack[size - 1]
+inactive positions:  stack[size] through stack[capacity - 1]
+next push position:  stack[size] when size < capacity
 ```
 
-Call `char_stack_init` only for an uninitialized or previously destroyed
-object. It does not release an existing live allocation before replacing the
-fields, so using it to reinitialize a live Stack would lose the owned
-address.
+An inactive position may contain any prior or prepared integer bits. Physical
+allocation does not confer logical membership. This distinction is the basis
+of the Stack-Top Autopsy.
 
-**Lazy** means storage is not requested until the first push. This makes
-initialization independent of allocation success and gives an empty stack a
-small canonical state. Limits from zero through 1024 are accepted. A larger
-limit returns `STACK_LIMIT`; a `NULL` stack pointer returns
-`STACK_INVALID_ARGUMENT`. Either failure leaves the caller's object
-unchanged.
+## `int_stack_push`
 
-`char_stack_destroy` releases the buffer owned by the object and resets all
-fields to the header's documented destroyed state. Destroy must be safe for
-every valid initialized state, including a zero-capacity stack. Do not teach
-that arbitrary uninitialized bytes can safely be destroyed; the caller must
-first provide an initialized or otherwise documented state.
+Required order:
 
-Copying a `CharStack` with ordinary structure assignment copies its pointer
-but not the allocated character array. The two copies would then claim the
-same storage. Treat a live `CharStack` as non-copyable unless a future API
-defines an explicit **deep copy**, an operation that requests separate
-storage and copies every character.
+1. validate `size` and `capacity`;
+2. reject a full Stack;
+3. reject a missing array;
+4. write `value` at the old `size`; and
+5. return `size + 1`.
 
-## Push and growth
+The first three checks may be combined because none mutates state. On every
+rejection, return the original size and leave every supplied array position
+unchanged. On success, only the old `stack[size]` position changes.
 
-`char_stack_push` follows this order:
+Checking full before indexing is essential. In a full state,
+`stack[capacity]` is one position past the caller's stated boundary.
 
-1. reject a `NULL` stack pointer;
-2. validate the existing stack state;
-3. if `size == limit`, return `STACK_LIMIT`;
-4. if `size == capacity`, calculate a legal new capacity;
-5. request the new storage using a temporary pointer;
-6. only after success, store the pointer and capacity in the stack;
-7. store the new character at `data[size]`;
-8. increase `size`; and
-9. return `STACK_OK`.
+## `int_stack_peek`
 
-The capacity sequence begins at 4 and is clipped to the stack's limit:
+Reject invalid metadata, empty state, a missing array, or a missing output.
+Return zero and preserve the output. On success:
+
+```c
+int result = stack[size - 1];
+*out_value = result;
+return 1;
+```
+
+The local candidate makes the commit point visible. Peek does not change the
+array or metadata. Because size is passed by value, it could not change the
+caller's size directly in any case.
+
+Do not calculate `size - 1` before proving `size > 0`. With signed `int`, an
+empty state would produce `-1`; indexing with that value is outside the
+array.
+
+## `int_stack_pop`
+
+Pop uses the same validation and top read as peek. On success, it writes the
+former top to the output and returns `size - 1`. It receives `const int
+stack[]` because logical removal requires no array write.
+
+The old top bits remain in the array. Once the caller saves the smaller
+returned size, that position is inactive and is no longer observable through
+the Stack contract. A later successful push may overwrite it.
+
+On rejection, pop returns the original size and preserves the output. Notice
+that an empty pop returns zero, which is also the size after popping a
+one-item Stack. This API communicates its primary result as a size, not a
+distinct status. A caller must establish whether a pop was permitted from
+the prior state.
+
+## Failure preservation
+
+For this module, a rejection must occur before any promised observable write:
+
+| Operation | Rejection return | Preserved information |
+|---|---:|---|
+| `push` | original size | every array position |
+| `peek` | 0 | entire array and `*out_value` |
+| `pop` | original size | entire array and `*out_value` |
+| `expression_evaluate` | 0 | `*out_result` |
+
+Tests should seed inactive cells and output variables with distinctive values
+so that an accidental write is visible. Comparing only logical values is not
+enough to prove the stronger “array unchanged” push contract.
+
+## Evaluator grammar
+
+The exact accepted language is:
 
 ```text
-new_capacity = min(4, limit)               when capacity == 0
-new_capacity = min(capacity * 2, limit)    otherwise
+expression := digit (('+' | '*') digit)*
+digit      := '0' | '1' | ... | '9'
 ```
 
-Because the public limit is at most 1024, doubling a valid capacity cannot
-approach `SIZE_MAX`, the greatest `size_t` value. Still teach the general
-habit of clipping before committing arithmetic in production containers.
+The string must be nonempty and null-terminated. Tokens alternate digit,
+operator, digit, and so on. `*` has precedence two and `+` precedence one.
+Operators with equal precedence associate from left to right.
 
-Use a temporary result for `realloc`. `realloc` is the C library operation
-that may resize an allocated region and return its new address. On failure
-it returns `NULL` while the original region remains valid. Assigning its
-result directly to `stack->data` would lose the original address and violate
-ownership. The checked implementation returns `STACK_ALLOCATION`
-without changing `data`, `size`, `capacity`, `limit`, or existing
-characters.
+C guarantees that the character codes for `'0'` through `'9'` are
+consecutive. Therefore `current - '0'` portably converts a validated digit to
+its numeric value; the implementation need not assume ASCII code 48.
 
-## Pop and peek
+## Two internal fixed Stacks
 
-Both operations first reject missing pointers, then validate the stack, then
-check `size`.
+The evaluator maintains:
 
-- Empty pop or peek returns `STACK_UNDERFLOW`.
-- Neither operation invents a special failure character because every
-  `char` value could be legitimate data.
-- On failure, the caller's output character remains unchanged.
-- Successful peek copies `data[size - 1]` to the output and changes no stack
-  field.
-- Successful pop first calculates the top result, then decreases size and
-  writes the output only on the successful path.
+```c
+int numbers[10];
+char operators[10];
+int number_size = 0;
+int operator_size = 0;
+```
 
-The implementation need not shrink capacity after pop. Retaining the buffer
-makes pop constant work and permits later pushes to reuse the slots.
-The caller must provide an output location outside this Stack's owned
-character allocation; the API does not check output-to-buffer aliasing.
-**Aliasing** means two access paths refer to the same storage.
+Both are fixed, local, ten-position Stack representations. Operator character
+values are stored in a character array, while their access still follows the
+same LIFO rule. Every number push uses `int_stack_push`; every operator push
+checks `operator_size` before writing.
 
-## Failure atomicity
+Ten limits simultaneous occupancy, not input length. An expression containing
+more than ten total tokens may succeed because reductions pop values and
+reuse positions. With this two-operator grammar and eager reductions, live
+occupancy remains small, but the capacity checks are still part of the
+contract and protect the algorithm if its scheduling changes.
 
-**Failure atomicity** means a failed operation appears not to have happened:
-the observable object state and any checked output are unchanged. Require
-tests for:
+## Parser state machine
 
-- initialization with a `NULL` argument or an excessive limit, checking the
-  distinct statuses and unchanged object;
-- push at the configured limit;
-- push when a growth request fails;
-- pop and peek on an empty stack;
-- any operation on an invalid existing state; and
-- a `NULL` caller-provided output.
+Begin with `expecting_number = 1`.
 
-For a failed growth, compare not only the four public fields but also every
-character below `size`. A pointer equality check alone is insufficient
-evidence.
+- When expecting a number, accept exactly one digit, push its integer value,
+  and switch to expecting an operator.
+- When expecting an operator, accept only `+` or `*`, reduce every waiting
+  operator whose precedence is equal or greater, push the current operator,
+  and switch to expecting a number.
+- At the null terminator, reject an empty string or a state still expecting a
+  number. Otherwise reduce all waiting operators.
+- Accept only if exactly one number remains and no operator remains.
 
-## Delimiter algorithm
+The equal-precedence comparison is `>=`, not `>`. That choice produces left
+associativity. For example, `2*3*4` reduces `2*3` before pushing the second
+`*`.
 
-Maintain one `CharStack` containing only unmatched opening delimiters.
+## Applying one operator
+
+Reduction follows this order:
+
+1. select the current top operator without retiring it;
+2. pop the right operand from the working number size;
+3. pop the left operand;
+4. perform the checked calculation;
+5. push the candidate result; and
+6. only after all of those steps succeed, commit the number size and retire
+   the selected operator by decreasing the operator size.
+
+The order matters for noncommutative operators even though the current
+grammar happens to contain only commutative `+` and `*`. Teaching the stable
+left/right convention avoids a hidden defect if the exercise is extended.
+
+The local working number size may change while a reduction is attempted, but
+the evaluator commits the shared sizes only after every expected return is
+confirmed. A failure from an internal operation rejects the whole expression.
+
+## Checked `int` arithmetic
+
+All accepted operands and intermediate results are nonnegative. The solution
+can therefore use these checks before the C operation:
 
 ```text
-for each input character:
-    if it is (, [, or {:
-        push it
-    else if it is ), ], or }:
-        if the stack is empty:
-            report unmatched close
-        peek at the newest unmatched opening
-        if the types do not match:
-            report mismatch
-        pop the matched opening
-
-after the scan:
-    if the stack is not empty:
-        report unclosed opening
-    report success
+addition:       left <= INT_MAX - right
+multiplication: left == 0 or right <= INT_MAX / left
 ```
 
-The public implementation may use `peek` underflow to detect an unmatched
-close. A push limit result maps to `DELIMITER_DEPTH_LIMIT`; an allocation
-result maps to `DELIMITER_ALLOCATION`. Any impossible internal Stack status should be
-handled conservatively according to the checked reference contract, not
-silently converted to valid input.
+Performing a signed operation first and checking afterward is not valid;
+signed integer overflow has undefined behavior in C. Compute into a local
+candidate only after the inequality succeeds.
 
-Destroy the temporary stack on every path after successful initialization.
-A single cleanup section is often easier to audit than many duplicated
-destroy calls. "Cleanup" means releasing resources before returning.
+The evaluator keeps the caller result untouched during parsing and
+reduction. It writes `*out_result` only after exactly one valid checked result
+remains. This single final commit proves output preservation for malformed
+input, capacity rejection, and overflow.
 
-### Canonical diagnoses
+## Worked trace: `1+2*3`
 
-| Input and condition | Result | Detection point |
-|---|---|---|
-| `A(B[C]{D})` | `DELIMITER_OK` | End, with empty stack |
-| `A)B` | `DELIMITER_UNMATCHED_CLOSE` | `)` while stack is empty |
-| `A(B]` | `DELIMITER_MISMATCH` | `]` while top is `(` |
-| `A(B` | `DELIMITER_UNCLOSED_OPEN` | End, with `(` still stored |
-| `A([B{C}])`, limit 2 | `DELIMITER_DEPTH_LIMIT` | `{` would create size 3 |
-
-The valid expression's stack states after delimiters are:
-
-```text
-(       -> (
-[       -> ([
-]       -> (
-{       -> ({
-}       -> (
-)       -> empty
-```
-
-Its maximum stack size is 2.
-
-## Operation costs
-
-**Operation cost** describes how work changes as the input grows.
-`O(1)` means a fixed amount of work. `O(s)` means work proportional to
-current stack size `s`; `O(m)` means work proportional to expression length
-`m`. **Amortized** means an occasional expensive operation is averaged
-across a sequence of operations.
-
-| Operation | Time | Additional storage | Reason |
-|---|---:|---:|---|
-| Validate stack fields | `O(1)` | `O(1)` | A fixed number of field checks |
-| Initialize | `O(1)` | `O(1)` initially | Lazy initialization requests no buffer |
-| Peek | `O(1)` | `O(1)` | Read one top character |
-| Pop | `O(1)` | `O(1)` | Read one character and reduce size |
-| Push without growth | `O(1)` | `O(1)` | Write one character |
-| One push with growth | `O(s)` worst case | New capacity | Resizing may copy `s` existing characters |
-| Push over a sequence | `O(1)` amortized | Up to the limit | Doubling makes growth infrequent |
-| Delimiter validation | `O(m)` | `O(d)` | Scan `m` characters; store at most depth `d` |
-
-Here `d` is the greatest number of unmatched openings at one time and is
-bounded by `limit`. The parser does not require work proportional to
-`m * m` merely because a push can occasionally resize. **Geometric growth**
-means multiplying capacity by a fixed factor; it keeps total copying
-proportional to `m` over the scan.
-
-## Four meanings that must remain separate
-
-| Term | Meaning | Who manages it | Relevant failure |
+| Event | Numbers, bottom to top | Operators, bottom to top | Work |
 |---|---|---|---|
-| Stack ADT | LIFO behavior through push, pop, and peek | The program through this API | Checked limit or underflow status |
-| ArrayList backend | Resizable contiguous character storage | The `CharStack` implementation | Allocation failure or invalid fields |
-| Runtime call stack | Saved call frames for active functions | Compiler and C runtime | Excessive call depth may exhaust runtime space |
-| Stack buffer | A local fixed-size array often stored in one call frame | The function containing the array | Out-of-bounds access can overwrite memory |
+| start | empty | empty | none |
+| read `1` | 1 | empty | push digit |
+| read `+` | 1 | `+` | no waiting operator |
+| read `2` | 1, 2 | `+` | push digit |
+| read `*` | 1, 2 | `+`, `*` | `+` has lower precedence |
+| read `3` | 1, 2, 3 | `+`, `*` | push digit |
+| end, apply `*` | 1, 6 | `+` | `2 * 3 = 6` |
+| end, apply `+` | 7 | empty | `1 + 6 = 7` |
 
-A **call frame** stores information needed for one active function call.
-Recursion creates more active calls and therefore more frames. The explicit
-`CharStack` does not automatically create call frames. Conversely, a
-function can use the runtime call stack without operating a Stack ADT.
+The final output is committed only after the last row passes all checks.
 
-Use precise phrases:
+## Complexity
 
-- "ADT limit reached" for `STACK_LIMIT`;
-- "runtime call-stack exhaustion" for excessive recursion; and
-- "stack-buffer out-of-bounds write" for overwriting a local array.
+- push, peek, and pop each do a fixed number of checks and at most one array
+  read or write: `O(1)` time;
+- no Stack operation shifts an existing item;
+- each expression character is scanned once, and each operator is pushed and
+  applied at most once: `O(n)` time for input length `n`; and
+- the two ten-position arrays use `O(1)` extra storage under this fixed
+  contract.
 
-## Later transfer without early teaching
+Every push does fixed work; there is no variable-cost storage change to
+average across operations.
 
-In Module 5, a stack can hold postponed tree work while one branch is
-followed deeply. In Module 6, a stack can hold graph vertices waiting for
-depth-first exploration; graph search also needs a separate visited record
-because graphs can contain cycles. These are previews only. Do not require
-students to write tree or graph DFS here.
+## Stack-Top Autopsy
 
-The later typed stacks may hold `TreeNode *` values or vertex indexes rather
-than `char` values. They preserve the same LIFO ADT contract without forcing
-students to design a generic untyped container.
+The isolated fixture uses:
 
-## Test priorities
+```text
+stack:   [10][20][777][888]
+index:     0   1   2    3
+size: 2
+capacity: 4
+```
 
-The public and instructor tests together should cover:
+The intentionally faulty operation reads `stack[size]`, which reports 777.
+The correct top is `stack[size - 1]`, which reports 20. Because index two is
+inside the physical array, address diagnostics need not report a violation.
+The first defect is logical: the operation reads the next inactive slot.
 
-1. initialization at small and maximum legal limits;
-2. complete-field preservation after invalid initialization;
-3. first growth, repeated growth, and final clipping to limit;
-4. LIFO order across mixed push, peek, and pop;
-5. empty underflow with unchanged output;
-6. limit rejection with unchanged state;
-7. invalid-state rejection;
-8. allocation failure during initial and later growth;
-9. destruction and the documented reset state;
-10. empty and delimiter-free expressions;
-11. the canonical valid expression;
-12. unmatched close, mismatch, unclosed open, depth limit, and allocation
-    mapping; and
-13. status-name coverage, including an unknown enumeration value. An
-    **enumeration** is a C type limited to named choices.
+Keep the autopsy solution-independent. Students predict, run, preserve the
+observation, name the first broken rule, repair the one-line expression, and
+design a regression case using distinct top and inactive values.
 
-The allocation-failure control is compiled only when
-`CHAR_STACK_TESTING` is defined. Student core-test builds use that controlled
-hook, while ordinary and student-authored-test builds do not. Extension tests
-and the solution remain instructor-only.
+## Testing expectations
 
-## Instructor implementation audit
+The reference core covers eight claims:
 
-- [ ] Public constants, enumeration order, fields, and signatures match the
-      student materials.
-- [ ] `limit` never exceeds 1024.
-- [ ] No function reads `data[size - 1]` when `size == 0`.
-- [ ] Growth begins at 4 and is clipped to `limit`.
-- [ ] A temporary pointer protects the old allocation during resize.
-- [ ] Every checked output remains unchanged on failure.
-- [ ] Every failed mutating operation preserves all four fields and data.
-- [ ] Delimiter status mapping distinguishes all four malformed categories.
-- [ ] Every initialized parser stack is destroyed on every return path.
-- [ ] Complexity claims say amortized `O(1)` for push, not worst-case `O(1)`.
-- [ ] Security language limits the parser claim to delimiter structure.
-- [ ] DFS appears only as forward transfer.
+1. push adds at the top;
+2. peek reads without mutation;
+3. pop reports LIFO without erasing;
+4. full push preserves the array;
+5. empty and zero-capacity cases fail safely;
+6. invalid arguments preserve state;
+7. expression precedence and associativity; and
+8. invalid expressions preserve the result.
+
+The instructor extension suite covers capacities zero through ten, a
+deterministic model trace, valid cases including a long input, invalid syntax,
+and checked overflow. The starter must remain warning-clean but intentionally
+fail until students complete its TODOs.
+
+## Portability and build discipline
+
+The required language level is C11. The supported warning set is:
+
+```text
+-Wall -Wextra -Wpedantic -Wconversion -Wshadow
+```
+
+Use AddressSanitizer and UndefinedBehaviorSanitizer where supported. A clean
+sanitizer run strengthens physical-safety evidence; it does not prove the
+logical top contract, which is why the memory-safe autopsy remains necessary.

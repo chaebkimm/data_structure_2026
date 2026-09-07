@@ -1,6 +1,6 @@
 # Module 4 Teaching Package
 
-## Stack ADT and Nested Delimiters
+## Fixed-Capacity Stack and Expression Precedence
 
 This package is the Linear/supporting stage of the second
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
@@ -8,44 +8,72 @@ Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 ## Beginner-first rule
 
 Students are not expected to know Stack vocabulary, abstract data types, or
-nested-delimiter algorithms before this module. Every student-facing
-technical term is explained in ordinary language when it is first needed.
-Assessment rewards accurate reasoning, not memorized wording.
+operator precedence before this module. Student materials begin with three
+unfinished function IDs, preserve initial reasoning, name the LIFO rule, and
+then reveal a caller-owned fixed-array representation. Assessment rewards
+accurate reasoning rather than memorized wording.
 
 ## Module question
 
-> If the most recently opened task must be completed first, what access rule
-> should the structure enforce?
+> If the most recently started unfinished task must finish first, what access
+> rule should the program enforce?
+
+## Authoritative model
+
+The module represents a Stack with a caller-owned integer array plus separate
+`size` and `capacity` values. Valid metadata satisfies:
+
+```text
+0 <= size <= capacity
+```
+
+Logical items occupy indexes `0` through `size - 1`. When `size > 0`, the top
+is `stack[size - 1]`; when `size < capacity`, `stack[size]` is the next
+inactive position. The Stack functions borrow the caller's fixed storage;
+they do not change its extent or erase it.
+
+The canonical trace pushes function IDs 100, 200, and 300. The transfer task
+uses two internal ten-position Stacks to evaluate `1+2*3`. The evaluator
+accepts only alternating single digits and `+` or `*`, applies normal
+precedence and left associativity, checks every internal push and every `int`
+calculation, and preserves its output after rejection.
+
+The public surface is:
+
+```c
+int int_stack_push(int stack[], int size, int capacity, int value);
+int int_stack_peek(
+    const int stack[], int size, int capacity, int *out_value
+);
+int int_stack_pop(
+    const int stack[], int size, int capacity, int *out_value
+);
+int expression_evaluate(const char expression[], int *out_result);
+```
 
 ## Core learning targets
 
 Students will be able to:
 
-1. explain the Stack abstract data type independently of its storage;
-2. use LIFO, top, push, pop, peek, and underflow accurately;
-3. trace mixed Stack operations from bottom to top;
-4. state the invariant for an ArrayList-backed character Stack;
-5. implement checked geometric growth, push, pop, peek, and cleanup;
-6. validate `()`, `[]`, and `{}` nesting with an explicit depth limit;
-7. preserve prior state and caller outputs after failed operations;
-8. analyze operation and full-expression costs;
-9. distinguish the Stack ADT from the runtime call stack and a
-   stack-allocated buffer; and
-10. explain why a Stack can later control depth-first exploration without
-    implementing DFS yet.
-
-An **abstract data type (ADT)** is a behavior contract that does not require
-one particular storage method. **LIFO** means “last in, first out.” **DFS**,
-or depth-first search, is a later method for exploring one route deeply
-before returning to another choice.
+1. explain the Stack ADT and last-in, first-out access rule;
+2. trace `push`, `peek`, and `pop` from bottom to top;
+3. locate the top at `stack[size - 1]` only when the Stack is nonempty;
+4. state and apply `0 <= size <= capacity`;
+5. implement checked fixed-array operations for generic integers;
+6. preserve array state and caller outputs after rejected operations;
+7. distinguish logical removal from erasing an inactive array cell;
+8. evaluate the stated single-digit `+`/`*` grammar with two fixed Stacks;
+9. explain precedence, left associativity, capacity rejection, and checked
+   integer overflow; and
+10. distinguish a Stack ADT, a local Stack-representation array, and the
+    runtime call stack.
 
 ## Package map
 
 ```text
 module_04_stack/
 ├── README.md
-├── diagrams/
-│   └── stack_models.md
+├── diagrams/stack_models.md
 ├── instructor/
 │   ├── answer_key.md
 │   ├── lesson_plan.md
@@ -64,67 +92,59 @@ module_04_stack/
 │   ├── textbook.md
 │   └── vocabulary.md
 ├── release/
-│   ├── release_manifest.md
 │   ├── prepare_student_release.ps1
+│   ├── release_manifest.md
 │   ├── stage_a_README.md … stage_e_README.md
 │   ├── student_build.ps1
 │   ├── student_code_README.md
 │   └── student_Makefile
-├── dist/
-│   └── module_04_stage_a_*.zip … module_04_stage_e_*.zip
 └── code/
-    ├── README.md
-    ├── build.ps1
-    ├── Makefile
-    ├── include/char_stack.h
-    ├── include/delimiter_validator.h
-    ├── starter/char_stack.c
-    ├── starter/delimiter_validator.c
-    ├── solution/char_stack.c
-    ├── solution/delimiter_validator.c
+    ├── include/int_stack.h
+    ├── include/expression_evaluator.h
+    ├── starter/int_stack.c
+    ├── starter/expression_evaluator.c
+    ├── solution/int_stack.c
+    ├── solution/expression_evaluator.c
     ├── tests/test_core.c
     ├── tests/test_extension.c
     ├── tests/test_student.c
-    └── autopsy/
-        ├── README.md
-        └── faulty_delimiters.c
+    └── autopsy/faulty_top.c
 ```
 
 ## Recommended release order
 
-1. Run `release/prepare_student_release.ps1`.
-2. Release Stage A before Meeting A; it does not reveal formal Stack/LIFO
-   names, the representation, or code.
-3. Release Stage B after each student preserves the initial ordering model.
-4. Release Stage C after the timed Cognitive Pause and instructor
-   explanation.
-5. Release Stage D only after the student preserves the Stage C core.
-6. Release Stage E for Meeting B.
-7. Keep `instructor/`, `code/solution/`, and
-   `code/tests/test_extension.c` instructor-only until revisions close.
+1. Release Stage A before Meeting A. It contains no formal Stack vocabulary,
+   representation, code, or answer.
+2. Release Stage B after each student preserves the initial function-return
+   model. Open the vocabulary only after the three-target pause is preserved.
+3. Release Stage C after the pause and brief instructor calibration.
+4. Release Stage D after the student preserves the Stage C core. It contains
+   the textbook and equivalent Stack models, but no autopsy answer.
+5. Release Stage E for Meeting B. Keep `instructor/`, `code/solution/`, and
+   `code/tests/test_extension.c` private through the assessed revision.
+
+`release/prepare_student_release.ps1` creates five archives only after it
+confirms that every source exists and that every destination path is unique
+within its stage. It refuses to overwrite an existing archive.
 
 ## Core submission
 
 Students submit:
 
-- completed `code/starter/char_stack.c`;
-- completed `code/starter/delimiter_validator.c`;
-- saved text printed by the supplied tests;
-- three original tests with a short explanation of each test's purpose;
-- warning-enabled compiler or instructor-CI evidence;
-- completed evidence record;
-- Stack Autopsy;
-- corrected Cognitive Pause; and
-- short Stack-to-depth-first-exploration explanation.
-
-**CI**, or continuous integration, means another computer automatically
-builds and tests submitted code.
+- completed `code/starter/int_stack.c`;
+- completed `code/starter/expression_evaluator.c`;
+- three justified tests in `code/tests/test_student.c`;
+- passing public-test and warning-enabled build evidence;
+- the completed evidence record and Stack-Top Autopsy; and
+- the preserved and corrected Cognitive Pause.
 
 ## Relationship to the course spiral
 
-- **Revisits:** ArrayList size/capacity invariants, geometric growth,
-  ownership, checked errors, and failure atomicity.
-- **Introduces:** Stack ADT, LIFO access, underflow, encapsulation, and
-  nesting validation.
-- **Forwards:** a typed Stack for tree DFS in Module 5 and visited-aware
-  graph DFS in Module 6.
+- **Revisits:** caller-owned fixed arrays, separate logical size and physical
+  capacity, bounds checks, invariants, and failure preservation.
+- **Introduces:** Stack ADT, LIFO, top, push, peek, pop, underflow, operator
+  precedence, and a checked two-Stack evaluator.
+- **Forwards:** the LIFO behavior contract. Later tree and graph modules
+  choose their own element types and storage policies.
+- **Defers:** storage-growth and ownership policies. Those are not part of
+  this module's Stack implementation.

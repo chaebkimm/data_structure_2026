@@ -1,260 +1,256 @@
-# Chapter 1. Keeping Data Together in One Place
+# Chapter 1. Keeping data together in one place
 
-## Thinking Logically
+## Thinking logically
 
 ### Why should we keep data together?
 
 When you want to do the same task for all your data, having it gathered in one place makes it easy to just go through the items one by one.
 
-### The Simplest Method
+### The simplest method
 
 If you already know how many pieces of data you want to store, you can just set aside exactly that much memory space for them from the start.
 
-### How do we find data by its number?
-
-Since all the data is lined up right next to each other in the computer's memory, the computer doesn't need to check the items one by one. Instead, it uses a quick math calculation to figure out exactly where that number is and jumps straight to that spot.
-
-### How do we delete data?
-
-Even after deleting a piece of data, we need to keep the remaining data packed closely together. To do this, we move all the data that comes *after* the deleted item forward by one space. After deleting, the final number of items goes down by one.
-
 ### How do we add data?
 
-You can simply add new data to the very end of your existing data.
+Simply add new data to the end of the existing data. To add data in the middle, shift all the data starting from the target spot one space to the right. Then, place your new data into the empty spot.
 
-If you want to add data right in the middle, you must make sure all the data stays packed together without losing any values. First, shift the data at the target spot—and everything after it—backward by one space. Then, place your new data into the empty spot. After adding it, the final number of items goes up by one.
+### Which metadata is useful?
+
+If you track the total count of stored items, you can easily distinguish between the occupied memory and the available unused capacity.
 
 ### What should we check when adding data?
 
-Check that the insertion position is valid and that the array has room for one more item. The capacity is the number of available slots. The size is the number of items currently stored.
+First, check that the array has room for one more item by comparing the current item count against the total capacity. Then, check that the insertion position is valid.
 
 ### What happens if the space is full?
 
-Reject the addition and leave the stored values and size unchanged. This chapter uses a fixed array of ten integers. Deleting an item makes room for another item; the array itself does not become larger.
+If the space is full, we cannot add another item.
 
-## Calculating Efficiency
+### How do we find data by its position?
 
-### Memory Efficiency
+Calculate the exact memory address from its position, then jump straight to that spot.
 
-The array reserves its full capacity even when only some slots are in use. An array of ten integers still has ten slots when the list contains only three items. The remaining slots are outside the current list.
+### How do we find data by its value?
 
-### Efficiency of Adding Data
+Start at the beginning and check the items one by one until you find a match.
 
-If you have leftover space and add an item to the very end, it is super fast because no other data needs to move. But if you add an item to the very front, you have to push all existing data back by one space. This means the amount of work increases based on how much data you have.
+### How do we delete data?
 
-### Efficiency of Deleting Data
+To close the gap, shift all data after the deleted item one space to the left.
 
-Deleting the very last item is instantly finished because there is nothing behind it to pull forward. But deleting the very first item means you have to shift everything else forward by one space, so the amount of work increases with the total number of items.
+## Calculating efficiency
 
-### Efficiency of Finding Data by its Number
+### Memory efficiency
 
-Because the data items are placed right next to each other, if you just know its number, you can instantly calculate its exact position and find it.
+Regardless of the number of stored items, the array reserves its full capacity.
 
-### Efficiency of Finding Data by its Value
+### Efficiency of adding data
 
-You have to check the items one by one, starting from the first one. If it is at the very front, you find it instantly. But if it is at the very end—or not there at all—you have to check absolutely everything. The work grows with the total amount of data.
+The workload increases based on the number of items shifted. On average, this work is proportional to the total number of stored items.
+
+### Efficiency of finding data by its position
+
+The workload is constant because the memory address is calculated from the position.
+
+### Efficiency of finding data by its value
+
+The workload grows with every item checked. On average, the effort is directly proportional to the total number of stored items.
+
+### Efficiency of deleting data
+
+The workload increases based on the number of items shifted. On average, this work is proportional to the total number of stored items.
 
 ## Glossary
 
-### Data
+### Contiguous memory
 
-The things a computer processes and stores.
-
-### Data Structure
-
-A specific way of organizing and gathering data so we can store, manage, and use it efficiently.
-
-### Contiguous Memory
-
-Memory spaces that are placed right next to each other in a single, unbroken line. Because there are no gaps, the computer can instantly calculate exactly where a specific piece of data is located.
+Memory spaces that are placed right next to each other in a single, unbroken line. Also called contiguous storage or consecutive memory locations.
 
 ### Array
 
 A data structure where you set aside a fixed amount of memory space ahead of time to store a certain number of items.
 
+The array used here is also called a fixed-size array or fixed-length array. Its number of slots does not change.
+
 ### List
 
-A data structure that stores data in a specific, ordered sequence.
+A data structure that stores items in an ordered sequence. Also called a sequence in this context. Ordered means the items have positions; it does not mean their values are sorted.
 
-### ArrayList
+### Array list
 
-A list that is built using an array under the hood.
+A list that is built using an array under the hood. Also written as array-based list or ArrayList.
+
+This chapter uses a fixed-capacity array list. A version that grows its underlying storage is often called a dynamic array or resizable array.
 
 ### Index
 
-The number that tells you the exact position of a specific piece of data.
+The numerical position of a single item in an array or list. Also called a subscript or position. In this chapter, indices start at 0.
 
 ### Element
 
-Each individual piece of data stored inside an array or list.
+A single item stored inside an array or list. Also called an item or entry.
+
+### Size
+
+The actual number of elements currently being stored inside the data structure. Also called the element count, item count, or list length.
+
+Here, size counts stored elements, not bytes. The length of the underlying array counts all its slots, so it equals capacity instead.
+
+### Capacity
+
+The total number of items the underlying array has space for before it runs out of room. Also called the allocated slot count. For this fixed-capacity list, it is the maximum size.
 
 ## Invariant
 
 ### What is the invariant (the golden rule) in this data structure?
 
-All data items must be stored consecutively (back-to-back) in memory, with no empty gaps between them. The data is packed tightly at the front of the allocated memory space (from index 0) as an engineering design choice.
+Pack all items contiguously in memory. No empty gaps.
 
 ### What is the benefit from the invariant?
 
-It enables instant random access. Because the items are stored in a continuous sequence, the computer can use the index numbers to instantly jump to any specific piece of data, rather than having to search through the items one by one.
+The item is found in one step by calculating the memory address from its index.
 
 ### How is the invariant maintained during insertion?
 
-To add a new piece of data without breaking the rule, the ArrayList handles it in two ways:
-
-- Adding at the end: You can only place the new item exactly one spot after the current last item. You cannot skip spaces.
-
-- Adding in the middle: You must first shift all subsequent items one space to the right to create an empty "hole," and then you insert the new item into that gap.
+By adding items only at the end or in the middle. When adding in the middle, shift all subsequent items one space to the right to create an empty spot for the new item.
 
 ### How the invariant is kept during deletion?
 
-When you remove an item from the middle of the list, it leaves a gap. To keep the data contiguous, you must shift all the items that came after the deleted item one space to the left to close the hole.
+To close the gap left by the removed item, shift all subsequent items one space to the left.
 
 ### What happens if the invariant is broken?
 
-Imagine you delete an item from the middle of your list but decide to skip the heavy work of shifting the remaining data. This breaks the golden rule, leaving an empty "hole" or gap in the middle of your memory space.
+If a gap appears in contiguous memory, the indices no longer reflect the data's true order. Consequently, memory addresses cannot be calculated from the index alone, and the system loses track of which locations contain valid data versus empty space.
 
-If you allow this to happen, the entire structure of the ArrayList breaks down in three major ways:
+## Coding plan
 
-- Random Access Fails: The biggest advantage of an array is being able to instantly jump to an item using its number. But with a gap, the numbers no longer match the data's true order. In the example above, if you ask for the 3rd item (index 2), the computer will hand you an empty space instead of the number 40.
+### Saving data in an array
 
-- Messy Code and Lost Speed: Every time you try to read, print, or search for data, you can no longer just breeze through the memory. Your code would have to constantly ask, "Wait, is this spot empty?" before doing anything. This extra checking destroys the elegant simplicity and speed of the list.
+- Declare an array: Choose a fixed capacity and set aside that many slots.
+- Choose position: Pick the very first number (spot) in memory that doesn't have data saved in it yet.
+- Save data: Put your data into that chosen spot.
+- Update count: Increase the total count of your stored data by 1.
 
-- Confusion with Size: If you have 4 items scattered across 5 memory slots, what is the "size" of your list? Does your size variable track the number of items (4), or the next available index at the very end (5)? Adding a new item to the end becomes confusing because you lose track of where the actual data ends.
+### Reading or changing data at a specific number
 
-By strictly enforcing the invariant—even when shifting data takes extra work—we guarantee that our data is always predictable, perfectly ordered, and instantly accessible.
+- Check number: Make sure the number you want actually has data saved in it.
+- Read value: Read what is saved at that number in the array.
+- Change value: Update the value saved at that number.
 
-## Coding Plan
+### Finding data by its value
 
-### Saving Data in an Array
+- Choose target: Set `target` to the value you want to find.
+- Compare values: Start at `index = 0` and compare each stored item with `target` while `index < size`.
+- Stop at a match: Use `break` when the values match. The first matching position remains in `index`.
+- Recognize no match: If the loop finishes without a match, `index` equals `size`.
 
-- Declare an Array: Choose a fixed capacity and set aside that many slots.
-- Choose Position: Pick the very first number (spot) in the memory that doesn't have data saved in it yet.
-- Save Data: Put your data into that chosen spot.
-- Update Count: Increase the total count of your stored data.
+### Deleting data at a specific number
 
-### Reading or Changing Data at a Specific Number
+- Check number: Make sure the number actually has data saved in it.
+- Shift data: Move everything that comes right after the deleted spot one space to the left.
+- Decrease count: Decrease the total count of your data by 1.
 
-- Check Number: Make sure the number you want actually has data saved in it.
-- Read Value: Read what is saved at that number in the array.
-- Change Value: Update or change the value saved at that number.
+If we shift items starting from the rightmost end, we will overwrite existing data before it can be moved. Starting from the left (immediately after the deleted spot) ensures we safely shift data into the vacated space.
 
-### Deleting Data at a Specific Number
+### Adding data to a specific number
 
-- Check Number: Make sure the number actually has data saved in it.
-- Pull Data Forward: Move everything that comes right after the deleted spot forward by one space, doing it one by one from front to back.
-- Decrease Count: Decrease the total count of your data.
+- Check number and capacity: Make sure the spot connects to your existing data and fits inside your total memory size.
+- Shift data: Starting from the last item down to the spot where you want to add, shift each item one space to the right.
+- Save data: put your new data into the newly cleared spot.
+- Increase count: increase the total count of your data by 1.
 
-### Adding Data to a Specific Number
+If we shift elements starting from the left (the insertion point), we will overwrite existing data before it can be moved. Starting from the right (the last item) ensures we safely shift data into the vacated space.
 
-- Check Number: Make sure the spot connects to your existing data and fits perfectly inside your total memory size.
-- Push Data Back: Starting from the very last item down to the spot where you want to add, push each item back by one space.
-- Save Data: Put your new data into the freshly cleared spot.
-- Increase Count: Increase the total count of your data.
+## New C syntax explained
 
-If we start from the front and move the first item to the right, we will accidentally crush the item sitting in the next spot before it has a chance to move! Starting from the back ensures we move data into empty holes.
-
-## New C Syntax Explained
-
-### `[capacity]` (Creating an Array)
+### `[capacity]` (creating an array)
 
 To create an array in C, you use square brackets `[]` immediately after the name of your variable. Inside these brackets, you write the exact number of items you want to store. For example, writing `int array[10];` tells the computer to set aside a single, continuous block of memory big enough to hold exactly 10 integers. Because this space is fixed, you must know the maximum capacity you need right from the start.
 
-### `[index]` (Accessing Data)
+### `[index]` (accessing data)
 
 Once the array is created, you use the square brackets again to look at or change the data inside it. You simply put the specific number (the index) of the item you want inside the brackets. In C, counting always starts at 0, not 1. Therefore, `array[0]` lets you access the very first item, `array[1]` accesses the second item, and so on.
 
 ## C Code
 
-### Saving Data in an Array
+### Saving data in an array
 
 ```c
-/* Declare Fixed Storage */
-int array[10];
+/* Declare fixed storage */
+int array[10] = {100, 200, 300, 400, 500, 0, 0, 0, 0, 0};
 int array_capacity = 10;
 
+/* Setup item count */
+int size = 5;
 
-/* Choose Position */
-int pos = 0;
-
-/* Save Data */
-array[pos] = 100;
-
-/* Update Count */
-int size = 1;
-
-
-/* Choose Position */
-pos = pos + 1;
-
-/* Save Data */
-array[pos] = 200;
-
-/* Update Count */
-size = size + 1;
-
-
-/* Choose Position */
-pos = pos + 1;
-
-/* Save Data */
-array[pos] = 300;
-
-/* Update Count */
-size = size + 1;
-
+/* Position to access item */
+int pos;
 ```
 
-### Reading or Changing Data at a Specific Number
+### Reading or changing data at a specific number
 
 ```c
 pos = 1;
 
-/* Check Number */
+/* Check number */
 if (pos >= 0 && pos < size) {
         
-        /* Read Data */
+        /* Read data */
         int data = array[pos];
 
-        /* Change Data */
+        /* Change data */
         array[pos] = 500;
 }
-
 ```
 
-### Deleting Data at a Specific Number
+### Finding data by its value
+
 
 ```c
-/* Check Number */
+/* Target value to find */
+int target = 300;
+
+/* Where the result will be saved */
+int index;
+
+for (index = 0; index < size; index = index + 1) {
+        if (array[index] == target) {
+                break;
+        }
+}
+```
+
+### Deleting data at a specific number
+
+```c
+/* Check number */
 if (pos >= 0 && pos < size) {
 
-        /* Pull Data Forward */
+        /* Shift data left */
         for (int i = pos + 1; i < size; i = i + 1) {
                 array[i - 1] = array[i];
         }
 
-        /* Decrease Count */
+        /* Decrease count */
         size = size - 1;
 }
-
 ```
 
-### Adding Data to a Specific Number
+### Adding data to a specific number
 
 ```c
-/* Check Number */
+/* Check number */
 if (pos >= 0 && pos <= size && size < array_capacity) {
 
-        /* Push Data Back */
+        /* Shift data right */
         for (int i = size - 1; i >= pos; i = i - 1) {
                 array[i + 1] = array[i];
         }
 
-        /* Save Data */
+        /* Save data */
         array[pos] = 600;
 
-        /* Increase Count */
+        /* Increase count */
         size = size + 1;
 }
-
 ```

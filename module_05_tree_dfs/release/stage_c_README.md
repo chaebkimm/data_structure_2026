@@ -1,12 +1,4 @@
-# Module 5 — Stage C: Tree DFS Investigation
+# Stage C — Investigation
 
-Open one investigation version after the timed Cognitive Pause and the
-instructor's comparison.
-
-- `investigation_worksheet.md` is the standard format.
-- `investigation_worksheet_linear.md` has the same targets without dense
-  tables.
-
-The investigation supplies questions, not instructor answers. Complete and
-preserve Sections A through F before opening Stage D. Sections G through I
-may be completed during the announced independent-work window.
+Trace the three operations on `(3+5)*2`, explain failure preservation, and
+design boundary tests. Preserve your responses before opening Stage D.

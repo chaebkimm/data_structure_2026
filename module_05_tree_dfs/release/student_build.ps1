@@ -48,13 +48,13 @@ if ($Target -eq "autopsy") {
     }
 
     $sources = @(
+        (Join-Path $codeRoot "support\tree_support.c"),
         (Join-Path $codeRoot "autopsy\faulty_preorder.c")
     )
     $outputName = "tree_dfs_autopsy"
 } else {
     $sources = @(
         (Join-Path $codeRoot "support\tree_support.c"),
-        (Join-Path $codeRoot "support\tree_node_stack.c"),
         (Join-Path $codeRoot "starter\tree_dfs.c")
     )
 

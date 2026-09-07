@@ -41,10 +41,10 @@ issued as a second weekly programming submission.
 | Week | Required focus and package use | Required graded work | Extension only | Weekly vocabulary and questions |
 |---:|---|---|---|---|
 | 1 | Fixed-capacity ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1: access, search, append, insert, and remove | Additional boundary and operation-sequence tests | [Week 1 page](student_question_bank/week_01_arraylist.md) |
-| 2 | Expression-tree model, binary-tree links, and recursive clearance — [Module 2](module_02_binary_tree/README.md) core | Ordinary lab 2: direct local-node construction, recursive search, and field clearance | Additional valid-tree fixtures and traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
+| 2 | Binary-tree links, recursion, a brief DFS introduction, and expression-tree construction/evaluation — [Module 2 textbook](module_02_binary_tree/student/textbook.md) | Ordinary lab 2: direct local-node construction, recursive search, and field clearance | Additional valid-tree fixtures and traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
 | 3 | Directed integer adjacency matrices — [Module 3](module_03_graph/README.md) core | Ordinary lab 3: initialize, add, remove, and count outgoing edges | Additional valid directed fixtures and traces | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
-| 4 | Stack — [Module 4](module_04_stack/README.md) core | Ordinary lab 4 | Package extensions | [Week 4 page](student_question_bank/week_04_stack.md) |
-| 5 | Tree DFS — [Module 5](module_05_tree_dfs/README.md), with recursive traversal as the implementation core | Ordinary lab 5 | Explicit-stack tree traversal | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
+| 4 | Fixed-capacity Stack and precedence — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: checked push, peek, pop, and `1+2*3` evaluation | Additional valid expressions and boundary tests | [Week 4 page](student_question_bank/week_04_stack.md) |
+| 5 | Preorder, inorder, and postorder using explicit stacks without recursion — [Module 5 textbook](module_05_tree_dfs/student/textbook.md) | Ordinary lab 5; existing package exercise remains separate from the textbook examples | Additional tree shapes and stack traces | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer — [Module 7](module_07_queue/README.md) core | Ordinary lab 6 | Package extensions | [Week 7 page](student_question_bank/week_07_queue.md) |
 | 8 | BFS from trees to graphs — [Module 8](module_08_tree_bfs/README.md) is the short tree bridge; [Module 9](module_09_graph_bfs/README.md) supplies the main graph lab | **Combined lab 7: one submission** based on Graph BFS | Tree BFS implementation, shallowest search, and other Module 8 deep-dive work | [Week 8 page](student_question_bank/week_08_bfs.md) |
@@ -59,17 +59,19 @@ issued as a second weekly programming submission.
 
 ### Week 5 — Tree DFS
 
-Required work from [Module 5](module_05_tree_dfs/README.md) is recursive
-preorder, inorder, and postorder reasoning, recursive traversal code,
-postorder destruction/cleanup, and the `O(h)` call-stack argument. An
-explicit Stack may be shown to connect Week 4 to traversal, but a complete
-explicit-stack tree implementation is extension work and is not required for
-the Week 5 submission.
+The [Module 5 textbook](module_05_tree_dfs/student/textbook.md) focuses on
+preorder, inorder, and postorder using explicit stacks without recursion.
+Students trace the saved branches, ancestors, and completed subtrees, then
+connect these states to the recursion introduced in Module 2. Count `O(n)`
+work and distinguish `O(h + 1)` used stack entries from the example's fixed
+reserved capacity. The existing package lab remains a separate exercise;
+this textbook revision does not change its submission requirements.
 
 ### Week 6 — Graph DFS and Practical 1
 
 Required work from [Module 6](module_06_graph_dfs/README.md) is one complete
-graph DFS implementation: the iterative version using the Week 4 Stack.
+graph DFS implementation: the iterative version using a supplied vertex-ID
+Stack that preserves Week 4's LIFO behavior under a Module 6 storage policy.
 Students must still trace discovery, handle cycles and disconnected input,
 and justify traversal cost. Recursive graph DFS is extension work.
 

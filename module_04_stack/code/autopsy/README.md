@@ -1,24 +1,21 @@
 # Stack-Top Autopsy
 
 An **autopsy** is a careful examination of a supplied defect. This program is
-separate from both the starter and solution. It uses a tiny fixed array, so
-changing student code cannot change its result.
+separate from both the starter and solution, so changing student code cannot
+change its result.
 
-A stack's **logical elements** are the positions that currently belong to the
-collection. If `size` is 2, those positions are indexes 0 and 1. An **index**
-is a numbered array position. The next unused position is index 2.
+The fixed array contains four allocated integer slots. Its current `size` is
+two, so only indexes 0 and 1 are active Stack values. Indexes 2 and 3 are
+allocated but inactive. Reading either inactive slot stays within the array,
+but it does not read a logical Stack value.
 
-`faulty_delimiters.c` deliberately reads `data[size]` as the top. The file
-contains one extra physical cell filled with `?`, so this particular
-demonstration remains inside the array. It is still logically wrong: the top
-is the latest stored character at `data[size - 1]`.
+`faulty_top.c` deliberately reads `stack[size]`. Before running:
 
-Before running:
-
-1. Draw the array after `(` and `[` are pushed.
-2. Predict the correct and faulty top characters.
-3. Predict whether the faulty validator accepts the valid text `([])`.
-4. Predict the reported character index.
+1. Draw the array and label active and inactive slots.
+2. Predict the correct top value from `stack[size - 1]`.
+3. Predict the value the faulty read obtains from `stack[size]`.
+4. Explain why the faulty read is memory-safe in this fixture but still breaks
+   the Stack invariant.
 
 From the `code` directory, run:
 
@@ -27,5 +24,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target autopsy
 ```
 
-Then complete `student/stack_autopsy.md`. Do not repair the supplied program
-until your prediction and the observed output are both recorded.
+or:
+
+```sh
+make autopsy
+```
+
+Record the prediction before running the program. Do not repair the supplied
+program until both the prediction and observed output have been preserved.
