@@ -46,9 +46,9 @@ if ($Target -eq "autopsy") {
     }
 
     $sources = @(
-        (Join-Path $codeRoot "autopsy\faulty_cascade.c")
+        (Join-Path $codeRoot "autopsy\faulty_precedence.c")
     )
-    $outputName = "link_autopsy"
+    $outputName = "precedence_autopsy"
 } else {
     $implementation = Join-Path $codeRoot "starter\binary_tree.c"
     if ($StudentTests) {

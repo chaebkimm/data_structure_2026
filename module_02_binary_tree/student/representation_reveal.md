@@ -1,142 +1,112 @@
-# Stage B — How the Binary Tree Is Stored
+# Stage B — How the Expression Tree Is Stored
 
 Open this file only when the instructor releases the representation.
 
-A representation is a chosen way to store information. The hierarchy needs
-separate items and a way to reach the item at each side.
+A representation is a chosen way to store information. Chapter 2 stores all
+nodes in one array and uses integer indices to connect them.
 
 ## 1. Name the stored pieces
 
-A node is one object in the tree. A C `struct` groups named fields in one
-object. Each node stores its data and two child addresses:
+A node groups a character with two child positions:
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data; /* A digit character, '+', or '*'. */
+    int left;  /* Child index; -1 means no child. */
+    int right; /* Child index; -1 means no child. */
 };
+
+struct TreeNode nodes[20]; /* Storage for one expression. */
+int size = 0;             /* Used nodes and next unused index. */
+char eq[20] = "1+2*3";    /* Characters followed by '\0'. */
+int pos = 0;              /* Next unread character in eq. */
 ```
 
-An address identifies a memory location. A pointer stores an address.
-The `*` in each child-field declaration says that the field is a pointer.
-`NULL` means that no node is linked at that position.
+The array brackets select a node; the dot selects one of its fields.
+`nodes[1].right` stores an index, not a copy of a node. `-1` means no child.
+Index `0` is valid. A root is also an index; it need not be zero.
 
-A general binary tree has distinct left and right positions. It may use
-neither, either one, or both. The completed expression tree used here adds a
-meaning rule: an operator uses both positions for its operands, while a number
-uses neither. The generic node representation and functions do not enforce
-that expression rule. A node has no field pointing upward to its parent. A
-parent is still the node directly above a child in the hierarchy.
+Label `data`, `left`, `right`, `size`, and `pos` in your own words.
 
-Label the fields:
+## 2. Reserve nodes, then connect them
 
-- `data`: _________________________________________________________
-- `left`: _________________________________________________________
-- `right`: ________________________________________________________
-
-## 2. Initialize local variables, then connect their addresses
-
-Create a node as a regular local variable. Set its data and both links before
-the program follows any link.
+`new_node(char data)` uses the next unused position, stores the character,
+sets both child indices to `-1`, advances `size`, and returns the reserved
+index. Its nodes remain available after the function returns because the
+array is declared outside the functions.
 
 ```c
-struct TreeNode root;
-root.data = '*';
-root.left = NULL;
-root.right = NULL;
-
-struct TreeNode plus;
-plus.data = '+';
-plus.left = NULL;
-plus.right = NULL;
-
-if (root.left == NULL) {
-    root.left = &plus;
-}
+/* Suppose indices 0 and 1 already hold initialized nodes. */
+nodes[1].left = 0; /* The node at index 0 becomes index 1's left child. */
 ```
 
-The dot in `root.left` selects a field of a node variable. `&plus` is the
-address of `plus`; assigning it creates a link, not a copy of the whole node.
-The check avoids replacing an existing left link.
-
-The field has type `int`. Character constants such as `'*'` and `'+'` have
-integer type in C, so use the character literals instead of assuming numeric
-character codes.
-
-When `root.left` is not `NULL`, `root.left->data` reads the linked node's
-data. The arrow `->` selects a field through a pointer.
+A link does not require neighboring array positions. Nodes are reserved in
+reading order, while links record the expression's hierarchy.
 
 ## 3. Read the complete example
 
-All five variables below are initialized and remain alive in the same block.
-Together they represent `(3 + 5) * 2`.
+The tree for `1+2*3` has `size == 5` and `root == 1`:
 
-| Local variable | Data | Left address | Right address |
-|---|---:|---|---|
-| `root` | `'*'` | `&plus` | `&two` |
-| `plus` | `'+'` | `&three` | `&five` |
-| `three` | `3` | `NULL` | `NULL` |
-| `five` | `5` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+| Index | `data` | `left` | `right` |
+|---|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-The root is the starting node chosen by the caller. A leaf has no children:
-both of its links are `NULL`. The nodes need not be next to one another in
-memory.
+Text equivalent: index 1 holds `'+'`, with left child 0 and right child 3.
+Index 3 holds `'*'`, with left child 2 and right child 4. Indices 0, 2, and 4
+are digit leaves. Thus `nodes[nodes[root].right].data` is `'*'`.
 
-The left and right links preserve operand positions. They are not a sorting
-rule. A search checks the current node, then its left subtree, then its right
-subtree: `'*'`, `'+'`, `3`, `5`, `2` for this tree. A subtree contains one
-node and all nodes below it. Recursion means that the search function calls
-itself on a child subtree.
+## 4. Build terms before adding them
 
-## 4. Keep positions distinct
+A term is one digit followed by zero or more `*`-digit pairs. `term()` builds
+one term and leaves the following `'+'` or `'\0'` unread. `terms()` builds a
+sum of complete terms. Both functions share `pos`, the next unread character.
+Reading `eq[pos]` inspects a character; consuming it also advances `pos`.
 
-A node with `left == NULL` and a nonnull right link is valid in the general
-binary-tree representation. It would not be a completed binary operator in
-this expression model. Removing the left child does not move the right child.
-The sides describe relationships, not a packed sequence of occupied
-positions.
+At each new operator, the old subtree becomes its left child, the newly
+built operand becomes its right child, and the operator becomes the new
+root. Building an entire multiplication term before attaching it to `'+'`
+preserves precedence. Repeating this step groups equal operators from left
+to right.
 
-How does this differ from shifting items after deletion in Module 1?
+## 5. Evaluate children before their operator
 
-____________________________________________________________________
+`eval_tree(int node)` receives a node index and returns an integer answer.
+At a digit leaf, subtract `'0'` from `data` and return that value. At an
+operator, evaluate the left child and then the right child, combine their
+returned values, and return the result. Recursion means that the evaluator
+calls itself on a smaller subtree.
 
-## 5. Separate local checks from caller responsibilities
+For `1+2*3`, the multiplication returns 6 and the addition returns 7. The
+stored characters remain `'*'` and `'+'`; results are local values returned
+by function calls.
 
-An invariant is a rule every valid state follows. In a nonempty tree:
+## 6. Keep the tree and input rules
 
-1. Every node is reachable from one chosen root.
-2. Each non-root node has exactly one incoming child link. The same node
-   cannot occupy both sides of one parent or be shared by two parents.
-3. No downward route returns to an earlier node. Such a return is a cycle.
-4. Each child address names an initialized object that is still alive.
+In a completed expression tree:
 
-A precondition is a condition the caller must ensure before an operation.
-Checking that one side is empty does not prove the whole structure is a
-valid tree. The caller attaches a fresh, unlinked node or a disjoint valid
-subtree. The search and clearing functions do not detect arbitrary sharing
-or cycles.
+1. One root reaches all of its nodes.
+2. Every other node occurs in exactly one child position.
+3. No downward route returns to an earlier node on that route.
+4. Every child index selects an initialized node in `nodes[0]` through
+   `nodes[size - 1]`.
+5. Digits are leaves; each operator has two operand children.
 
-## 6. Distinguish clearing from ending a lifetime
+A general binary tree permits zero, one, or two children. A completed
+expression using these binary operators needs two children at each operator.
+Our construction joins disjoint subtrees under fresh parents. It does not
+check arbitrary malformed trees.
 
-A local node's lifetime lasts until the block that declared it finishes.
-Keeping its address elsewhere does not extend that lifetime. Do not follow
-a link after the linked object has stopped existing.
+The input is assumed valid and nonempty: single digits alternate with `+` or
+`*`, with no spaces or parentheses, at most 19 characters, and every
+intermediate and final result fits in `int`. The final `\0` fits in `eq[20]`.
+The caller resets `size` and `pos` before each independent build. Such a reset
+starts a new expression; saved indices from the previous build must not be
+used as its tree.
 
-Clearing a subtree resets each node's data to zero and both links to
-`NULL`. It does not end the lifetime of those node variables. Zero remains
-an ordinary data value.
-
-A node has no upward field, so clearing it cannot remove an outside parent's
-link. To remove a child branch, clear the selected subtree and set that
-parent's selected link to `NULL`. Leave the other side unchanged.
-
-## 7. Prepare for the Cognitive Pause
-
-Check that you can read the table and distinguish a node variable from its
-address. Do not solve the pause targets until the instructor releases them.
-
-One representation question:
+One representation question to bring to the Cognitive Pause:
 
 ____________________________________________________________________

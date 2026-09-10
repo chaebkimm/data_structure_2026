@@ -7,211 +7,203 @@ The header is `code/include/binary_tree.h`. The implementations are
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data;
+    int left;
+    int right;
 };
 
-struct TreeNode *tree_find(struct TreeNode *node, int target);
-void tree_clear(struct TreeNode *node);
+extern struct TreeNode nodes[20];
+extern int size;
+extern char eq[20];
+extern int pos;
+
+int new_node(char data);
+int term(void);
+int terms(void);
+int eval_tree(int node);
 ```
 
-These are the only two required library functions. Use the explicit
-`struct TreeNode` spelling. Do not add a type alias, status enum, wrapper
-object, constructor, side-operation helper, or whole-tree validator.
+All four function bodies are student TODOs. The implementation owns the
+global definitions; it starts with `size = 0`, `pos = 0`, and
+`eq[20] = "1+2*3"`. The header's `extern` declarations refer to that shared
+state rather than defining another copy.
 
-The representation has two downward pointers and no stored upward link.
-Left and right are independent named positions. A right-only node is valid.
-No numerical ordering is implied by a node's position.
+Use the explicit `struct TreeNode` spelling. Root and child links are
+integer indices into `nodes`, with `-1` for no child. Index `0` is valid.
+No additional reset API, wrapper, status type, or structural validator is
+required.
 
-The canonical fixture is the expression `(3 + 5) * 2`: `root` stores `'*'`,
-its left child `plus` stores `'+'` with children `three` and `five`, and its
-right child `two` stores `2`. Its current-left-right sequence is
-`'*', '+', 3, 5, 2`. Character constants have type `int`, so operators and
-numbers use the same field without relying on ASCII numbers. This expression
-uses two children for each binary operator, but the representation and API
-remain generic binary-tree tools and accept valid one-child fixtures.
+## Input and tree preconditions
 
-## Caller preconditions
+Each complete input is:
 
-For each nonempty tree or subtree passed to a function:
+1. nonempty, starting and ending with a digit;
+2. alternating single-digit operands and `+` or `*` operators;
+3. free of whitespace and parentheses;
+4. at most 19 characters, followed by the terminating `\0` in `eq[20]`; and
+5. guaranteed to have every intermediate and final result fit in `int`.
 
-1. every reachable address refers to an initialized, live node object;
-2. the reachable structure is finite and acyclic;
-3. each reachable non-root node has exactly one incoming tree link;
-4. no node is shared by two child positions; and
-5. local variables remain in scope throughout all uses of their addresses.
+The parser does not check these conditions. Input such as an empty string,
+`12+3`, `1 + 2`, `1++2`, or a product exceeding the range of `int` is outside
+the assignment contract. Do not turn these examples into required
+rejection tests.
 
-`NULL` is a valid empty-tree input to both functions. Arbitrary invalid or
-expired addresses are not validated. A successful search is not proof that
-the whole structure met its preconditions.
+`new_node` requires `0 <= size < 20` before reservation. One complete
+expression consumes one node per input character, so the valid input bound
+uses at most 19 slots after a fresh reset. Direct creation tests must also
+stay within capacity.
 
-Before direct attachment, the caller additionally establishes that the child
-is fresh or otherwise unlinked and that the proposed attachment preserves
-the whole-tree rules. Checking only an empty side cannot discover an incoming
-link elsewhere or a longer cycle.
+For `eval_tree(node)`, the starting index must identify an initialized,
+completed expression subtree. Every child link used by an operator must
+be in `[0, size)`. Digits are leaves; each operator has two operands. The
+reachable structure is finite, acyclic, and unshared, with one root and
+exactly one incoming child link per other reachable node. Do not call
+`eval_tree(-1)` as an empty-tree case.
 
-Do not run ordinary recursive operations on intentionally cyclic examples.
-Use paper traces to explain why a missing base-case path would fail to stop.
+The struct can represent general binary-tree shapes, including a node with
+only one child. Such a shape is not a completed operator expression for
+this evaluator. The four functions assume their contracts; they do not
+certify arbitrary field assignments.
 
-## Local objects and initialization
+## Array state and independent runs
 
-The textbook initializes already existing variables:
+`size` is both the used-node count and the next unused slot. Array elements
+outside `[0, size)` are not active nodes, even if C initialized their
+storage to zero. A newly reserved node explicitly receives two `-1` fields.
+
+An independent valid fixture may be set up directly in a test:
 
 ```c
-struct TreeNode root;
-struct TreeNode plus;
+#include <string.h> /* Declares strcpy for this bounded literal. */
 
-root.data = '*';
-root.left = NULL;
-root.right = NULL;
-
-plus.data = '+';
-plus.left = NULL;
-plus.right = NULL;
+/* Inside the test function, before parsing this new expression. */
+size = 0;
+pos = 0;
+strcpy(eq, "2*3+4*5"); /* The literal and its terminator fit in eq[20]. */
+int root = terms();
 ```
 
-`root` is the object; `&root` is its address. A pointer such as
-`struct TreeNode *p = &root;` allows `p->data` to select the same field as
-`root.data`.
+The array has program-long storage duration. Local root variables merely
+hold indices; returning an index does not return an address of a temporary
+node. Resetting `size` makes slots available for reuse without requiring
+every byte to be erased. Once reused, those slots describe the new tree,
+so a saved old root must not be used as if the previous tree were retained.
+Reset both `size` and `pos` for each independent full parse.
 
-Initialize both child links before searching or clearing. Reinitializing a
-node that still has children would discard its links without recursively
-resetting those descendants; that is not the required branch-clearance
-operation.
+## Reserving and initializing a node
 
-The variable's storage duration, not a tree operation, controls its lifetime.
-Do not return the address of an automatic local node from a function whose
-scope then ends.
+`new_node(data)` writes the character into `nodes[size]`, sets both links
+to `-1`, increments `size`, and returns the old index. The textbook's
+`return size++;` returns the position just reserved, not the next slot.
 
-## Guarded selected-side attachment
+Reservation alone does not attach a parent or decide the whole-expression
+root. The first creation returns `0`; it must not be rejected as an empty
+or false result. Character data uses `'0'` through `'9'`, not integer data
+`0` through `9`.
 
-For an initialized, unlinked child whose lifetime is sufficient:
+## Building a term
 
-```c
-if (root.left == NULL) {
-    root.left = &plus;
-}
-```
+`term()` consumes a digit to establish its initial root. For each following
+`*` it reserves an operator, reserves the next digit, gives the operator
+the old root on its left and the fresh digit on its right, and makes the
+operator the new root.
 
-This example changes only the selected left field when it is empty. An
-occupied left field remains unchanged; the example does not silently
-replace it or fall back to the right side. Use the symmetric test when the
-caller selects the right side.
+`eq[pos++]` reads at the old position and then advances `pos`. A condition
+such as `eq[pos] == '*'` examines the next character without consuming it.
+At return, `term()` leaves a `+` or `\0` unread for its caller. It does not
+reset the shared state on entry.
 
-This is a direct C pattern, not a library function or a global structural
-validation algorithm. Its local work is `O(1)` under the stated construction
-preconditions.
+For `2*3*4`, the first `*` subtree becomes the second `*` node's left
+child. The tree therefore encodes `(2*3)*4`. Avoid tests that infer this
+shape only from the answer: multiplication returns the same result for
+both associations when all intermediates fit.
 
-## Recursive search
+## Building a sum of terms
 
-`tree_find(node, target)`:
+`terms()` first calls `term()`. For each following `+`, it reserves a plus
+node, calls `term()` for the complete next term, links the previous root
+on the left and that term's root on the right, and updates the current
+root to the plus index.
 
-1. returns `NULL` for an empty current pointer;
-2. returns the current node's address when its data equals the target;
-3. searches the complete left subtree;
-4. returns a nonempty left result immediately; and
-5. searches and returns the right result only after the left search failed.
+The multiplication loop is inside each `term()` call. This construction
+gives multiplication higher precedence. Repeated additions associate to
+the left through the same old-root/new-parent pattern. On a complete
+valid input, `terms()` returns with `eq[pos] == '\0'`.
 
-The order is current-left-right (preorder in formal traversal terminology).
-Chapter 2 assesses the sequence, not memorization of that later label. The
-result is an address, not a data value or a new object. A missing value returns
-`NULL`. Duplicate values are legal, and the first preorder match wins.
+### Canonical trace
 
-Search must not mutate any node. Zero is ordinary data: a node containing
-zero is a legitimate match for target zero, including a previously cleared
-node that is still alive.
+For `1+2*3`, reservation order is index `0` for `'1'`, `1` for `'+'`, `2`
+for `'2'`, `3` for `'*'`, and `4` for `'3'`. The first `term()` stops with
+`pos == 1`. `terms()` consumes `+`, then the second `term()` consumes
+`2*3` and returns root `3` with `pos == 5`. The outer call returns root
+`1`, with children `0` and `3`; node `3` has children `2` and `4`.
 
-In the canonical expression tree, searching for `2` checks
-`'*', '+', 3, 5, 2` and returns `&two`. Searching for `5` returns `&five`
-without visiting `two`, while a missing target checks all five nodes. The
-expression shape is semantic structure rather than numerical search ordering,
-so a data comparison cannot justify skipping either subtree.
+Root index, allocation order, and evaluation result are different facts.
+The root need not be the first or last allocated slot.
 
-## Recursive clearance
+## Recursive evaluation
 
-`tree_clear(node)` is a no-op for `NULL`. For a nonempty subtree it:
+At a digit, `eval_tree` returns `nodes[node].data - '0'`. C guarantees
+consecutive digit character codes; this conversion needs no ASCII-specific
+integer constant. The digit case returns before following its `-1` links.
 
-1. recursively clears the left descendants;
-2. recursively clears the right descendants; and
-3. leaves the current node with data zero and both links `NULL`.
+At an operator, the textbook evaluates the left child and then the right
+child in separate declarations. Each recursive call keeps its own local
+results. Applying `+` or `*` returns a numeric answer without modifying
+the node's character or either child link. Evaluation also leaves
+`eq`, `pos`, and `size` unchanged.
 
-A link may be reset after its recursive call, as in the textbook. The
-essential requirement is to retain access to every descendant until it has
-been cleared. Resetting both child links before traversing them loses the
-routes to those nodes.
+For the canonical tree, calls begin at indices `1, 0, 3, 2, 4`; the
+completed subtree results are `1`, `2`, `3`, `6`, and `7`. The `*` node
+still stores `'*'` after returning `6`, and the root still stores `'+'`
+after returning `7`. Distinguish the order of call entry from the order
+of completed results.
 
-After a valid call, every formerly reachable node has data zero and two
-empty child links. Each local object still exists for the remainder of its
-scope. Repeatedly clearing an already cleared node is safe and leaves the
-same state.
+The textbook's `-1` fallback for an unsupported data character is not
+input or tree validation: bad indices, missing children, or cycles are
+not made safe by that check. No handling of those cases is required.
 
-Clearance does not discover or change an incoming link outside its argument
-subtree. For example, `tree_clear(root.left)` resets the left branch but
-does not by itself change `root.left`.
+## Complexity and limits
 
-## Selected-side removal
+Let `n` be the number of characters/nodes in the whole valid expression,
+`k` the number of characters in one term, and `h` the longest downward
+path measured in child links.
 
-The caller removes a left branch with the textbook's two actions:
-
-```c
-tree_clear(root.left);
-root.left = NULL;
-```
-
-For the right branch, use `root.right` consistently. A missing selected
-branch is safe because clearing `NULL` does nothing.
-
-The opposite side is unchanged. A right-only result is valid, so removing
-left never moves right into left. No count or contiguous-prefix rule exists
-for these two named links.
-
-When this operation removes the plus branch from the canonical fixture, the
-remaining links are a valid generic binary tree but no longer a completed
-binary expression: the `'*'` node has only its right operand.
-
-The caller may inspect a reset local variable or initialize and link it again
-while it remains alive and unlinked. That is different from following an
-address after the variable's scope has ended.
-
-## Complexity and resource limits
-
-Let `n` be the number of nodes reachable from the starting node, `k` the
-size of a selected branch, and `h` the longest downward path in links.
-
-| Operation | Time | Additional call-stack space |
+| Operation | Time | Additional working space |
 |---|---:|---:|
-| initialize one existing node | `O(1)` | `O(1)` |
-| inspect left/right or attach to an empty selected side | `O(1)` | `O(1)` |
-| recursive search | `O(n)` worst case | `O(h + 1)` |
-| clear a whole tree | `O(n)` | `O(h + 1)` |
-| clear and detach a branch | `O(k)` | proportional to branch height plus one |
-| detach a known side without clearance | `O(1)` | `O(1)` |
+| reserve and initialize one node | `O(1)` | `O(1)` |
+| attach one known child index | `O(1)` | `O(1)` |
+| `term()` | `O(k)` | `O(1)` beyond reserved nodes |
+| `terms()` for the complete expression | `O(n)` | `O(1)` beyond reserved nodes |
+| evaluate the complete tree | `O(n)` | `O(h + 1)` recursive call stack |
 
-Each node has fixed representation size. The additional space is the pending
-recursive calls, not extra node storage. Deep finite trees can still exhaust
-the runtime call stack; use bounded classroom fixtures rather than claiming
-unlimited recursion.
+Construction uses loops; the `terms()` to `term()` calls do not add one
+stack frame per expression node. Evaluation is recursive and can encounter
+a skewed tree from repeated operators. Each node contains one character
+and two integer fields; padding means `sizeof(struct TreeNode)` need not
+equal the simple sum of field sizes. The program reserves a fixed
+20-element array; conceptually its used node storage grows with `n`.
+State these costs in terms of expression size even though the classroom
+program has a fixed small capacity.
 
-## Safe invariant autopsy
+## Safe precedence autopsy
 
-`code/autopsy/faulty_cascade.c` is standalone. It provides the correct
-clearance routine so the exercise isolates the malformed relationship.
+`code/autopsy/faulty_precedence.c` is standalone. Its defective builder
+treats every following operator as a new parent of the accumulated
+expression and the next digit. For `1+2*3`, it constructs the grouping
+`(1+2)*3` and obtains `9`.
 
-Its six local nodes form the intentionally malformed expression
-`(3 + 5) * (5 - 2)`: both `plus.right` and `minus.left` store the address of
-one `shared_five` object. That sharing violates the tree precondition even
-though the relationship has no cycle. All objects remain alive, so the
-observation is an invariant failure rather than an expired-address error.
-Clearing and detaching the plus branch resets `shared_five`; the minus branch
-still reaches that same live, cleared object. Do not change the correct
-recursive algorithm to conceal the invalid fixture.
+All node indices and operands are valid, and the tree has no sharing or
+cycles. The defect is expression grouping. A correct evaluator faithfully
+evaluates the wrong structure. Repair the construction policy by building
+complete multiplication terms before combining them with plus nodes.
 
-Only the instructor answer key supplies the worked prediction and repair
-discussion. Student-facing Stage D diagrams teach correct operations without
-this fixture's answers.
+The instructor answer key holds the worked index table, prediction, and
+repair. Students record a prediction before running. Strong warnings and
+memory checks can remain silent because this semantic defect need not
+perform an invalid memory or arithmetic operation.
 
-## Toolchain and validation
+## Toolchain and release validation
 
 Preferred GCC/Clang flags:
 
@@ -226,19 +218,21 @@ Supported runtime checks:
 ```
 
 Microsoft C uses `/nologo /std:c11 /W4 /Zi`. Provide instructor CI or a
-debugger/invariant-check alternative when local runtime checks are
-unavailable. A sanitizer may remain silent on the autopsy because all node
-addresses remain live; tool silence does not establish a tree invariant.
+debugger/state-inspection alternative when local runtime checks are
+unavailable.
 
 Before release, verify:
 
-- both reference functions and supplied tests compile without warnings;
-- null, missing, duplicate, zero-data, and recursive cases pass;
-- direct examples preserve an occupied side and the unselected side;
-- clearance resets all selected nodes but does not detach an outside link;
-- all three student-test categories align with the 100-point rubric;
-- the starter compiles with exactly two implementation TODOs;
-- all release paths use `binary_tree.h` and `binary_tree.c`;
+- all four reference functions and supplied tests compile without warnings;
+- creation covers index zero, new-slot identity, and initialized children;
+- valid parsing covers single digits, repeated operators, mixed precedence,
+  left-associated links, and the 19-character boundary;
+- independent runs reset both counters and use bounded valid inputs;
+- evaluation returns the right value and preserves fields and shared state;
+- the standalone autopsy produces a deterministic semantic discrepancy;
+- the starter compiles with exactly four implementation TODOs;
+- all release paths use the current header, implementation, and autopsy names;
+- the three authored-test categories align with the 100-point rubric;
 - vocabulary appears only from Stage B onward;
-- Stage D contains no worked autopsy prediction; and
+- Stage D includes both textbooks and no worked autopsy prediction; and
 - Stage E excludes the solution, instructor extension tests, and answer key.

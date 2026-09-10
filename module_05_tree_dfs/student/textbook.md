@@ -4,12 +4,12 @@
 
 ### How do we return to an unfinished branch without recursion?
 
-Chapter 2 built and evaluated an expression tree with recursive calls. Each
+Chapter 2 built an expression tree using loops and evaluated it recursively. Each
 unfinished call remembered where to continue after a child returned. Chapter
 4 introduced a stack that stores values and takes the newest value out first.
 We can now store the unfinished tree work in that stack ourselves.
 
-Keep the expression `3+5*2` from Chapter 2. Its tree has five nodes.
+Use `3+5*2` as another example of Chapter 2's expression-tree idea. Its tree has five nodes.
 
 ```text
         +
@@ -24,7 +24,7 @@ that only holds `3` cannot recover the root because the nodes have no parent
 links. We must save an address before leaving an unfinished branch.
 
 Following one branch before returning to the remaining branches is
-**depth-first search (DFS)**, introduced briefly in Chapter 2. Processing
+**depth-first search (DFS)**. Chapter 2's evaluator followed this pattern. Processing
 every node in a chosen order is a **traversal**. This chapter implements three
 DFS traversal orders using loops and an explicit stack. None of the three
 traversal functions calls itself.
@@ -183,7 +183,7 @@ Their positions matter for subtraction and division.
 
 The node stack chooses the order in which nodes are visited. A value stack
 would hold intermediate arithmetic results. The C example below prints the
-three orders; recursive construction and evaluation were the main work of
+three orders; loop-based construction and recursive evaluation were the main work of
 Chapter 2.
 
 ## Calculating Efficiency
@@ -285,8 +285,8 @@ The complete program is
 [`code/lecture/iterative_traversals.c`](../code/lecture/iterative_traversals.c).
 It includes the existing `tree_dfs.h`, whose `Node` contains `char data`,
 `left`, and `right`. This module stores a digit as a character token such as
-`'3'`; Chapter 2's generic `TreeNode` stores the operand's integer value `3`.
-The child-link structure is the same. The lecture sample builds its own nodes
+`'3'`, as Chapter 2 does. This module's child links are pointers, while
+Chapter 2's child links are array indices. The lecture sample builds its own nodes
 and does not pass one module's node type to another module's functions.
 
 A `const Node *` lets the traversal read a node without changing that node

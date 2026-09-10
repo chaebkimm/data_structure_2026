@@ -1,99 +1,80 @@
-# Stage A — Initial Inquiry: Two Positions Below Each Item
+# Stage A — Initial Inquiry: An Expression Has a Hierarchy
 
 Name: ____________________________
 Date: ____________________________
 
-Use only this file during the initial inquiry. Preserve your first answers.
-Add labeled corrections later instead of erasing your original thinking.
+Use only this file during the initial inquiry. Preserve your first answers;
+add labeled corrections later instead of erasing your original thinking.
 
 A hierarchy arranges items in levels. An immediate relationship connects two
-items with no item between them. The starting example represents
-`(3 + 5) * 2`. Each item has a left position and a right position below it.
+items with no item between them. Consider `1 + 2 * 3`. Multiplication happens
+before addition. Each operation has a left operand and a right operand.
 
 ## A. Reconstruct the hierarchy
 
-The symbols and numbers below are stored data. The side records an operand
-position; the data does not sort the items.
+The symbols and numbers below are stored characters. Sides record operand
+positions, not a rule for sorting values.
 
 | Item | Immediate item above it | Side |
 |---|---|---|
-| `'*'` | none | starting item |
-| `'+'` | `'*'` | left |
-| `2` | `'*'` | right |
-| `3` | `'+'` | left |
-| `5` | `'+'` | right |
+| `'+'` | none | starting item |
+| `'1'` | `'+'` | left |
+| `'*'` | `'+'` | right |
+| `'2'` | `'*'` | left |
+| `'3'` | `'*'` | right |
 
 1. Draw the arrangement or describe every connection, including its side.
+2. Which item gives access to the whole expression?
+3. Which items have nothing below them?
+4. Write the route from `'+'` to `'3'`.
+5. Explain why the multiplication is below the addition.
 
-   _________________________________________________________________
+Responses:
 
-2. Which item is the single starting item? _________________________
-3. Which items have nothing below them? ____________________________
-4. Write the route from `'*'` to `5`. ______________________________
-5. How many immediate items may sit below one item? ________________
+____________________________________________________________________
 
 ## B. Find rules that preserve the hierarchy
 
 Consider each change separately, starting from the original arrangement.
 
-1. For this general two-position-rule question, ignore expression meaning.
-   The same item storing `5` is also connected below the item storing `2` on
-   its empty left side. What changes when two different items lead to that
-   one object?
+1. The same item storing `'2'` is also placed below `'1'` on its empty left
+   side. What changes when two different items lead to that one object?
+2. The item storing `'3'` has its empty left side connected back to `'+'`.
+   What happens if the program keeps following that route downward?
+3. The left branch below `'+'` is removed. Should the `'*'` branch move from
+   the right position to the left? Is the remaining shape a valid hierarchy
+   with at most two children? Is it still a completed expression?
+4. Write two rules that the original arrangement follows.
 
-   _________________________________________________________________
+Responses:
 
-2. The item storing `3` has its empty left side connected back to the starting
-   item storing `'*'`. What happens if the program keeps following that route
-   downward?
+____________________________________________________________________
 
-   _________________________________________________________________
+## C. Calculate from the relationships
 
-3. The left branch below the starting item is removed. Should its right branch,
-   beginning at the item storing `2`, move to the left position? Is the
-   remaining shape valid under the general two-position rules, and is it still
-   a completed expression? Explain.
+1. What result does the `'*'` operation produce? What result does `'+'`
+   produce after receiving that result?
+2. Which item finishes last, and why?
+3. If someone groups the expression as `(1 + 2) * 3`, what answer results?
+   Describe how that hierarchy differs. Parentheses here explain grouping;
+   they are not part of the expression to be read by the program.
 
-   _________________________________________________________________
-
-Write two rules that the original arrangement follows:
-
-1. _________________________________________________________________
-2. _________________________________________________________________
-
-## C. The question for this module
-
-An object is one stored thing that groups related information. Computer
-memory is the working storage used by a running program.
-
-> How can links between separate objects represent this hierarchy while
-> preserving the meaning of the left and right positions?
-
-Your initial explanation:
+Responses:
 
 ____________________________________________________________________
 
 ## D. Storage brainstorm
 
-Do not write C code yet.
+An object is one stored thing that groups related information. Computer
+memory is the working storage used by a running program. Do not write C code
+or choose a representation yet.
 
-1. What must an object remember so the program can reach its left and right
-   items?
-
-   _________________________________________________________________
-
+1. What must each object remember to reach its left and right items?
 2. How could the program show that one position has no item?
+3. Must related objects occupy neighboring positions in memory? Explain.
+4. If two different items both store `'2'`, are they the same object?
+5. What question does your model not yet answer?
 
-   _________________________________________________________________
-
-3. Must two related objects be next to each other in memory? Explain.
-
-   _________________________________________________________________
-
-4. If two separate items store `5`, does that make them the same object?
-
-   _________________________________________________________________
-
-One question your model does not yet answer:
+Responses:
 
 ____________________________________________________________________

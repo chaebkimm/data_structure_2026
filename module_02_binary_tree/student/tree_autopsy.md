@@ -1,120 +1,84 @@
-# Tree Structure Autopsy — One Operand Object in Two Branches
+# Precedence Autopsy — A Valid Tree for the Wrong Grouping
 
 ## Case
 
-An autopsy identifies the first broken rule behind an unexpected result.
+An autopsy identifies the first mistaken decision behind an unexpected result.
+The standalone program `code/autopsy/faulty_precedence.c` builds a tree from
+`1+2*3`. Its observed answer differs from the expression's intended answer.
+Inspect its construction steps and predict the result before running it.
 
-The standalone program `code/autopsy/faulty_cascade.c` uses six initialized
-local node variables. They remain alive throughout the demonstration.
-
-| Variable | Initial data | Left address | Right address |
-|---|---:|---|---|
-| `root` | `'*'` | `&plus` | `&minus` |
-| `plus` | `'+'` | `&three` | `&shared_five` |
-| `minus` | `'-'` | `&shared_five` | `&two` |
-| `three` | `3` | `NULL` | `NULL` |
-| `shared_five` | `5` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
-
-The malformed expression resembles `(3 + 5) * (5 - 2)`, but both written
-occurrences of `5` lead to the same `shared_five` object. They are not two
-separate objects that happen to store equal data. The fixture intentionally
-violates the unshared-tree precondition. It contains no cycle or
-ended-lifetime address, so this specific demonstration can be observed
-safely.
-
-The program supplies a correct recursive `tree_clear`. It then runs:
-
-```c
-tree_clear(root.left);
-root.left = NULL;
-```
+The demonstration uses initialized array nodes and valid child indices. It
+contains no cycle or out-of-bounds access, so it can finish normally under
+sanitizers even when its construction rule gives an incorrect grouping.
 
 ## Before running
 
-Predict all four results and preserve your first answers.
+Preserve these predictions before opening the output:
 
-1. `root.left`: ___________________________________________________
-2. `root.right`: __________________________________________________
-3. `minus.left`: __________________________________________________
-4. `minus.left->data`: ____________________________________________
+1. After consuming `1+2`, which operator is the partial tree's root?
+2. If the next `'*'` takes that entire partial tree as its left operand,
+   what will the final root and both child indices be?
+3. What arithmetic grouping does that tree describe? What result will it return?
+4. What root and links would correctly represent the original expression?
 
 ## Incident report
 
-### 1. First invalid state
+### 1. First incorrect construction decision
 
-Inspect the source. Which initializer first gives one object two incoming
-child links?
+Inspect the source. Identify the point at which `'*'` becomes a parent of
+the already-built addition. Explain how this gives addition higher priority
+in this expression's evaluation.
 
-____________________________________________________________________
+Response:
 
-### 2. Broken precondition
+### 2. Structure versus expression meaning
 
-State the rule violated by the two routes to `shared_five`. Explain why an
-empty-side check would not detect this relationship defect.
+Does the faulty result still have one root, one parent per other node, and
+no cycles? Why do these general tree rules fail to guarantee that operator
+precedence was preserved?
 
-____________________________________________________________________
+Response:
 
-### 3. Observable consequence
+### 3. Observation
 
-Run the program. Record the pointer and data results, then compare them with
-your prediction.
+Run `make autopsy` or the corresponding PowerShell target. Record the printed
+root character and result. Trace the root index and child links from the
+source, or inspect them with a debugger. Compare the faulty links with the textbook's
+`root == 1`, `nodes[1].left == 0`, `nodes[1].right == 3`,
+`nodes[3].left == 2`, and `nodes[3].right == 4`.
 
-____________________________________________________________________
+Response:
 
-Which nodes does clearing the `plus` branch reach? How can that change a
-value later reached through the `minus` branch?
+### 4. Assign the defect to the correct function
 
-____________________________________________________________________
+Trace evaluation of the faulty tree. Does the evaluator apply its stored
+operators correctly? Why would changing evaluation to ignore the tree's
+links undermine the representation instead of repairing construction?
 
-### 4. Object lifetime
+Response:
 
-Did the `shared_five` variable stop existing, or did its fields change?
-Explain using the variable's declaring scope and the actions performed by
-`tree_clear`.
+### 5. Repair
 
-____________________________________________________________________
+Describe how separating `term()` from `terms()` changes the right operand
+of addition. Explain which function consumes each operator and why `term()`
+leaves the following `'+'` unread. Keep the same four-function interface.
 
-Why can the program finish normally even though its tree precondition was
-broken?
+Response:
 
-____________________________________________________________________
+### 6. Regression-test idea
 
-### 5. Operation versus caller responsibility
+Choose another valid expression for which treating all operators alike gives
+a different answer. Record both expected groupings, the correct answer, and
+at least one link assertion that would catch the defect.
 
-Is the defect in the clearing algorithm or in how the caller linked the
-objects? Explain why these two functions do not automatically validate the
-whole structure.
+This can supply the rationale for your construction test. No fourth coded
+student test is required.
 
-____________________________________________________________________
-
-### 6. Repair
-
-Describe a repair that restores one incoming link per non-root node. If both
-branches need an operand with data `5`, explain how two distinct local node
-objects differ from two links to one object.
-
-____________________________________________________________________
-
-Relationships that intentionally share objects need a different model. A
-later module introduces that model; do not add a whole-structure validator
-here.
-
-### 7. Regression-test idea
-
-A regression test checks that a repaired defect does not return. Describe a
-valid version of `(3 + 5) * (5 - 2)` with two distinct nodes storing `5` that
-proves clearing and detaching the `plus` branch leaves the `minus` branch's
-data and side unchanged.
-
-____________________________________________________________________
-
-This may be the rationale for one of your three student tests. No fourth
-coded test is required by the autopsy.
+Response:
 
 ## After observation
 
-Label corrections `address`, `invariant`, `clearing`, or `lifetime`.
+Label corrections `index`, `precedence`, `parsing`, or `evaluation`.
 
 The evidence that changed or confirmed my model was:
 

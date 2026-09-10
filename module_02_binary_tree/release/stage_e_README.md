@@ -5,16 +5,16 @@ Start with `student/lab.md`, then edit only:
 - `code/starter/binary_tree.c`; and
 - `code/tests/test_student.c`.
 
-Complete the two functions `tree_find` and `tree_clear`. Practice direct
-initialization, guarded left/right attachment, and clear-then-detach removal
-in the three required student tests. Do not invent additional helper APIs or
-modify supplied tests to hide failures.
+Complete `new_node`, `term`, `terms`, and `eval_tree`. Use the textbook's
+fixed array, character data, `-1` empty links, and shared reading position.
+Write three distinct tests for node creation, construction, and evaluation.
+Do not modify supplied tests to hide failures.
 
-The supplied core fixture uses `(3 + 5) * 2`, but your functions remain
-generic binary-tree operations. They must also handle valid one-child trees,
-duplicate integer data, zero data, and values unrelated to expressions.
+Use valid single-digit expressions with `+` and `*`, no spaces or
+parentheses, at most 19 characters, and all intermediate/results within
+`int`. Reset `size` and `pos` before each independent build. Input validation
+and additional APIs are not required.
 
-Before running the isolated autopsy, preserve the prediction requested in
-`student/tree_autopsy.md`. Submit the artifacts listed in the lab and
-complete the evidence template. Instructor extension tests are not an extra
-required implementation.
+Before running the standalone autopsy, preserve the prediction requested in
+`student/tree_autopsy.md`. Submit the lab artifacts and evidence template.
+The reference solution and instructor extension tests are not in this release.

@@ -34,7 +34,7 @@ before requesting help.
 | Week | Required focus | Required vocabulary | Optional vocabulary | Questions | Weekly page |
 |---:|---|---:|---:|---:|---|
 | 1 | Fixed-capacity ArrayList | 13 | 0 | 26 | [Week 1](student_question_bank/week_01_arraylist.md) |
-| 2 | Expression-tree model, binary-tree links, and recursive clearance | 30 | 0 | 40 | [Week 2](student_question_bank/week_02_binary_tree.md) |
+| 2 | Array-indexed expression construction and recursive evaluation | 30 | 0 | 40 | [Week 2](student_question_bank/week_02_binary_tree.md) |
 | 3 | Directed integer adjacency matrices | 30 | 0 | 40 | [Week 3](student_question_bank/week_03_graph_representations.md) |
 | 4 | Fixed-capacity Stack and expression precedence | 44 | 0 | 40 | [Week 4](student_question_bank/week_04_stack.md) |
 | 5 | Recursive Tree DFS | 40 | 0 | 40 | [Week 5](student_question_bank/week_05_tree_dfs.md) |

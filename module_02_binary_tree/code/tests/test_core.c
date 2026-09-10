@@ -1,277 +1,155 @@
-#include "binary_tree.h"
+#include "test_helpers.h"
 
-#include <stdio.h>
-
-static int tests_run = 0;
-static int tests_failed = 0;
-
-#define REQUIRE(condition)                                                   \
-    do {                                                                     \
-        if (!(condition)) {                                                  \
-            (void)fprintf(                                                   \
-                stderr,                                                      \
-                "  requirement failed at %s:%d: %s\n",                     \
-                __FILE__,                                                    \
-                __LINE__,                                                    \
-                #condition                                                   \
-            );                                                               \
-            return 0;                                                        \
-        }                                                                    \
-    } while (0)
-
-static int node_is_cleared(const struct TreeNode *node)
+static int test_node_allocation_and_empty_links(void)
 {
-    return node->data == 0 && node->left == NULL && node->right == NULL;
-}
-
-static void run_test(const char *name, int (*test)(void))
-{
-    int passed;
-
-    tests_run = tests_run + 1;
-    passed = test();
-    if (passed) {
-        (void)printf("PASS %s\n", name);
-    } else {
-        tests_failed = tests_failed + 1;
-        (void)printf("FAIL %s\n", name);
-    }
-}
-
-static int test_expression_initialization_and_occupied_side_guard(void)
-{
-    struct TreeNode root;
-    struct TreeNode plus;
-    struct TreeNode three;
-    struct TreeNode five;
-    struct TreeNode two;
-    struct TreeNode replacement;
-
-    root.data = '*';
-    root.left = NULL;
-    root.right = NULL;
-    plus.data = '+';
-    plus.left = NULL;
-    plus.right = NULL;
-    three.data = 3;
-    three.left = NULL;
-    three.right = NULL;
-    five.data = 5;
-    five.left = NULL;
-    five.right = NULL;
-    two.data = 2;
-    two.left = NULL;
-    two.right = NULL;
-    replacement.data = '-';
-    replacement.left = NULL;
-    replacement.right = NULL;
-
-    REQUIRE(root.data == '*');
-    REQUIRE(root.left == NULL);
-    REQUIRE(root.right == NULL);
-
-    if (root.left == NULL) {
-        root.left = &plus;
-    }
-    if (root.left == NULL) {
-        root.left = &replacement;
-    }
-    if (root.right == NULL) {
-        root.right = &two;
-    }
-    if (plus.left == NULL) {
-        plus.left = &three;
-    }
-    if (plus.right == NULL) {
-        plus.right = &five;
-    }
-
-    REQUIRE(root.left == &plus);
-    REQUIRE(root.right == &two);
-    REQUIRE(plus.left == &three);
-    REQUIRE(plus.right == &five);
-    REQUIRE(replacement.data == '-');
+    begin_expression("7");
+    int first = new_node('7');
+    REQUIRE(first == 0 && size == 1);
+    REQUIRE(leaf_is(first, '7'));
+    int second = new_node('+');
+    REQUIRE(second == 1 && size == 2);
+    REQUIRE(nodes[second].data == '+');
+    REQUIRE(nodes[second].left == -1 && nodes[second].right == -1);
+    REQUIRE(leaf_is(first, '7')); /* Reserving a parent preserves the leaf. */
+    REQUIRE(pos == 0 && strcmp(eq, "7") == 0);
     return 1;
 }
 
-static int test_canonical_expression_preorder_search_preserves_nodes(void)
+static int test_term_leaves_plus_unread(void)
 {
-    struct TreeNode three = { 3, NULL, NULL };
-    struct TreeNode five = { 5, NULL, NULL };
-    struct TreeNode plus = { '+', &three, &five };
-    struct TreeNode two = { 2, NULL, NULL };
-    struct TreeNode root = { '*', &plus, &two };
-
-    REQUIRE(tree_find(&root, '*') == &root);
-    REQUIRE(tree_find(&root, '+') == &plus);
-    REQUIRE(tree_find(&root, 3) == &three);
-    REQUIRE(tree_find(&root, 5) == &five);
-    REQUIRE(tree_find(&root, 2) == &two);
-    REQUIRE(tree_find(&root, 999) == NULL);
-
-    REQUIRE(root.data == '*' && root.left == &plus && root.right == &two);
-    REQUIRE(plus.data == '+' && plus.left == &three && plus.right == &five);
-    REQUIRE(three.data == 3 && three.left == NULL && three.right == NULL);
-    REQUIRE(five.data == 5 && five.left == NULL && five.right == NULL);
-    REQUIRE(two.data == 2 && two.left == NULL && two.right == NULL);
+    begin_expression("4+5");
+    int root = term();
+    REQUIRE(root == 0 && size == 1);
+    REQUIRE(leaf_is(root, '4'));
+    REQUIRE(pos == 1 && eq[pos] == '+');
     return 1;
 }
 
-static int test_preorder_duplicates_and_generic_unsorted_values(void)
+static int test_multiplication_chain_keeps_previous_root(void)
 {
-    struct TreeNode deep_match = { 10, NULL, NULL };
-    struct TreeNode left = { 70, &deep_match, NULL };
-    struct TreeNode repeated_root_value = { 50, NULL, NULL };
-    struct TreeNode right = { 10, NULL, &repeated_root_value };
-    struct TreeNode root = { 50, &left, &right };
-
-    REQUIRE(tree_find(&root, 50) == &root);
-    REQUIRE(tree_find(&root, 10) == &deep_match);
-    REQUIRE(tree_find(&root, 70) == &left);
-    REQUIRE(tree_find(&root, 999) == NULL);
+    begin_expression("2*3*4+5");
+    int root = term();
+    REQUIRE(size == 5 && pos == 5 && eq[pos] == '+');
+    REQUIRE(complete_tree(root));
+    REQUIRE(nodes[root].data == '*');
+    REQUIRE(leaf_is(nodes[root].right, '4'));
+    int left = nodes[root].left;
+    REQUIRE(nodes[left].data == '*');
+    REQUIRE(leaf_is(nodes[left].left, '2'));
+    REQUIRE(leaf_is(nodes[left].right, '3'));
     return 1;
 }
 
-static int test_right_only_child_null_and_missing_search(void)
+static int test_textbook_precedence_and_complete_input(void)
 {
-    struct TreeNode leaf = { 60, NULL, NULL };
-    struct TreeNode right = { 70, &leaf, NULL };
-    struct TreeNode root = { 50, NULL, NULL };
+    begin_expression("1+2*3");
+    int root = terms();
+    REQUIRE(size == 5 && pos == 5 && eq[pos] == '\0');
+    REQUIRE(complete_tree(root));
+    REQUIRE(nodes[root].data == '+');
+    REQUIRE(leaf_is(nodes[root].left, '1'));
+    int right = nodes[root].right;
+    REQUIRE(nodes[right].data == '*');
+    REQUIRE(leaf_is(nodes[right].left, '2'));
+    REQUIRE(leaf_is(nodes[right].right, '3'));
+    REQUIRE(eval_tree(root) == 7);
+    return 1;
+}
 
-    if (root.right == NULL) {
-        root.right = &right;
+static int test_addition_chain_keeps_previous_root(void)
+{
+    begin_expression("1+2+3");
+    int root = terms();
+    REQUIRE(size == 5 && pos == 5 && eq[pos] == '\0');
+    REQUIRE(complete_tree(root));
+    REQUIRE(nodes[root].data == '+');
+    REQUIRE(leaf_is(nodes[root].right, '3'));
+    int left = nodes[root].left;
+    REQUIRE(nodes[left].data == '+');
+    REQUIRE(leaf_is(nodes[left].left, '1'));
+    REQUIRE(leaf_is(nodes[left].right, '2'));
+    REQUIRE(eval_tree(root) == 6);
+    return 1;
+}
+
+static int test_digit_evaluation_including_zero(void)
+{
+    for (int digit = 0; digit <= 9; digit++) {
+        char expression[2] = { (char)('0' + digit), '\0' };
+        begin_expression(expression);
+        /* Direct fixture isolates eval_tree from the allocator/parser. */
+        nodes[0] = (struct TreeNode){ expression[0], -1, -1 };
+        size = 1;
+        REQUIRE(eval_tree(0) == digit);
+        REQUIRE(leaf_is(0, expression[0]));
     }
-
-    REQUIRE(root.left == NULL);
-    REQUIRE(tree_find(NULL, 50) == NULL);
-    REQUIRE(tree_find(&root, 123) == NULL);
-    REQUIRE(tree_find(&root, 70) == &right);
-    REQUIRE(tree_find(&root, 60) == &leaf);
     return 1;
 }
 
-static int test_zero_is_ordinary_data(void)
+static int test_recursive_evaluation_preserves_nodes(void)
 {
-    struct TreeNode node = { 0, NULL, NULL };
+    begin_expression("1+2*3");
+    /* Root index 1 is deliberately different from the first allocated node. */
+    nodes[0] = (struct TreeNode){ '1', -1, -1 };
+    nodes[1] = (struct TreeNode){ '+', 0, 3 };
+    nodes[2] = (struct TreeNode){ '2', -1, -1 };
+    nodes[3] = (struct TreeNode){ '*', 2, 4 };
+    nodes[4] = (struct TreeNode){ '3', -1, -1 };
+    size = 5;
+    pos = 5;
+    struct TreeNode before[5];
+    for (int i = 0; i < size; i++) before[i] = nodes[i];
 
-    REQUIRE(tree_find(&node, 0) == &node);
-    tree_clear(NULL);
-    tree_clear(&node);
-    REQUIRE(node_is_cleared(&node));
-    REQUIRE(tree_find(&node, 0) == &node);
-    REQUIRE(tree_find(NULL, 0) == NULL);
-    return 1;
-}
-
-static int test_clear_expression_branch_and_explicit_detachment(void)
-{
-    struct TreeNode three = { 3, NULL, NULL };
-    struct TreeNode five = { 5, NULL, NULL };
-    struct TreeNode plus = { '+', &three, &five };
-    struct TreeNode two = { 2, NULL, NULL };
-    struct TreeNode root = { '*', &plus, &two };
-
-    tree_clear(root.left);
-
-    REQUIRE(root.left == &plus);
-    REQUIRE(node_is_cleared(&plus));
-    REQUIRE(node_is_cleared(&three));
-    REQUIRE(node_is_cleared(&five));
-    REQUIRE(root.data == '*' && root.right == &two);
-    REQUIRE(two.data == 2 && two.left == NULL && two.right == NULL);
-
-    root.left = NULL;
-    REQUIRE(root.left == NULL);
-    REQUIRE(root.right == &two);
-    REQUIRE(tree_find(&root, '+') == NULL);
-    REQUIRE(tree_find(&root, 2) == &two);
-    return 1;
-}
-
-static int test_whole_expression_clear_keeps_objects_live(void)
-{
-    struct TreeNode three = { 3, NULL, NULL };
-    struct TreeNode five = { 5, NULL, NULL };
-    struct TreeNode plus = { '+', &three, &five };
-    struct TreeNode two = { 2, NULL, NULL };
-    struct TreeNode root = { '*', &plus, &two };
-    struct TreeNode separate = { 333, NULL, NULL };
-
-    tree_clear(&root);
-
-    REQUIRE(node_is_cleared(&root));
-    REQUIRE(node_is_cleared(&plus));
-    REQUIRE(node_is_cleared(&three));
-    REQUIRE(node_is_cleared(&five));
-    REQUIRE(node_is_cleared(&two));
-    REQUIRE(separate.data == 333);
-    return 1;
-}
-
-static int test_reinitialize_and_reuse_cleared_nodes(void)
-{
-    struct TreeNode three = { 3, NULL, NULL };
-    struct TreeNode plus = { '+', &three, NULL };
-    struct TreeNode root = { '*', &plus, NULL };
-
-    tree_clear(&root);
-    REQUIRE(node_is_cleared(&root));
-    REQUIRE(node_is_cleared(&plus));
-    REQUIRE(node_is_cleared(&three));
-
-    root.data = '-';
-    root.left = NULL;
-    root.right = NULL;
-    plus.data = 8;
-    plus.left = NULL;
-    plus.right = NULL;
-    if (root.right == NULL) {
-        root.right = &plus;
+    REQUIRE(eval_tree(3) == 6); /* A subtree can be evaluated independently. */
+    REQUIRE(eval_tree(1) == 7);
+    REQUIRE(eval_tree(1) == 7); /* Evaluation must not replace '+' with 7. */
+    REQUIRE(size == 5 && pos == 5 && strcmp(eq, "1+2*3") == 0);
+    for (int i = 0; i < size; i++) {
+        REQUIRE(nodes[i].data == before[i].data);
+        REQUIRE(nodes[i].left == before[i].left);
+        REQUIRE(nodes[i].right == before[i].right);
     }
+    return 1;
+}
 
-    REQUIRE(tree_find(&root, 8) == &plus);
-    REQUIRE(root.left == NULL);
-    REQUIRE(root.right == &plus);
-    REQUIRE(node_is_cleared(&three));
+static int test_reset_and_reuse_for_another_expression(void)
+{
+    begin_expression("2*3+4*5");
+    int root = terms();
+    REQUIRE(size == 7 && pos == 7 && eq[pos] == '\0');
+    REQUIRE(complete_tree(root));
+    REQUIRE(eval_tree(root) == 26);
+
+    /* The largest valid input leaves one slot for the string's '\0'. */
+    begin_expression("0+1+2+3+4+5+6+7+8+9");
+    root = terms();
+    REQUIRE(size == 19 && pos == 19 && eq[pos] == '\0');
+    REQUIRE(complete_tree(root));
+    REQUIRE(eval_tree(root) == 45);
+
+    /* Only the new used prefix belongs to the current expression tree. */
+    begin_expression("0");
+    root = terms();
+    REQUIRE(size == 1 && pos == 1 && eq[pos] == '\0');
+    REQUIRE(root == 0 && leaf_is(root, '0'));
+    REQUIRE(eval_tree(root) == 0);
     return 1;
 }
 
 int main(void)
 {
-    run_test(
-        "expression initialization and occupied-side guard",
-        test_expression_initialization_and_occupied_side_guard
-    );
-    run_test(
-        "canonical expression preorder search preserves nodes",
-        test_canonical_expression_preorder_search_preserves_nodes
-    );
-    run_test(
-        "preorder duplicates and generic unsorted values",
-        test_preorder_duplicates_and_generic_unsorted_values
-    );
-    run_test(
-        "right-only child, null, and missing search",
-        test_right_only_child_null_and_missing_search
-    );
-    run_test("zero is ordinary data", test_zero_is_ordinary_data);
-    run_test(
-        "clear expression branch and explicit detachment",
-        test_clear_expression_branch_and_explicit_detachment
-    );
-    run_test(
-        "whole expression clear keeps objects live",
-        test_whole_expression_clear_keeps_objects_live
-    );
-    run_test(
-        "reinitialize and reuse cleared nodes",
-        test_reinitialize_and_reuse_cleared_nodes
-    );
-
-    (void)printf(
-        "\n%d core test(s), %d failure(s)\n",
-        tests_run,
-        tests_failed
-    );
-    return tests_failed == 0 ? 0 : 1;
+    run_test("node allocation and empty links", test_node_allocation_and_empty_links);
+    run_test("term leaves plus unread", test_term_leaves_plus_unread);
+    run_test("multiplication chain keeps previous root",
+             test_multiplication_chain_keeps_previous_root);
+    run_test("textbook precedence and complete input",
+             test_textbook_precedence_and_complete_input);
+    run_test("addition chain keeps previous root",
+             test_addition_chain_keeps_previous_root);
+    run_test("digit evaluation including zero", test_digit_evaluation_including_zero);
+    run_test("recursive evaluation preserves nodes",
+             test_recursive_evaluation_preserves_nodes);
+    run_test("reset and reuse for another expression",
+             test_reset_and_reuse_for_another_expression);
+    return finish_tests("core");
 }

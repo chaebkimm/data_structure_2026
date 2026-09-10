@@ -1,154 +1,112 @@
-# Module 2 Evidence Record
+# Module 2 — Evidence Record
 
-Name: ____________________________
-Compiler or approved test environment: _____________________________
+Name:
 
-## 1. Representation in your own words
+Date:
 
-Explain the node's three fields:
+Use numbered prose instead of tables if preferred. Preserve predictions,
+record observed results separately, and explain each correction.
 
-- `data`: _________________________________________________________
-- `left`: _________________________________________________________
-- `right`: ________________________________________________________
+## 1. Representation and input contract
 
-Distinguish `root`, `&root`, and `root.left`.
+For `1+2*3`, give the root index, `size`, `pos`, and all five nodes' data and
+child indices. Draw the hierarchy or describe every left/right connection.
 
-____________________________________________________________________
+Explain:
 
-Show the canonical five-node tree for `(3 + 5) * 2` as a drawing or
-side-labeled description. `root` stores `'*'` and links to `plus` and `two`;
-`plus` stores `'+'` and links to `three` and `five`.
+- the difference between a node index, a stored digit character, and a
+  returned integer answer;
+- why 0 can identify a node while -1 means no child;
+- the roles of `size`, `pos`, and the final `\0`;
+- the single-root, single-parent, and no-cycle rules;
+- the input grammar, length limit, and integer-result assumption.
 
-____________________________________________________________________
+Response:
 
-Why may a general binary-tree node have a right child and no left child? Why
-would that shape not be a completed binary operator in this expression model?
+## 2. Coding plan
 
-____________________________________________________________________
+Give a short plan for each function. Identify the state it reads, the state
+it changes, and its return value.
 
-## 2. Invariants and caller preconditions
+1. `new_node(char data)`:
+2. `term(void)`:
+3. `terms(void)`:
+4. `eval_tree(int node)`:
 
-State the one-root, one-incoming-link, and no-cycle rules.
+Explain why a new operator becomes the parent of the old root, why an entire
+term must become an operand of `'+'`, and why evaluation must not overwrite
+operator characters.
 
-____________________________________________________________________
+Response:
 
-What must the caller ensure about initialization and node lifetime?
+## 3. Construction trace
 
-____________________________________________________________________
+Trace `terms()` on `1+2*3` from fresh state. Include the returned root from
+each `term()` call, the new operator index, child links, `size`, `pos`, and
+the next unread character.
 
-What does an empty-side guard check? Which whole-tree conditions does it
-not establish?
+Then show `2*3*4` or `1+2+3`. Explain how its links prove left association,
+even when an answer-only test cannot distinguish association.
 
-____________________________________________________________________
+Response:
 
-## 3. Direct node operations
+## 4. Evaluation trace and operation costs
 
-Show the direct C statements for:
+For `1+2*3`, record each call's node index, its children's returned values
+when applicable, and its own return value. State the final contents of the
+operator nodes and the shared parser state.
 
-1. initializing one local node's data and both links;
-2. attaching a fresh child to a chosen empty side; and
-3. clearing and detaching a selected left child.
+Count or justify the work and storage for:
 
-____________________________________________________________________
+- reserving and initializing one node;
+- assigning one child link;
+- building an expression of `n` characters/nodes;
+- evaluating a tree of `n` nodes and height `h`;
+- the fixed 20-node array compared with its occupied slots;
+- the parser's two function levels compared with recursive evaluation depth.
 
-When the chosen side is occupied, what must a guarded attachment leave
-unchanged?
+Response:
 
-____________________________________________________________________
+## 5. Test evidence
 
-After removing the left branch, why must the right child keep its side?
+Use valid expressions and initialized trees. Do not turn invalid inputs,
+cycles, shared children, or invalid indices into ordinary runtime tests.
 
-____________________________________________________________________
-
-## 4. Test evidence
-
-Use the supplied tests and your own cases. Do not run cyclic or shared
-structures as ordinary recursive-function tests.
-
-| Case | Expected result | Actual result | Pass? |
+| Claim | Expected result | Actual result | Pass? |
 |---|---|---|---|
-| Data and both links initialized before use | | | |
-| Right-only child | | | |
-| Occupied-side guard keeps the existing child | | | |
-| Search finds the current node | | | |
-| Search returns the first matching address | | | |
-| Search handles data on either side without a sorting rule | | | |
-| Missing or `NULL` search | | | |
-| Zero is ordinary searchable data | | | |
-| Clearing resets all selected nodes | | | |
-| Clearing alone leaves the outside parent's link intact | | | |
-| Caller detachment leaves the opposite side unchanged | | | |
-| Cleared local variables remain usable within their lifetime | | | |
+| Node creation returns the reserved index and sets both links to -1 | | | |
+| A digit-only expression can have root index 0 | | | |
+| term stops before the next '+' | | | |
+| terms consumes the full valid input and preserves multiplication precedence | | | |
+| Repeated operators produce the required left-associated links | | | |
+| Digit '0' evaluates as zero and remains an ordinary node | | | |
+| Mixed terms evaluate to the expected answer | | | |
+| Repeated evaluation preserves every node field and shared variable | | | |
+| Independent builds reset size and pos and use their own current roots | | | |
 
 ### Three student-authored tests
 
-State the new claim each test checks. Explain why its local node variables
-remain alive through all checks.
+For each test, record its valid expression or creation sequence, the new
+claim beyond supplied tests, expected observations, and the result. Explain
+how each independent build starts from fresh shared state.
 
-1. Search boundary, duplicate, or ordering case:
+1. Node creation:
+2. Construction, precedence, or association:
+3. Evaluation and nonmutation:
 
-   __________________________________________________________________
+## 6. Precedence autopsy
 
-2. Direct initialization, guarded linking, or detachment case:
-
-   __________________________________________________________________
-
-3. Recursive clearing and still-live node reuse case:
-
-   __________________________________________________________________
-
-## 5. Search and removal traces
-
-Start with the canonical tree. Trace these searches without changing it.
-
-| Target | Data checked in order | Returned address or `NULL` |
-|---:|---|---|
-| `2` | | |
-| 404 | | |
-
-Now remove the left branch:
-
-```c
-tree_clear(root.left);
-root.left = NULL;
-```
-
-- node variables whose fields are reset:
-- their final data and links:
-- `root.left` after clearing but before detachment:
-- `root.left` after detachment:
-- `root.right` after both actions:
-- why the cleared node objects still exist:
-
-If the caller retained the address of a cleared node, could a search for
-zero find that node while it remains alive? Explain.
-
-____________________________________________________________________
-
-## 6. Operation costs
-
-Count the fields or nodes processed.
-
-- initialize one node:
-- attach a fresh node to a known empty side:
-- search for an absent value in a tree of `n` nodes:
-- clear a subtree of `k` nodes:
-- detach an already cleared child:
-- why deeper recursion needs more temporary call storage:
-
-## 7. Tree Structure Autopsy
-
-- first initializer that creates the shared-operand relationship:
-- tree precondition it violates:
 - prediction before running:
-- observed `root.left`, `minus.left`, and shared-operand data changes:
-- why the result does not mean a node's lifetime ended:
-- why the correct clearing function is not a whole-tree validator:
-- repair and a regression-test idea:
+- first decision that groups addition before multiplication:
+- observed root character and answer, with source-traced indices, links, and grouping:
+- why the general tree invariants still hold:
+- why the evaluator is correct for the tree it receives:
+- repair using term boundaries:
+- regression-test idea and expected correct answer:
 
-## 8. Tool evidence
+## 7. Tool evidence
 
-Warning-enabled build command and core-test result:
+Warning-enabled build command and supplied core-test result:
 
 ```text
 paste output here
@@ -160,18 +118,21 @@ Student-test command and result:
 paste output here
 ```
 
-Sanitizer, debugger, or approved instructor-test evidence:
+Sanitizer, debugger, or approved instructor-CI evidence:
 
 ```text
 paste output here
 ```
 
-## 9. Correction note
+A clean diagnostic run alone cannot prove precedence is correct. Identify
+the assertion or trace that establishes the expression's meaning.
+
+## 8. Correction and transfer
 
 My initial misconception:
 
-____________________________________________________________________
-
 The evidence that changed or confirmed my reasoning:
 
-____________________________________________________________________
+How the Chapter 1 distinction between occupied and unused array slots applies:
+
+One rule that must change if a later relationship model allows shared items:

@@ -1,231 +1,197 @@
-# Module 2 Binary-Tree Models
+# Module 2 Expression-Tree Models — Stage D
 
-Every diagram includes a text equivalent. Nodes are ordinary local
-`struct TreeNode` variables. Links store their addresses; the diagrams show
-relationships, not physical memory order.
+Read after the Stage C investigation and exit ticket. These models accompany
+both Chapter 2 textbooks. Every diagram includes a text equivalent.
 
-## 1. Two named child positions
+## 1. Characters and indices
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data; /* A digit or operator character. */
+    int left;  /* Child index or -1. */
+    int right; /* Child index or -1. */
 };
 ```
 
 ```text
-one node
-+-----------------------+
-| data                  |
-| left  -> node or NULL |
-| right -> node or NULL |
-+-----------------------+
+nodes[index]
++-------------------------+
+| data: digit, '+', or '*' |
+| left: child index or -1  |
+| right: child index or -1 |
++-------------------------+
 ```
 
-Text equivalent: every node stores one integer and two independent child
-pointers. Left and right are named positions, not positions that slide when
-another link is removed. There is no upward link stored in this structure.
+Text equivalent: one node stores a character and two independent child
+indices. All nodes live in `nodes[20]`; no parent field is stored. `size`
+counts occupied slots. Index 0 is valid, and -1 means an absent child.
 
-## 2. The canonical expression tree
+## 2. The canonical expression: 1+2*3
 
 ```text
-             root:'*'
-             /       \
-        left/         \right
-        plus:'+'       two:2
-          /   \
-     three:3 five:5
+                 [1] '+'
+                 /     \
+             left       right
+              /           \
+          [0] '1'        [3] '*'
+                         /     \
+                     [2] '2' [4] '3'
 ```
 
-Text equivalent: the root stores `'*'`. Its left child stores `'+'`, and its
-right child stores `2`. The plus node's left child stores `3`, and its right
-child stores `5`. Nodes 3, 5, and 2 have no children. The links encode
-`(3 + 5) * 2`; swapping left and right operands can change an expression's
-meaning, so their positions are deliberate.
+Text equivalent: the root is index 1, whose character is `'+'`. It has left
+child 0 and right child 3. The multiplication at 3 has left child 2 and right
+child 4. Indices 0, 2, and 4 are digit leaves. Multiplication occurs below
+addition, so it produces a value before the addition combines its operands.
 
-| Local variable | Data | `left` stores | `right` stores |
-|---|---|---|---|
-| `root` | `'*'` | `&plus` | `&two` |
-| `plus` | `'+'` | `&three` | `&five` |
-| `three` | `3` | `NULL` | `NULL` |
-| `five` | `5` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+| Index | `data` | `left` | `right` |
+|---|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-This is an expression tree, not a binary search tree. The stored value does
-not tell `tree_find` which side it may skip. Binary operators in this fixture
-have two operands, but the general `TreeNode` representation still permits a
-valid node with exactly one child.
+`root == 1`, `size == 5`, and `pos == 5`. Array order follows character
+consumption; child links supply the hierarchy. A root need not be the first
+or last array position.
 
-## 3. An object and its address
+## 3. Read nested field expressions
 
-```c
-struct TreeNode root;
-struct TreeNode plus;
-
-root.data = '*';
-root.left = NULL;
-root.right = NULL;
-
-plus.data = '+';
-plus.left = NULL;
-plus.right = NULL;
-
-root.left = &plus;
-struct TreeNode *p = &root;
-```
-
-| Expression | Meaning |
+| Expression | Meaning and canonical value |
 |---|---|
-| `root` | the local node object |
-| `&root` | the address of that object |
-| `root.data` | its integer field, containing the character value `'*'` |
-| `root.left` | the address `&plus` stored in its left field |
-| `p` | a pointer storing `&root` |
-| `p->data` | the data field reached through `p` |
-| `p->left` | the same child address as `root.left` |
-| `NULL` | no node at this child position |
+| `root` | Root index, 1 |
+| `nodes[root]` | The node stored at index 1 |
+| `nodes[root].data` | Its character, `'+'` |
+| `nodes[root].left` | Left child index, 0 |
+| `nodes[nodes[root].right].data` | Right child's character, `'*'` |
+| `nodes[0].left` | -1, meaning the digit has no left child |
 
-Text equivalent: the dot selects a field of a node variable. The arrow
-selects a field through a node pointer. Taking an address does not copy or
-move the node.
+Text equivalent: brackets select an array element and dots select fields.
+Follow a child link by using its nonnegative index to select another node.
+Never use the absence marker -1 as an array index.
 
-All linked node variables must remain alive while the tree uses their
-addresses. Returning the address of a local variable whose function has
-ended would not meet that requirement.
-
-## 4. Empty, left-only, and right-only states
+## 4. Build a term, then a sum
 
 ```text
-leaf                 left-only           right-only
-  A                      A                   A
- / \                    / \                 / \
--   -                  B   -               -   B
+input: 1 + 2 * 3 \0
+index: 0 1 2 3 4  5
+
+first term: return root 0; size 1; pos 1 (next '+')
+reserve '+': index 1; size 2; pos 2
+next term: create 2, '*', 3 at indices 2, 3, 4
+           return root 3; size 5; pos 5 (next '\0')
+join sum: nodes[1].left = 0; nodes[1].right = 3
+return whole root 1
 ```
 
-Text equivalent: a leaf has both links `NULL`. A node with only a left
-child is valid, and a node with only a right child is equally valid. Both
-one-child nodes are non-leaves. A right child does not need a left child.
+Text equivalent: `term()` consumes a digit and all following multiplication
+pairs. `terms()` consumes each addition and asks `term()` for a complete
+operand. Both functions share `pos`, so multiplication stays inside the
+addition's right subtree. Checking a next character does not consume it.
 
-## 5. Paths, depth, and height
+## 5. Equal operators associate left to right
+
+For `2*3*4`:
 
 ```text
-root:'*' --left--> plus:'+' --left--> three:3
-depth 0            depth 1              depth 2
-
-height(root) = 2
-height(plus) = 1
-height(three) = 0
+                [3] '*'
+                /     \
+           [1] '*'   [4] '4'
+           /     \
+       [0] '2' [2] '3'
 ```
 
-Text equivalent: depth counts links from the chosen root to a node. Height
-counts links on the longest downward route to a leaf. A leaf has height
-zero. These are reasoning tasks, not additional required functions.
+Text equivalent: the second multiplication, at index 3, becomes the root.
+Its left child is the previous multiplication at index 1, and its right
+child is the new digit at index 4. The links encode `(2*3)*4`. Parentheses
+explain grouping and are not input to this parser. Repeated additions use
+the same root-update pattern.
 
-A parent is a relationship visible in the whole tree even though a node
-does not store a pointer to its parent. To describe an upward relationship,
-use the known diagram or a path from the root.
+## 6. Evaluate children before their operator
 
-## 6. Recursive current-left-right search
-
-For target `2` in the canonical tree:
+For `1+2*3`:
 
 ```text
-check '*'
-  search left: check '+'
-    search left: check 3 -> no match
-    search right: check 5 -> no match
-  search right: check 2 -> match; return its address
-
-visited data: '*', '+', 3, 5, 2
+eval_tree(1): '+' waits for two results
+  eval_tree(0): '1' returns 1
+  eval_tree(3): '*' waits for two results
+    eval_tree(2): '2' returns 2
+    eval_tree(4): '3' returns 3
+  multiplication returns 6
+addition returns 7
 ```
 
-Text equivalent: inspect the current node first, search its complete left
-subtree next, and search its right subtree only if no match was found.
-An empty link returns `NULL`. A non-`NULL` match returns immediately through
-the pending calls.
+Text equivalent: calls enter indices 1, 0, 3, 2, 4. Calls complete with values
+1, 2, 3, 6, 7. Each call keeps its own local results. Every node field and
+shared variable remains unchanged; the root still stores `'+'`.
 
-A missing value visits the same five nodes. A search for `5` stops before
-visiting `two`. If equal data occurs in several nodes, return the first
-matching node in this search order, not an arbitrary match.
-
-## 7. Clear a branch and remove its link
-
-Start again with the canonical tree. Clear the branch at `root.left`, then
-set that selected link to `NULL`.
+## 7. General trees and completed expressions
 
 ```text
-branch reset order: three, five, plus
-each becomes: data = 0, left = NULL, right = NULL
-
-surviving tree:
-       root:'*'
-       /      \
-     NULL     two:2
+leaf             left-only          right-only
+  A                  A                  A
+ / \                / \                / \
+-1 -1              B  -1             -1   B
 ```
 
-Text equivalent: visit descendants before resetting their containing node.
-The local objects `three`, `five`, and `plus` still exist while their scope is
-active; their contents have been reset. The removed branch is no longer
-reachable through the root's left link.
+Text equivalent: all three shapes can be valid general binary trees. In this
+module's completed expressions, digits are leaves and operators have both
+children. A missing left child never causes a right child to change sides.
+Fresh parent nodes connect disjoint subtrees, preserving one incoming link
+per non-root node and preventing cycles.
 
-The original right link still points to `two`. It never moves into the
-left position. Clearing the contents of a node and detaching the link above
-it are distinct actions: a child-only node cannot detach itself. These links
-still form a valid general binary tree, but they no longer form a completed
-binary expression because the `'*'` node has only one operand.
-
-## 8. Stage C transfer model
+## 8. Stage C transfer model: 2*3+4*5
 
 ```text
-                  root:'*'
-                  /       \
-             minus:'-'    plus:'+'
-               /   \       /   \
-          eight:8 three:3 four:4 two:2
+                   [3] '+'
+                   /     \
+              [1] '*'   [5] '*'
+              /   \       /   \
+          [0] '2' [2] '3' [4] '4' [6] '5'
 ```
 
-Text equivalent: this fresh Stage C tree represents `(8 - 3) * (4 + 2)`.
-The root stores `'*'`; its left child `minus` stores `'-'` with operands 8
-and 3, and its right child `plus` stores `'+'` with operands 4 and 2. The four
-number nodes are leaves.
+Text equivalent: root 3 has children 1 and 5. Multiplication node 1 has
+children 0 and 2. Multiplication node 5 has children 4 and 6. The four digits
+are leaves. The left term returns 6, the right term returns 20, and the whole
+expression returns 26.
 
-Use the named sides to trace paths and operations. In particular, the
-subtraction operands cannot exchange sides without changing the expression.
-This expression structure still supplies no binary-search ordering rule.
+The root's depth is 0 and height is 2. Both multiplication nodes have depth
+1 and height 1. All leaves have depth 2 and height 0. Parent and ancestor
+relationships can be read from root-to-node paths without storing upward
+links.
 
-## 9. Local checks and caller preconditions
+## 9. Shared storage across independent builds
 
-A direct `if` check can inspect a selected child link and avoid overwriting
-it. It cannot infer all incoming links to a node from its two downward fields.
+```text
+reset size and pos to 0
+copy a valid expression into eq
+build with terms; save its returned root
+evaluate this tree
 
-Before an operation, the caller must ensure that:
+next independent build reuses the same array slots
+```
 
-- all involved node addresses identify initialized, live objects;
-- the complete structure has no cycle;
-- no node is shared by two child links; and
-- linking a proposed child preserves those whole-tree rules.
+Text equivalent: the global array exists for the whole program. Resetting
+its used-count and the input position begins a new logical tree. Reused
+slots can change what an old index denotes, so use the root of the current
+build. Creation initializes both children even in reused slots.
 
-A successful local check is not a complete graph-validation result. Keep
-invalid-cycle examples on paper; do not run ordinary recursive search or
-clear on a cyclic structure.
+## 10. Count the work and storage
 
-## 10. Counting work
+Let `n` be the number of expression characters/nodes and `h` the longest
+root-to-leaf path measured in links.
 
-Let `n` be the number of reachable nodes, `k` the number in a selected
-branch, and `h` the longest root-to-leaf path measured in links.
-
-| Operation | Time | Extra call-stack space |
+| Operation | Time | Extra call storage |
 |---|---:|---:|
-| initialize one existing node | `O(1)` | `O(1)` |
-| inspect the two child positions | `O(1)` | `O(1)` |
-| attach to a known empty side | `O(1)` | `O(1)` |
-| recursive find | `O(n)` worst case | `O(h + 1)` |
-| clear a branch | `O(k)` | proportional to branch height plus one |
-| detach one known side alone | `O(1)` | `O(1)` |
-| clear and remove a branch | `O(k)` | proportional to branch height plus one |
+| Reserve and initialize one node | `O(1)` | `O(1)` |
+| Assign one child link | `O(1)` | `O(1)` |
+| Build a whole expression | `O(n)` | `O(1)` |
+| Evaluate a whole expression | `O(n)` | `O(h + 1)` |
 
-Text equivalent: setup and local checks touch a fixed number of fields.
-Search may visit every reachable node. Clearing visits every node in the
-selected branch once. Pending recursive calls follow the deepest active
-route, not every node at the same time.
+Text equivalent: creation and linking touch fixed numbers of fields.
+Parsing consumes every character once and uses loops plus two parser levels.
+Evaluation visits each node once, and its longest active call chain follows
+the tree's depth. The literal array always reserves 20 nodes; `n` slots are
+occupied. If capacity scales with input length, stored nodes require `O(n)`
+space. These costs describe the algorithm even though this exercise bounds
+input to 19 characters and assumes all results fit in `int`.

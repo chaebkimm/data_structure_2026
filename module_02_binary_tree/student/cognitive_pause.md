@@ -4,57 +4,53 @@ Read the starting state with the instructor before timing begins. Then use
 no notes, slides, neighbors, or coding tools for five minutes. You may draw,
 type, dictate, or respond in numbered sentences.
 
-Approved extended-time versions use the same targets. Speed and drawing
+Approved extended-time versions use the same three targets. Speed and drawing
 quality are not assessed. Preserve your first response when correction begins.
 
 ## Starting state
 
-Five initialized local node variables represent `(3 + 5) * 2`:
+After building `1+2*3`, `size == 5`, `pos == 5`, and `root == 1`:
 
-| Variable | Data | Left address | Right address |
-|---|---:|---|---|
-| `root` | `'*'` | `&plus` | `&two` |
-| `plus` | `'+'` | `&three` | `&five` |
-| `three` | `3` | `NULL` | `NULL` |
-| `five` | `5` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+| Index | `data` | `left` | `right` |
+|---|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-All objects remain alive during this activity. Consider each target
-independently, starting from this state.
+Text equivalent: the plus node at 1 has children 0 and 3. The multiplication
+node at 3 has children 2 and 4. Nodes 0, 2, and 4 are digit leaves.
+Consider each target independently.
 
-## Complete exactly three targets
+## Target 1 — Distinguish indices and characters
 
-### Target 1 — Preserve the side positions
-
-The caller removes the whole left branch below `root`. What should
-`root.left` and `root.right` contain afterward? Is a right child without a
-left child valid as a general binary tree? Does the result still represent a
-completed binary expression? Explain the distinction.
+What do `root`, `nodes[root].left`, and `nodes[nodes[root].left].data`
+contain? Why does child index 0 identify a real node, and what would child
+index -1 mean?
 
 Response:
 
 ____________________________________________________________________
 
-### Target 2 — Check the whole-tree rule
+## Target 2 — Stop at a term boundary
 
-Suppose someone connects `three.left` back to `&root`. That side is currently
-empty. Is an empty-side check enough to make the new link valid?
-
-Name the broken rule. State whether the caller must prevent this change or
-may expect the search function to reject it safely.
+Start a fresh build with `eq` equal to `"1+2*3"`, `size == 0`, and `pos == 0`.
+Call `terms()` and pause immediately after its first call to `term()` returns.
+Which root index did `term()` return, what are `size` and `pos`, and which
+character is left unread? Explain how the enclosing `terms()` call continues
+building the sum without losing the multiplication's precedence.
 
 Response:
 
 ____________________________________________________________________
 
-### Target 3 — Trace the search
+## Target 3 — Return answers without changing nodes
 
-A recursive search checks the current node, then the left subtree, then the
-right subtree. It stops at its first match.
-
-List the data values checked by `tree_find(&root, 2)`, ending at the match.
-Why does the binary shape not provide a value-order rule for skipping a
-subtree?
+Start again with the completed tree. Trace the values returned by
+`eval_tree(root)`, evaluating the left child before the right child. What is
+the final answer? What characters remain at indices 1 and 3? Explain the
+base case and why the operator waits for its children's results.
 
 Response:
 
@@ -64,11 +60,7 @@ ____________________________________________________________________
 
 After the instructor reveals the expert model:
 
-1. preserve your initial response;
-2. mark reasoning that remains correct;
-3. label each correction `position`, `invariant`, or `search`; and
-4. finish the sentence below.
-
-The evidence that changed or confirmed my model was:
-
-____________________________________________________________________
+1. Preserve your initial response.
+2. Mark reasoning that remains correct.
+3. Label corrections `index`, `parsing`, or `evaluation`.
+4. Finish: “The evidence that changed or confirmed my model was …”

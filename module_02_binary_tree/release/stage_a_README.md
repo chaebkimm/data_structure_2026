@@ -6,9 +6,6 @@ Complete one prompt before opening later-stage materials:
 - `inquiry_prompt_linear.md` has the same targets in a linear format for
   screen readers, keyboard navigation, or speech input.
 
-Preserve your first model. The node representation and vocabulary arrive in
-Stage B, after this inquiry. Add later corrections without erasing the
-original response.
-
-The hierarchy represents `(3 + 5) * 2`. Treat left and right as distinct
-operand positions; do not rearrange them while reconstructing the expression.
+Represent the order of work in `1+2*3` and explain how to recover its answer.
+Preserve your first model. The C representation and vocabulary arrive in
+Stage B. Add later corrections without erasing the original response.

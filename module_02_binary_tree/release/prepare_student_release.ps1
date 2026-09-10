@@ -77,6 +77,10 @@ $stages = @(
                 Entry = "textbook.md"
             },
             @{
+                Source = "student\textbook_korean.md"
+                Entry = "textbook_korean.md"
+            },
+            @{
                 Source = "diagrams\tree_models.md"
                 Entry = "diagrams/tree_models.md"
             }
@@ -130,6 +134,10 @@ $stages = @(
                 Entry = "code/tests/test_core.c"
             },
             @{
+                Source = "code\tests\test_helpers.h"
+                Entry = "code/tests/test_helpers.h"
+            },
+            @{
                 Source = "code\tests\test_student.c"
                 Entry = "code/tests/test_student.c"
             },
@@ -138,8 +146,8 @@ $stages = @(
                 Entry = "code/autopsy/README.md"
             },
             @{
-                Source = "code\autopsy\faulty_cascade.c"
-                Entry = "code/autopsy/faulty_cascade.c"
+                Source = "code\autopsy\faulty_precedence.c"
+                Entry = "code/autopsy/faulty_precedence.c"
             }
         )
     }

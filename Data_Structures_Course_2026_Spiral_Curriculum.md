@@ -56,8 +56,8 @@ This map contains deliberate previews and returns:
 
 - The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Modules 8 and 9 form one breadth-first week, and Modules 10 and 11 form one priority/Heap week.
 - Module 13 is an associative-index bridge between Spirals 4 and 5. It revisits Module 1's array bounds and the growable-array work in Modules 10–11, adds collision resolution and deletion markers, and maps sparse external identifiers to the dense internal IDs used by graph algorithms.
-- Linked local node variables appear in Module 2. Allocation and release are introduced with individually allocated tree nodes in Module 5, then retrieved through later container work and bounded repair in Module 14.
-- Module 2 uses expression trees to introduce binary-tree links, node lifetime, recursive construction and evaluation, and a brief DFS model. The Module 5 textbook develops preorder, inorder, and postorder using explicit stacks without recursion.
+- Array-indexed nodes appear in Module 2. Allocation and release are introduced with individually allocated tree nodes in Module 5, then retrieved through later container work and bounded repair in Module 14.
+- Module 2 uses expression trees to introduce indexed binary links, loop-based construction, and recursive evaluation. The Module 5 textbook develops preorder, inorder, and postorder using explicit stacks without recursion.
 - Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
 - Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Queue precedes BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find precedes Kruskal.
@@ -226,140 +226,134 @@ to the autopsy.
 
 **Revisits:** plain arrays, indexing, conditions, loops, and function calls.
 
-**Forward:** linked node variables in Module 2, graph matrices in Module 3,
+**Forward:** array-indexed nodes in Module 2, graph matrices in Module 3,
 the fixed-capacity Stack in Module 4, allocated nodes in Module 5, and checked
 Hash Table storage in Module 13. Allocation and release belong to later
 owned-node and container labs, not this chapter.
 
 ---
 
-## Module 2 — Tree: Recursion, expression-tree construction, and evaluation
+## Module 2 — Tree: Indexed expression construction and recursive evaluation
 
-Production materials: [Module 2 teaching package](module_02_binary_tree/README.md)
+Production materials: [Module 2 teaching package](module_02_binary_tree/README.md),
+[English chapter](module_02_binary_tree/student/textbook.md), and
+[Korean chapter](module_02_binary_tree/student/textbook_korean.md).
 
 ### Learning objectives
 
 Students will:
 
-- identify root, parent, child, sibling, ancestor, descendant, leaf, path, depth, height, and subtree;
-- map the expression `(3 + 5) * 2` to a five-node binary tree while distinguishing expression rules from generic binary-tree rules;
-- trace recursive expression-tree construction from compact single-digit input using `+`, `-`, `*`, and `/`, operator precedence, and left associativity;
-- evaluate an expression tree recursively, finishing the two operand subtrees before applying their operator;
-- explain recursion's stopping case and the depth-first pattern of completing one branch before the next;
-- translate between a binary-tree diagram and local node variables with distinct left/right links;
-- explain the one-incoming-link and no-cycle invariants, including the caller's responsibility for them;
-- initialize nodes and attach a fresh child only to an empty chosen side;
-- implement current-node, left-subtree, right-subtree search and return the first matching node;
-- clear a selected subtree, detach its parent-side link explicitly, and preserve the other branch;
-- distinguish resetting fields from ending a node variable's lifetime.
+- explain nodes, roots, parent/child relationships, siblings, ancestors,
+  descendants, leaves, and subtrees;
+- translate `1+2*3` between expression text, a hierarchy, and an index table;
+- reserve a node with character data and two integer child indices;
+- distinguish `-1` (no child), index `0`, and the digit character `'0'`;
+- trace shared `size`/`pos` state and the current subtree root;
+- build multiplication terms and join them with addition while preserving
+  precedence and left grouping within equal-precedence chains;
+- evaluate recursively using digit leaves as the base case and separate
+  local child results, leaving stored characters and links unchanged;
+- explain the one-root, single-parent, and no-cycle invariants; and
+- support operation costs and correctness with tests and diagnostic evidence.
 
 ### Macro-Question
 
-> How can separate node variables represent a hierarchy, and how can we search and clear its branches without losing track of the links?
+> How can array elements record an expression's hierarchy, and how can we
+> construct and evaluate it while preserving operator precedence?
 
 ### Micro-Questions
 
-- Does a child field contain another node or its address?
-- Why are `'*'` and `'+'` valid values for an `int` field in this simplified C model?
-- Why does operand position matter even though a generic tree allows either side to be empty?
-- Why is a right-only child valid, and why must it stay on the right?
-- Why can two parents not share a child even without a cycle?
-- What stops the recursive search or clearance?
-- How does a minimum precedence limit the part of an expression handled by one recursive call?
-- Why does the right-subtree call use the current operator's precedence plus one?
-- Why must an operator wait for both operand values before returning its result?
-- Why can an unsorted-tree search need to inspect every node?
-- Why does clearing a child not automatically detach the parent's link?
+- Does a child field contain a character, a node, or an array index?
+- Why is `0` a usable root index while `-1` means no child?
+- What do `size` and `pos` track, and why can they differ during construction?
+- What does `eq[pos++]` consume, and what does `eq[pos]` leave for the caller?
+- Why does `term()` finish before the surrounding addition attaches its result?
+- Why does the old subtree become the new operator's left child?
+- Why must an operator wait for both child results before returning its answer?
+- Why does a number leaf return `data - '0'`?
+- How do fresh node positions avoid sharing and cycles?
 
 ### Learning sequence
 
-Use two 90-minute meetings and the five A–E release gates. Meeting A
-contrasts Chapter 1's contiguous row with distinct local node variables.
-Students first model the hierarchy, then learn addresses, `struct`,
-`&`, `.`, `->`, and `NULL`. The canonical tree represents `(3 + 5) * 2`:
-root `'*'` has left child `'+'` with children `3` and `5`, and right child
-`2`. The current-left-right search sequence is `'*', '+', 3, 5, 2`.
-Stage C transfers the same reasoning to `(8 - 3) * (4 + 2)`. Vocabulary
-belongs to Stage B; Stage D notes do not reveal the later autopsy's result.
+Use two 90-minute meetings and five A–E release gates. Stage A asks students
+to model the work in `1+2*3` before revealing its C representation. Stage B
+introduces `struct`, character fields, and array indices, followed by the
+three-target Cognitive Pause: indices, parser state, and evaluation.
 
-The textbook also follows a compact expression through recursive construction
-in a fixed node array and recursive evaluation. That parser accepts alternating
-single digits and `+`, `-`, `*`, or `/`; parentheses, spaces, unary operators,
-and multi-digit numbers are outside its stated input contract. The existing
-parenthesized examples above are direct-link fixtures, not parser inputs.
-Students trace the shared input position, precedence threshold, recursive
-return values, and the depth-first pattern. The example introduces neither
-dynamic allocation nor a separate Stack implementation.
+The canonical allocation order is `'1', '+', '2', '*', '3'` at indices
+`0` through `4`. The root is index `1`; its children are `0` and `3`, and
+node `3` links to `2` and `4`. Evaluation returns `7`. Stage C transfers the
+model to `2*3+4*5`; Stage D provides both language editions and correct
+models after students preserve their investigation attempt.
 
-The existing Meeting B lab implements these two functions:
+Meeting B's Stage E lab implements the four textbook functions:
 
 ```c
-struct TreeNode *tree_find(struct TreeNode *node, int target);
-void tree_clear(struct TreeNode *node);
+int new_node(char data);
+int term(void);
+int terms(void);
+int eval_tree(int node);
 ```
 
-The node has `int data`, `struct TreeNode *left`, and
-`struct TreeNode *right`. Initialization and guarded attachment remain
-direct field operations. C character constants such as `'*'` and `'+'`
-have type `int`; using them here is a simplified label encoding, not a
-type-safe evaluator. To remove the left branch, the caller uses
-`tree_clear(parent.left);` followed by `parent.left = NULL;`.
-No child positions are shifted. Students construct local fixtures in three
-authored tests and explain the return path and clearance sequence.
+The shared representation is `struct TreeNode { char data; int left;
+int right; };` with `nodes[20]`, `size`, `eq[20]`, and `pos`. Links use `-1`
+for no child. Every input character creates one node. `term()` uses a loop
+to build multiplication groups; `terms()` uses a loop to join complete
+terms. Only `eval_tree()` calls itself recursively.
 
-A generic binary-tree node may have zero, one, or two children. A completed
-binary expression using binary operators requires two operands per operator
-and no children below a numeric operand. The two child-pointer fields enforce
-the generic two-position limit, but the library does not validate the
-expression-specific arity rule. After removing one operand, the links may
-still form a valid tree even though they no longer encode a complete expression.
+Use valid nonempty single-digit expressions with binary `+` and `*`, no
+spaces or parentheses, at most 19 characters, and every intermediate and
+final result within `int`. These are preconditions, not required validation
+features. Start each independent build with `size = 0` and `pos = 0` and a
+valid string in `eq`. Reusing the array does not preserve an earlier tree.
 
-The textbook introduces the DFS idea briefly here. Detailed named traversal
-orders and their nonrecursive Stack implementations belong to Module 5.
-Allocation, parent pointers, shared-root queries, status-code interfaces,
-binary-search ordering, and balancing are not Module 2 work.
+A generic binary-tree node can have zero, one, or two children. A completed
+expression requires two operand children per operator and none per digit.
+The evaluator assumes that completed expression rule, valid indices, and
+finite unshared structure. Pointer-based nodes, search, clearing, dynamic
+allocation, malformed-input handling, and additional operators are outside
+this module's required implementation.
 
-### C lab and cybersecurity context
+### C lab and correctness context
 
-The caller supplies initialized node objects that remain live while their
-addresses are used. Child links must form a finite, acyclic, unshared tree.
-The functions assume those conditions; they do not validate an arbitrary
-graph. A guarded direct attachment preserves an occupied side.
+The preallocated array outlives each function call. Fresh parent nodes
+join the current subtree to distinct newly built nodes, preserving the
+tree rules. `new_node` and assignment to a known child field take constant
+work. Construction and complete evaluation each take linear work in the
+number of characters/nodes. Parsing has bounded call depth; evaluation
+uses call space proportional to the longest root-to-leaf path including
+the root call. Use diagrams to discuss malformed sharing or cycles.
 
-`tree_find` returns the first matching address or `NULL`, without changing
-the tree. `tree_clear(NULL)` does nothing. Clearing resets all reachable
-data to zero and child links to `NULL`, but does not release storage or
-remove an outside parent's link. Zero remains an ordinary data value.
-
-The bounded autopsy intentionally gives two parents the same live child.
-Clearing one branch unexpectedly changes the child observed from the other.
-All objects remain live, so the lesson concerns logical aliasing, not a
-dangling pointer or a double free. Do not run recursive functions on an
-actual cycle or deliberately exhaust call-stack space.
+The standalone autopsy deliberately gives every operator the same precedence
+while building a finite tree. It demonstrates that valid indices and a
+valid tree shape do not establish the intended arithmetic meaning. Students
+preserve the predicted shape and answer before running it, then explain
+how building complete terms repairs the precedence rule. A clean sanitizer
+run does not establish this logical property.
 
 ### Evidence of learning
 
-- expression-diagram-to-left/right-field translation and a separate generic right-only-child case;
-- textbook traces of precedence-based tree construction and recursive evaluation;
-- direct local initialization and occupied-side preservation;
-- correct recursive search, including duplicate values and absence;
-- branch clearance with explicit detachment and unchanged opposite branch;
-- three nonduplicate student-authored tests and warning/diagnostic evidence;
-- an explanation that cleared objects remain live;
-- corrected Cognitive Pause and bounded autopsy reasoning.
+- expression, hierarchy, and index-table translations;
+- traces of reservation, `size`, `pos`, and changing roots;
+- precedence and left-grouping evidence from tree shape;
+- recursive child-result traces and unchanged-node snapshots;
+- four completed functions and three distinct student-authored tests;
+- warning and supported diagnostic evidence;
+- operation costs, corrected Cognitive Pause, and autopsy reasoning.
+
+The three student tests cover node creation, construction, and evaluation.
+The 100-point rubric and staged artifacts are maintained in the module.
+Extensions add valid cases for the same four functions, not extra APIs.
 
 ### Spiral links
 
-**Revisits:** variables, conditions, loops, fixed storage, and invariants.
+**Revisits:** fixed arrays, indexing, variables, conditions, loops, and invariants.
 
-**Introduces:** an expression-tree application, self-referential structs,
-node addresses and lifetimes, distinct left/right links, recursion and its
-stopping cases, a brief DFS model, precedence-based tree construction,
-recursive expression evaluation, recursive search, and recursive field clearance.
+**Introduces:** structure fields, indexed binary links, expression parsing,
+precedence, and recursive evaluation with a digit base case.
 
-**Forward:** graph relationships in Module 3; fixed-capacity LIFO storage in
-Module 4; nonrecursive preorder, inorder, and postorder in Module 5;
-BFS in Module 8; BST/AVL synthesis in Module 15.
+**Forward:** graph relationships in Module 3; explicit traversal state in
+Modules 4–6; BFS in Module 8; BST/AVL synthesis in Module 15.
 
 ---
 
@@ -510,7 +504,7 @@ those later modules.
 
 **Revisits:** Module 1's fixed contiguous storage, size/capacity distinction,
 active prefix, bounds checks, and unchanged state after rejection; simple
-character constants and pointers from Module 2.
+character data and expression precedence from Module 2.
 
 **Introduces:** Stack encapsulation, LIFO access, top, push, peek, pop,
 underflow, operator precedence, and a two-Stack expression trace.
@@ -1475,8 +1469,9 @@ Near-peer mentors or teaching assistants should normalize debugging difficulty w
 
 All submitted implementations use a consistent engineering contract. Apply
 representation-specific requirements when they are introduced: Chapter 1
-uses fixed-array bounds and plain integer counts. Module 2 introduces local
-node variables, pointer links, and recursive field clearance. Module 4 adds a
+uses fixed-array bounds and plain integer counts. Module 2 introduces array-indexed
+nodes, loop-based construction, and recursive expression evaluation. Its
+small parser assumes valid inputs and representable integer results. Module 4 adds a
 top-only fixed-array contract and checked output preservation. Module 5 adds
 allocated tree nodes and explicit release.
 Module 2's recursive functions assume valid trees: inspect malformed cycles
@@ -1506,16 +1501,16 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Dependency | First formal placement | Used later by |
 |---|---|---|
 | Fixed-array bounds, active prefix, shifts, and first-match search | Module 1 | Stack, matrices, Hash Table, Heap |
-| Addresses and pointers | Module 2 | Later node and container implementations |
-| `struct` and local-node lifetime | Module 2 | Later node and container implementations |
+| Addresses and pointers | At the first pointer-based API; not a Module 2 prerequisite | Later node and container implementations |
+| `struct`, character fields, and global node-array lifetime | Module 2 | Later node and container implementations |
 | Allocation, release, and owned storage | Module 5 individual nodes | Later containers and linked-node implementations |
-| Linked-node mental model | Module 2 tree representation; Module 14 retrieval clinic | Trees, linked adjacency, DSU bridge |
-| Binary-tree representation and recursive field clearance | Module 2 | Graph contrast, DFS, BFS |
+| Node relationships | Module 2 indexed tree representation; Module 14 linked-node retrieval clinic | Trees, linked adjacency, DSU bridge |
+| Indexed binary-tree representation and expression evaluation | Module 2 | Graph contrast, DFS, BFS |
 | BST-ordering preview | Module 5 | AVL |
 | Graph representation | Module 3 | All graph algorithms |
 | Stack | Module 4 | Tree and graph DFS |
 | Growable-array storage and checked doubling | Module 5 support, then required Module 10 backend work | Priority Queue, Heap, Hash Table |
-| Recursive base cases, expression-tree construction/evaluation, and bottom-up field clearance | Module 2 | Explicit-stack traversal and later tree algorithms |
+| Recursive base cases and child-results-first evaluation | Module 2 | Explicit-stack traversal and later tree algorithms |
 | Depth-first search idea | Module 2 recursive examples | Module 5 traversal orders and Module 6 graph DFS |
 | Named traversal orders and explicit traversal stacks | Module 5 textbook core: nonrecursive preorder, inorder, and postorder | Tree and graph algorithms |
 | Queue | Module 7 | Tree and graph BFS |
@@ -1537,7 +1532,7 @@ Scope controls:
   insertion, and removal in a fixed array. Its extensions add tests only;
   Module 4 reuses fixed storage for a Stack, while later modules introduce
   allocation and growable storage in their own contracts.
-- Module 2's textbook introduces recursion through expression-tree construction and evaluation, with a brief DFS explanation. Module 5's textbook focuses on explicit-stack preorder, inorder, and postorder without recursion; existing package labs remain separate. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
+- Module 2's textbooks and lab use loop-based expression-tree construction and recursive evaluation of valid single-digit `+`/`*` input. Module 5's textbook focuses on explicit-stack preorder, inorder, and postorder without recursion; existing package labs remain separate. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
 - Modules 8 and 9 share one Week 8 submission. The Module 8 core is a short level-order trace and supplied-code inspection; graph BFS, predecessor state, and path reconstruction are the main implementation.
 - Modules 10 and 11 share one Week 9 submission. The Module 10 unsorted-array implementation is supplied; the Heap backend and comparison are the main implementation.
 - Module 13 uses a scaffolded transactional rebuild, and Module 14 requires one bounded list repair plus DSU; their complete package menus are not assigned as hidden homework.
@@ -1555,7 +1550,7 @@ Scope controls:
 | Week | Primary topic | Package use and major artifact |
 |---:|---|---|
 | 1 | Keeping data together with a fixed-capacity ArrayList | Module 1; checked operations and bounds/invariant autopsy |
-| 2 | Recursion, binary-tree links, and expression trees | Module 2 textbook construction/evaluation traces; existing local-node search and clearance lab |
+| 2 | Recursion, binary-tree links, and expression trees | Module 2 bilingual textbooks and four-function construction/evaluation lab |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
 | 4 | Fixed-capacity Stack | Module 4; LIFO operations, top-index autopsy, and `1+2*3` evaluator |
 | 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |

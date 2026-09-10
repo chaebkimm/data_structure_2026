@@ -1,287 +1,276 @@
-# Instructor Lesson Plan — Module 2: Child-Only Binary Trees
+# Instructor Lesson Plan — Module 2: Binary Expression Trees
 
 ## Purpose and limits
 
-This module uses ordinary local node variables. Each `struct TreeNode`
-stores one integer plus independent `left` and `right` child pointers.
-There is no upward pointer. Relationships form a binary tree only when the
-caller preserves the no-cycle, no-sharing, and live-object preconditions.
+This module follows Chapter 2 in `student/textbook.md` and
+`student/textbook_korean.md`. Students represent expression structure in a
+fixed array, construct that structure with operator precedence, and evaluate
+it recursively. Every node stores one character and two integer child
+indices. The four core implementations are `new_node`, `term`, `terms`, and
+`eval_tree`.
 
-Chapter 1 supplies fixed arrays, conditions, loops, and invariants. Introduce
-addresses, pointers, explicit structure tags, `NULL`, and recursive calls
-here. Do not assume Chapter 1 taught these new representation features.
+Chapter 1 supplies fixed arrays, indices, conditions, loops, and invariants.
+Introduce structure tags, field access, a shared parsing position, and
+recursive calls here. Links use indices: `-1` means no child, while `0`
+identifies the first node.
 
-The module has two 90-minute meetings. It does not teach binary-search ordering,
-balancing, arbitrary-graph validation, or a resizable child collection.
-Clearing resets existing objects; it does not end their lifetimes.
+The module has two 90-minute meetings. Its input contract is a nonempty
+expression alternating single digits and `+` or `*`, with no whitespace or
+parentheses, at most 19 characters, and all intermediate and final values
+fitting in an `int`. These are assumptions, not required input-validation
+features. Binary-search ordering, dynamic allocation, graph validation, and
+additional expression operators are outside the core.
 
 ## Learning targets
 
 Students will be able to:
 
-1. identify root, parent, child, sibling, leaf, path, depth, height, and subtree;
-2. translate a binary hierarchy among a diagram, a left/right table, and C;
-3. initialize a local node and distinguish the object from its address;
-4. explain why a right-only child is valid;
-5. distinguish local attachment checks from whole-tree caller preconditions;
-6. trace and implement recursive current-left-right search;
-7. clear a selected subtree descendant-first and detach only its chosen link;
-8. explain why the unselected side never shifts; and
+1. identify root, parent, child, sibling, leaf, ancestor, and subtree;
+2. translate a hierarchy among a diagram, an index table, and C fields;
+3. reserve and initialize the next node in a fixed array;
+4. distinguish an index, a stored character, and an evaluated integer;
+5. explain why fresh nodes and valid child indices preserve tree invariants;
+6. trace the shared `pos` through `term()` and `terms()`;
+7. build multiplication terms before combining them with addition;
+8. evaluate children before their operator without changing the tree; and
 9. support claims with tests, compiler evidence, and an autopsy explanation.
 
-## Canonical representation
+## Canonical representation and fixture
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data; /* A digit character, '+', or '*'. */
+    int left;  /* Child index, or -1 for no child. */
+    int right;
 };
+
+struct TreeNode nodes[20];
+int size = 0;
+char eq[20] = "1+2*3";
+int pos = 0;
 ```
 
-Use this tree for the Stage B reveal:
+The parser reserves nodes in expression-character order. Array position
+does not determine a node's depth or whether it is the root.
 
 ```text
-             root:'*'
-             /      \
-        plus:'+'    two:2
-          /   \
-     three:3 five:5
+          [1] '+'
+          /     \
+      [0] '1'  [3] '*'
+                /   \
+            [2] '2' [4] '3'
 ```
 
-It represents `(3 + 5) * 2`, and its current-left-right order is
-`'*', '+', 3, 5, 2`. Left and right identify operand positions, so students
-must not treat the two links as interchangeable.
+| Index | `data` | `left` | `right` |
+|---:|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-Stage C uses the fresh expression `(8 - 3) * (4 + 2)`: root `'*'`, left
-child `minus:'-'` with children `eight:8` and `three:3`, and right child
-`plus:'+'` with children `four:4` and `two:2`. Students translate a fresh set
-of labels rather than repeat the first table.
+The whole-expression root is index `1`; `size == 5`, `pos == 5`, and
+`eq[pos] == '\0'`. Evaluation returns `7` while the operator fields still
+store `'+'` and `'*'`.
 
-Binary operators in these expression fixtures have exactly two operands.
-Keep that expression rule distinct from the general `TreeNode`
-representation, which also permits valid zero-child and one-child nodes.
+Stage C uses `2*3+4*5`, with root index `3` for `'+'`, left root `1` for
+`'*'`, and right root `5` for `'*'`. The digit indices are `0`, `2`, `4`,
+and `6`, respectively. It evaluates to `26`.
+
+The representation allows at most two children in named positions. A
+completed expression for this grammar has two children at each operator
+and none at each digit. Keep the general binary-tree rule distinct from
+the stronger expression-shape rule.
 
 ## Beginner language sequence
 
 | Word or symbol | First-use explanation |
 |---|---|
-| node | an object storing one value and child links |
-| address | a location that identifies an object |
-| pointer | a C value holding an address or `NULL` |
-| `&node` | the address of a node variable |
-| `node.data` | a field selected directly from an object |
-| `p->data` | a field selected through a pointer |
-| `NULL` | no child at this position |
-| binary tree | a tree with two named positions, left and right |
-| expression tree | a tree whose operator nodes connect to operand subexpressions |
-| operator and operand | an action and the values or subexpressions it combines |
-| parent | the node immediately above another in the hierarchy |
-| leaf | a node whose left and right links are both empty |
-| path | a route following child links |
-| depth | number of links from the root to a node |
-| height | longest downward route to a leaf, counted in links |
-| subtree | one node and every node below it |
-| lifetime | the time during which an object remains usable |
-| recursion | calling the same function on a smaller part of the problem |
-| base case | an input handled without further recursive calls |
-| current-first search | inspect the current node, then the left and right subtrees |
-| cascading clearance | reset every node in a selected branch |
-| detach | remove a link to a branch |
-| precondition | a fact the caller must establish before an operation |
+| node | one array element holding a character and child links |
+| index | an integer identifying a position in an array |
+| `nodes[root]` | the node selected by the root index |
+| `nodes[root].data` | the data field of that selected node |
+| `-1` | no child; never an index to dereference |
+| `size` | number of used nodes and index of the next unused slot |
+| `eq` | the expression string, terminated by `\0` |
+| `pos` | index of the next unread character in `eq` |
+| consume | read a character and advance `pos` |
+| term | one digit followed by zero or more multiplication-digit pairs |
+| precedence | which operation groups more tightly in an expression |
+| left association | make each later operator the parent of the group built so far |
+| recursion | a function calling itself on a smaller part of the problem |
+| base case | a case handled without further recursive calls |
+| precondition | a fact established before calling an operation |
 
-A parent is a relationship, not a stored field in this representation.
-Require students to name the exact local variable, pointer, or child side
-rather than saying only “the node.”
+Introduce hierarchy vocabulary from the Stage B vocabulary sheet. A parent
+is a relationship: this structure stores no upward link. Require students
+to identify whether an integer in a trace is an array index or a returned
+arithmetic value.
 
 ## Five release gates
 
 | Gate | Release time | Give students | Hold back |
 |---|---|---|---|
-| A — Initial inquiry | before Meeting A | standard or linear hierarchy prompt | representation, vocabulary, code, answers |
-| B — Model and pause | after the first model is saved | left/right reveal, vocabulary, three-target Cognitive Pause | expert calibration and investigation |
-| C — Investigation | after the pause and calibration | standard or linear structural investigation | worked notes, code, answers |
-| D — Textbook and models | after the Stage C attempt is saved | textbook and diagram/text models | lab, autopsy prediction answers, instructor materials |
+| A — Initial inquiry | before Meeting A | standard or linear inquiry prompt | representation, vocabulary, code, answers |
+| B — Model and pause | after the first model is saved | index representation reveal, vocabulary, three-target Cognitive Pause | expert calibration and investigation |
+| C — Investigation | after the pause and calibration | standard or linear investigation | worked notes, code, answers |
+| D — Textbooks and models | after the Stage C attempt is saved | both English and Korean textbooks, diagram/text models | lab, autopsy prediction answers, instructor materials |
 | E — Lab and evidence | Meeting B | lab, 100-point rubric, evidence form, autopsy, header, starter, public tests, build files | solution, instructor extension tests, answer key |
 
 Accommodations may change timing without changing the reasoning target.
 Preserve the sequence “attempt, compare, correct.” Vocabulary begins in
-Stage B, never as an early exception in Stage A. Stage D must not contain a
-worked answer to the Stage E autopsy.
+Stage B. Stage D teaches correct construction and evaluation without
+revealing the Stage E autopsy's worked prediction.
 
-# Meeting A — Model and Reason (90 minutes)
+## Meeting A — Model and Reason (90 minutes)
 
-## Macro-question
-
-> How can separate node variables form a hierarchy using only left and right
-> links, and what rules keep recursive operations meaningful?
+Macro-question: How can a hierarchy preserve the meaning of an expression,
+and how can we build and evaluate that hierarchy using a fixed array?
 
 | Minutes | Activity | Evidence |
 |---:|---|---|
-| 0–8 | Retrieve fixed-array bounds, conditions, and invariants | Entry response |
-| 8–18 | Stage A hierarchy inquiry | Preserved first model |
-| 18–28 | Compare branching models without introducing code early | Annotated relationships |
-| 28–38 | Stage B reveal: local nodes, addresses, and two child sides | Node/field labels |
+| 0–8 | Retrieve array indices, bounds, loops, and invariants | Entry response |
+| 8–18 | Stage A expression-structure inquiry | Preserved first model |
+| 18–28 | Compare proposed groupings and starting items | Annotated relationships |
+| 28–38 | Stage B reveal: character data and two child indices | Index/field labels |
 | 38–43 | Five-minute Cognitive Pause | Three independent responses |
-| 43–54 | Calibrate side identity, caller rules, and search order | Corrected pause |
-| 54–70 | Stage C translation, paths, and legal local changes | Worksheet traces |
-| 70–80 | Trace clearing and removal in the Stage C tree | Reset and surviving-link table |
-| 80–88 | Compare a tree with a shared or cyclic relationship model | Transfer explanation |
-| 88–90 | Exit ticket | One supported invariant claim |
+| 43–54 | Calibrate the three pause targets | Corrected pause |
+| 54–70 | Stage C index tables, parsing position, and root changes | Worksheet traces |
+| 70–80 | Trace child results and operator results | Return-value trace |
+| 80–88 | Compare structural validity with expression meaning | Invariant and precedence claims |
+| 88–90 | Exit ticket | One supported correction |
 
-## Stage B calibration
+### Stage B calibration
 
-The three pause targets are:
+The three independent pause targets are:
 
-1. read the named child positions and explain that a right-only node is valid;
-2. explain why placing `root` below leaf `three` would create a cycle even
-   though the selected side is empty; and
-3. trace the search for `2` as `'*', '+', 3, 5, 2`, explaining why the whole
-   left subtree is visited before the right operand.
+1. distinguish root index `1`, its left index `0`, the character `'1'`, and
+   an absent child `-1`;
+2. trace a fresh `term()` call on `1+2*3`: root `0`, `size == 1`,
+   `pos == 1`, and the `+` remains unread; and
+3. trace completed evaluation results `1, 2, 3, 6, 7`, explaining that
+   operator characters and all other tree/parser state remain unchanged.
 
-For the proposed cycle, distinguish “invalid for a tree” from “automatically
-detected by an empty-side check.” Whole-tree acyclicity is the caller's
-responsibility.
-Do not execute a recursive search or clear on the invalid example.
+Keep their initial responses, then add corrections with reasons. A valid
+index and a numeric result may have the same integer value while serving
+different roles.
 
-## Representation demonstration
+### Representation and construction demonstration
 
-Declare or draw five separate node objects. Initialize their data and empty
-links, then connect their addresses. Show these two equivalent views:
+Reserve a digit at the next unused slot and show all three initialized
+fields. The returned old value of `size` identifies the node; the new
+value of `size` identifies the next unused slot. An index can remain usable
+after `new_node()` returns because the node lives in the global array.
 
-```c
-root.left = &plus;
-struct TreeNode *p = &root;
-/* p->left and root.left contain the same address. */
-```
+Build a fresh parent above an existing root by assigning the old root to
+the parent's left field and a freshly built operand to its right. Replace
+the local root with the parent index. This does not move a node in memory.
 
-Physical adjacency does not determine the relationship. The link does.
-No child needs to store how it was reached.
+For each parsing step, record `pos`, `eq[pos]`, `size`, the current root,
+and new child assignments. Explain why `term()` stops before `+` and why
+`terms()` requests a complete term for each addition operand. The shared
+`pos` makes the next call continue where the preceding call stopped.
 
-## Invariant calibration
+Trace repeated operators as well as mixed operators. Each new operator is
+the parent of the group already built, producing left association at its
+level. Inspect links to prove this shape: addition and multiplication
+values alone do not distinguish all alternative groupings.
 
-A valid tree has one starting root and:
+### Invariant and evaluation calibration
 
-- no repeated node on any downward route;
-- no node reached through two child links;
-- only initialized, live node objects at nonempty links; and
-- at most one child at each named side.
+A valid expression tree has one root, no cycles, and one incoming child
+link at every other reachable node. Each nonempty child index selects an
+initialized slot below `size`. Equal characters in two slots identify two
+different nodes; using one child index twice introduces sharing.
 
-Both links may be empty. Either link may be empty independently of the
-other. A direct empty-side check inspects the selected field; it is not a
-whole-tree validator. The only two library functions are recursive find and
-clear.
+An unused child field alone does not establish that an attachment is safe.
+The construction algorithm uses fresh nodes and disjoint subtrees to
+preserve the rules. Discuss cycles on paper without evaluating them.
 
-## Search trace routine
+A digit returns its character minus `'0'`. An operator waits for its left
+call and then its right call, combines the two local results, and returns
+its answer. Node fields, `eq`, `size`, and `pos` stay unchanged during
+evaluation. A structurally valid tree can still encode the wrong grouping.
 
-For each call, ask:
+### Formative checks
 
-1. Is the current pointer empty?
-2. Does this node's data match?
-3. What returned from the complete left subtree?
-4. Should the right subtree be searched?
-5. Which address or empty result returns to the caller?
+- Does root index `0` mean an empty tree? No; it identifies the first slot.
+- Does `term()` consume the `+` where it stops? No.
+- Does finishing one `term()` necessarily finish the expression? No.
+- Does `new_node()` alone attach its node to a parent? No.
+- Must the final root be the last reserved index? No.
+- Does evaluation replace an operator character with its answer? No.
 
-Use a missing target to establish worst-case `O(n)` visits. Use equal data
-in separate nodes to establish that the first current-left-right match wins.
-
-## Clear and remove trace
-
-For the Stage C left branch, reset `eight` and `three` before `minus`, then
-empty the root's left link. The `plus` node remains on the right with its
-children `four` and `two` unchanged. The reset local variables still exist.
-The remaining links form a valid generic tree, but not a completed binary
-expression because the `'*'` node now has only its right operand.
-
-Emphasize two separate responsibilities: recursive clearance changes the
-selected objects, and removal changes the link in the node above them.
-Calling a child-only clear operation cannot discover or erase that incoming
-link.
-
-## Formative checks
-
-- Is a right-only node valid? Yes.
-- Is it a leaf? No.
-- Does a right child have to store a larger number? No.
-- Does an empty side prove a proposed link is globally safe? No.
-- Does clearing a local node make its address unusable? Not while its scope
-  remains active.
-- Can a returned address outlive the local variable it identifies? No.
-- Should removing the left branch move the right branch? No.
-
-# Between meetings
+## Between meetings
 
 1. Preserve the Stage C attempt before releasing Stage D.
-2. Ask students to annotate earlier answers using the textbook and models.
+2. Ask students to annotate earlier answers using either textbook language
+   and the shared models; make both textbooks available.
 3. Release Stage E for Meeting B.
-4. Validate reference tests and the isolated autopsy with strong warnings
+4. Validate reference tests and the standalone autopsy with strong warnings
    and supported runtime checks.
 
-# Meeting B — Implement, Test, and Explain (90 minutes)
+## Meeting B — Implement, Test, and Explain (90 minutes)
 
 | Minutes | Activity | Evidence |
 |---:|---|---|
-| 0–8 | Retrieve the model and current-left-right order | Re-entry response |
-| 8–18 | Read the two-function contract and mark caller preconditions | Header annotations |
-| 18–30 | Practice direct initialization and guarded selected-side attachment | Side-preservation tests |
-| 30–48 | Implement recursive current-left-right search | Search trace and tests |
-| 48–66 | Implement recursive clearance | Descendant-reset tests |
-| 66–73 | Practice caller-side removal and unchanged opposite side | Surviving-link tests |
-| 73–80 | Run public tests and finish three distinct student tests | Transcript and rationales |
-| 80–87 | Preserve an autopsy prediction, then run and explain it | Incident record |
+| 0–8 | Retrieve index links, precedence, and digit base case | Re-entry response |
+| 8–18 | Read the four-function contract and input assumptions | Header annotations |
+| 18–28 | Implement `new_node` and test fresh slots | Creation assertions |
+| 28–43 | Implement `term` and trace unread `+` | Term trace and assertions |
+| 43–56 | Implement `terms` and inspect mixed-operator links | Precedence and association assertions |
+| 56–68 | Implement `eval_tree` and compare state before/after | Results and nonmutation assertions |
+| 68–77 | Run public tests and finish three authored tests | Transcript and rationales |
+| 77–87 | Preserve an autopsy prediction, then run and explain it | Incident record |
 | 87–90 | Check submission against the 100-point rubric | Evidence checklist |
 
-## Coaching boundaries
+### Coaching boundaries
 
-Coach the contract, not a memorized solution:
+Coach the contract through short questions about the current state: which
+slot is unused, which character remains unread, which index is the old
+root, which operand must be a complete term, and which value returns to
+the waiting call. Distinguish character `'3'` from integer `3` and both
+from index `3`.
 
-- Which object exists before this function is called?
-- Which fields need initialization?
-- Which single side may this successful operation change?
-- What remains unchanged after a local rejection?
-- Which global facts are the caller's responsibility?
-- What is the recursion base case?
-- Which descendants must be visited before these links are reset?
-- Why is the right side still right after removing the left?
+Before an independent expression run, reset `size` and `pos` to zero and
+copy a valid, bounded expression into `eq`. Old root indices no longer
+identify the previous logical tree after its slots are reused. A reset
+helper or parser wrapper is not an additional required API.
 
-Do not accept a claim of automatic no-cycle/no-sharing validation without
-code and a contract that actually provide it. Do not ask students to add
-such validation as hidden core work.
+Do not require malformed-input rejection, empty-expression handling, or
+overflow detection. The evaluator's fallback return does not validate bad
+indices, missing operands, or cycles.
 
 ## Tests, autopsy, and assessment
 
-Require three nonduplicate student-authored tests with a rationale for each:
+Require three nonduplicate student-authored tests, each with a rationale:
 
-1. search boundaries or first-match selection with duplicate data in a valid
-   tree;
-2. direct initialization and selected-side behavior, such as an occupied-side
-   guard or caller detachment with the opposite side unchanged; and
-3. cascading clearance and reuse of a cleared, still-live local node.
-
-Use the student rubric's 100-point core:
+1. node creation: returned indices, advancing `size`, stored character,
+   and both absent children;
+2. expression construction: correct links for precedence and left
+   association, plus the final unread position; and
+3. recursive evaluation: correct results and unchanged node fields and
+   parser state.
 
 | Criterion | Points |
 |---|---:|
 | Representation and invariants | 20 |
-| Direct node operations | 15 |
-| Recursive search | 20 |
-| Clearing, removal, and lifetime | 20 |
+| Node creation | 15 |
+| Expression construction | 20 |
+| Recursive evaluation | 20 |
 | Operation efficiency | 10 |
 | Tests and tool evidence | 10 |
 | Autopsy and forward transfer | 5 |
 | Total | 100 |
 
-Instructor extension tests add boundary and sequence evidence; they do not
-add parent tracking, extra library APIs, or graph validation requirements.
-The current-left-right order is called preorder in later traversal work;
-name memorization and traversal-order comparisons are not Chapter 2 core.
+Instructor extension tests add valid boundary and sequence evidence without
+expanding the four-function contract. The standalone
+`code/autopsy/faulty_precedence.c` builds a structurally valid tree with an
+incorrect precedence policy. Students predict before running, compare the
+observed tree and result, explain the construction defect, and propose a
+regression test. Keep worked answers in the instructor answer key. The
+autopsy does not require a fourth student-authored C test.
 
-The isolated autopsy is an invariant exercise. Its malformed expression
-`(3 + 5) * (5 - 2)` uses one `shared_five` node as an operand of both `plus`
-and `minus`. Students predict before running, compare observable link/data
-state, explain the violated rule, and propose a regression test. A crash is
-not the target. Keep worked fixture answers in the instructor answer key only.
-
-Provide linear text, selectable commands, verbal or tactile equivalents, and
-instructor CI where needed. Grade reasoning and evidence, not drawing
+Provide linear text, selectable commands, verbal or tactile equivalents,
+and instructor CI where needed. Grade reasoning and evidence, not drawing
 quality, typing speed, or exact memorized terminology.

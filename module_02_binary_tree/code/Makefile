@@ -6,7 +6,7 @@ CPPFLAGS ?= -Iinclude
 BUILD_DIR := build
 
 .PHONY: all starter-core starter-student-tests starter-extension \
-	solution-core solution-extension autopsy clean
+	solution-core solution-extension lecture autopsy clean
 
 all: starter-core
 
@@ -33,9 +33,13 @@ solution-extension: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) solution/binary_tree.c tests/test_extension.c -o $(BUILD_DIR)/solution_extension
 	$(BUILD_DIR)/solution_extension
 
+lecture: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) solution/binary_tree.c lecture/expression_tree.c -o $(BUILD_DIR)/expression_tree
+	$(BUILD_DIR)/expression_tree
+
 autopsy: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_cascade.c -o $(BUILD_DIR)/link_autopsy
-	$(BUILD_DIR)/link_autopsy
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_precedence.c -o $(BUILD_DIR)/precedence_autopsy
+	$(BUILD_DIR)/precedence_autopsy
 
 clean:
 	$(RM) -r $(BUILD_DIR)

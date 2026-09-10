@@ -1,4 +1,4 @@
-# Module 2 — Stage C: Structural Investigation
+# Module 2 — Stage C: Construction and Evaluation Investigation
 
 Open this stage after the Cognitive Pause and instructor calibration.
 
@@ -6,10 +6,7 @@ Open this stage after the Cognitive Pause and instructor calibration.
 - `investigation_worksheet_linear.md` has the same questions in a linear
   accessible format.
 
-Translate the fresh expression tree `(8 - 3) * (4 + 2)`, track the lifetime
-of its local node variables, and distinguish direct side checks from the
-caller's whole-tree rules. Trace recursive search, cascading clearance, and
-caller-side removal. Left and right retain their operand identities
-throughout.
-
-Save your core attempt before opening Stage D.
+Use `2*3+4*5` to connect an expression hierarchy to array indices. Track
+`size`, `pos`, and each current root; explain why a whole multiplication
+term is built before its addition link. Trace recursive results and the
+root, single-parent, and no-cycle rules. Save your attempt before Stage D.

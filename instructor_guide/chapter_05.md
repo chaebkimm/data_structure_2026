@@ -9,15 +9,15 @@ visits, also remember whether the node's remaining subtree has finished.
 
 ## Why We Need This
 
-Chapter 2 introduces recursion through expression-tree construction and
-evaluation, with a brief DFS example. Chapter 4 supplies stack operations.
+Chapter 2 builds expression trees with loops and introduces recursion through
+their evaluation. Chapter 4 supplies stack operations.
 Chapter 5 makes the waiting work explicit and compares preorder, inorder,
 and postorder with loops. All three traversal implementations are required
 textbook content.
 
 ## Board Walkthrough
 
-Use the expression `3+5*2` from Chapter 2 throughout the walkthrough.
+Use `3+5*2` as a new example of Chapter 2's expression-tree idea throughout the walkthrough.
 
 ```text
         +

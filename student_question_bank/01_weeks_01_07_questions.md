@@ -47,77 +47,77 @@
 - Which operation sequence demonstrates that deletion makes room for another addition?
 - How does the guard-slot autopsy expose a bad full check without accessing outside its physical array?
 
-## Week 2 — Expression-Tree Model, Binary-Tree Links, and Recursive Clearance
+## Week 2 — Array-Index Expression Trees
 
 ### Meaning and mental model
 
-- How does `(3 + 5) * 2` become a root operation, a sub-expression, and operand leaves?
+- How does `1+2*3` become an addition root with a multiplication subtree?
 - How do root, parent, child, ancestor, descendant, and subtree differ?
-- Why is a node with only a right child still a valid binary-tree node?
-- How do a generic binary tree's zero/one/two-child possibilities differ from a completed binary expression?
+- Why can a general binary tree have a right child without a left child?
+- Why does a completed operator node in this expression model require two children?
 
 ### Representation and invariants
 
-- How do a diagram and the data, left, and right fields describe the same state?
-- Why are left and right operand positions not interchangeable for every operator?
-- Why must every non-root node appear in exactly one child position?
-- Which no-cycle and no-sharing rules are caller responsibilities rather than automatic checks?
+- How do the expression string, node-array table, and hierarchy describe the same expression?
+- Why is node index 0 valid while child index -1 means no child?
+- Why must each non-root node occur in exactly one child position, with no downward cycles?
+- How does attaching disjoint subtrees under a fresh operator preserve the tree rules?
 
-### Direct operations and C
+### Node creation and C
 
-- Which fields must be initialized before a local node is linked into a tree?
-- Why can the C character constants `'*'` and `'+'` be stored in an `int` data field in this simplified model?
-- What does `&plus` provide, and how does `root.left` differ from `node->left`?
-- What must remain unchanged when the chosen child position is already occupied?
+- What does `new_node` store, initialize, increment, and return?
+- How do a stored digit character, a node index, and an integer answer differ?
+- How do I read `nodes[nodes[root].right].data` one step at a time?
+- Why does returning the old value of `size` identify the new node correctly?
 
-### Recursive tracing
+### Parsing and precedence
 
-- What stopping cases does tree_find need?
-- Why does the canonical search order begin `'*', '+', 3, 5, 2`?
-- Which node address is returned when several nodes store the target value?
-- What unfinished work remains after the search enters the left subtree?
+- What does `term()` consume, and why does it leave the next `'+'` unread?
+- Why does `terms()` call `term()` for a whole operand instead of reading one digit?
+- How do `eq[pos]` and `eq[pos++]` differ when tracing the next unread character?
+- Why do repeated equal operators make each new operator the parent of the previous subtree?
 
-### Clearing and lifetime
+### Recursive evaluation
 
-- What happens to the data and links of every node reached by tree_clear?
-- Why does clearing root.left not automatically set root.left to NULL?
-- Why does a cleared node remain a live object, and why is data zero not an empty-node marker?
-- Why must every linked local node variable stay alive while the tree uses its address?
+- What is the digit-leaf base case, and why does subtracting `'0'` produce its integer value?
+- What unfinished work waits while `eval_tree` evaluates a child subtree?
+- Why do the canonical completed calls return 1, 2, 3, 6, and 7?
+- Why do the operator characters and parser state remain unchanged after evaluation?
 
 ### Tests and debugging
 
-- Which cases distinguish no children, a left-only child, and a right-only child?
-- How can a snapshot test prove that an occupied-side attachment made no change?
-- How can a test prove that clearing the `'+'` branch preserves the right operand `2` and its position?
-- Why should cycle mistakes be analyzed with diagrams rather than passed to these recursive functions?
+- Which test shows that a digit-only expression can return root index 0?
+- How can checking links reveal an association error that an answer-only test misses?
+- How can field snapshots and a second evaluation establish nonmutation?
+- Why must every independent test build reset both size and pos and copy a valid expression?
 
 ### Complexity
 
-- Why do initialization and a guarded child-link assignment take constant work?
-- Why can an unsuccessful search inspect every node?
-- Why does clearing a subtree with k nodes require work proportional to k?
-- Why can recursive search and clearance use temporary call-stack space proportional to height?
+- Why do reserving a node and assigning one child link each take constant work?
+- Why does the two-level parser take time proportional to the number of characters?
+- Why does evaluation visit every expression-tree node once?
+- How do the fixed 20-node array, its occupied slots, and the evaluator's call-stack depth differ?
 
-### Safety and interpretation
+### Input contract and autopsy
 
-- How can a child link back to an ancestor prevent a recursive operation from finishing?
-- In the shared-child autopsy, why does clearing one branch unexpectedly change the other branch's data?
-- Why is the shared child's pointer still live after clearance rather than a pointer to released storage?
-- What information can be lost if an occupied child link is overwritten without checking it?
+- Why do valid inputs use single digits, no spaces or parentheses, at most 19 characters, and int-sized results?
+- Why does treating every operator alike turn `1+2*3` into a tree whose answer is 9?
+- Why can the faulty tree satisfy the general tree rules and pass memory diagnostics while expressing the wrong grouping?
+- Why should the precedence defect be repaired in construction rather than by ignoring the tree during evaluation?
 
 ### Assignment and evidence
 
-- What must I implement in tree_find and tree_clear?
-- How should my three student-authored tests demonstrate expression construction, searching, and clearance?
+- What must I implement in `new_node`, `term`, `terms`, and `eval_tree`?
+- What new evidence should my creation, construction, and evaluation tests provide?
 - What warning-enabled and diagnostic evidence belongs in the submission?
-- What should my corrected Cognitive Pause explain about links, search order, and node lifetime?
+- What should my corrected Cognitive Pause explain about indices, term boundaries, and returned values?
 
 ### Transfer and deferred questions
 
-- Which Chapter 1 ideas about fixed storage, checking before mutation, and invariants are reused?
-- How will Module 3 change the no-sharing and no-cycle restrictions?
-- When will Module 5 formalize and compare traversal orders and introduce binary-search ordering?
-- Why are allocation, parent links, root-comparison helpers, rotations, and balancing outside this lab?
+- Which Chapter 1 ideas about fixed storage and occupied slots apply to the nodes array?
+- How will a later graph model change the no-sharing and no-cycle restrictions?
+- How can later traversal topics describe the child-before-parent completion order used by evaluation?
+- Why are malformed-input validation, extra public functions, rotations, and balancing outside this lab?
 
 ## Week 3 — Directed Adjacency Matrices
 

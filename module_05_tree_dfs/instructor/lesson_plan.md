@@ -8,7 +8,9 @@ recursive depth to `O(h)` call space and preserve caller state after failure.
 
 ## Meeting A
 
-1. Rebuild `(3+5)*2` from Chapter 2.
+1. Build `(3+5)*2` as a new tree using Chapter 2's hierarchy relationships.
+   Parentheses describe this fixture's grouping; they are not input to
+   Chapter 2's parser.
 2. Trace one branch to a leaf and name the saved return work.
 3. Compare the three visit positions using the diagram.
 4. Complete preorder copy and prove address independence.

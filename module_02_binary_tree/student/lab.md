@@ -1,211 +1,155 @@
-# Lab — Build, Search, and Clear a Binary Tree
+# Lab — Build and Evaluate an Array-Based Expression Tree
 
 ## Purpose and scope
 
-Use local node variables with a data field and two child links. Build the
-five-node expression tree for `(3 + 5) * 2`, search it recursively, and clear
-a selected subtree. Then use small generic binary-tree boundary cases to test
-the same representation and functions.
-
-All of those operations are core. Only search and clearing are packaged as
-public functions. Initialization, attachment, and caller detachment remain
-direct C operations.
+Implement Chapter 2's four functions: reserve a node, build a multiplication
+term, build a sum of terms, and recursively evaluate the resulting tree.
+The canonical input is `1+2*3`, whose answer is 7.
 
 ## Two 90-minute meetings
 
 | Meeting | Work | Minutes |
 |---|---|---:|
 | A — Conceptual stages | Inquiry, representation reveal, Cognitive Pause, calibration, investigation, and exit ticket | 90 |
-| B — Stage E lab | Direct node operations, two recursive functions, tests, autopsy, and submission evidence | 90 |
+| B — Stage E lab | Four functions, tests, precedence autopsy, and submission evidence | 90 |
 | **Total** | | **180** |
 
-Stage D's textbook and diagrams follow the Meeting A investigation and exit
-ticket. Stage E's lab and code are released for Meeting B.
+Stage D's English and Korean textbooks and models follow Meeting A's
+investigation and exit ticket. Stage E's lab and code are released for
+Meeting B. Both accessible pathways use the same learning targets and rubric.
 
 ## Files
 
-You receive:
+You receive `code/include/binary_tree.h`, `code/starter/binary_tree.c`,
+`code/tests/test_core.c`, `code/tests/test_student.c`,
+`code/tests/test_helpers.h`,
+`code/autopsy/faulty_precedence.c`, `code/Makefile`, and `code/build.ps1`.
+Edit only the starter implementation and student tests. Keep the supplied
+header, core tests, and test runner unchanged. A reference solution is kept
+in the instructor package.
 
-- `code/include/binary_tree.h`
-- `code/starter/binary_tree.c`
-- `code/tests/test_core.c`
-- `code/tests/test_student.c`
-- `code/autopsy/faulty_cascade.c`
-- `code/build.ps1`
-- `code/Makefile`
-
-Edit only `code/starter/binary_tree.c` and `code/tests/test_student.c`.
-Do not change the header or supplied tests unless the instructor authorizes
-it. The header declares the shared node type and function contracts.
-
-## Representation and the two-function API
-
-Each node groups one value with its two downward connections.
+## Representation and function contracts
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data; /* Store characters: '3', '+', or '*'. */
+    int left;  /* Index of a child in nodes, or -1. */
+    int right; /* Index of a child in nodes, or -1. */
 };
 
-struct TreeNode *tree_find(struct TreeNode *node, int target);
-void tree_clear(struct TreeNode *node);
+/* Defined once by the implementation; declared extern in the header. */
+struct TreeNode nodes[20];
+int size = 0;          /* Used nodes and next free index. */
+char eq[20] = "1+2*3";
+int pos = 0;           /* Next unread character in eq. */
+
+int new_node(char data);
+int term(void);
+int terms(void);
+int eval_tree(int node);
 ```
 
-Use the full name `struct TreeNode`. A pointer stores a node address.
-`NULL` means that no node is linked at that position. `void` means that
-`tree_clear` returns no value.
+Every child link and root is an integer index. `-1` means no child; `0` is a
+valid node index. The structure's `data` is a character. Evaluation returns
+an integer result separately, without replacing the character.
 
-### Caller preconditions
+Assume valid, nonempty inputs consisting of single digits alternating with
+`+` or `*`, no spaces or parentheses, and at most 19 characters. All
+intermediate and final results must fit in `int`. The string's `\0` occupies
+one additional slot. Each character becomes one node, so the arrays suffice
+for this contract. Input validation and malformed-tree handling are outside
+this lab. The completed tree has a single root, no cycles or shared children,
+and two children at every operator.
 
-A precondition is a condition the caller must ensure before an operation.
+## Core checkpoints and coding plan
 
-- Initialize every node's data and both links before using its address.
-- Keep every linked local variable alive throughout the operation.
-- Build a finite tree with no cycles or shared child objects.
-- Each non-root node has exactly one incoming child link. Do not put the
-  same child in both sides of a parent.
-- Attach only a fresh, unlinked node or a disjoint valid subtree.
-- Check that the selected side is empty before attaching.
+The starter has four `TODO(core)` regions, one in each function. Implement
+all four, including the evaluator's base case. Add short comments that explain
+why a step is needed, especially at a term boundary or root change.
 
-A general binary-tree node may have zero, one, or two children. In the
-completed expression fixture, each operator has two operand children and
-each number has none. The API does not enforce or evaluate that extra
-expression rule.
+### 1. Reserve and initialize a node: `new_node`
 
-The two functions do not validate arbitrary relationships. A side being
-empty does not prove that a proposed link satisfies the global tree rules.
-An address does not remain usable after its local variable's block ends.
+Use the next unused index recorded by `size`. Store `data`, initialize both
+children to `-1`, advance `size`, and return the reserved index. Returning
+`size` after incrementing it would identify the next unused slot instead of
+the new node. Node creation alone does not attach the node to a parent.
 
-## Core checkpoints
+### 2. Build one multiplication term: `term`
 
-The starter marks two `TODO(core)` regions: one in each recursive function.
-Their `NULL` base cases are supplied. A base case finishes without another
-recursive call.
+Consume the first digit and make its new node the current root. While the
+next character is `'*'`, reserve that operator and the following digit. Link
+the previous root on the left and the new digit on the right, then make the
+operator the root. Return when the next character is `'+'` or `'\0'`, leaving
+that character unconsumed. Each new operator groups the term built so far
+with the next operand, producing left association.
 
-### 1. Initialize and link ordinary node variables
+### 3. Build a sum of complete terms: `terms`
 
-Use direct field assignments, as in the textbook:
+Call `term()` for the first subtree. While the next character is `'+'`,
+reserve the operator and call `term()` for its entire right operand. Attach
+the old root on the left and the returned term root on the right, then update
+the root. Calling `term()` completes multiplication before addition is linked.
+Both parsing functions share `pos`; do not reset it inside either function.
 
-```c
-struct TreeNode root;
-root.data = '*';
-root.left = NULL;
-root.right = NULL;
+For `1+2*3`, the required completed state is:
 
-struct TreeNode plus;
-plus.data = '+';
-plus.left = NULL;
-plus.right = NULL;
+| Index | `data` | `left` | `right` |
+|---|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-if (root.left == NULL) {
-    root.left = &plus;
-}
-```
+The root is 1, `size` is 5, and `pos` is 5, selecting the final `\0`.
 
-The dot selects a field of a variable. `&plus` is the address of `plus`.
-The assignment links the existing object; it does not copy it.
-The `int` data field can store C character constants such as `'*'` and `'+'`;
-use those portable literals instead of numeric character codes.
+### 4. Evaluate recursively: `eval_tree`
 
-For the canonical example, initialize five local nodes and construct these
-relationships:
+At a digit leaf, subtract `'0'` and return its numeric value; this is the
+base case. At an operator, evaluate its left and right subtrees into separate
+local variables, then apply `+` or `*` and return the answer. Evaluate the
+left subtree first so that traces are reproducible. Preserve every node field,
+`size`, `pos`, and `eq` during evaluation. A leaf never requires a call on -1.
 
-| Variable and data | Left child | Right child |
-|---|---|---|
-| `root`, `'*'` | `&plus` | `&two` |
-| `plus`, `'+'` | `&three` | `&five` |
-| `three`, `3` | none | none |
-| `five`, `5` | none | none |
-| `two`, `2` | none | none |
-
-The values do not impose a sorting rule. Left and right preserve operand
-positions. A right-only child is valid in a general binary tree, although it
-is not a completed binary operator. A guarded assignment to an occupied side
-leaves the existing link and all nodes unchanged. It does not replace or move
-a child.
-
-### 2. Complete recursive search
-
-Complete `tree_find`.
-
-- Check the current node's data first.
-- If it does not match, search the entire left subtree.
-- Return a left-side match immediately.
-- Otherwise search the right subtree.
-- Return the first matching node address, or `NULL` if the target is absent.
-- Do not change any node.
-
-A search from `NULL` returns `NULL`. Duplicate, zero, and negative data
-values are valid. Check a returned pointer before using `->` to read one
-of its fields.
-
-Trace the canonical search for `2` before running the tests. Its complete
-check order is `'*'`, `'+'`, `3`, `5`, `2`. Explain why a missing value may
-require visiting every node. You do not need to memorize a traversal label.
-
-### 3. Complete recursive clearing
-
-Complete `tree_clear`.
-
-- Clear the left and right subtrees.
-- Set both child links to `NULL`.
-- Set the current node's data to 0.
-
-Keep a child address available until that subtree has been cleared.
-`tree_clear(NULL)` does nothing. Every cleared local node remains alive
-until its declaring block finishes.
-
-Clearing is not the same as ending an object's lifetime. A cleared node is
-still a node with data 0 and no children. Zero is not an empty-node marker.
-
-### 4. Remove a child through its caller
-
-A child has no upward field. Clearing the child cannot change the outside
-parent's link. The caller performs both actions:
-
-```c
-tree_clear(root.left);
-root.left = NULL;
-```
-
-In the canonical tree, this removes the branch beginning at `plus`. The right
-link still identifies `two`. Its side and its subtree must remain unchanged.
-The remaining right-only shape is a valid general binary tree but no longer a
-completed representation of the original expression.
-
-Inspect the cleared variables while they are still alive. Distinguish those
-objects from the nodes still reachable through `root`. Do not move the
-right child into the empty left position.
+In the canonical tree, completed calls return 1, 2, 3, 6, and 7. Operators
+remain the characters `'+'` and `'*'`. Explain why this differs from writing
+calculated answers into the tree.
 
 ### 5. Design three student tests
 
-Replace the three placeholder bodies in `code/tests/test_student.c`.
-Return 1 when a test passes and 0 when it fails. Leave the supplied test
-runner unchanged.
+Replace the three placeholder bodies in `code/tests/test_student.c`, keeping
+the supplied runner. Each test returns 1 on success and 0 on failure.
 
-1. Search: use a new boundary, repeated-value case, or unsorted arrangement
-   that checks the current-left-right search order.
-2. Direct operations: initialize local nodes and test chosen-side linking,
-   an occupied-side guard, or caller detachment.
-3. Clearing: test a subtree and show that still-live cleared nodes can be
-   inspected or reinitialized without changing the opposite branch.
+1. Node creation: check returned indices, the stored character, both -1 child
+   fields, and `size`. Include a claim beyond the supplied creation cases.
+2. Construction: check a new valid expression's links, consumed position,
+   precedence, or left association. An answer alone cannot distinguish the
+   association of repeated `+` or repeated `*`; inspect the tree shape.
+3. Evaluation: check a valid expression's answer and verify that evaluating
+   it, including a repeated call, preserves the tree and shared state.
 
-Use fixtures or sequences that add evidence beyond the supplied tests.
-Explain each test's claim. Keep all node variables alive through the checks.
+Start each independent build by resetting the shared counters and copying
+a valid expression. For example, inside a test that includes `<string.h>`:
 
-Do not pass actual cycles, shared structures, or ended-lifetime addresses to
-the recursive functions in ordinary tests. Reason about such invalid input
-on paper; the isolated autopsy provides one controlled sharing example.
+```c
+size = 0;                  /* Reuse the array for a new expression. */
+pos = 0;                   /* Start reading its first character. */
+strcpy(eq, "8+2*0");        /* This known valid string fits in eq. */
+int root = terms();        /* Save only this build's root index. */
+int answer = eval_tree(root);
+```
 
-## Optional additional cases
+The supplied `begin_expression("8+2*0")` helper performs the same reset and
+copy. Use `REQUIRE(condition)` to make a test fail when its claim is false.
+After a full build, `REQUIRE(complete_tree(root))` checks the returned tree
+before tests follow its links or evaluate it. These are provided test helpers;
+you do not implement an additional validator.
 
-After the required tests pass, the instructor may separately release extra
-valid fixtures and longer traces using the same two functions and direct
-operations. These are not included in the Stage E package. Use the matching
-tests and build commands supplied with that optional release. No additional
-algorithms or functions are required.
+Test code may use local snapshots and direct field comparisons. Do not add
+new public functions. Resetting the counters starts a new logical tree; old
+roots must not be used after the storage has been reused. Do not run the
+parser on inputs outside its contract or the evaluator on invalid indices,
+cycles, or shared structures.
 
 ## Build and test
 
@@ -219,10 +163,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target autopsy
 ```
 
-When supported, add `-Sanitize` to a test command. A sanitizer checks some
-invalid memory accesses while a program runs. It does not prove that every
-logical tree rule is satisfied. The execution-policy option applies only
-to this child PowerShell process.
+When supported, add `-Sanitize` to a test command. The execution-policy
+option applies only to this child PowerShell process.
 
 In Git Bash, MSYS2, WSL, Linux, or macOS:
 
@@ -232,21 +174,23 @@ make starter-student-tests
 make autopsy
 ```
 
-The Makefile defaults to GCC. Use `make CC=clang starter-core` for Clang.
+The Makefile defaults to GCC; use `make CC=clang starter-core` for Clang.
+Warnings and sanitizers help reveal implementation mistakes. A wrong
+precedence rule can still compile cleanly and finish normally, so tests also
+need expected answers and structure checks. If diagnostics are unavailable
+locally, use approved debugger or instructor-CI evidence.
 
-If a local diagnostic tool is unavailable, use approved debugger or
-instructor-CI evidence. CI means another computer runs the submitted tests.
+Optional additional valid fixtures may be released separately. They use the
+same four functions and are not part of the core score.
 
 ## Required submission
 
-1. Completed `code/starter/binary_tree.c` with both recursive functions.
+1. The completed starter with all four functions and concise explanatory comments.
 2. A passing supplied core-test transcript.
-3. Three passing student-authored tests with a rationale for each.
+3. Three passing student tests, with a new claim and rationale for each.
 4. Warning-enabled and approved diagnostic evidence.
-5. Completed evidence record.
-6. Tree Structure Autopsy.
-7. Corrected Cognitive Pause.
+5. The completed evidence record, precedence autopsy, and corrected Cognitive Pause.
 
-Completion means the two functions and direct-operation tests satisfy the
-contracts, student-controlled code has no compiler warnings, and the
-explanation distinguishes clearing, detaching, and node lifetime.
+Completion means the four contracts are satisfied, student-controlled code
+has no compiler warnings, and the explanation connects indices, parser
+boundaries, precedence, association, and returned evaluation values.

@@ -23,9 +23,50 @@ PowerShell is unavailable on this host. No student ZIPs were published.
 A fresh beginner reading pilot is still required; these technical checks do
 not establish an actual human-validation pass.
 
-Chapter 2's separate locally declared-node alignment is recorded below.
+Chapter 2's current array-indexed expression-tree alignment is recorded below.
 
-## Module 2 Revision Note — August 29, 2026
+## Module 2 Revision Note — September 9, 2026
+
+Module 2 now follows both `student/textbook.md` and
+`student/textbook_korean.md`: `char data`, integer child indices, `nodes[20]`,
+`size`, `eq[20]`, and `pos`. Students implement `new_node`, `term`, `terms`,
+and `eval_tree`. The canonical expression is `1+2*3`, with root index 1 and
+result 7; the Stage C transfer is `2*3+4*5`, with root index 3 and result 26.
+The parser uses loops for terms and sums; evaluation is recursive and does
+not mutate nodes or parser state.
+
+Both editions now state the same valid-input assumptions: nonempty single
+digits alternating with `+` or `*`, no spaces or parentheses, at most 19
+characters plus the terminator, and every intermediate/final value within
+`int`. Korean wording about stored evaluation results and multiplication
+grouping was corrected, and translation-editorial sentences were removed.
+
+The reference passes 8 core and 5 extension tests under Clang with
+warnings as errors, AddressSanitizer, and UndefinedBehaviorSanitizer. Tests
+cover creation, term boundaries, precedence, left grouping, digit conversion,
+nonmutation, maximum-length inputs, and repeated builds. The lecture prints
+`1+2*3 = 7`. The standalone precedence autopsy produces the intended faulty
+9 and correct 7 using finite trees, with no sanitizer diagnostic.
+
+Both textbooks' six C blocks compile as programs under the same strict
+checks and print `1+2*3 = 7`. Their executable code matches after comments
+and whitespace are removed. The incomplete starter safely fails all 8 core
+and 5 extension tests; the 3 student-test placeholders fail intentionally.
+
+Release manifests have 3, 4, 3, 4, and 15 unique existing source-entry pairs
+for Stages A through E. Stage D includes both textbook editions. Stage E
+includes `test_helpers.h` and the standalone autopsy, and excludes reference
+solutions, lecture code, instructor materials, and extension tests. An
+isolated temporary Stage E copy compiles with its student Makefile: starter
+core and student placeholders fail as expected, the autopsy runs independently,
+and substituting the completed implementation makes all 8 core tests pass.
+
+PowerShell scripts were inspected but not executed because PowerShell is
+unavailable on this host. No release ZIP archives were created or published.
+The older Module 2 notes and `textbook_pilot/` records below remain historical;
+these technical checks do not establish a human beginner-reading validation.
+
+## Superseded Module 2 Revision Note — August 29, 2026
 
 Chapter 2 and Module 2 now carry the expression `(3 + 5) * 2` through the
 canonical diagram, local-node construction, recursive search trace, branch

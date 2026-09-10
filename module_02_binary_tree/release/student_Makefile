@@ -20,8 +20,8 @@ starter-student-tests: | $(BUILD_DIR)
 	$(BUILD_DIR)/starter_student_tests
 
 autopsy: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_cascade.c -o $(BUILD_DIR)/link_autopsy
-	$(BUILD_DIR)/link_autopsy
+	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_precedence.c -o $(BUILD_DIR)/precedence_autopsy
+	$(BUILD_DIR)/precedence_autopsy
 
 clean:
 	$(RM) -r $(BUILD_DIR)

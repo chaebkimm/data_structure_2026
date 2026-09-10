@@ -1,218 +1,156 @@
-# Stage C — Investigation: Binary-Tree Operations
+# Stage C — Investigation: Build and Evaluate an Expression Tree
 
 Name: ____________________________
 Date: ____________________________
 
 Open this file after preserving the Cognitive Pause and completing calibration.
+Use a diagram or a written explanation. Preserve predictions before checking.
 
 ## Quick reference
 
-Each `struct TreeNode` variable stores `data`, `left`, and `right`.
-A pointer stores an address. `&root` means the address of the variable
-`root`. A dot selects a field of a variable; `->` selects a field through
-a pointer. `NULL` means that no node is linked at that side.
+Each array node has `char data`, `int left`, and `int right`. Child indices
+use `-1` for absence; `0` is valid. `size` is the number of used nodes, and
+`pos` is the next unread position in `eq`. An expression has single digits
+alternating with `+` or `*`, no spaces or parentheses, and at most 19
+characters. Assume every intermediate and final answer fits in `int`.
 
-All ordinary examples below use initialized local nodes that remain alive
-throughout the activity. A general binary tree may use zero, one, or two
-child positions. A completed expression tree additionally uses two children
-for each binary operator and none for each numeric operand. Data does not
-sort the nodes.
+A new independent build starts with `size = 0`, `pos = 0`, and a valid string
+in `eq`. These activities require no malformed-input or whole-tree validator.
 
 ## D. Translate among representations
 
-The table describes `(8 - 3) * (4 + 2)`, an independent transfer tree.
+The independent transfer tree represents `2*3+4*5`, with `size == 7`,
+`pos == 7`, and `root == 3`.
 
-| Local variable | Data | Left address | Right address |
-|---|---:|---|---|
-| `root` | `'*'` | `&minus` | `&plus` |
-| `minus` | `'-'` | `&eight` | `&three` |
-| `plus` | `'+'` | `&four` | `&two` |
-| `eight` | `8` | `NULL` | `NULL` |
-| `three` | `3` | `NULL` | `NULL` |
-| `four` | `4` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+| Index | `data` | `left` | `right` |
+|---|---|---:|---:|
+| 0 | `'2'` | -1 | -1 |
+| 1 | `'*'` | 0 | 2 |
+| 2 | `'3'` | -1 | -1 |
+| 3 | `'+'` | 1 | 5 |
+| 4 | `'4'` | -1 | -1 |
+| 5 | `'*'` | 4 | 6 |
+| 6 | `'5'` | -1 | -1 |
 
-1. Draw the tree or describe each connection, including its side.
+1. Draw the tree or describe every connection, including its side.
+2. Complete `nodes[3].left = ...`, `nodes[3].right = ...`,
+   `nodes[1].right = ...`, and `nodes[5].left = ...`.
+3. Explain the meaning and value of `root`, `nodes[root].data`,
+   `nodes[root].left`, `nodes[nodes[root].left].data`, and `-1` as a child link.
 
-   _________________________________________________________________
-
-2. Complete the assignments that describe this state:
-
-```c
-root.left = ________________________________________________________;
-root.right = _______________________________________________________;
-minus.right = ______________________________________________________;
-plus.left = ________________________________________________________;
-```
-
-3. Explain each C expression:
-
-| Expression | Meaning |
-|---|---|
-| `root` | |
-| `&root` | |
-| `root.left` | |
-| `root.left->data` | |
-| `NULL` | |
+Response:
 
 ## E. Name positions
 
-A path follows connected nodes. An ancestor occurs earlier on the path from
-the root; a descendant occurs below a node. Depth counts links from the
-root. Height is the greatest number of downward links to a leaf. A leaf has
-no children. A subtree contains one node and all its descendants.
-
+Depth counts links from the root. Height is the greatest number of downward
+links to a leaf. A subtree contains a node and all its descendants.
 Use the section D tree.
 
-1. Write the data path from `root` to `four`. ______________________
-2. Give the depth of `four`. ______________________________________
-3. List the leaf variables. ________________________________________
-4. Give the height of `minus`, then of `root`. _____________________
-5. List the variables in the subtree rooted at `minus`. ____________
+1. Write the data path from the root to index 4.
+2. Give the depth of index 4.
+3. List the leaf indices.
+4. Give the height of index 1, then of the root.
+5. List the indices in the subtree rooted at index 1.
 
-## F. Separate an invariant from a local check
+Response:
 
-An invariant is a rule followed by every valid state. A precondition is a
-condition the caller must ensure before using an operation.
+## F. State and preserve invariants
 
-Complete the rules:
+1. How many incoming child links does the root have? How many does each
+   other node have?
+2. What range contains every present child index? How are absent children
+   represented?
+3. Explain why adding the link `nodes[0].left = 3` creates a cycle.
+4. Explain why assigning `nodes[5].left = 2` would share a child and leave
+   index 4 unreachable from the root.
+5. Why does joining disjoint subtrees under a fresh operator preserve the
+   one-parent and no-cycle rules? Does an empty child position alone prove
+   that any proposed link is valid?
+6. Can a general binary-tree node have only a right child? Why does a
+   completed `'+'` or `'*'` node in this module require both children?
 
-- The section D root has __________ incoming child links.
-- Every other node has exactly __________ incoming child link.
-- Following child links must never return to an earlier node on the same
-  route. Such a route is a __________.
-- Every linked object must be initialized and still __________.
+The changed states in questions 3 and 4 are paper reasoning cases. The
+provided functions assume valid trees and do not validate these defects.
 
-Consider each request separately. `n7` is a fresh, initialized, unlinked
-node. Say whether the request is permitted. If not, explain whether an
-empty-side check is enough to prevent it or the caller must check the wider
-relationships. If it is permitted as a general tree change, also state
-whether the result remains a completed expression tree.
+Response:
 
-| Proposed connection | Permitted? | Reason and responsibility |
-|---|---|---|
-| Put `&n7` in `two.left` under the general tree contract | | |
-| Put `&n7` in `root.left` without replacing its child | | |
-| Also put `&three` in `four.left` | | |
-| Put `&root` in `eight.left` | | |
-| Put `&n7` in both sides of `two` | | |
+## G. Reserve a node and follow the shared state
 
-These are paper reasoning cases. Do not run search or clearing on a cyclic
-or shared structure as an ordinary test. The two functions do not validate
-arbitrary relationships.
+Start an independent build with `size == 0`.
 
-## G. Reason about node lifetime
+1. After `int a = new_node('0');`, what are `a`, `size`, and all three
+   fields of `nodes[a]`? Distinguish character `'0'`, integer 0, and index 0.
+2. Next, call `int b = new_node('7');`. What are `b` and `size`? Does this
+   make either node a child of the other?
+3. Why must both child fields be initialized even though the array exists
+   for the entire program?
+4. Before building an unrelated expression, why reset both `size` and `pos`?
+   What happens to the meaning of an old root index as array slots are reused?
+5. A valid input has at most 19 characters. Why do `eq[20]` and `nodes[20]`
+   suffice under this contract?
 
-A local node exists until its declaring block finishes. Clearing a node
-resets its fields; it does not end that lifetime.
+Response:
 
-Classify each action as safe or unsafe, then explain.
+## H. Trace the two parsing levels
 
-| Action | Safe or unsafe? | Reason |
-|---|---|---|
-| Initialize data and both links before attaching a fresh node | | |
-| Follow a node whose child links were never initialized | | |
-| Inspect `minus.data` after `tree_clear(&minus)`, while its block is still active | | |
-| Follow a saved address after the local node's declaring function has returned | | |
+Start fresh with `eq` equal to `"2*3+4*5"`, `size == 0`, and `pos == 0`.
 
-Does passing a node's address to another function extend its lifetime?
+1. Call only `term()`. Record the returned root, `size`, `pos`, and next
+   unread character. List the links created.
+2. Start fresh again and trace `terms()`. Record the current root, `size`,
+   and `pos` after its first term, after reserving `'+'`, after its next term,
+   and when the function returns.
+3. Why must the right operand of `'+'` be built by `term()` instead of
+   consuming just one digit?
+4. Explain how `eq[pos]` and `eq[pos++]` differ. Why is the next `'+'` left
+   unread by `term()`? What character remains after `terms()` finishes?
 
-____________________________________________________________________
+Response:
 
-## H. Keep the chosen side
+## I. Trace recursive evaluation
 
-In a separate valid example, `parent.left` is `NULL` and `parent.right`
-is `&n8`. Both objects are initialized and alive.
+Start with the completed section D tree.
 
-1. Is `parent` a leaf? Explain. ____________________________________
-2. A fresh node `n4` is attached on the left. State both links afterward.
+1. List the node indices in call-entry order when the left child is evaluated
+   first. Then list the index and value for each return in completion order.
+2. What does a digit leaf return, and why is subtracting `'0'` correct?
+3. Why must the two child results be available before applying an operator?
+4. What is the final answer? What characters remain in the operator nodes?
+5. Which fields and shared variables should a second evaluation leave
+   unchanged? How could a test check this?
 
-   _________________________________________________________________
+Response:
 
-3. The left branch is then cleared and detached. State both links afterward.
-   Why must `&n8` remain on the right?
+## J. Explain association and count work
 
-   _________________________________________________________________
+1. Build `2*3*4` from fresh state on paper. Give the final root index and its
+   left and right child indices. Which `'*'` is above the other, and why?
+2. Repeat for `1+2+3`. Addition and multiplication give the same arithmetic
+   answer under either association for these inputs. Why must a test inspect
+   links to prove that construction groups equal operators left to right?
+3. Let `n` be the number of expression characters/nodes, and `h` the longest
+   root-to-leaf path in links. Count work for reserving one node, assigning
+   one child link, parsing the whole expression, and evaluating it.
+4. Explain the storage used by the fixed array, its `n` occupied slots, the
+   two parser levels, and the evaluator's longest active call chain.
 
-## I. Trace recursive search
+Response:
 
-Search checks the current node, then its left subtree, then its right
-subtree. It stops at the first match. Start again with section D.
+## K. Transfer the model
 
-1. List the complete order in which node data is checked.
+1. Use `8+2*0` to explain why the character `'0'` is an ordinary operand and
+   cannot serve as an absent-child marker.
+2. A later relationship model may allow two parents to share one item.
+   Give a useful example and state which tree rule would change.
 
-   _________________________________________________________________
-
-2. List the values checked by `tree_find(&root, 4)`. Which address is
-   returned?
-
-   _________________________________________________________________
-
-3. What does `tree_find(&root, 404)` return? ________________________
-
-4. In a separate case, `two.data` is changed to `4`. Which node does a search
-   for `4` return, and why?
-
-   _________________________________________________________________
-
-5. Would changing `eight.data` to `900` break a tree rule? Why may search not
-   use numeric comparisons to skip a subtree?
-
-   _________________________________________________________________
-
-## J. Trace clearing and caller detachment
-
-Start again with section D. The caller removes the left branch:
-
-```c
-tree_clear(root.left);
-root.left = NULL;
-```
-
-1. Which node variables have their data reset? State their final data and
-   links. What remains in `root.right`?
-
-   _________________________________________________________________
-
-2. If the caller only ran `tree_clear(&minus)`, would `root.left` change?
-   Explain why clearing and detaching are different actions.
-
-   _________________________________________________________________
-
-3. After the two-line removal, may the caller still inspect or reinitialize
-   `minus` while its declaring block is active? Explain.
-
-   _________________________________________________________________
-
-4. Count the work. Let `n` be the number of searched nodes and `k` the
-   number of nodes in the selected subtree.
-
-| Operation | Work in fields or nodes | Reason |
-|---|---|---|
-| Initialize one node | | |
-| Attach a fresh node to a known empty side | | |
-| Search for a missing value | | |
-| Clear a subtree | | |
-| Detach an already cleared child | | |
-
-Why can a deeper recursive search need more temporary call storage?
-
-____________________________________________________________________
-
-## K. Transfer to a different relationship model
-
-A graph is a more general relationship structure that may allow shared
-items or cycles. Give one useful situation where two items should lead to
-the same object. Why would our unshared-tree precondition no longer fit?
-
-____________________________________________________________________
+Response:
 
 ## L. Exit ticket
 
-1. What does a child link store? ___________________________________
-2. Can the right side be used while the left side is empty? ________
-3. Who ensures that no node is shared or part of a cycle? ___________
-4. Does clearing a node end its lifetime? __________________________
-5. Which link must the caller change to remove a cleared left child?
+1. What does a child link store, and which value means no child?
+2. What do `size` and `pos` count?
+3. Where does `term()` stop, and how does `terms()` preserve precedence?
+4. What is the evaluator's base case? Does evaluation replace operator data?
+5. Which four functions will you implement in the lab?
 
-   _________________________________________________________________
+Response:

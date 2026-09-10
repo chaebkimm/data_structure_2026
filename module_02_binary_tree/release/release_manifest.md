@@ -1,93 +1,78 @@
 # Module 2 Staged Release Manifest
 
-Run `prepare_student_release.ps1` from this directory to create five ZIP
-archives in `../dist`. The script validates required sources and refuses to
-overwrite an existing archive. Do not generate archives before the reference
-and release checks pass.
+Run `prepare_student_release.ps1` to create five ZIP archives in `../dist`.
+The script validates all sources before writing and refuses to overwrite an
+existing archive. Verify reference code and release contents first.
 
 ## Stage A — Initial Hierarchy Inquiry
 
-Release before Meeting A:
-
-- standard initial prompt; and
-- linear accessible initial prompt.
-
-Students reconstruct the expression hierarchy `(3 + 5) * 2` without C
-representation vocabulary. This stage contains no node representation,
-vocabulary reference, worked invariant, code, solution, or instructor
-material.
+Release before Meeting A: the standard and linear inquiry prompts for
+`1+2*3`. Students propose how to record its order of work before formal C
+representation or vocabulary is revealed. Preserve both first models and
+later annotations. No worked model, code, or instructor material is included.
 
 ## Stage B — Representation and Cognitive Pause
 
-Release after students preserve their first hierarchy model:
+Release after the initial model: the array-index representation reveal,
+vocabulary, and three-target Cognitive Pause. The pause covers indices
+(`-1` versus `0`), term construction with `pos` and a changing root, and
+recursive evaluation. Keep expert calibration until every student has
+preserved a first response, including approved accessible equivalents.
 
-- child-only binary representation reveal;
-- vocabulary reference; and
-- three-target Cognitive Pause.
+## Stage C — Construction and Evaluation Investigation
 
-The reveal maps `(3 + 5) * 2` to local nodes named `root`, `plus`, `three`,
-`five`, and `two`. The pause addresses named left/right operand positions,
-caller responsibility for acyclic construction, and the search sequence
-`'*', '+', 3, 5, 2`. Withhold expert calibration until every student preserves
-a first response, including approved extended-time or asynchronous
-equivalents.
+Release after the pause and calibration: standard and linear worksheets
+using the transfer expression `2*3+4*5`. Students track node reservation,
+child indices, parser position, precedence, left grouping, and recursive
+results. No answer key is included.
 
-## Stage C — Structural Investigation
-
-Release after the pause and instructor calibration:
-
-- standard investigation worksheet; and
-- linear accessible investigation worksheet.
-
-Students translate the fresh expression `(8 - 3) * (4 + 2)` into local-node
-addresses, distinguish named child sides, reason about paths and caller
-preconditions, trace recursive search, and separate clearance from
-detachment. No answer key is supplied.
-
-## Stage D — Textbook and Models
+## Stage D — Textbooks and Models
 
 Release after the Stage C attempt is preserved:
 
-- the current expression-tree-framed binary-tree textbook; and
-- correct-operation diagrams with text equivalents.
+- `textbook.md`, the English chapter;
+- `textbook_korean.md`, its Korean edition; and
+- `diagrams/tree_models.md`, correct models with text equivalents.
 
-Do not include worked predictions or repair answers for the Stage E
-autopsy. Generic correct clearance examples are separate from that fixture.
+Both editions use the same C representation and executable examples.
+This stage contains no worked Stage E fault prediction or repair answer.
 
 ## Stage E — Lab and Evidence
 
 Release for Meeting B:
 
-- lab, 100-point rubric, evidence template, and Tree Structure Autopsy;
+- lab, 100-point rubric, evidence record, and autopsy worksheet;
 - `include/binary_tree.h` and `starter/binary_tree.c`;
-- supplied core tests and the student-test template;
+- core tests and the three-test student template;
 - student-only PowerShell and GNU Make build files; and
-- isolated `autopsy/faulty_cascade.c`.
+- standalone `autopsy/faulty_precedence.c` with its README.
 
-Only `tree_find` and `tree_clear` are library implementation tasks.
-Direct initialization, guarded attachment, and caller-side detachment are
-core examples and test work. Require three distinct student-authored tests,
-not additional APIs.
+The four required functions are `new_node`, `term`, `terms`, and
+`eval_tree`. They use `nodes[20]`, character data, integer child indices,
+`-1` empty links, `size`, `eq[20]`, and `pos`. The parser assumes valid
+single-digit `+`/`*` expressions of at most 19 characters without spaces or
+parentheses; all intermediate and final results fit in `int`. Boundary
+checks use valid inputs, including zero and a maximum-length expression.
+Input rejection, search, and clearing are not required tasks.
 
-The public core suite carries the canonical `(3 + 5) * 2` fixture while also
-checking that the underlying binary-tree API handles valid one-child,
-duplicate-value, zero-value, and unsorted-data cases.
+Students author three distinct tests for creation, construction, and
+evaluation. The autopsy is independent of the starter and solution. It
+shows a logical precedence fault using finite valid trees and ordinary
+arithmetic, so students predict the result rather than a memory crash.
 
-Stage E excludes:
-
-- `instructor/`;
-- `code/solution/`;
-- `code/tests/test_extension.c`;
-- every answer key; and
-- earlier inquiry materials.
+Exclude `instructor/`, `code/solution/`, `code/lecture/`,
+`code/tests/test_extension.c`, all answer keys, and earlier inquiry materials
+from Stage E. Extension tests add cases for the same four functions, not
+additional implementation requirements.
 
 ## Instructor verification
 
-Build the reference core and extension targets and the isolated autopsy
-using `../code/README.md`. Check supported warning and sanitizer builds.
-The student Makefile and PowerShell script must expose only starter/core,
-student tests, and the isolated autopsy; instructor extensions stay private.
+Use `../code/README.md` to run reference core/extension checks, the lecture,
+and autopsy with warnings and supported sanitizers. Compile both textbook
+programs and compare their output. Check that the incomplete starter and
+student placeholders fail cleanly.
 
-Verify all release sources, unique archive entry names, vocabulary in Stage
-B only, and no Stage D autopsy answers. The public source paths are
-`binary_tree.h`, `binary_tree.c`, and `faulty_cascade.c`.
+Verify every release source and unique destination name. Stage D must
+include both language editions. Student build scripts must work using only
+Stage E entries and expose only starter core/student tests and autopsy.
+Check that solutions, instructor content, and extensions are absent.

@@ -2,53 +2,50 @@
 
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
-| Representation and invariants | 20 | The expression fixture, pointer expressions, and portable character literals agree; general-tree arity, expression arity, one incoming link, no cycles, and caller preconditions are explained |
-| Direct node operations | 15 | The five local nodes are fully initialized; chosen-side attachment checks for an empty link; a right-only generic-tree case is handled correctly |
-| Recursive search | 20 | Current-node, left-subtree, right-subtree order returns the first matching address without mutation; missing and `NULL` cases work |
-| Clearing, removal, and lifetime | 20 | Every selected node is reset; caller detachment is explicit; the opposite side is unchanged; cleared nodes remain live objects |
-| Operation efficiency | 10 | Work is counted for initialization, linking, search, clearing, and detachment; depth is related to temporary recursive-call storage |
-| Tests and tool evidence | 10 | Three distinct student tests have rationales and use valid, live-node fixtures; build and approved diagnostic evidence is reproducible |
-| Autopsy and forward transfer | 5 | The shared-operand setup defect is diagnosed without blaming correct clearing or claiming destroyed storage; a repair is justified |
+| Representation and invariants | 20 | Character data, child indices, -1 absence, valid index 0, root, size, and pos agree across code and diagrams; single root, no sharing/cycles, expression arity, and valid-input assumptions are explained |
+| Node creation | 15 | new_node reserves the correct index, stores the character, initializes both child fields to -1, increments size once, and preserves previously created nodes |
+| Expression construction | 20 | term and terms consume the intended characters, preserve multiplication precedence and left association, return correct roots, and produce the required links |
+| Recursive evaluation | 20 | A digit is the base case; child results are computed before their operator; correct answers are returned without changing nodes or shared parser state |
+| Operation efficiency | 10 | Constant node/link work, linear parsing/evaluation, occupied array storage, and evaluation stack depth are justified; fixed capacity is distinguished from the scalable model |
+| Tests and tool evidence | 10 | Three distinct valid-input tests cover creation, construction, and evaluation/nonmutation; builds and approved diagnostics are reproducible |
+| Autopsy and forward transfer | 5 | The left-to-right parser's precedence defect is identified, a term-based repair is explained, and a regression claim distinguishes the wrong and correct trees |
 | **Total** | **100** | |
 
 ## Performance levels
 
 ### Exceeds expectations
 
-The student explains unfamiliar valid arrangements, tests side preservation
-and repeated data deliberately, and separates a caller precondition from an
-operation's local checks.
+The student explains unfamiliar valid expressions, uses structural checks to
+prove association, and distinguishes parser state, stored characters, and
+returned numeric values with evidence.
 
 ### Meets expectations
 
-Both recursive functions work. Direct initialization, guarded attachment,
-and caller detachment are demonstrated. Tests and explanations respect node
-lifetime and the unshared-tree contract.
+All four functions work. Valid inputs produce the textbook's representation
+and results. Tests reset shared state for independent builds and show that
+evaluation leaves the tree unchanged.
 
 ### Developing
 
-Common cases work, but initialization, search order, recursive clearing,
-side preservation, or the distinction between clearing and detaching needs
-guidance.
+Common cases work, but index initialization, term boundaries, precedence,
+root updates, digit conversion, or recursive return values need guidance.
 
 ### Beginning
 
-The code follows uninitialized links, loses an uncleared subtree, changes
-the opposite child position, or treats a cleared live node as nonexistent.
-The explanation relies on automatic checks that these functions do not make.
+The code confuses 0 with an absent child, returns unused indices, loses
+subtrees while updating roots, consumes the wrong characters, or replaces
+operators with calculated values.
 
 ## Scoring notes
 
-- Only `tree_find` and `tree_clear` are implementation TODOs. Direct node
-  operations remain core and are assessed through examples and student tests.
-- No traversal-label memorization or whole-tree validation is required.
-- Do not create a real cycle or expired-node access to earn testing credit.
-- Optional extensions add valid fixtures and traces. They may earn a separate
-  distinction or up to five bonus points when course policy permits, without
-  replacing core points.
-- Everyday explanations are acceptable. Drawing quality, handwriting, typing
+- All four functions are `TODO(core)` tasks: `new_node`, `term`, `terms`, and
+  `eval_tree`. The student implements the evaluator's base case as well.
+- Whole-tree validation, malformed-input handling, and traversal-label
+  memorization are not required. Use the stated valid-input contract.
+- Optional valid fixtures may earn a separate distinction or up to five
+  bonus points when course policy permits, without replacing core points.
+- Everyday explanations and approved linear-text, verbal, debugger, or
+  instructor-CI equivalents earn the same credit. Drawing quality, writing
   speed, and spoken fluency are not grading criteria.
-- Approved linear-text, verbal, debugger, or instructor-CI equivalents earn
-  the same credit. CI means another computer runs the submitted tests.
 - An incorrect initial Cognitive Pause is not penalized when preserved and
   meaningfully corrected.

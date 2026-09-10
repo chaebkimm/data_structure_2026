@@ -1,431 +1,384 @@
 # Instructor Answer Key — Module 2
 
 Keep this file instructor-only. Students preserve an initial attempt before
-calibration and an autopsy prediction before observation.
+calibration and an autopsy prediction before observation. Both textbooks
+teach the same four-function array-index model used throughout this key.
 
 ## Macro-question synthesis
 
-Separate local objects form a hierarchy when their child fields store
-addresses of other live objects. Every node has two named child positions,
-left and right. Either position may be empty independently.
-
-The caller constructs a finite, acyclic, unshared tree. The two recursive
-functions assume those rules; they do not certify arbitrary link patterns.
-Operators and numbers are data, not directions for choosing a search branch.
+The hierarchy records operator grouping. A node stores a character and
+left/right child indices; the evaluator obtains each child's value before
+applying the operator. Construction consumes multiplication terms before
+combining them with addition, so `1+2*3` becomes `1+(2*3)` and returns `7`.
+Parent-child relationships follow stored indices, not array adjacency.
 
 ## Stage A — Initial inquiry
 
 ### A. Reconstruct the hierarchy
 
 ```text
-                 '*'
-                /   \
-              '+'    2
-             /   \
-            3     5
+             '+'
+            /   \
+          '1'   '*'
+                / \
+              '2' '3'
 ```
 
-- Starting item: `'*'`.
-- Items with nothing below them: `3`, `5`, and `2`.
-- Route to `5`: `'*' -> '+' -> 5`.
-- Maximum number immediately below an item: two, one at each named side.
-
-The tree represents `(3 + 5) * 2`. Left and right preserve operand order;
-they are not interchangeable expression positions.
-
-Accept a side-labeled table or linear description instead of a drawing.
+The starting item is `'+'`; items with nothing below them are `'1'`, `'2'`,
+and `'3'`. The route to `'3'` is `'+' -> '*' -> '3'`. Multiplication lies
+below addition because its result is an input to that addition. Accept
+side-labeled tables or linear descriptions instead of a drawing.
 
 ### B. Preserve the hierarchy
 
-1. Giving the existing `five` object another incoming link from `two.left`
-   shares one node between two routes. That is no longer this module's
-   unshared tree.
-2. Linking `three` back to `root` creates the cycle
-   `root -> plus -> three -> root`. Repeated downward processing cannot rely
-   on reaching an empty link along that route.
-3. Removing the left `plus` branch below `root` leaves `two` on the right.
-   Side identity does not depend on a neighboring side being occupied. The
-   result is a valid general binary tree with one child, but it is no longer
-   a completed binary expression because `'*'` lacks its left operand.
+1. Making the existing `'2'` item also appear below `'1'` introduces two
+   routes to one object. It is shared rather than an unshared tree node.
+2. Linking `'3'` back to `'+'` creates the cycle
+   `'+' -> '*' -> '3' -> '+'`; following that route can continue forever.
+3. Removing the left branch does not move the right branch. A right-only
+   node can belong to a general binary tree, but the remaining `'+'` lacks
+   one operand and no longer represents a completed expression.
+4. Suitable rules include one root, one incoming link per other node, no
+   cycles, and at most one item at each named side.
 
-Suitable rules include no sharing, no cycles, at most one item on each
-named side, and one starting root.
+Do not require representation or technical vocabulary before the reveal.
 
-### C–D. Model and storage brainstorm
+### C. Calculate from relationships
 
-Each object needs its data and a way to identify each child. A special empty
-marker represents an unused position. Related objects need not be physically
-adjacent. Two objects storing the same integer remain different objects.
+Multiplication returns `6`; addition then returns `7` and finishes last.
+Grouping the same input as `(1+2)*3` instead gives `9`, with `'*'` at the
+top and the `'+'` group on its left. The different answer comes from a
+different hierarchy. Parentheses in this explanation express grouping;
+the program's input grammar does not accept them.
 
-Do not require pointer vocabulary before the Stage B reveal. A response
-such as “remember where the left and right items are” is a sound initial
-model.
+### D. Storage brainstorm
 
-## Stage B — Representation and pause
+Each object needs its character and a way to identify each child, with a
+special indication for an empty position. Related objects need not occupy
+neighboring storage. Equal stored characters do not make two objects the
+same object. Accept any reasoned initial proposal and preserve unresolved
+questions for later comparison.
 
-### Canonical local-node table
+## Stage B — Representation and Cognitive Pause
 
-| Variable | Data | Left address | Right address |
-|---|---|---|---|
-| `root` | `'*'` | `&plus` | `&two` |
-| `plus` | `'+'` | `&three` | `&five` |
-| `three` | `3` | `NULL` | `NULL` |
-| `five` | `5` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+### Canonical table
 
-### Target 1 — Preserve the sides
+For `1+2*3`, `root == 1`, `size == 5`, and `pos == 5`:
 
-After complete removal of the root's left branch:
+| Index | `data` | `left` | `right` |
+|---:|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 3 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 2 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-```c
-root.left == NULL
-root.right == &two
-```
+### Target 1 — Indices and characters
 
-A right child without a left child is valid. The removed local objects have
-been cleared but remain alive while their scope is active. The remaining
-shape is not a completed binary expression because the root operator has only
-one operand.
+`root` is index `1`. `nodes[root].left` is index `0`.
+`nodes[nodes[root].left].data` is character `'1'`. Zero selects the first
+array slot. The link value `-1` means no child and must not be dereferenced.
+The integer index, the character, and an evaluated number are distinct
+kinds of information even when their printed forms look similar.
 
-### Target 2 — Whole-tree rule
+### Target 2 — A term boundary
 
-`three.left = &root` would create a cycle. An empty `three.left` proves only
-that this one field is unused; it does not make the whole relationship safe.
-The caller must prevent the change. Neither search nor clearance is a
-cycle-rejection routine. Do not run the invalid example recursively.
+Starting fresh, the first `term()` inside `terms()` reserves only `'1'` at index `0`. It
+returns `0` with `size == 1`, `pos == 1`, and `eq[pos] == '+'`. The test
+for `*` examines the next character without consuming it.
 
-### Target 3 — Search order
+When this call is the first step inside `terms()`, its caller keeps root
+`0`, consumes `+`, and requests a complete next term. That next `term()`
+call builds `2*3`. The caller finally puts both terms below the plus node.
+Do not suggest calling `terms()` separately at the `+` after a standalone
+`term()` call; `terms()` begins by expecting a digit at the start of a term.
 
-`tree_find(&root, 2)` checks:
+### Target 3 — Returned results and unchanged data
 
-```text
-'*', '+', 3, 5, 2
-```
+Call-entry indices are `1, 0, 3, 2, 4`. Completed calls return:
 
-It returns `&two`. There is no value-order guarantee: the complete left
-subtree must be searched before the right operand, because the expression
-shape encodes operations and operands rather than binary search ordering.
+| Index | Stored character | Returned value |
+|---:|---|---:|
+| 0 | `'1'` | 1 |
+| 2 | `'2'` | 2 |
+| 4 | `'3'` | 3 |
+| 3 | `'*'` | 6 |
+| 1 | `'+'` | 7 |
+
+A digit is the base case and returns its character minus `'0'`. Each
+operator needs both returned operand values before combining them.
+Indices `1` and `3` retain `'+'` and `'*'`; all child links and shared
+parser state also remain unchanged. Arithmetic answers live in call-local
+values and return values, not in overwritten operator fields.
 
 ## Stage C — Investigation
 
-Each independent operation starts again from the supplied Stage C state.
+Use a fresh starting state for every independent operation.
 
 ### D. Translate among representations
 
 ```text
-                  root:'*'
-                  /       \
-             minus:'-'    plus:'+'
-               /   \       /   \
-          eight:8 three:3 four:4 two:2
+[3] '+'
+|-- left: [1] '*'
+|   |-- left: [0] '2'
+|   `-- right: [2] '3'
+`-- right: [5] '*'
+    |-- left: [4] '4'
+    `-- right: [6] '5'
 ```
 
-| Variable | Data | `left` | `right` |
-|---|---|---|---|
-| `root` | `'*'` | `&minus` | `&plus` |
-| `minus` | `'-'` | `&eight` | `&three` |
-| `plus` | `'+'` | `&four` | `&two` |
-| `eight` | `8` | `NULL` | `NULL` |
-| `three` | `3` | `NULL` | `NULL` |
-| `four` | `4` | `NULL` | `NULL` |
-| `two` | `2` | `NULL` | `NULL` |
+| Index | `data` | `left` | `right` |
+|---:|---|---:|---:|
+| 0 | `'2'` | -1 | -1 |
+| 1 | `'*'` | 0 | 2 |
+| 2 | `'3'` | -1 | -1 |
+| 3 | `'+'` | 1 | 5 |
+| 4 | `'4'` | -1 | -1 |
+| 5 | `'*'` | 4 | 6 |
+| 6 | `'5'` | -1 | -1 |
 
-Direct relationships include:
+The four assignments are `nodes[3].left = 1`, `nodes[3].right = 5`,
+`nodes[1].right = 2`, and `nodes[5].left = 4`.
 
-```c
-root.left = &minus;
-root.right = &plus;
-minus.left = &eight;
-minus.right = &three;
-plus.left = &four;
-plus.right = &two;
-```
-
-| Expression | Meaning |
+| Expression | Meaning and value |
 |---|---|
-| `root` | the node object |
-| `&root` | that object's address |
-| `root.data` | `'*'` |
-| `root.left` | `&minus` |
-| `root.left->data` | `'-'`, reached through the stored left address |
-| `NULL` | no child at the selected position |
+| `root` | index `3`, selecting the whole-expression root |
+| `nodes[root].data` | character `'+'` |
+| `nodes[root].left` | index `1`, selecting its left subtree |
+| `nodes[nodes[root].left].data` | character `'*'` at index `1` |
+| `-1` in a child field | no child in that position |
 
-### E. Paths and positions
+### E. Positions
 
-- Path to `four`: `'*' -> '+' -> 4`.
-- Depth of `four`: 2.
-- Leaves: `eight`, `three`, `four`, and `two`.
-- Height of `minus`: 1.
-- Height of `root`: 2.
-- Subtree rooted at `minus`: `minus`, `eight`, and `three`.
+The data path to index `4` is `'+' -> '*' -> '4'`, using indices `3, 5, 4`.
+Its depth is `2`. Leaf indices are `0, 2, 4, 6`. The height of index `1`
+is `1`; the root's height is `2`. The subtree at index `1` contains
+indices `1, 0, 2`. Count links rather than nodes; a leaf has height zero.
+A parent or ancestor remains a relationship without being a stored field.
 
-Count links, not nodes. A leaf has height zero. Parent and ancestor remain
-relationship words, but the node stores no upward link. The diagram or a
-route from a known root supplies that context.
+### F. Invariants
 
-### F. Invariants versus local checks
+The root has zero incoming child links. Every other tree node has exactly
+one. Each present child index is in `[0, size)`, and absence is `-1`.
 
-The representation has at most two children, distinguished as left and
-right. Every reachable non-root node has one incoming tree link; no node is
-shared, and no downward route repeats a node. All referenced objects must
-be initialized and alive.
+- `nodes[0].left = 3` creates the route `3 -> 1 -> 0 -> 3`, a cycle.
+- `nodes[5].left = 2` makes index `2` a child of both indices `1` and `5`
+  while removing the only route to index `4` from the root.
+- Joining disjoint subtrees under a fresh parent adds one incoming link to
+  each subtree root. No existing descendant can already reach the fresh
+  parent, so no cycle is introduced.
+- An empty field establishes only that the selected side is unused. It
+  cannot prove that a candidate child is unshared or cannot reach a parent.
+- A right-only general binary-tree node is possible. A completed `'+'` or
+  `'*'` expression needs both operands and therefore both child links.
 
-The four rule blanks are zero incoming links at the root, one incoming link
-at each other node, a cycle, and alive.
+The proposed defects stay on paper. The required functions assume valid
+input and completed trees rather than detecting arbitrary malformed links.
 
-| Proposed change | Judgment |
-|---|---|
-| attach a fresh initialized `n7` to empty `two.left` under the general tree contract | valid if its lifetime is sufficient, though it no longer represents the supplied binary expression |
-| put `&n7` in occupied `root.left` without replacement | not permitted; the empty-side guard prevents the write |
-| also put existing `&three` in `four.left` | invalid sharing, even if the selected side is empty |
-| connect `eight.left` to `&root` | invalid cycle |
-| put `&n7` in both sides of `two` | invalid repeated incoming link, even though both fields can hold an address |
+### G. Node reservation and shared state
 
-The `if` check establishes only whether that side is empty. There is no
-status value or automatic whole-tree rejection. The caller must not perform
-a link assignment that would violate the global rules.
+After `int a = new_node('0');`, `a == 0`, `size == 1`, and the new fields
+are character `'0'`, left `-1`, right `-1`. Character `'0'` is data; integer
+`0` is its evaluated value; index `0` is its storage position.
 
-### G. Local-node lifetime and clearance
+After `int b = new_node('7');`, `b == 1` and `size == 2`. Both new child
+fields are `-1`; neither node is attached to the other. Each reservation
+initializes both fields because unused or previously reused storage does
+not establish the required no-child marker.
 
-| Action | Judgment and explanation |
-|---|---|
-| initialize data and both links before use | safe and required before linking the node |
-| follow a node whose child links were never initialized | unsafe; those fields do not yet identify valid children or empty sides |
-| inspect `minus.data` after `tree_clear(&minus)` while still in scope | valid; the data is zero |
-| keep using the address of a local node after its scope ends | invalid lifetime use |
+A fresh build resets `size` to reserve from the beginning and `pos` to
+read from the beginning of its new valid `eq`. Reusing array slots changes
+which logical tree they describe, so saved old root indices cannot retain
+the earlier tree. The global storage itself remains alive.
 
-Clearance resets contents. It does not destroy the local variable.
-Reinitialization and reuse are possible while that object remains alive and
-unlinked. Zero is an ordinary value, not a “no node” marker; `NULL` marks an
-empty link.
+A 19-character input plus its `\0` occupies all 20 character slots. One
+node per input character needs at most 19 of the 20 node slots. Capacity
+suffices under the fresh-state and valid-input assumptions.
 
-Passing an address to another function does not extend the local object's
-lifetime. The declaring block still controls when it ends.
+### H. Two parsing levels
 
-### H. Selected-side attachment and removal
+For `2*3+4*5`, a standalone first `term()` returns root `1`, `size == 3`,
+`pos == 3`, and unread `+`. Node `1` links left to `0` and right to `2`.
 
-In the separate worksheet example, `parent.left == NULL` and
-`parent.right == &n8`. The parent is not a leaf because its right child is
-present. Attaching fresh `n4` to the selected left side gives:
+Starting fresh again, the complete `terms()` trace is:
 
-```c
-if (parent.left == NULL) {
-    parent.left = &n4;
-}
-```
+| Checkpoint | Root information | `size` | `pos` | Next unread |
+|---|---|---:|---:|---|
+| after first `term()` | current root `1` | 3 | 3 | `+` |
+| after reserving `+` | current root `1`; new operator `3` | 4 | 4 | `4` |
+| after next `term()` | current root `1`; next-term root `5` | 7 | 7 | `\0` |
+| after linking and return | whole root `3`, children `1` and `5` | 7 | 7 | `\0` |
 
-The two links are then `&n4` and `&n8`. If the selected left field were
-occupied, the guard would leave it unchanged; it would not silently use the
-right side instead.
+The right operand of addition must be a complete term to include `4*5`.
+Reading only `'4'` would leave the multiplication outside that operand.
+`eq[pos]` peeks without advancing; `eq[pos++]` consumes at the old position
+and advances once. `term()` leaves `+` for the caller's addition loop.
+A successful complete `terms()` call leaves `\0` unread.
 
-For removal:
+### I. Recursive evaluation
 
-```c
-tree_clear(parent.left);
-parent.left = NULL;
-```
+Call-entry indices: `3, 1, 0, 2, 5, 4, 6`.
 
-The links become `NULL` and `&n8`. The right field keeps its identity and
-original address. Clearing an empty selected side and assigning `NULL` again
-is harmless.
+| Return order | Index | Returned value |
+|---:|---:|---:|
+| 1 | 0 | 2 |
+| 2 | 2 | 3 |
+| 3 | 1 | 6 |
+| 4 | 4 | 4 |
+| 5 | 6 | 5 |
+| 6 | 5 | 20 |
+| 7 | 3 | 26 |
 
-### I. Recursive search
+Digits return `data - '0'`; C guarantees consecutive digit character
+codes. Each operator combines the numeric results of both child calls.
+The final answer is `26`. Operator indices `1`, `3`, and `5` still contain
+`'*'`, `'+'`, and `'*'`.
 
-Complete current-left-right sequence:
+Snapshot the used nodes' data and both child fields, `size`, `pos`, and
+`eq`; evaluate twice; assert both answers and compare the snapshots.
+Compare struct fields explicitly rather than depending on padding bytes.
+Nonmutation means the second evaluation can reuse the completed tree.
 
-```text
-'*', '-', 8, 3, '+', 4, 2
-```
+### J. Association and cost
 
-Searching for `4` checks `'*', '-', 8, 3, '+', 4` and returns `&four`.
-Searching for 404 checks all seven nodes and returns `NULL`.
-If `two.data` is separately changed to `4`, a search for `4` still returns
-`&four`: it checks `'*', '-', 8, 3, '+', 4` and stops before `two`. The return
-value identifies that object rather than merely reporting the integer.
+For `2*3*4`, final root `3` stores the second `*`, with left index `1`
+(the first `*`) and right index `4` (digit `'4'`). Node `1` has children
+`0` and `2`. This shape expresses `(2*3)*4`.
 
-Changing `eight.data` to 900 does not break a tree rule. A search for 900
-checks `'*', '-', 900` and finds `&eight`. The lack of a value-order invariant
-means the left subtree cannot be skipped based on a comparison with root data.
+For `1+2+3`, root `3` stores the second `+`, with left `1` and right `4`.
+Node `1` has children `0` and `2`. The same old-root/new-parent pattern
+expresses `(1+2)+3`. These examples return the same values under the other
+association; inspect child indices to establish construction order.
 
-A correct function handles `NULL`, checks the current node, searches left,
-returns a left match immediately, then searches right. Search does not
-change any field. Worst-case work is `O(n)`.
-
-### J. Cascading clearance and removal
-
-For the Stage C left branch:
-
-1. clear `eight`;
-2. clear `three`;
-3. clear `minus`; and
-4. set `root.left` to `NULL`.
-
-The three cleared objects each end with data zero and both links empty.
-The surviving root still stores `'*'`, and `root.right == &plus`. The plus
-node and its children `four` and `two` are unchanged. No child changes sides.
-The remaining links form a valid generic binary tree but not a completed
-binary expression, because the root operator now has only its right operand.
-
-If the caller only runs `tree_clear(&minus)`, `root.left` still contains
-`&minus`. The additional assignment is what detaches that cleared branch.
-
-Calling `tree_clear(&root)` resets all seven node objects but does not end
-any of their lifetimes. Calling it again is safe. A later
-`tree_find(&root, 0)` returns `&root`, because that live node now stores
-zero. The detached descendants are no longer reachable from it.
-
-| Operation | Work | Reason |
+| Operation | Time | Reason |
 |---|---:|---|
-| initialize one existing node | `O(1)` | set three fixed fields |
-| attach to a known empty selected side | `O(1)` | one check and one link write |
-| search data | `O(n)` worst case | a missing value can require every node |
-| clear a selected subtree | `O(k)` | reset each of its `k` nodes |
-| detach a known side alone | `O(1)` | write one `NULL` |
-| clear and detach | `O(k)` | recursive clearance dominates |
+| reserve and initialize one node | `O(1)` | three field writes and one counter update |
+| assign one child link | `O(1)` | one known field write |
+| construct the whole expression | `O(n)` | consume each character and reserve each node once |
+| evaluate the whole tree | `O(n)` | compute each node's result once |
 
-Each node always includes space for its two pointers, including a leaf.
-Recursive call-stack space is proportional to the longest pending route,
-`O(h + 1)` when height counts links.
+The fixed array reserves `20 * sizeof(struct TreeNode)` bytes; its `n`
+used nodes represent the expression. Exact struct size may include padding.
+The two parser levels use constant additional call space. Evaluation uses
+`O(h + 1)` call-stack space, including the root frame. A long operator
+chain can form a skewed tree; balanced height is not guaranteed.
 
-### K. Tree-to-graph transfer
+### K. Transfer
 
-A reused subexpression referenced by two operators may need a directed
-acyclic graph rather than a tree. A relationship model that also permits
-cycles needs a more general directed graph. A tree assumes one route to each
-node from its root; shared or returning relationships require different
-processing rules, commonly including remembering which objects have already
-been visited.
+`8+2*0` returns `8`, and the zero digit still has a real node index.
+Character `'0'` is an ordinary operand, index `0` is a valid slot, and
+only the link value `-1` denotes absence.
 
-Students explain this distinction; they do not implement a graph validator
-or repair arbitrary graphs with the two tree functions.
+A reusable subexpression referenced by two operations is an example of a
+shared relationship that may need a directed acyclic graph. It relaxes the
+tree's single-parent rule. A model that also allows returning routes needs
+cycle-aware processing. Students explain the distinction without
+implementing a graph validator or a new API.
 
 ### L. Exit anchors
 
-A child field stores an address or `NULL`. Both child positions are
-independent. The caller keeps objects alive and prevents sharing and cycles.
-Search is current node, left subtree, right subtree. Clearance resets every
-reachable node, and removal also needs the caller to erase the selected
-incoming link. No side shifting occurs.
+A child link is an integer index; `-1` means absent. `size` counts used
+nodes and identifies the next available slot. `pos` identifies the next
+unread character. `term()` stops before `+` or `\0`; `terms()` combines
+complete terms with addition. The digit base case converts and returns a
+number, and evaluation preserves node data. Students implement
+`new_node`, `term`, `terms`, and `eval_tree`.
 
 ## Exact implementation boundary
 
 ```c
 struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data;
+    int left;
+    int right;
 };
 
-struct TreeNode *tree_find(struct TreeNode *node, int target);
-void tree_clear(struct TreeNode *node);
+int new_node(char data);
+int term(void);
+int terms(void);
+int eval_tree(int node);
 ```
 
-Only the two function bodies are starter TODOs. Direct initialization,
-guarded attachment, and explicit detachment belong in examples and tests.
-Do not grade an invented constructor, count query, status type, or validation
-helper as required work.
+The shared definitions are `nodes[20]`, `size = 0`,
+`eq[20] = "1+2*3"`, and `pos = 0`. All four function bodies are core
+student work. Independent fixtures reset both counters and copy a valid
+bounded string. No extra initialization API, malformed-input handling,
+overflow check, or arbitrary-tree validation is required.
 
-In formal traversal terminology the search order is preorder. Chapter 2
-requires the sequence and reasoning, not memorization of this later label.
+Valid input alternates single digits and `+` or `*`, starts and ends with
+a digit, uses no spaces or parentheses, has at most 19 characters, and
+keeps every intermediate and final answer in `int` range. Empty input and
+`eval_tree(-1)` are outside the contract.
 
 ## Tree Structure Autopsy — worked instructor answers
 
-### Starting links
+### Starting defect and prediction
 
-All six variables remain alive throughout the fixture. The intended reading
-is `(3 + 5) * (5 - 2)`, but both written `5` operands incorrectly identify
-one shared node object.
+The standalone `code/autopsy/faulty_precedence.c` treats every next
+operator as a parent of the expression already built and the next digit.
+For `1+2*3`, this produces `(1+2)*3`:
 
-| Object and data | `left` | `right` |
-|---|---|---|
-| `root`, `'*'` | `&plus` | `&minus` |
-| `plus`, `'+'` | `&three` | `&shared_five` |
-| `minus`, `'-'` | `&shared_five` | `&two` |
-| `three`, `3` | `NULL` | `NULL` |
-| `shared_five`, `5` | `NULL` | `NULL` |
-| `two`, `2` | `NULL` | `NULL` |
+| Index | `data` | Faulty `left` | Faulty `right` |
+|---:|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 2 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'*'` | 1 | 4 |
+| 4 | `'3'` | -1 | -1 |
 
-The initializer for `minus` first violates the unshared-tree rule when its
-left field receives `&shared_five` while `plus.right` already holds that
-address. The fact that this is a newly initialized field is not evidence that
-`shared_five` is unlinked elsewhere.
+The faulty root is `3`. Its plus child returns `3`, and its digit child
+returns `3`, so multiplication returns `9`. All five slots are initialized;
+each non-root has one incoming link, there is no cycle, and every operator
+has two children. The expression's precedence is wrong even though the
+tree invariants hold.
 
-### Predicted consequence
+The reference grouping has root `1`, whose children are `0` and `3`;
+node `3` has children `2` and `4`. It returns `7`. Node character order
+is the same in both arrays; the links determine the grouping.
 
-The fixture performs correct recursive clearance on the left branch, then
-sets `root.left = NULL`.
-
-```text
-root.left  = NULL
-root.right = &minus
-minus.data = '-'
-minus.left = &shared_five
-minus.right = &two
-shared_five.data = 0
-shared_five.left = NULL
-shared_five.right = NULL
-plus.data = 0
-plus.left = NULL
-plus.right = NULL
-three.data = 0
-two.data = 2
-```
-
-The program's exact observations are:
+The fixture's expected output is:
 
 ```text
-before: shared operand data=5
-after clearing and detaching the plus branch:
-root.left is NULL: yes
-root.right still points to minus: yes
-minus.left still points to shared_five: yes
-minus.left->data=0
+faulty:  1+2*3 = 9 (root '*')
+correct: 1+2*3 = 7 (root '+')
+Precedence fault demonstrated.
 ```
-
-The shared operand remains alive at the same address. The surviving minus
-route still reaches it, but it now contains zero rather than 5. This is
-not an expired pointer, and a memory sanitizer need not complain.
-
-The defect is the invalid shared relationship, not the supplied
-`tree_clear` implementation. Changing clear to skip a descendant or
-preserve its data would break the valid-tree contract.
 
 ### Repair and regression evidence
 
-Keep one incoming link to the shared object, or use distinct `left_five` and
-`right_five` objects if both expression positions need the value 5. Equal
-data does not make two operands the same object. If the application truly
-needs a shared reusable subexpression, choose a later graph representation
-with an appropriate processing policy.
+The defect is in construction, not evaluation. Reserving a `+` node and
+consuming just its next digit fails to build a complete multiplication
+term. Use `term()` to group every multiplication sequence, then have
+`terms()` attach complete terms under plus nodes. The standalone autopsy
+uses a directly initialized correct tree for comparison; it does not need
+to ship the reference parser implementation.
 
-A valid regression fixture can give the left and right branches distinct
-operand objects that both store 5. After removing the plus branch, assert that
-the minus branch's operand remains at its original address with data 5, while
-all plus-branch objects are zeroed and `root.left == NULL`.
+A regression test can build `1+2*3` from fresh state and assert root `1`,
+root character `'+'`, children `0` and `3`, multiplication children `2`
+and `4`, `size == 5`, `pos == 5`, and result `7`. A repeated-operator
+case should inspect links as well as the answer to establish left
+association. The proposal may support the construction slot among the
+three authored tests; a fourth coded test is not required.
 
-This explanation may support one of the three required student tests; the
-autopsy does not require a fourth coded test. Do not claim the regression
-fixture turns the library into an automatic sharing detector.
+Compiler warnings and sanitizers need not report this failure because all
+accesses and arithmetic are valid. They supplement expected-value and
+structural assertions; their silence cannot establish semantic correctness.
 
 ## Assessment alignment
 
 | Criterion | Points |
 |---|---:|
 | Representation and invariants | 20 |
-| Direct node operations | 15 |
-| Recursive search | 20 |
-| Clearing, removal, and lifetime | 20 |
+| Node creation | 15 |
+| Expression construction | 20 |
+| Recursive evaluation | 20 |
 | Operation efficiency | 10 |
 | Tests and tool evidence | 10 |
 | Autopsy and forward transfer | 5 |
 | Total | 100 |
 
-The three authored-test slots cover search boundaries/duplicate order,
-direct linking/occupied sides/detachment, and recursive clearance/live-node
-reuse, in that order. Together they must show the opposite side is unchanged.
-Require distinct claims and rationales; copying the same test with different
-data is insufficient.
-
-Accept equivalent linear descriptions, verbal explanations, and approved
-tool evidence. Do not penalize an initial misconception that is preserved
-and meaningfully corrected.
+The three authored-test slots cover creation, construction with precedence
+and association, and evaluation with nonmutation, in that order. Require
+distinct claims and rationales. Accept equivalent linear descriptions,
+verbal explanations, and approved tool evidence. Do not penalize an initial
+misconception that is preserved and meaningfully corrected.

@@ -1,38 +1,44 @@
 #ifndef BINARY_TREE_H
 #define BINARY_TREE_H
 
-#include <stddef.h>
-
 struct TreeNode {
-    /* An integer value or a character constant such as '+' or '*'. */
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
+    char data; /* A digit character, '+', or '*'. */
+    int left;  /* Index in nodes; -1 means no child. */
+    int right; /* Index in nodes; 0 is a valid child index. */
 };
 
-/*
- * Each non-NULL link must identify an initialized node object that remains
- * alive for the entire operation. Reachable nodes must form a finite,
- * acyclic tree with no shared child. These functions do not validate that
- * structure. When linking nodes directly, the caller must choose an empty
- * side and attach a fresh node or a disjoint subtree whose root is not
- * already linked elsewhere, without making a cycle.
- */
+/* One expression at a time; these objects live for the whole program. */
+extern struct TreeNode nodes[20];
+extern int size;    /* Used nodes and the next unused array index. */
+extern char eq[20]; /* Initially "1+2*3". */
+extern int pos;     /* Next unread character in eq. */
 
 /*
- * Searches without changing any node. Preorder means current node first,
- * then the entire left subtree, then the right subtree. Returns the first
- * matching address, or NULL for an empty link or an absent target. Zero is
- * an ordinary data value, not an empty-node marker.
+ * Input contract: a nonempty expression of single digits separated by '+'
+ * or '*', with no whitespace or parentheses, and at most 19 characters plus
+ * the ending '\0'. Every intermediate and final result must fit in int.
+ * These teaching functions assume valid input; they do not check it.
+ * Before each independent expression, set size = 0 and pos = 0 and copy
+ * the valid expression into eq. Previous root indices then become obsolete.
  */
-struct TreeNode *tree_find(struct TreeNode *node, int target);
 
-/*
- * Recursively sets every reachable node's data to 0 and both links to NULL.
- * NULL is a no-op. Node objects remain alive and may be inspected or
- * reinitialized afterward. An outside parent's link is not detached:
- * the caller must set that link to NULL when removing a child subtree.
- */
-void tree_clear(struct TreeNode *node);
+/* Reserve nodes[size], initialize both links to -1, and return its index.
+ * Requires 0 <= size < 20. Allocation advances size but does not read eq. */
+int new_node(char data);
+
+/* Build one digit followed by zero or more '*'-digit pairs at eq[pos].
+ * Return the term's root index; leave the next '+' or '\0' unread. */
+int term(void);
+
+/* Build a sum of complete terms, so multiplication has higher precedence.
+ * Return the expression's root index; pos stops at the ending '\0'.
+ * Within each operator level, new operators parent the tree built so far. */
+int terms(void);
+
+/* Return the integer result of a completed expression subtree, preserving
+ * node data and links. Requires a valid root index and a finite, acyclic
+ * tree with no shared children. Digit leaves are the recursive base case;
+ * each operator has two children. Never pass -1 as an evaluation root. */
+int eval_tree(int node);
 
 #endif

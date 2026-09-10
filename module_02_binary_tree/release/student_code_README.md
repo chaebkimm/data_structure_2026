@@ -5,67 +5,51 @@
 - `starter/binary_tree.c`
 - `tests/test_student.c`
 
-Do not edit the public header or supplied tests unless your instructor
-authorizes it.
+Keep the public header and supplied tests unchanged. The four `TODO(core)`
+functions are `new_node(char data)`, `term(void)`, `terms(void)`, and
+`eval_tree(int node)`, each returning `int`.
 
-## Exact model and work
+## Model and contract
 
-```c
-struct TreeNode {
-    int data;
-    struct TreeNode *left;
-    struct TreeNode *right;
-};
+`struct TreeNode` stores `char data`, `int left`, and `int right`.
+`nodes[20]` holds the nodes; links and roots are array indices. `-1` marks
+no child, while index `0` names the first node. `size` is the used-node
+count/next unused position. `eq[20]` contains the expression and `pos`
+marks its next unread character.
 
-struct TreeNode *tree_find(struct TreeNode *node, int target);
-void tree_clear(struct TreeNode *node);
-```
+`new_node` saves a character, initializes both children to `-1`, and
+returns the reserved index. `term` builds a digit and its following
+multiplications; `terms` joins complete terms beneath additions. Each new
+operator keeps the previously built subtree on its left. `eval_tree`
+converts digit leaves with `- '0'`, obtains both child results, and returns
+the operation's result without changing the tree.
 
-These are the only two library functions to complete. Nodes are local
-variables with addresses stored in their child links. The caller keeps them
-alive and constructs a finite, acyclic, unshared tree.
+The canonical input `1+2*3` creates five nodes with character data
+`'1', '+', '2', '*', '3'` at indices `0` through `4`. Its root is index `1`.
 
-The canonical five-node fixture represents `(3 + 5) * 2`:
+Use only valid nonempty alternating single digits and `+`/`*`, with no
+whitespace or parentheses, at most 19 characters, and every intermediate
+and final result within `int`. These preconditions are not checked by the
+textbook implementation. `eval_tree` assumes a completed finite tree with
+no cycles or shared children. Missing operands are outside its contract.
 
-```text
-          root:'*'
-          /      \
-     plus:'+'    two:2
-       /   \
-  three:3 five:5
-```
+Before each independent test, reset `size` and `pos` to zero and copy its
+valid expression into `eq`. Rebuilding reuses the node array; evaluate or
+inspect a previous tree before resetting. The initial global values already
+prepare the canonical example for its first build.
 
-Its current-node/left/right order is `'*', '+', 3, 5, 2`. Use character
-constants such as `'*'` and `'+'` directly; they have type `int` and fit the
-data field. The two child positions preserve operand order.
+## Build and test
 
-Search checks the current node, then the left subtree, then the right subtree,
-returning the first matching address or `NULL`. It does not change the tree.
-Clear resets all reachable data to zero and links to `NULL`; it does not
-end local-object lifetimes or erase an incoming link outside the subtree.
-
-Direct initialization, guarded attachment to a chosen side, and explicit
-clear-then-detach removal belong in the examples and your three tests.
-A right-only child is valid. Removing left never moves right into left.
-The expression fixture happens to give each binary operator two operands,
-but the same representation supports general valid binary trees with exactly
-one child and with duplicate or non-expression data.
-
-## PowerShell
-
-From this `code` directory:
+From this `code` directory in PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target starter -StudentTests
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target starter -StudentTests
 ```
 
-Add `-Sanitize` when supported. The execution-policy setting applies only
-to the launched child process. The script searches for Clang, GCC, and then
-Microsoft C; use a Visual Studio Developer PowerShell for Microsoft C.
-
-## GNU Make
+Add `-Sanitize` when supported. The execution-policy setting applies to the
+launched child process. The script searches for Clang, GCC, then Microsoft
+C; Microsoft C requires a Visual Studio Developer PowerShell.
 
 In Git Bash, MSYS2, WSL, Linux, or macOS:
 
@@ -74,25 +58,22 @@ make starter-core
 make starter-student-tests
 ```
 
-The Makefile defaults to GCC. Use `make CC=clang starter-core` for Clang.
-The starter is intentionally incomplete, so initial test failures identify
-the two functions still to implement.
+Use `make CC=clang starter-core` for Clang. The initial starter and three
+student-test placeholders deliberately fail until completed. Test node
+creation, construction shape/precedence, and evaluation without mutation.
 
-## Isolated Tree Structure Autopsy
+## Standalone precedence autopsy
 
-First preserve the prediction requested in `../student/tree_autopsy.md`.
-Then run either:
+Preserve the prediction in `../student/tree_autopsy.md` before running:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target autopsy
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
 ```
 
-or `make autopsy` in a POSIX-like shell. The standalone fixture supplies its
-own clearance routine; it does not depend on your unfinished implementation.
-All fixture variables remain alive. Its intentionally malformed expression
-reuses one `shared_five` operand beneath both `plus` and `minus`. Compare its
-observable state with the tree invariant rather than expecting a crash.
+Or run `make autopsy`. The fixture is self-contained and does not require
+your unfinished functions. Compare its tree and answer with the expression's
+operator precedence; a successful process exit does not prove the builder
+represented the intended expression.
 
-Instructor extension tests and the reference implementation are deliberately
-absent from this student release.
+The reference implementation, lecture linked to that implementation, and
+instructor extension tests are deliberately absent from this release.
