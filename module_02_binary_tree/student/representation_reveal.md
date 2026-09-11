@@ -22,7 +22,7 @@ char eq[20] = "1+2*3";    /* Characters followed by '\0'. */
 int pos = 0;              /* Next unread character in eq. */
 ```
 
-The array brackets select a node; the dot selects one of its fields.
+The array brackets select a node; the dot selects one of its members.
 `nodes[1].right` stores an index, not a copy of a node. `-1` means no child.
 Index `0` is valid. A root is also an index; it need not be zero.
 

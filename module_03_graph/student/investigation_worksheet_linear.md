@@ -2,13 +2,19 @@
 
 This version has the same facts, questions, and learning targets as the
 standard investigation. It replaces the drawing and table response spaces
-with line-by-line text. Open it after preserving the Cognitive Pause;
-`vocabulary.md` may now be used. Complete Sections A–E before Stage D.
+with line-by-line text. Open it after preserving the Cognitive Pause and
+completing calibration. The 30 numbered core entries in `vocabulary.md` may
+now be used. Complete and preserve Sections A–E before opening the Stage D
+textbook or the vocabulary supplement.
 
 ## A. Translate the canonical model
 
-Use vertices 0 Web, 1 App, and 2 Database with directed edges `0 → 1`,
-`1 → 2`, and `1 → 0`.
+Use accounts 0 Mina, 1 Joon, 2 Sora, 3 Dae, 4 Hana, 5 Leo, and 6 Nuri.
+The complete edge set is `0 → 1`, `1 → 2`, `2 → 0`, `2 → 3`, `4 → 5`,
+and `5 → 4`. Each arrow points from the follower to the followed account.
+
+Unless a question states a change, use this original seven-account graph.
+Treat hypothetical changes in different questions independently.
 
 ### A1. Equivalent representations
 
@@ -16,7 +22,7 @@ Describe every arrow line by line and write the edge set as ordered pairs.
 
 Response:
 
-State three active matrix rows, each with columns 0, 1, and 2 in order.
+State all seven active matrix rows, each with columns 0 through 6 in order.
 
 Response:
 
@@ -26,8 +32,8 @@ Response:
 
 ### A2. Row and column meaning
 
-What question does row 1 answer? What different question does column 1
-answer?
+What question does row 2 answer about Sora? What different question does
+column 2 answer?
 
 Response:
 
@@ -39,15 +45,15 @@ Response:
 
 ### B1. Degree by inspection
 
-Give App’s out-degree and Web’s in-degree. Name the cells counted in each
+Give Sora's out-degree and Mina's in-degree. Name the cells counted in each
 answer.
 
 Response:
 
 ### B2. One-cell removal
 
-Predict the active matrix rows after removing `1 → 2`. Which cells must remain
-unchanged? What is App’s new out-degree?
+Predict the active matrix rows after Sora unfollows Dae by removing `2 → 3`.
+Which cells must remain unchanged? What is Sora's new out-degree?
 
 Response:
 
@@ -64,7 +70,7 @@ The physical grid has capacity 16 while `vertex_count` may be smaller.
 
 ### C1. Active versus physically in bounds
 
-For `vertex_count == 3`, list the active indexes. Explain why index 3 is
+For `vertex_count == 7`, list the active indexes. Explain why index 7 is
 physically in the grid but is not a valid endpoint.
 
 Response:
@@ -76,7 +82,7 @@ relevant rule:
 
 1. `grid[2][0] == 1`
 2. `grid[2][2] == 1`
-3. `grid[3][1] == 1` when `vertex_count == 3`
+3. `grid[7][1] == 1` when `vertex_count == 7`
 4. `grid[0][2] == 2`
 
 Response:
@@ -96,22 +102,25 @@ Response:
 
 ### D1. Routes and cycles
 
-State one route from Web to Database. State the cycle formed by Web and App.
-Why must a procedure following links remember where it has already been?
+State one route from Mina to Dae. State the cycle through Mina, Joon, and
+Sora. Why must a procedure following links remember where it has already
+been?
 
 Response:
 
 ### D2. Shared destinations
 
-Suppose Web and App both had edges to Database. Why is that valid in a graph
-but incompatible with a one-parent tree model?
+Suppose Mina also follows Dae while Sora continues to follow Dae. Why are
+these two incoming edges valid in a graph but incompatible with a one-parent
+tree model?
 
 Response:
 
-### D3. An isolated active vertex
+### D3. Isolated, followed, or inactive
 
-Describe the row and column of an isolated active vertex. How is that vertex
-different from an inactive index?
+Describe Nuri's row and column. Compare them with Dae's row and column in the
+original graph: why is Nuri isolated but Dae is not? How are both accounts
+different from inactive index 7?
 
 Response:
 
@@ -124,7 +133,7 @@ does that comparison leave `struct DirectedGraph` directed?
 
 Response:
 
-Why can the course’s binary cell not also store a delay or cost?
+Why can the course’s binary cell not also store an interaction count?
 
 Response:
 
@@ -151,12 +160,13 @@ one reason:
 
 1. event codes kept in numbered order;
 2. a hierarchy with meaningful left and right child positions; and
-3. permissions that may return to an earlier service.
+3. follow relationships that may lead back to an earlier account.
 
 Response:
 
-An edge here means “communication is permitted.” Name one conclusion that it
-does not support.
+An edge here means “the source account follows the destination account.”
+Name one conclusion about the accounts or their posts that it does not
+support.
 
 Response:
 

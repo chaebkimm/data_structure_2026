@@ -5,8 +5,8 @@
 ### Module identity
 
 - **Length:** two 90-minute meetings.
-- **Audience:** students who know C variables, arrays, loops, conditions, and
-  functions.
+- **Audience:** students learning the list model, including those for whom
+  every C symbol, variable, loop, condition, and function is new.
 - **Representation:** `int array[10]`, an integer size count, and capacity
   ten.
 - **Core:** checked indexed read/update, linear first-match search, append,
@@ -37,14 +37,21 @@ mutator's returned size, and support the result with tests and tool evidence.
 
 Prepare the five staged releases, diagram/text models, starter code, tests,
 and a warning-enabled compiler plus an approved runtime-check or debugger
-environment. Use the textbook sequence throughout the conceptual lesson:
+environment. Use this sequence when connecting the investigation to the
+Stage D textbook:
 
 ```text
-start:           [100, 200, 300]     size 3, capacity 10
-update index 1:  [100, 500, 300]     size 3, capacity 10
-remove index 1:  [100, 300]          size 2, capacity 10
-insert 600 at 1: [100, 600, 300]     size 3, capacity 10
+start:           [100, 200, 300, 400, 500]   size 5, capacity 10
+update index 1:  [100, 500, 300, 400, 500]   size 5, capacity 10
+find value 300:  index 2; list unchanged
+remove index 1:  [100, 300, 400, 500]        size 4, capacity 10
+insert 600 at 1: [100, 600, 300, 400, 500]   size 5, capacity 10
 ```
+
+The inquiry and early diagrams use a shorter three-item example. Name that
+as a practice fixture when moving to the five-item textbook trace. The
+standalone `code/lecture/simplified_array_list.c` is the textbook appendix's
+complete program; run it with `make lecture` after Stage D is available.
 
 ## Five release gates
 
@@ -53,7 +60,7 @@ insert 600 at 1: [100, 600, 300]     size 3, capacity 10
 | A — Initial inquiry | before Meeting A | standard or linear prompt | vocabulary, completed model, code, answers |
 | B — Model and pause | after initial answers are preserved | fixed-array reveal, vocabulary reference, and Cognitive Pause | expert calibration and investigation |
 | C — Investigation | after the pause and calibration | standard or linear investigation | completed notes and code |
-| D — Calibrated notes | after Meeting A investigation and exit ticket | textbook, notes, diagram/text models | lab and instructor materials |
+| D — Calibrated notes | after Meeting A investigation and exit ticket | English/Korean textbooks with optional C reference, notes, diagram/text models | lab and instructor materials |
 | E — Lab and evidence | Meeting B | lab, rubric, evidence form, autopsy, header, starter, tests, build files | solution and answer key |
 
 Preserve the sequence “attempt, compare, correct.” Accommodations can change
@@ -113,7 +120,10 @@ with the number of stored items rather than introducing a different model.
 # Between meetings
 
 1. Preserve the investigation and exit ticket before releasing Stage D.
-2. Ask students to annotate earlier answers using the textbook and notes.
+2. Ask students to annotate earlier answers using either textbook language
+   and the notes. Offer one relevant **Full C Code Explanation** topic when
+   syntax blocks their reading; the eleven-topic appendix and its practice
+   answers are references, not another assigned reading or submission.
 3. Prepare Stage E for Meeting B.
 4. Verify reference core and extension tests and the isolated guarded
    autopsy before class.
@@ -143,6 +153,9 @@ The public functions are `int_list_valid_index`, `int_list_find`,
   or updates.
 - Search returns the first matching index, or `-1` when absent or metadata is
   invalid.
+  The textbook's inline loop instead finishes with `index == size` when
+  absent. Explain this change of result convention before students copy a
+  search into the lab function.
 - Append, insert, and remove return the new size on success or the original
   size on rejection. The caller assigns that result back to `size`.
 - Every rejected mutation preserves all array elements.
@@ -150,6 +163,22 @@ The public functions are `int_list_valid_index`, `int_list_find`,
 
 Use these contracts to teach observable behavior. Students do not need a
 wrapper object or a status enum.
+
+## Supporting a first encounter with C
+
+Keep Stage A–C focused on models and preserved predictions. After Stage D,
+ask which specific line the student is trying to read and unpack every part
+of that line, including punctuation. Do not assume that `int`, `=`, brackets,
+or semicolons are already familiar. Use the topic map in `student/notes.md`
+to select a short explanation and return to the current operation.
+
+At Meeting B, use the lab's scaffold bridge to explain parameters, local
+integer copies, access to the caller's array, and returned counts. Identify
+the supplied metadata helper and test runner so students know which bodies
+they edit. Let a student explain one condition or trace one loop iteration
+before continuing. Adjust pacing or provide equivalent supported practice
+when syntax needs more time; do not add an appendix-completion requirement
+or drop one of the six core operations.
 
 ## Bounds and Invariant Autopsy
 

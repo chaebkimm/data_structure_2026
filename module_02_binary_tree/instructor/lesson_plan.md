@@ -10,7 +10,7 @@ indices. The four core implementations are `new_node`, `term`, `terms`, and
 `eval_tree`.
 
 Chapter 1 supplies fixed arrays, indices, conditions, loops, and invariants.
-Introduce structure tags, field access, a shared parsing position, and
+Introduce structure tags, member access, a shared parsing position, and
 recursive calls here. Links use indices: `-1` means no child, while `0`
 identifies the first node.
 
@@ -26,7 +26,7 @@ additional expression operators are outside the core.
 Students will be able to:
 
 1. identify root, parent, child, sibling, leaf, ancestor, and subtree;
-2. translate a hierarchy among a diagram, an index table, and C fields;
+2. translate a hierarchy among a diagram, an index table, and C members;
 3. reserve and initialize the next node in a fixed array;
 4. distinguish an index, a stored character, and an evaluated integer;
 5. explain why fresh nodes and valid child indices preserve tree invariants;
@@ -70,7 +70,7 @@ does not determine a node's depth or whether it is the root.
 | 4 | `'3'` | -1 | -1 |
 
 The whole-expression root is index `1`; `size == 5`, `pos == 5`, and
-`eq[pos] == '\0'`. Evaluation returns `7` while the operator fields still
+`eq[pos] == '\0'`. Evaluation returns `7` while the operator members still
 store `'+'` and `'*'`.
 
 Stage C uses `2*3+4*5`, with root index `3` for `'+'`, left root `1` for
@@ -89,7 +89,7 @@ the stronger expression-shape rule.
 | node | one array element holding a character and child links |
 | index | an integer identifying a position in an array |
 | `nodes[root]` | the node selected by the root index |
-| `nodes[root].data` | the data field of that selected node |
+| `nodes[root].data` | the data member of that selected node |
 | `-1` | no child; never an index to dereference |
 | `size` | number of used nodes and index of the next unused slot |
 | `eq` | the expression string, terminated by `\0` |
@@ -106,6 +106,28 @@ Introduce hierarchy vocabulary from the Stage B vocabulary sheet. A parent
 is a relationship: this structure stores no upward link. Require students
 to identify whether an integer in a trace is an array index or a returned
 arithmetic value.
+
+### Using the full C companion without adding reading pressure
+
+The English and Korean textbooks each contain 15 matching **Full C Code
+Explanation** topics for readers with no C background. Release this
+companion with the rest of Stage D: it contains complete code, execution
+traces, and practice answers. Keep the earlier inquiry and calibration
+gates in place.
+
+During Meeting B, use the lab's topic map to select a short explanation for
+the statement a student is reading. Topics 1–3 cover basic notation, 4–7
+cover nodes and character consumption, 8–10 cover construction, and 11–12
+cover evaluation. Topic 13 assembles and runs the complete program; 14–15
+cover boundaries and optional practice. Ask the student to explain one
+line and predict its next value before returning to the lab task.
+
+Treat any symbol as potentially new, including `;`, `()`, `[]`, and `=`.
+Use the lab's file-layout bridge for `extern`, header guards, placeholders,
+and test helpers. The standalone textbook program and the multi-file test
+program have different `main` functions; students retain the supplied test
+runner. The companion supports the existing checkpoints and rubric. It
+adds no required reading completion, extra test, or new submission.
 
 ## Five release gates
 
@@ -132,7 +154,7 @@ and how can we build and evaluate that hierarchy using a fixed array?
 | 0–8 | Retrieve array indices, bounds, loops, and invariants | Entry response |
 | 8–18 | Stage A expression-structure inquiry | Preserved first model |
 | 18–28 | Compare proposed groupings and starting items | Annotated relationships |
-| 28–38 | Stage B reveal: character data and two child indices | Index/field labels |
+| 28–38 | Stage B reveal: character data and two child indices | Index/member labels |
 | 38–43 | Five-minute Cognitive Pause | Three independent responses |
 | 43–54 | Calibrate the three pause targets | Corrected pause |
 | 54–70 | Stage C index tables, parsing position, and root changes | Worksheet traces |
@@ -158,12 +180,12 @@ different roles.
 ### Representation and construction demonstration
 
 Reserve a digit at the next unused slot and show all three initialized
-fields. The returned old value of `size` identifies the node; the new
+members. The returned old value of `size` identifies the node; the new
 value of `size` identifies the next unused slot. An index can remain usable
 after `new_node()` returns because the node lives in the global array.
 
 Build a fresh parent above an existing root by assigning the old root to
-the parent's left field and a freshly built operand to its right. Replace
+the parent's left member and a freshly built operand to its right. Replace
 the local root with the parent index. This does not move a node in memory.
 
 For each parsing step, record `pos`, `eq[pos]`, `size`, the current root,
@@ -183,13 +205,13 @@ link at every other reachable node. Each nonempty child index selects an
 initialized slot below `size`. Equal characters in two slots identify two
 different nodes; using one child index twice introduces sharing.
 
-An unused child field alone does not establish that an attachment is safe.
+An unused child member alone does not establish that an attachment is safe.
 The construction algorithm uses fresh nodes and disjoint subtrees to
 preserve the rules. Discuss cycles on paper without evaluating them.
 
 A digit returns its character minus `'0'`. An operator waits for its left
 call and then its right call, combines the two local results, and returns
-its answer. Node fields, `eq`, `size`, and `pos` stay unchanged during
+its answer. Node members, `eq`, `size`, and `pos` stay unchanged during
 evaluation. A structurally valid tree can still encode the wrong grouping.
 
 ### Formative checks
@@ -205,7 +227,8 @@ evaluation. A structurally valid tree can still encode the wrong grouping.
 
 1. Preserve the Stage C attempt before releasing Stage D.
 2. Ask students to annotate earlier answers using either textbook language
-   and the shared models; make both textbooks available.
+   and the shared models; make both textbooks available. Point out the
+   optional full C companion as a reference for individual statements.
 3. Release Stage E for Meeting B.
 4. Validate reference tests and the standalone autopsy with strong warnings
    and supported runtime checks.
@@ -249,7 +272,7 @@ Require three nonduplicate student-authored tests, each with a rationale:
    and both absent children;
 2. expression construction: correct links for precedence and left
    association, plus the final unread position; and
-3. recursive evaluation: correct results and unchanged node fields and
+3. recursive evaluation: correct results and unchanged node members and
    parser state.
 
 | Criterion | Points |

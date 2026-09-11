@@ -176,24 +176,28 @@ static bool test_remove_front_middle_and_end(void)
 static bool test_textbook_operation_trace(void)
 {
     int array[10] = { 0 };
-    const int expected[3] = { 100, 600, 300 };
+    const int expected[5] = { 100, 600, 300, 400, 500 };
+    const int after_remove[4] = { 100, 300, 400, 500 };
     int size = 0;
     int capacity = 10;
 
     size = int_list_append(array, size, capacity, 100);
     size = int_list_append(array, size, capacity, 200);
     size = int_list_append(array, size, capacity, 300);
-    REQUIRE(size == 3);
+    size = int_list_append(array, size, capacity, 400);
+    size = int_list_append(array, size, capacity, 500);
+    REQUIRE(size == 5);
     REQUIRE(int_list_valid_index(size, capacity, 1) == 1);
+    REQUIRE(array[1] == 200);
     array[1] = 500;
+    REQUIRE(int_list_find(array, size, capacity, 300) == 2);
 
     size = int_list_remove(array, size, capacity, 1);
-    REQUIRE(size == 2);
-    REQUIRE(array[0] == 100);
-    REQUIRE(array[1] == 300);
+    REQUIRE(size == 4);
+    REQUIRE(same_values(array, after_remove, size));
 
     size = int_list_insert(array, size, capacity, 1, 600);
-    REQUIRE(size == 3);
+    REQUIRE(size == 5);
     REQUIRE(same_values(array, expected, size));
     REQUIRE(int_list_find(array, size, capacity, 600) == 1);
     return true;

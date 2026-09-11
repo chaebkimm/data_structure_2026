@@ -9,6 +9,17 @@ Keep the public header and supplied tests unchanged. The four `TODO(core)`
 functions are `new_node(char data)`, `term(void)`, `terms(void)`, and
 `eval_tree(int node)`, each returning `int`.
 
+## Help with C syntax
+
+The Stage D textbooks include an optional **Full C Code Explanation** in
+English and Korean. Use the
+[lab's topic map and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
+to find help for your current statement, including the extra notation in
+the supplied header and tests. The textbook's complete program has its own
+`main`; this release already supplies `main` in the test files. Implement
+the four starter bodies and use the build commands below to compile them
+with the tests. No appendix exercises are added to your required work.
+
 ## Model and contract
 
 `struct TreeNode` stores `char data`, `int left`, and `int right`.

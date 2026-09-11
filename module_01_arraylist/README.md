@@ -43,6 +43,18 @@ Students will be able to:
 Read, update, find, append, insert, and remove are all core operations. The
 extension suite adds only extra edge cases and longer operation sequences.
 
+## Reading support
+
+Both `student/textbook.md` and `student/textbook_korean.md` retain the main
+chapter and include **Full C Code Explanation** as an optional reference.
+Students can look up a symbol or one operation when needed; reading the
+whole appendix and completing its practice questions are not requirements.
+`student/notes.md` maps common questions to its eleven topics, and the lab
+explains the additional syntax used by the supplied function scaffold.
+
+The textbook's complete program starts with five active values. The shorter
+three-item inquiry examples practice the same fixed-capacity rules.
+
 ## Package map
 
 ```text
@@ -55,6 +67,7 @@ module_01_arraylist/
 |   `-- technical_notes.md
 |-- student/
 |   |-- cognitive_pause.md
+|   |-- day2_plan.md
 |   |-- evidence_template.md
 |   |-- inquiry_prompt.md
 |   |-- inquiry_prompt_linear.md
@@ -66,6 +79,7 @@ module_01_arraylist/
 |   |-- rubric.md
 |   |-- segfault_autopsy.md
 |   |-- textbook.md
+|   |-- textbook_korean.md
 |   `-- vocabulary.md
 |-- release/
 |   |-- release_manifest.md
@@ -81,6 +95,7 @@ module_01_arraylist/
     |-- build.ps1
     |-- Makefile
     |-- include/int_list.h
+    |-- lecture/simplified_array_list.c
     |-- starter/int_list.c
     |-- solution/int_list.c
     |-- tests/test_core.c
@@ -101,8 +116,8 @@ module_01_arraylist/
    vocabulary reference, and timed Cognitive Pause.
 4. After the pause and expert calibration, release Stage C for invariant,
    operation, and efficiency reasoning.
-5. Release Stage D's textbook, notes, and diagram/text models after the
-   Meeting A investigation and exit ticket.
+5. Release Stage D's English/Korean textbooks, notes, and diagram/text models
+   after the Meeting A investigation and exit ticket.
 6. Release Stage E for Meeting B with the starter, supplied tests,
    student-test template, and isolated autopsy.
 7. Assess the submission with the 100-point `student/rubric.md`.
@@ -127,7 +142,8 @@ required operations.
 
 ## Relationship to the course spiral
 
-- **Revisits:** C variables, arrays, indexing, loops, functions, and conditions.
+- **Supports:** C variables, arrays, indexing, loops, functions, and conditions,
+  including students encountering all of this syntax for the first time.
 - **Introduces:** fixed-capacity ArrayLists, size versus capacity, linear
   first-match search, shift direction, checked boundaries, and invariants.
 - **Previews:** an array-backed Stack and later comparisons with linked

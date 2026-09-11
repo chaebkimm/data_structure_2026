@@ -38,16 +38,32 @@ rejects a self-loop; remove permits equal indexes because writing `0` to a
 diagonal cell is harmless. A rejected mutation leaves the graph unchanged,
 and a rejected out-degree query leaves its output unchanged.
 
-The canonical three-server example is:
+The canonical SNS example uses seven accounts. An arrow goes from the
+follower to the followed account:
 
 ```text
-Web (0) -> App (1)
-App (1) -> Database (2)
-App (1) -> Web (0)
+Mina (0) -> Joon (1)
+Joon (1) -> Sora (2)
+Sora (2) -> Mina (0)
+Sora (2) -> Dae (3)
+Hana (4) -> Leo (5)
+Leo (5) -> Hana (4)
+Nuri (6) has no incoming or outgoing follows.
 ```
 
-Before removal, App's row is `[1, 0, 1]` and its out-degree is 2. After
-removing `1 -> 2`, the row is `[1, 0, 0]` and its out-degree is 1.
+Before removal, Sora's row is `[1, 0, 0, 1, 0, 0, 0]` and her out-degree
+is 2. After removing `2 -> 3`, the row is `[1, 0, 0, 0, 0, 0, 0]` and her
+out-degree is 1. Dae becomes isolated while remaining an active account.
+
+The canonical core test checks all 256 cells before and after this change,
+including the two separate follows between Hana and Leo. Other boundary
+tests deliberately use different graph sizes. The standalone autopsy is
+also a separate invariant fixture.
+
+Stage D offers the same chapter in English (`student/textbook.md`) and
+Korean (`student/textbook_korean.md`). Strong and weak components and their
+possible use in feed candidate selection are reasoning topics. The C lab
+does not compute components, rank posts, or grant access to posts.
 
 ## Targets
 
@@ -137,7 +153,7 @@ cl /nologo /std:c11 /W4 /Zi /Iinclude `
 ```text
 PASS initialization clears the full grid
 PASS initialization rejection preserves graph
-PASS canonical Web-App-Database trace
+PASS canonical SNS follower trace
 PASS direction is independent
 PASS add rejections preserve graph
 PASS idempotent add and remove

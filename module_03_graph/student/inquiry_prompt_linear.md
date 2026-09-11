@@ -11,23 +11,33 @@ Name:
 
 Date:
 
-## A. Read the three-tier system
+## A. Read the follower network
 
-The invented system contains three services:
+The invented social networking service (SNS) contains seven accounts:
 
-1. Item 0 is Web.
-2. Item 1 is App.
-3. Item 2 is Database.
+1. Account 0 is Mina.
+2. Account 1 is Joon.
+3. Account 2 is Sora.
+4. Account 3 is Dae.
+5. Account 4 is Hana.
+6. Account 5 is Leo.
+7. Account 6 is Nuri.
 
-The stated one-way relationships are:
+The complete list of follows is:
 
-1. Web leads to App.
-2. App leads to Database.
-3. App leads back to Web.
+1. Mina follows Joon.
+2. Joon follows Sora.
+3. Sora follows Mina.
+4. Sora follows Dae.
+5. Hana follows Leo.
+6. Leo follows Hana.
+
+Nuri neither follows anyone nor has any followers. An arrow points from the
+person following to the person they follow.
 
 ### A1. Describe the arrows
 
-Describe the three items and arrows line by line.
+Describe all seven accounts and the stated arrows line by line.
 
 Response:
 
@@ -42,19 +52,19 @@ Response:
 
 ### B1. Repeating route
 
-Starting at Web, what repeating route can be followed?
+Starting at Mina, what repeating route through Joon and Sora can be followed?
 
 Response:
 
 ### B2. Unstated reverse
 
-Does “App leads to Database” prove that Database leads to App? Explain.
+Does “Sora follows Dae” prove that Dae follows Sora? Explain.
 
 Response:
 
 ### B3. Two separate facts
 
-Why must “Web leads to App” and “App leads to Web” be stored as two separate
+Why must “Hana follows Leo” and “Leo follows Hana” be stored as two separate
 facts?
 
 Response:
@@ -66,21 +76,22 @@ route back to an earlier item.
 
 ### C1. No-return rule
 
-Which stated relationship makes this model fail the no-return rule?
+On the route Mina to Joon to Sora, which stated follow takes us back to Mina
+and breaks the no-return rule?
 
 Response:
 
 ### C2. Several ways in
 
-Suppose Web also led directly to Database while App still led to Database.
+Suppose Mina also followed Dae directly while Sora still followed Dae.
 Which tree rule would then fail?
 
 Response:
 
 ## D. Macro-question
 
-How can a program store and check directed relationships when links may point
-back or several items may lead to the same destination?
+How can a program store and check who follows whom when following people may
+lead back to an earlier account or several people follow the same person?
 
 Initial explanation:
 
@@ -88,17 +99,18 @@ Initial explanation:
 
 Do not write C code yet.
 
-### E1. One ordered pair
+### E1. One possible follow
 
-If the program is given a starting item and a destination, what yes-or-no fact
-must it remember?
+If the program is given one account and a possible account to follow, what
+yes-or-no fact must it remember?
 
 Response:
 
 ### E2. Rows and columns
 
-How could rows and columns organize every possible ordered pair of the three
-items?
+How could rows and columns organize every possible pair of the seven
+accounts while remembering who follows whom? Explain the idea; you do not
+need to fill every position yet.
 
 Response:
 

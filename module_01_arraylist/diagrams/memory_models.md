@@ -2,6 +2,9 @@
 
 These models use ten fixed positions. Every diagram includes a text
 equivalent. The active list is the prefix of positions before `size`.
+The first diagrams use the inquiry's shorter three-item example. The
+textbook's full program starts with five active items and follows the same
+rules; see the complete trace in `notes.md` in the Stage D release.
 
 ## 1. Size and capacity
 
@@ -69,7 +72,7 @@ and increase size by one. No existing active item moves.
 
 ## 5. Remove and close the gap
 
-Starting from the updated textbook state:
+Starting from the three-item practice state after its update:
 
 ```text
 before: [100] [500] [300] [ ] [ ] [ ] [ ] [ ] [ ] [ ]

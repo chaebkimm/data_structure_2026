@@ -50,13 +50,33 @@ Every array argument must be a live array with at least `capacity` elements.
 The functions cannot determine its actual physical extent. Pointer validation,
 storage growth, and cleanup are not student tasks in this module.
 
+## Textbook example and lab functions
+
+`lecture/simplified_array_list.c` is the complete program from Chapter 1's
+**Full C Code Explanation**, topic 10. It begins with five active values
+and performs the textbook's read/update, search, removal, and insertion
+inside `main`. The smaller three-item sequence above is a lab API example.
+
+Use the lecture after Stage D is released. Its array operations and printed
+output match the textbook; it is separate from the starter assignment.
+The textbook search loop uses `index == size` to indicate absence, while
+the lab function returns `-1`. The lab also returns updated size counts to
+its caller instead of changing a count directly inside `main`.
+
+Students encountering C for the first time can use either textbook's
+optional appendix one topic at a time. `../student/notes.md` maps the topics;
+`../student/lab.md` explains the function and test-body syntax added by the
+scaffold. No complete-appendix reading or extra practice submission is
+required.
+
 ## Targets
 
 - `starter-core`: compile the scaffold and run the core tests;
 - `starter-student-tests`: run three student-designed placeholders;
 - `starter-extension`: run extra checks against the starter;
 - `solution-core`: run the reference core tests;
-- `solution-extension`: run reference boundary and sequence tests; and
+- `solution-extension`: run reference boundary and sequence tests;
+- `lecture`: run the textbook's complete five-item example; and
 - `autopsy`: build and run the memory-safe bounds/invariant demonstration.
 
 The default target is the starter core. It intentionally fails until the
@@ -75,6 +95,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target solution -Extensions
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
+  -Target lecture
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
   -Target autopsy
 ```
 
@@ -90,6 +112,7 @@ make starter-core
 make starter-student-tests
 make solution-core
 make solution-extension
+make lecture
 make autopsy
 ```
 
@@ -143,3 +166,16 @@ PASS rejected mutations preserve entire array
 ```
 
 The extension suite reports five passing boundary and sequence tests.
+
+Lecture:
+
+```text
+Read value: 200
+Search result index: 2
+Final size: 5
+array[0] = 100
+array[1] = 600
+array[2] = 300
+array[3] = 400
+array[4] = 500
+```

@@ -263,7 +263,7 @@ Students will:
 
 ### Micro-Questions
 
-- Does a child field contain a character, a node, or an array index?
+- Does a child member contain a character, a node, or an array index?
 - Why is `0` a usable root index while `-1` means no child?
 - What do `size` and `pos` track, and why can they differ during construction?
 - What does `eq[pos++]` consume, and what does `eq[pos]` leave for the caller?
@@ -277,7 +277,7 @@ Students will:
 
 Use two 90-minute meetings and five A–E release gates. Stage A asks students
 to model the work in `1+2*3` before revealing its C representation. Stage B
-introduces `struct`, character fields, and array indices, followed by the
+introduces `struct`, character members, and array indices, followed by the
 three-target Cognitive Pause: indices, parser state, and evaluation.
 
 The canonical allocation order is `'1', '+', '2', '*', '3'` at indices
@@ -318,7 +318,7 @@ this module's required implementation.
 
 The preallocated array outlives each function call. Fresh parent nodes
 join the current subtree to distinct newly built nodes, preserving the
-tree rules. `new_node` and assignment to a known child field take constant
+tree rules. `new_node` and assignment to a known child member take constant
 work. Construction and complete evaluation each take linear work in the
 number of characters/nodes. Parsing has bounded call depth; evaluation
 uses call space proportional to the longest root-to-leaf path including
@@ -349,7 +349,7 @@ Extensions add valid cases for the same four functions, not extra APIs.
 
 **Revisits:** fixed arrays, indexing, variables, conditions, loops, and invariants.
 
-**Introduces:** structure fields, indexed binary links, expression parsing,
+**Introduces:** structure members, indexed binary links, expression parsing,
 precedence, and recursive evaluation with a digit base case.
 
 **Forward:** graph relationships in Module 3; explicit traversal state in
@@ -367,9 +367,11 @@ Students will:
 
 - distinguish directed from undirected and weighted from unweighted graphs;
 - use vertex, edge, degree, path, cycle, self-loop, and isolated-vertex vocabulary;
-- translate the textbook's three-server graph among connections and a matrix;
-- implement four bounded directed-matrix operations; and
-- compare matrix, edge-list, and adjacency-list representations conceptually.
+- translate the textbooks' seven-account SNS follower graph among connections and a matrix;
+- implement four bounded directed-matrix operations;
+- compare matrix, edge-list, and adjacency-list representations conceptually; and
+- distinguish strong and weak components by hand and explain possible uses
+  in feed candidate selection after the Stage C attempt.
 
 ### Macro-Question
 
@@ -379,18 +381,22 @@ Students will:
 
 - What becomes a vertex, and what becomes an edge?
 - How does direction change the meaning of an edge?
-- How would two-way communication appear as two directed cells?
+- How would two accounts following each other appear as two directed cells?
 - Which tree invariants no longer apply?
 - When is a matrix wasteful, and what would an adjacency list store instead?
 
 ### Learning sequence
 
 Meeting A contrasts Chapter 2's tree rules with relationships that share a
-destination or form a cycle. Students use the three textbook vertices—Web,
-App, and Database—and translate `0 -> 1`, `1 -> 2`, and `1 -> 0` into a
-directed integer adjacency matrix. Undirected graphs, weights, edge lists,
-adjacency lists, symmetric matrices, and connected components remain
-conceptual comparisons. No formal graph search is performed.
+destination or form a cycle. Students use accounts Mina (0), Joon (1), Sora
+(2), Dae (3), Hana (4), Leo (5), and Nuri (6). An arrow points from follower
+to followed account. They translate `0 -> 1`, `1 -> 2`, `2 -> 0`, `2 -> 3`,
+`4 -> 5`, and `5 -> 4` into a directed integer adjacency matrix.
+Undirected graphs, weights, edge lists, adjacency lists, and symmetric
+matrices remain conceptual comparisons. Stage D offers equivalent English
+and Korean textbook editions after the Stage C attempt is saved. Students
+then trace strong and weak components and discuss feed candidates versus
+ranking. No formal graph search or feed system is implemented.
 
 Meeting B implements a bounded `struct DirectedGraph` with `vertex_count`
 and a fixed 16 by 16 `int grid`. Active vertex IDs are the dense range from
@@ -399,7 +405,7 @@ columns stay zero, and the diagonal stays zero. Cycles longer than a
 self-loop and multiple incoming edges are valid. Adjacency lists return after
 students have stronger dynamic-storage skills.
 
-### C lab and cybersecurity context
+### C lab and SNS context
 
 Implement:
 
@@ -414,8 +420,9 @@ whole-graph validator, neighbor result, in-degree helper, or undirected
 mutation API. Initialization clears all 256 cells. Rejected bounds or
 self-loop insertion leaves the graph unchanged.
 
-The lab models permitted communication in a synthetic network. An edge is a
-stored relationship, not proof that communication occurred.
+The lab models follows in an SNS network. The canonical change removes
+`2 -> 3`, reducing Sora's out-degree from 2 to 1 and isolating Dae. A follow
+edge does not prove friendship or guarantee that a post appears in a feed.
 
 Module 16 deliberately broadens the input contract to an edge-list representation that may contain parallel edges and self-loops; its algorithms handle or ignore those cases explicitly.
 
@@ -424,6 +431,7 @@ Module 16 deliberately broadens the input contract to an edge-list representatio
 - equivalent connection description and directed matrix;
 - tested four-function API and direct guarded lookup;
 - representation comparison;
+- strong/weak component and feed-candidate reasoning after Stage C;
 - explanation of why the model is no longer a tree.
 
 ### Spiral 1 synthesis
@@ -1502,7 +1510,7 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 |---|---|---|
 | Fixed-array bounds, active prefix, shifts, and first-match search | Module 1 | Stack, matrices, Hash Table, Heap |
 | Addresses and pointers | At the first pointer-based API; not a Module 2 prerequisite | Later node and container implementations |
-| `struct`, character fields, and global node-array lifetime | Module 2 | Later node and container implementations |
+| `struct`, character members, and global node-array lifetime | Module 2 | Later node and container implementations |
 | Allocation, release, and owned storage | Module 5 individual nodes | Later containers and linked-node implementations |
 | Node relationships | Module 2 indexed tree representation; Module 14 linked-node retrieval clinic | Trees, linked adjacency, DSU bridge |
 | Indexed binary-tree representation and expression evaluation | Module 2 | Graph contrast, DFS, BFS |

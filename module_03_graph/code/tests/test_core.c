@@ -124,33 +124,49 @@ static int test_initialization_rejection_preserves_graph(void)
     return 1;
 }
 
-static int test_canonical_web_app_database_trace(void)
+static int test_canonical_sns_follower_trace(void)
 {
     struct DirectedGraph network;
+    struct DirectedGraph expected = {
+        7U,
+        {
+            {0, 1, 0, 0, 0, 0, 0}, /* Mina follows Joon. */
+            {0, 0, 1, 0, 0, 0, 0}, /* Joon follows Sora. */
+            {1, 0, 0, 1, 0, 0, 0}, /* Sora follows Mina and Dae. */
+            {0, 0, 0, 0, 0, 0, 0}, /* Dae follows nobody. */
+            {0, 0, 0, 0, 0, 1, 0}, /* Hana follows Leo. */
+            {0, 0, 0, 0, 1, 0, 0}, /* Leo follows Hana. */
+            {0, 0, 0, 0, 0, 0, 0}  /* Nuri is isolated. */
+        }
+    };
     size_t degree = 99U;
+    size_t from = 0U;
+    size_t to = 1U;
 
-    REQUIRE(graph_init(&network, 3U) == 1);
+    REQUIRE(graph_init(&network, 7U) == 1);
     REQUIRE(graph_add_edge(&network, 0U, 1U) == 1);
     REQUIRE(graph_add_edge(&network, 1U, 2U) == 1);
-    REQUIRE(graph_add_edge(&network, 1U, 0U) == 1);
+    REQUIRE(graph_add_edge(&network, 2U, 0U) == 1);
+    REQUIRE(graph_add_edge(&network, 2U, 3U) == 1);
+    REQUIRE(graph_add_edge(&network, 4U, 5U) == 1);
+    REQUIRE(graph_add_edge(&network, 5U, 4U) == 1);
+    REQUIRE(graphs_equal(&network, &expected));
 
-    REQUIRE(network.grid[0][0] == 0);
-    REQUIRE(network.grid[0][1] == 1);
-    REQUIRE(network.grid[0][2] == 0);
-    REQUIRE(network.grid[1][0] == 1);
-    REQUIRE(network.grid[1][1] == 0);
-    REQUIRE(network.grid[1][2] == 1);
-    REQUIRE(network.grid[2][0] == 0);
-    REQUIRE(network.grid[2][1] == 0);
-    REQUIRE(network.grid[2][2] == 0);
-    REQUIRE(graph_out_degree(&network, 1U, &degree) == 1);
+    /* A direct lookup is guarded caller code, not another library API. */
+    REQUIRE(from < network.vertex_count && to < network.vertex_count);
+    REQUIRE(network.grid[from][to] == 1);
+    REQUIRE(network.grid[to][from] == 0);
+    REQUIRE(graph_out_degree(&network, 2U, &degree) == 1);
     REQUIRE(degree == 2U);
+    REQUIRE(graph_out_degree(&network, 3U, &degree) == 1);
+    REQUIRE(degree == 0U);
+    REQUIRE(graph_out_degree(&network, 6U, &degree) == 1);
+    REQUIRE(degree == 0U);
 
-    REQUIRE(graph_remove_edge(&network, 1U, 2U) == 1);
-    REQUIRE(network.grid[1][0] == 1);
-    REQUIRE(network.grid[1][1] == 0);
-    REQUIRE(network.grid[1][2] == 0);
-    REQUIRE(graph_out_degree(&network, 1U, &degree) == 1);
+    REQUIRE(graph_remove_edge(&network, 2U, 3U) == 1);
+    expected.grid[2][3] = 0;
+    REQUIRE(graphs_equal(&network, &expected));
+    REQUIRE(graph_out_degree(&network, 2U, &degree) == 1);
     REQUIRE(degree == 1U);
     return 1;
 }
@@ -281,8 +297,8 @@ int main(void)
         test_initialization_rejection_preserves_graph
     );
     run_test(
-        "canonical Web-App-Database trace",
-        test_canonical_web_app_database_trace
+        "canonical SNS follower trace",
+        test_canonical_sns_follower_trace
     );
     run_test("direction is independent", test_direction_is_independent);
     run_test(

@@ -109,7 +109,7 @@ A digit is the base case and returns its character minus `'0'`. Each
 operator needs both returned operand values before combining them.
 Indices `1` and `3` retain `'+'` and `'*'`; all child links and shared
 parser state also remain unchanged. Arithmetic answers live in call-local
-values and return values, not in overwritten operator fields.
+values and return values, not in overwritten operator members.
 
 ## Stage C — Investigation
 
@@ -146,7 +146,7 @@ The four assignments are `nodes[3].left = 1`, `nodes[3].right = 5`,
 | `nodes[root].data` | character `'+'` |
 | `nodes[root].left` | index `1`, selecting its left subtree |
 | `nodes[nodes[root].left].data` | character `'*'` at index `1` |
-| `-1` in a child field | no child in that position |
+| `-1` in a child member | no child in that position |
 
 ### E. Positions
 
@@ -154,7 +154,7 @@ The data path to index `4` is `'+' -> '*' -> '4'`, using indices `3, 5, 4`.
 Its depth is `2`. Leaf indices are `0, 2, 4, 6`. The height of index `1`
 is `1`; the root's height is `2`. The subtree at index `1` contains
 indices `1, 0, 2`. Count links rather than nodes; a leaf has height zero.
-A parent or ancestor remains a relationship without being a stored field.
+A parent or ancestor remains a relationship without being a stored member.
 
 ### F. Invariants
 
@@ -167,7 +167,7 @@ one. Each present child index is in `[0, size)`, and absence is `-1`.
 - Joining disjoint subtrees under a fresh parent adds one incoming link to
   each subtree root. No existing descendant can already reach the fresh
   parent, so no cycle is introduced.
-- An empty field establishes only that the selected side is unused. It
+- An empty member establishes only that the selected side is unused. It
   cannot prove that a candidate child is unshared or cannot reach a parent.
 - A right-only general binary-tree node is possible. A completed `'+'` or
   `'*'` expression needs both operands and therefore both child links.
@@ -177,13 +177,13 @@ input and completed trees rather than detecting arbitrary malformed links.
 
 ### G. Node reservation and shared state
 
-After `int a = new_node('0');`, `a == 0`, `size == 1`, and the new fields
+After `int a = new_node('0');`, `a == 0`, `size == 1`, and the new members
 are character `'0'`, left `-1`, right `-1`. Character `'0'` is data; integer
 `0` is its evaluated value; index `0` is its storage position.
 
 After `int b = new_node('7');`, `b == 1` and `size == 2`. Both new child
-fields are `-1`; neither node is attached to the other. Each reservation
-initializes both fields because unused or previously reused storage does
+members are `-1`; neither node is attached to the other. Each reservation
+initializes both members because unused or previously reused storage does
 not establish the required no-child marker.
 
 A fresh build resets `size` to reserve from the beginning and `pos` to
@@ -234,9 +234,9 @@ codes. Each operator combines the numeric results of both child calls.
 The final answer is `26`. Operator indices `1`, `3`, and `5` still contain
 `'*'`, `'+'`, and `'*'`.
 
-Snapshot the used nodes' data and both child fields, `size`, `pos`, and
+Snapshot the used nodes' data and both child members, `size`, `pos`, and
 `eq`; evaluate twice; assert both answers and compare the snapshots.
-Compare struct fields explicitly rather than depending on padding bytes.
+Compare struct members explicitly rather than depending on padding bytes.
 Nonmutation means the second evaluation can reuse the completed tree.
 
 ### J. Association and cost
@@ -252,8 +252,8 @@ association; inspect child indices to establish construction order.
 
 | Operation | Time | Reason |
 |---|---:|---|
-| reserve and initialize one node | `O(1)` | three field writes and one counter update |
-| assign one child link | `O(1)` | one known field write |
+| reserve and initialize one node | `O(1)` | three member writes and one counter update |
+| assign one child link | `O(1)` | one known member write |
 | construct the whole expression | `O(n)` | consume each character and reserve each node once |
 | evaluate the whole tree | `O(n)` | compute each node's result once |
 

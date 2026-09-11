@@ -162,7 +162,7 @@ All nodes live in the `nodes` array. A link or root is an integer index into tha
 ### Adding a child
 
 - Choose an empty child position, whose index is `-1`.
-- Store the child's index in the parent's `left` or `right` field.
+- Store the child's index in the parent's `left` or `right` member.
 
 ### Building a term from an expression string
 
@@ -204,9 +204,9 @@ A custom data type can be defined with the `struct` keyword and a tag, where the
 
 The tag tells the compiler what kind of custom data type you are referencing. Every time you declare a node variable, you write `struct TreeNode`.
 
-### `.` (Accessing Fields)
+### `.` (Accessing Members)
 
-`nodes[root].data` accesses the `data` field of the node at index `root`. The brackets select an array element, and the dot selects one of its fields.
+`nodes[root].data` accesses the `data` member of the node at index `root`. The brackets select an array element, and the dot selects one of its members.
 
 ### Recursive Functions
 
@@ -500,9 +500,9 @@ surrounding code to read it:
 | `++` after a variable | Uses the old value and also increases that variable by one. |
 | `[20]` in a declaration | Gives the number of elements to reserve in an array. |
 | `[node]` in an expression | Selects the array element whose index is the value of `node`. |
-| `.` | Selects a named field from one structure object. |
+| `.` | Selects a named member from one structure object. |
 | `(...)` | Surrounds function parameters, function arguments, or a condition. |
-| `{ ... }` | Groups the fields of a structure or the statements of a block. |
+| `{ ... }` | Groups the members of a structure or the statements of a block. |
 | `;` | Ends declarations and many statements. |
 | `,` | Separates arguments in the `printf` call used here. |
 | `'...'` | Surrounds a character constant, such as `'3'` or `'*'`. |
@@ -553,7 +553,7 @@ definition does, as we will see next.
 
 `/* A newly reserved node has no children yet. */` is a comment. `/*`
 starts it and `*/` ends it. Its words explain an intention; they do not
-set the child fields themselves. The following assignments perform that
+set the child members themselves. The following assignments perform that
 work. The star in a comment marker is not a multiplication operator.
 
 Spaces separate words: `int root` contains a keyword and a name, whereas
@@ -574,22 +574,22 @@ struct TreeNode {
 ```
 
 A **structure** combines several named pieces of information in one kind
-of object. Those pieces are called **members** or **fields**. Our tree node
+of object. Those pieces are called **members**. Our tree node
 needs one character and two child indices, so we define a structure with
-three fields.
+three members.
 
 | Part | Meaning |
 |---|---|
 | `struct` | Introduces a structure type. |
 | `TreeNode` | Our chosen tag, which names this kind of structure. |
-| `{` | Begins the list of fields for this type. |
-| `char data;` | Every object of this type has a character field named `data`. |
-| `int left;` | Every object has an integer field named `left`. |
-| `int right;` | Every object has a separate integer field named `right`. |
-| `}` | Ends the list of fields. |
+| `{` | Begins the list of members for this type. |
+| `char data;` | Every object of this type has a character member named `data`. |
+| `int left;` | Every object has an integer member named `left`. |
+| `int right;` | Every object has a separate integer member named `right`. |
+| `}` | Ends the list of members. |
 | `;` after `}` | Completes the structure declaration. |
 
-The comments explain how we intend to use the fields. C does not enforce
+The comments explain how we intend to use the members. C does not enforce
 “only digits, plus, or star” merely because that appears in a comment.
 The code must follow that rule.
 
@@ -601,13 +601,13 @@ our array of actual nodes. In this program, the full type name is
 Each actual node has its own `data`, `left`, and `right`. For example,
 a node could hold these three values:
 
-| Field | Stored value | Interpretation |
+| Member | Stored value | Interpretation |
 |---|---|---|
 | `data` | `'+'` | This node represents addition. |
 | `left` | `0` | Its left child is the node at index zero. |
 | `right` | `3` | Its right child is the node at index three. |
 
-The right field's `3` is an **index**, not the answer three and not the
+The right member's `3` is an **index**, not the answer three and not the
 character `'3'`. To find that child's character, we must look at
 `nodes[3].data`. A node's array position, its stored character, and the
 answer of its subtree are three different pieces of information.
@@ -619,12 +619,12 @@ nodes[op].left
 ```
 
 `nodes` names the array. `[op]` selects one element using the current
-integer value of `op`. The dot then selects that element's field named
+integer value of `op`. The dot then selects that element's member named
 `left`. If `op` contains `1`, the whole expression refers to the `left`
-field of `nodes[1]`. It does not select a separate array named `left`.
+member of `nodes[1]`. It does not select a separate array named `left`.
 
-Field names belong to the structure. A local variable also named `left`
-inside `eval_tree` is separate from the `left` field of every node. The
+Member names belong to the structure. A local variable also named `left`
+inside `eval_tree` is separate from the `left` member of every node. The
 expression `nodes[node].left` includes a dot and refers to a stored child
 index; the expression `left` alone there refers to a local calculated answer.
 
@@ -640,7 +640,7 @@ int size = 0;
 
 In `struct TreeNode nodes[20];`, `struct TreeNode` is the type of each
 element, `nodes` is the array's name, `[20]` reserves twenty elements,
-and `;` ends the declaration. Each element contains all three fields,
+and `;` ends the declaration. Each element contains all three members,
 not just a character. The number twenty counts nodes, not bytes.
 
 An **array** holds a fixed number of elements of the same type. An
@@ -670,7 +670,7 @@ not erase it. That is why a returned integer index can still identify a
 node built by a function that has finished.
 
 This global array has no explicit initializer, so C initially zeroes its
-fields. However, integer zero is **not** our “no child” marker. Zero is a
+members. However, integer zero is **not** our “no child” marker. Zero is a
 valid index for the first node. We use `-1` as a **sentinel**, a specially
 chosen value meaning “there is no child in this position.”
 
@@ -682,7 +682,7 @@ The distinction is essential:
 
 Unused zero-initialized array positions are not initialized tree nodes
 ready for traversal. Each `new_node` call stores the intended character
-and explicitly sets both child fields to `-1`. Only then do we treat that
+and explicitly sets both child members to `-1`. Only then do we treat that
 position as a reserved node. We must never try to use `nodes[-1]`; the
 sentinel is information to interpret, not a valid array position.
 
@@ -717,16 +717,16 @@ In the call `new_node('2')`, `'2'` is the argument. The function's parameter
 inside the call; the type belongs to the definition's parameter declaration.
 
 The parameter is local to this call. Its name `data` is independent of
-the field name after the dot. In this first statement:
+the member name after the dot. In this first statement:
 
 ```c
 nodes[size].data = data;
 ```
 
 C reads the parameter on the right and writes its character into the
-selected node's field on the left. If `size` is `2` and the argument was
+selected node's member on the left. If `size` is `2` and the argument was
 `'2'`, this stores `'2'` in `nodes[2].data`. The two appearances of `data`
-refer to different storage; the dot identifies the structure field.
+refer to different storage; the dot identifies the structure member.
 
 The next executable statement is a **chained assignment**:
 
@@ -735,8 +735,8 @@ nodes[size].left = nodes[size].right = -1;
 ```
 
 Its grouping is `nodes[size].left = (nodes[size].right = -1)`. The inner
-assignment stores `-1` in the right field and supplies the assigned value,
-`-1`, to the outer assignment. The left field receives `-1` as well. For
+assignment stores `-1` in the right member and supplies the assigned value,
+`-1`, to the outer assignment. The left member receives `-1` as well. For
 understanding this example, the effect is the same as writing:
 
 ```c
@@ -745,7 +745,7 @@ nodes[size].left = -1;
 ```
 
 There is still only one selected node. Both child positions start absent.
-The original chained line does not compare the fields for equality.
+The original chained line does not compare the members for equality.
 
 The final statement needs particular care:
 
@@ -832,7 +832,7 @@ why subtracting `'0'` will later recover the digit's numeric value.
 `int pos = 0;` declares a shared integer position and starts it at the
 first character. It is separate from `size`: `pos` counts progress through
 the input, while `size` counts reserved nodes. An index into `eq` selects
-a character; an index into `nodes` selects a structure containing fields.
+a character; an index into `nodes` selects a structure containing members.
 Even when the numbers happen to match in this example, the arrays and
 the meanings remain different.
 
@@ -924,7 +924,7 @@ When the condition is true, these five statements run in order:
 Before `root = op;`, `root` still contains the old subtree's index.
 That is why the left-child assignment can preserve the subtree built so
 far. After the assignment, the old subtree still exists in `nodes`; the
-new operator's left field leads to it. Updating `root` does not erase it.
+new operator's left member leads to it. Updating `root` does not erase it.
 
 The loop's closing brace leads back to the condition. C checks the new
 next unread character, enters the body again if it is another `'*'`, or
@@ -1095,7 +1095,7 @@ pair being the left child.
 The array stores nodes in reservation order, while the child indices
 establish tree order. The root is index `1`, even though it is neither
 the first nor the last reserved node. Do not find a child by assuming it
-is in the immediately following slot. Read the parent's child field.
+is in the immediately following slot. Read the parent's child member.
 
 At this point no operator node has been replaced by a number. The tree
 has been built, and the arithmetic answer has not yet been computed.
@@ -1141,7 +1141,7 @@ if (nodes[node].data >= '0' && nodes[node].data <= '9') {
 }
 ```
 
-`nodes[node]` selects the current node. `.data` reads its character field.
+`nodes[node]` selects the current node. `.data` reads its character member.
 `>= '0'` checks the lower end of the digit range, `<= '9'` checks the
 upper end, and `&&` requires both checks to be true. The parentheses
 surround the condition. The braces group the action to take when true.
@@ -1156,7 +1156,7 @@ This reasoning does not depend on memorizing ASCII code numbers.
 For a digit node, `return` immediately ends this call. It never reaches
 the child-evaluation statements below. This is the **base case**, the
 case that supplies an answer without another call to `eval_tree`.
-Consequently a correctly built digit leaf's `-1` child fields are never
+Consequently a correctly built digit leaf's `-1` child members are never
 used as array indices.
 
 For a non-digit node, execution continues to:
@@ -1223,9 +1223,9 @@ the caller. The second line is not reached after that return. Otherwise,
 the second line checks for `'*'`, multiplies the answers with the unquoted
 `*`, and returns the product.
 
-For the multiplication node in our example, the stored field
+For the multiplication node in our example, the stored member
 `nodes[node].left` is index `2`, but the local `left` becomes the answer
-`2`. On its right, the stored field is index `4`, but the local `right`
+`2`. On its right, the stored member is index `4`, but the local `right`
 becomes answer `3`. These meanings must be kept separate even when a
 particular index happens to equal the corresponding answer.
 
@@ -1401,7 +1401,7 @@ part of preparing the source for compilation. `include` asks for the
 named header's contents to be made available. `<` and `>` surround the
 header name in this directive; they are not numeric comparisons here.
 `stdio.h` is the standard input/output header. Its name refers to a
-header file, and the dot in that name is not structure-field access.
+header file, and the dot in that name is not structure-member access.
 The header supplies the declaration needed to call `printf` correctly.
 This directive has no ending semicolon.
 
@@ -1519,15 +1519,15 @@ example's contract rather than cases the code correctly parses.
 The node indices used during evaluation must identify reserved elements.
 A completed operator must have two valid children, and following child
 links must eventually reach digit leaves without a cycle. A newly
-reserved operator temporarily has `-1` in both child fields while the
+reserved operator temporarily has `-1` in both child members while the
 builders finish its children. The program waits until the whole tree
 is built before evaluating it.
 
-`-1` means “absent” in a child field, but must never be used as an array
+`-1` means “absent” in a child member, but must never be used as an array
 index. The evaluator does not begin by rejecting an invalid `node`
 argument, so calling `eval_tree(-1)` is not a supported way to ask about
 an absent subtree. Correct digit leaves avoid that access by returning
-in the base case before their child fields are followed.
+in the base case before their child members are followed.
 
 The evaluator's `return -1;` lines handle unsupported stored characters
 in a limited way. They do not make a malformed tree safe to access, and
@@ -1574,10 +1574,10 @@ Try each question using the definitions and traces above. “Index,”
    a name chosen by the programmer? What does the semicolon do?
 2. How many nodes does `struct TreeNode nodes[20];` reserve space for?
    What are the first and last valid indices?
-3. A node's `left` field is `0`. Does it have no left child? What
+3. A node's `left` member is `0`. Does it have no left child? What
    does `-1` mean instead?
 4. Before `new_node('8')`, `size` is `4`. Which node receives `'8'`,
-   what are its initial child fields, what is returned, and what is
+   what are its initial child members, what is returned, and what is
    the new value of `size`?
 5. In `"1+2*3"`, suppose `pos` is `2`. What does `eq[pos]` read,
    and does it change `pos`? What does `eq[pos++]` read, and what
@@ -1589,7 +1589,7 @@ Try each question using the definitions and traces above. “Index,”
 8. In the complete example, why is the plus node's right child index
    `3` rather than `2`?
 9. After building `"1+2*3"`, what are `size`, `pos`, and the root
-   index? What does the root's `data` field contain?
+   index? What does the root's `data` member contain?
 10. For that tree, what does `eval_tree(4)` return? Why does it not
     follow the `-1` child indices?
 11. During `eval_tree(3)`, what are the stored left and right child
@@ -1613,9 +1613,9 @@ Try each question using the definitions and traces above. “Index,”
    its own; the program's statements maintain that count.
 2. There is space for twenty nodes. The first index is `0`, and
    the last is `19`. Index `20` would be beyond the array.
-3. A left field of `0` links to the first node, `nodes[0]`. The
+3. A left member of `0` links to the first node, `nodes[0]`. The
    sentinel `-1` means that there is no left child.
-4. `nodes[4]` receives `'8'`. Its left and right fields both become
+4. `nodes[4]` receives `'8'`. Its left and right members both become
    `-1`. The call returns index `4`, and `size` becomes `5`.
 5. Both forms read `'2'`. Plain `eq[pos]` leaves `pos` at `2`;
    `eq[pos++]` uses that old index and leaves `pos` at `3`.
@@ -1638,7 +1638,7 @@ Try each question using the definitions and traces above. “Index,”
 12. The left evaluation finishes first. Its call appears in a
     separate declaration before the declaration that calls the
     right child. That first statement finishes before the next begins.
-13. No. The evaluator does not assign new values to those fields.
+13. No. The evaluator does not assign new values to those members.
     The array still stores `'+'` and `'*'`, with the same child links.
 14. `eq` supplies `%s`, `answer` supplies `%d`, and `\n` produces
     the newline after the displayed answer.

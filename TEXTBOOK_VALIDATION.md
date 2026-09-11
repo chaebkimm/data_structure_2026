@@ -2,6 +2,47 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Modules 1–2 Textbook Companion Alignment — September 10, 2026
+
+The supporting packages now point beginners to the English and Korean
+**Full C Code Explanation** appendices as optional references for individual
+lines. The original four textbooks remain unchanged. Module and course
+instructor guides preserve the existing release gates, core operations,
+three student-authored tests, and rubrics; appendix practice adds no
+required reading or submission. The labs explain the extra syntax used by
+their function interfaces, headers, placeholders, and supplied test runners.
+
+Module 1's lecture now exactly matches the complete Chapter 1 program,
+using five initial values in a plain fixed array. GNU Make and the
+instructor PowerShell build script expose a `lecture` target. The existing
+textbook-trace test now follows that five-item sequence, and the revised
+day-two plan covers the same fixed-array lab. Guidance distinguishes the
+textbook search loop's `index == size` absence result from the lab function's
+`-1` result. Smaller inquiry fixtures remain separate practice examples.
+Module 2's implementation and four-function contract already matched the
+textbooks and did not need code changes.
+
+Both reference implementations pass 8 core and 5 extension tests each
+under Clang with C11, warnings as errors, AddressSanitizer, and
+UndefinedBehaviorSanitizer. Both lectures and standalone autopsies run with
+the same checks. All four complete textbook programs compile and produce
+their documented output; their executable code agrees across languages.
+
+Release source mappings contain 3, 4, 3, 5, and 16 unique existing entries
+for Module 1 Stages A–E, and 3, 4, 3, 4, and 15 for Module 2. Module 1 Stage D
+now includes the Korean textbook, and Stage E includes the revised day-two
+plan. Both Stage D copies retain the textbooks byte for byte. Isolated
+temporary Stage E copies compile using their student Makefiles: incomplete
+starter/core and student-test placeholders fail as expected, autopsies run
+independently, and completed implementations pass the supplied core tests
+(plus Module 1's released extension tests). Solutions, instructor files,
+and lecture sources remain excluded from student releases.
+
+PowerShell scripts were reviewed but not executed because PowerShell is
+unavailable on this host. No release ZIPs were created or published. These
+checks verify technical consistency; they are not a new student-reading
+pilot.
+
 ## Module 1 Revision Note — August 27, 2026
 
 Chapter 1 and Module 1 now use a fixed integer array with separate size and
@@ -117,6 +158,71 @@ At that time, the extracted C blocks compiled with warning-as-error checks
 and ran successfully. Its reference suite passed 9 core and 7 extension
 tests, including AddressSanitizer and UndefinedBehaviorSanitizer runs.
 Those results do not validate the current code or chapter.
+
+## Module 3 SNS Package Alignment — September 10, 2026
+
+The full module now uses the textbooks' seven-account follower network.
+Inquiry, representation reveal, standard and linear investigations, lab,
+evidence, instructor answers, diagrams, and the canonical core test share
+the six follows and the `2 -> 3` unfollow. This replaces the temporary
+separate three-vertex teaching fixture described in the textbook-only note
+below. General API boundary tests and the four-to-three-to-four vertex
+autopsy retain their own fixtures.
+
+The five-minute pause keeps three targets and requests only rows 0, 2, and
+6 in its orientation task. Component and feed reasoning follows the saved
+Stage C attempt. Both textbook languages are Stage D reading alternatives.
+The four library functions, three student-authored tests, two 90-minute
+meetings, and 100-point rubric remain the implementation and delivery scope.
+
+The reference passes 8 core and 5 extension tests under strict C11 with
+warnings as errors, AddressSanitizer, and UndefinedBehaviorSanitizer. The
+revised canonical test compares the full matrix before and after removal.
+The standalone autopsy produces its intended output without sanitizer errors.
+The incomplete starter safely fails 7 of 8 core tests, and all three student
+placeholders fail as intended.
+
+Release mappings contain 3, 4, 3, 4, and 14 distinct existing entries for
+Stages A through E. Stage D includes both textbook editions unchanged.
+Isolated copies built with the student Makefile show the expected starter
+and placeholder failures, run the autopsy, and pass all 8 core tests when
+the completed implementation is substituted. Instructor, solution, and
+extension-test files remain excluded from releases. PowerShell is unavailable
+on this host, so the packaging script was inspected and its mappings checked
+through temporary copies; the script itself was not executed. No ZIPs were
+created or published.
+
+Matrix checks confirm the representation reveal, answer key, and diagrams
+agree with the textbooks before and after the unfollow. English and Korean
+executable C still match after comments are removed. The Week 3 question
+pages agree on 49 prompts, and their index totals and curriculum references
+reflect this revision. These are technical and editorial checks, not a new
+beginner reading pilot.
+
+## Module 3 SNS Textbook Revision — September 10, 2026
+
+Chapter 3 now follows seven SNS accounts, with arrows from follower to
+followed account. The chapter explains maximal connected groups, weak and
+strong connectivity, singleton components, and a hypothetical use of
+component labels in feed candidate selection. Ranking and post eligibility
+remain separate decisions. Removing Sora's follow of Dae splits a weak
+component without changing the strong components.
+
+The seven textbook C blocks compile and run together under strict C11 with
+warnings as errors, AddressSanitizer, and UndefinedBehaviorSanitizer.
+Assertions verify full-grid initialization, the initial and final 16-by-16
+matrix states, the unchanged active count, and Sora's out-degree changing
+from 2 to 1. Output matches the textbook. Independent reachability checks
+confirm the strong and weak component partitions before and after removal.
+The account edges, Mermaid diagram, textbook matrix, and instructor-guide
+matrix agree. The structure still matches the public header, and the five
+core textbook sections appear in the prescribed order.
+
+The teaching guide and companion concept notes now distinguish this
+seven-account example from the existing three-vertex lab practice fixture.
+The four C functions, lab tests, and release scripts are unchanged. These
+checks validate the revised example; they are not a new beginner reading
+pilot or a rerun of the earlier implementation and packaging checks.
 
 ## Module 3 Revision Note — August 28, 2026
 

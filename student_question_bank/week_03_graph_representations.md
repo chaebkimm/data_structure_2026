@@ -21,7 +21,7 @@ Sources: [Module 3 teaching-package overview](../module_03_graph/README.md), [Mo
 | out-degree | The number of directed edges leaving one vertex. |
 | in-degree | The number of directed edges entering one vertex. |
 | path | A sequence that follows edges without repeating a vertex. |
-| cycle | A path that returns to its starting vertex without repeating another vertex. |
+| cycle | A route that returns to its starting vertex without repeating another vertex. |
 | self-loop | An edge whose source and destination are the same vertex. |
 | weight | A number such as cost or delay attached to an edge. |
 | unweighted graph | A graph that records edge existence without an edge value. |
@@ -59,17 +59,29 @@ Sources: [Module 3 teaching-package overview](../module_03_graph/README.md), [Mo
 
 ### Operations and C
 
-- Why does `graph_init` clear all 16 by 16 cells even when only three vertices are active?
+- Why does `graph_init` clear all 16 by 16 cells even when only seven accounts are active?
 - Which checks must occur before a direct grid lookup or update?
 - Why may a repeated valid add or removal succeed without changing the final cell value?
 - What do `size_t` and `GRAPH_MAX_VERTICES` contribute to the fixed representation?
 
 ### Tracing
 
-- Which cells record the textbook edges `0 -> 1`, `1 -> 2`, and `1 -> 0`?
-- Why is the App server's initial row `[1, 0, 1]`, and what is its out-degree?
-- After removing `1 -> 2`, what is row 1 and what out-degree should be reported?
-- How can `0 -> 1` and `1 -> 0` form a valid cycle while both diagonal cells remain zero?
+- Which cells record the follows `0 -> 1`, `1 -> 2`, `2 -> 0`, `2 -> 3`, `4 -> 5`, and `5 -> 4` for Mina, Joon, Sora, Dae, Hana, Leo, and Nuri?
+- Why is Sora's initial row `[1, 0, 0, 1, 0, 0, 0]`, and what is her out-degree?
+- After removing `2 -> 3`, what is row 2 and what out-degree should be reported?
+- How can `0 -> 1 -> 2 -> 0` form a valid cycle while every diagonal cell remains zero?
+- Why is Nuri initially isolated while Dae, who also follows nobody, is not?
+
+### Components and feeds — after the Stage C attempt
+
+- What does maximal mean when identifying a connected component?
+- Why do weak components ignore arrow directions while strong components require directed paths in both directions?
+- Why do Mina, Joon, and Sora form a strong component without every pair following each other directly?
+- Why does Dae share their weak component but form a separate strong component?
+- Which components change when Sora unfollows Dae?
+- How could component membership help select candidate posts without determining their ranking?
+- Why can restricting Sora's feed to her strong component exclude a directly followed account?
+- How could an isolated account such as Nuri receive recommendations, and why does connectivity not grant permission to view a post?
 
 ### Tests and debugging
 

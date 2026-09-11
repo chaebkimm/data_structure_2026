@@ -17,22 +17,46 @@ without changing the values or the count.
 Keep the lesson in everyday language before attaching formal names. The
 textbook is the source of truth for the conceptual scope.
 
+## Supporting a First Reading of C
+
+The [English textbook](../module_01_arraylist/student/textbook.md#full-c-code-explanation)
+and [Korean textbook](../module_01_arraylist/student/textbook_korean.md)
+include an optional **Full C Code Explanation** after the original chapter.
+Release both editions at Stage D, after the investigation and exit ticket.
+The appendix is a reference students can consult one topic at a time; its
+length and practice questions do not add required reading or assessment.
+
+When a student cannot read a line, explain its names and symbols before
+asking them to trace it. Topics 1–4 explain program structure, punctuation,
+storage, and conditions. Topics 5–8 follow the four operation examples;
+topic 9 joins the trace, and topic 10 provides the complete runnable program.
+Students can return to their current lab checkpoint after one relevant
+example. On the website, the section opens with **Expand full explanation**.
+
+The lab packages the same array operations into functions. Use the
+[lab's textbook-to-lab guidance](../module_01_arraylist/student/lab.md)
+to explain that extra step: integer parameters are local copies, mutations
+return a size the caller must save, and the search function returns `-1`
+for absence while the textbook loop finishes with `index == size`.
+
 ## Blackboard Tracking
 
 Reveal one line at a time.
 
 | Action | Memory state |
 |---|---|
-| Append 100, 200, 300 | Active prefix `[100] [200] [300]`; size 3, capacity 10 |
+| Store 100, 200, 300, 400, 500 | Active prefix `[100] [200] [300] [400] [500]`; size 5, capacity 10 |
 | Read index 1 | Value 200; state unchanged |
-| Update index 1 to 500 | Active prefix `[100] [500] [300]`; size 3 |
-| Remove index 1 | Shift 300 left; active prefix `[100] [300]`; size 2 |
-| Insert 600 at index 1 | Shift 300 right first; active prefix `[100] [600] [300]`; size 3 |
+| Update index 1 to 500 | Active prefix `[100] [500] [300] [400] [500]`; size 5 |
+| Find 300 | The first match is index 2; state unchanged |
+| Remove index 1 | Shift the later items left; active prefix `[100] [300] [400] [500]`; size 4 |
+| Insert 600 at index 1 | Shift the suffix right from the back; active prefix `[100] [600] [300] [400] [500]`; size 5 |
 | Separate full fixture | `[100] [200] [300] [400] [500] [600] [700] [800] [900] [1000]`; size 10 |
 | Attempt to append 1100 | Reject; every array slot and size remain unchanged |
 
 Ask students to name the action before revealing the next line. Slots after
 the active prefix are not list items; they need not contain zero or be cleared.
+The shorter three-item inquiry fixtures are separate practice examples.
 
 ## Common Initial Thoughts
 
@@ -61,8 +85,9 @@ the active prefix are not list items; they need not contain zero or be cleared.
 
 ## Vocabulary Boundaries
 
-**Already available:** C variables, functions, arrays, loops, and conditional
-statements.
+**Revisit with support:** C variables, functions, arrays, loops, and conditional
+statements. Do not assume that previous exposure means students can read
+their syntax; use the optional appendix for the line they are working on.
 
 **Introduce here:** data structure, contiguous memory, array, list, ArrayList,
 index, element, size, capacity, invariant, indexed access, and linear search.

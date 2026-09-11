@@ -27,7 +27,7 @@ Sources: [Module 2 teaching-package overview](../module_02_binary_tree/README.md
 | expression tree | Operators connected to operand subtrees, with digit leaves in this chapter. |
 | node | One object containing a character and two child indices. |
 | root | The node giving access to the whole tree, represented here by an index. |
-| parent | The node directly above another node; no upward field is required. |
+| parent | The node directly above another node; no upward member is required. |
 | child | A node directly below another node. |
 | leaf | A node whose two child indices are both -1. |
 | subtree | One node and all of its descendants. |
@@ -41,8 +41,8 @@ Sources: [Module 2 teaching-package overview](../module_02_binary_tree/README.md
 | `eq` | The array containing the expression string. |
 | `pos` | The index of the next unread character in eq. |
 | `'\0'` | The character terminating the expression string. |
-| `struct` | A C type grouping named fields into one object. |
-| field | A named value accessed with the dot after selecting a node. |
+| `struct` | A C type grouping named members into one object. |
+| member | A named value accessed with the dot after selecting a node. |
 | consume | Read a character and advance the input position. |
 | term | One digit followed by zero or more multiplication-and-digit pairs. |
 | precedence | The priority that groups multiplication before addition here. |
@@ -93,7 +93,7 @@ Sources: [Module 2 teaching-package overview](../module_02_binary_tree/README.md
 
 - Which test shows that a digit-only expression can return root index 0?
 - How can checking links reveal an association error that an answer-only test misses?
-- How can field snapshots and a second evaluation establish nonmutation?
+- How can member snapshots and a second evaluation establish nonmutation?
 - Why must every independent test build reset both size and pos and copy a valid expression?
 
 ### Complexity

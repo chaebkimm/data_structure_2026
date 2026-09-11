@@ -80,10 +80,10 @@ Response:
 Start an independent build with `size == 0`.
 
 1. After `int a = new_node('0');`, what are `a`, `size`, and all three
-   fields of `nodes[a]`? Distinguish character `'0'`, integer 0, and index 0.
+   members of `nodes[a]`? Distinguish character `'0'`, integer 0, and index 0.
 2. Next, call `int b = new_node('7');`. What are `b` and `size`? Does this
    make either node a child of the other?
-3. Why must both child fields be initialized even though the array exists
+3. Why must both child members be initialized even though the array exists
    for the entire program?
 4. Before building an unrelated expression, why reset both `size` and `pos`?
    What happens to the meaning of an old root index as array slots are reused?
@@ -117,7 +117,7 @@ Start with the completed section D tree.
 2. What does a digit leaf return, and why is subtracting `'0'` correct?
 3. Why must the two child results be available before applying an operator?
 4. What is the final answer? What characters remain in the operator nodes?
-5. Which fields and shared variables should a second evaluation leave
+5. Which members and shared variables should a second evaluation leave
    unchanged? How could a test check this?
 
 Response:

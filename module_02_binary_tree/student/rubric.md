@@ -3,7 +3,7 @@
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
 | Representation and invariants | 20 | Character data, child indices, -1 absence, valid index 0, root, size, and pos agree across code and diagrams; single root, no sharing/cycles, expression arity, and valid-input assumptions are explained |
-| Node creation | 15 | new_node reserves the correct index, stores the character, initializes both child fields to -1, increments size once, and preserves previously created nodes |
+| Node creation | 15 | new_node reserves the correct index, stores the character, initializes both child members to -1, increments size once, and preserves previously created nodes |
 | Expression construction | 20 | term and terms consume the intended characters, preserve multiplication precedence and left association, return correct roots, and produce the required links |
 | Recursive evaluation | 20 | A digit is the base case; child results are computed before their operator; correct answers are returned without changing nodes or shared parser state |
 | Operation efficiency | 10 | Constant node/link work, linear parsing/evaluation, occupied array storage, and evaluation stack depth are justified; fixed capacity is distinguished from the scalable model |

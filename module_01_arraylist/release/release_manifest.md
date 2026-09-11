@@ -40,18 +40,24 @@ state after rejection. They do not provide the answer key.
 
 Release after the Meeting A investigation and exit ticket:
 
-- revised fixed-array Chapter 1 textbook;
+- English and Korean fixed-array Chapter 1 textbooks, each with its optional
+  **Full C Code Explanation** reference;
 - student summary and lab bridge; and
 - fixed-array diagrams with text equivalents.
 
 These diagrams do not include a worked Stage E autopsy. Keep its faulty-code
 prediction and repair answers out of Stage D materials.
+The appendix's complete program and explained practice answers are available
+at this gate as part of the textbook. They do not add required reading or
+assessment. The separate `code/lecture/` source is an instructor convenience
+copy of the textbook program; it is not included in the staged archives.
 
 ## Stage E — Lab and Evidence
 
 Release for Meeting B:
 
-- lab, 100-point rubric, evidence template, and Bounds and Invariant Autopsy;
+- lab, day-two plan, 100-point rubric, evidence template, and Bounds and
+  Invariant Autopsy;
 - public header and plain-array starter implementation;
 - supplied core tests, extra edge/sequence tests, and student-test template;
 - student-only PowerShell and GNU Make build files; and

@@ -6,6 +6,11 @@ program is a safe observation fixture: every access stays inside a physical
 
 ## Incident
 
+This is a separate diagnostic fixture with counts 4, then 3, then 4. It does
+not start from the chapter's seven-account SNS graph. The count-only changes
+are intentionally faulty source statements, not an additional public graph
+operation to implement.
+
 The graph begins with four active vertices and one directed edge. A faulty
 count-only change reduces the active count to three without clearing the row
 and column that became inactive. A later count-only change returns to four, so
@@ -64,16 +69,18 @@ ____________________________________________________________________
 
 ### 4. Repair
 
-Describe where the invalid write must be rejected or cleared. A repair must
-leave the graph unchanged after a rejected operation and must keep every
-inactive row and column zero.
+Describe where the count change must be rejected or the newly inactive cells
+must be cleared. A repair must leave the graph unchanged after a rejected
+operation and must keep every inactive row and column zero. Explain the
+repair; do not add a resize function to the four-function lab API.
 
 ____________________________________________________________________
 
 ### 5. Regression test
 
 Write one test claim that would fail for the faulty program and pass after the
-repair. Include the state that must remain unchanged.
+repair. Include the state that must remain unchanged. This is a written
+autopsy claim, not a fourth student-authored C test.
 
 ____________________________________________________________________
 

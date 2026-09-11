@@ -8,6 +8,11 @@
 Do not edit the public header or supplied tests unless your instructor
 authorizes it.
 
+If C syntax is new, use **Reading the supplied C scaffold** in
+`../student/lab.md` and the optional **Full C Code Explanation** in either
+Stage D textbook. Look up one question at a time; reading the whole
+appendix is not required.
+
 ## Fixed-capacity model
 
 Use a plain ten-position integer array, a size count, and capacity ten.

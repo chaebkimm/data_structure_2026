@@ -42,8 +42,9 @@ another required function.
 
 ## Matrix meaning and invariant
 
-Cell `grid[from][to]` represents exactly one directed fact. It is 1 when
-the edge exists and 0 when absent. The reverse cell is independent.
+Cell `grid[from][to]` represents exactly one directed fact. In the SNS
+example, `from` follows `to`. The cell is 1 when the follow exists and 0
+when absent. The reverse cell is independent.
 
 For a valid completed graph:
 
@@ -113,8 +114,9 @@ If the cell was already 1, the function still returns 1. The state is already
 the requested state, so repeated addition is successful and idempotent.
 Only the one directed cell is relevant; do not write its reverse.
 
-A cycle with two or more edges is valid. For example, `0 -> 1` and
-`1 -> 0` may coexist even though `0 -> 0` and `1 -> 1` are rejected.
+A cycle with two or more edges is valid. For example, `4 -> 5` and
+`5 -> 4` coexist even though `4 -> 4` and `5 -> 5` are rejected. The
+cycle `0 -> 1 -> 2 -> 0` is also valid.
 
 ## Idempotent directed removal
 
@@ -128,8 +130,8 @@ Return 1 whether the edge was present or already absent. Repeated removal is
 idempotent. Permitting equal endpoints lets removal preserve or restore the
 required zero diagonal; only addition rejects a self-loop request.
 
-Do not clear the reverse cell. Removing `1 -> 2` says nothing about
-`2 -> 1`.
+Do not clear the reverse cell. Removing `2 -> 3` says nothing about
+`3 -> 2`.
 
 ## Direct guarded lookup
 
@@ -187,46 +189,89 @@ sink-only vertex has out-degree zero and still returns success.
 Incoming degree can be reasoned about by scanning a column, but it is not a
 required function.
 
-## Canonical trace
+## Canonical SNS follower trace
 
-For three vertices, add edges in this order:
+The inquiry, activities, textbooks, and lab use the same seven accounts:
+0 Mina, 1 Joon, 2 Sora, 3 Dae, 4 Hana, 5 Leo, and 6 Nuri. Initialize
+`vertex_count` to 7 and add these follows:
 
 ```text
 0 -> 1
 1 -> 2
-1 -> 0
+2 -> 0
+2 -> 3
+4 -> 5
+5 -> 4
 ```
 
 The active matrix is:
 
 ```text
-0 1 0
-1 0 1
-0 0 0
+0 1 0 0 0 0 0
+0 0 1 0 0 0 0
+1 0 0 1 0 0 0
+0 0 0 0 0 0 0
+0 0 0 0 0 1 0
+0 0 0 0 1 0 0
+0 0 0 0 0 0 0
 ```
 
 - `grid[0][1] == 1`;
-- `grid[1][0] == 1`;
-- `grid[1][2] == 1`;
-- out-degree of vertex 1 is 2; and
-- `0 -> 1 -> 0` is a valid directed cycle.
+- `grid[1][0] == 0`;
+- `grid[2][0] == 1` and `grid[2][3] == 1`;
+- Sora's out-degree is 2;
+- `0 -> 1 -> 2 -> 0` is a valid directed cycle;
+- Dae's out-degree is 0 and in-degree is 1, so Dae is not isolated; and
+- Nuri has no incoming or outgoing edges and is isolated.
 
-After `graph_remove_edge(&graph, 1, 2)`, row 1 is `[1, 0, 0]` and its
-out-degree is 1. All other cells retain their prior values.
+After `graph_remove_edge(&graph, 2, 3)`, row 2 is
+`[1, 0, 0, 0, 0, 0, 0]` and Sora's out-degree is 1. Dae becomes isolated.
+All other cells retain their prior values. The active square has 49 cells;
+the object always reserves 256. Index 7 is physically within the array but
+inactive.
 
 ## Conceptual comparisons only
 
-Use these ideas to compare representations without adding C requirements:
+Use these ideas to compare representations without adding C requirements.
+Keep worked component and feed reasoning in Stage D after the Stage C attempt:
 
 - an undirected matrix records one relationship with two symmetric cells;
 - a weighted edge carries a cost, distance, or time rather than only 0/1;
 - an edge-list representation stores endpoint pairs;
 - an adjacency-list representation stores outgoing neighbors per vertex;
-- an undirected connected component groups vertices joined by paths; and
+- an undirected connected component is a maximal group joined by paths;
+- a weakly connected component applies that rule after ignoring directed
+  edges' arrow directions;
+- a strongly connected component is a maximal group with directed paths in
+  both directions between every pair; and
 - directed reachability must name a starting vertex.
 
 No undirected mutation, weight storage, representation conversion, component
 algorithm, DFS, or BFS belongs in the starter.
+
+In the original canonical graph, weak components are `{0,1,2,3}`, `{4,5}`,
+and `{6}`; strong components are `{0,1,2}`, `{3}`, `{4,5}`, and `{6}`.
+Removing `2 -> 3` isolates Dae and splits the first weak component into
+`{0,1,2}` and `{3}`, leaving strong component memberships unchanged. A
+singleton component needs no self-loop; a vertex reaches itself using a path
+of length zero. Strong connectivity requires mutual directed reachability,
+not direct reciprocal follows between every pair. Weak connectivity ignores
+directions only for analysis; it does not change the directed matrix.
+
+Treat the feed discussion as an illustrative design before the unfollow.
+Mina directly follows Joon. Sora is in Mina's strong component and could
+supply additional recommendation candidates. Dae is in the same weak
+component but another strong component and could supply broader candidates.
+Public posts from Hana or Leo may match Mina's interests despite being
+outside her weak component. Nuri's lack of links motivates using stated
+interests or other signals for a new account.
+
+Component labels do not establish a common topic or dense connections. They
+are neither ranking scores nor access permissions. Eligibility and ranking
+need separate rules. Do not claim that a particular SNS uses these component
+rules. The edge's direction describes the follow relation, not the movement
+of a post toward its readers. Stage D provides both
+`student/textbook.md` and `student/textbook_korean.md`.
 
 ## Complexity
 

@@ -35,6 +35,11 @@ Release after the Stage C attempt is preserved:
 - `diagrams/tree_models.md`, correct models with text equivalents.
 
 Both editions use the same C representation and executable examples.
+Each complete textbook includes its **Full C Code Explanation** companion,
+with 15 matching topics, a complete program, traces, and practice answers.
+Keep these sections in Stage D, after the Stage C attempt; do not move
+their worked material into an earlier release. They provide optional
+syntax support and do not create additional assessed work.
 This stage contains no worked Stage E fault prediction or repair answer.
 
 ## Stage E — Lab and Evidence
@@ -73,6 +78,8 @@ programs and compare their output. Check that the incomplete starter and
 student placeholders fail cleanly.
 
 Verify every release source and unique destination name. Stage D must
-include both language editions. Student build scripts must work using only
-Stage E entries and expose only starter core/student tests and autopsy.
+include both language editions with their full C companions. The Stage E
+lab and READMEs refer back to those Stage D textbooks without adding
+textbooks or worked solutions to Stage E. Student build scripts must work
+using only Stage E entries and expose only starter core/student tests and autopsy.
 Check that solutions, instructor content, and extensions are absent.

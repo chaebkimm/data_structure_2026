@@ -18,6 +18,30 @@ any array element.
 No wrapper struct is needed. The public header keeps the existing
 `int_list.h` filename, and both implementations remain named `int_list.c`.
 
+## Textbook and lab bridge
+
+The English and Korean textbooks retain the original chapter and add
+**Full C Code Explanation** as an optional eleven-topic reference. Its
+complete program is copied into `code/lecture/simplified_array_list.c` and
+can be run with `make lecture` or `build.ps1 -Target lecture`. It uses the
+chapter's five-item initial list and prints the read value, search result,
+and final five-item list. Keep this example at Stage D or later.
+
+The textbook's operations run together in `main`; the lab makes reusable
+functions with array access, copied integer inputs, and returned counts.
+In particular, the textbook loop represents an unsuccessful search with
+`index == size`, while `int_list_find` returns `-1`. Both preserve the same
+first-match behavior, but neither absence result may be used to read an
+item. Teach the lab's return contract explicitly rather than changing the
+textbook's completed example.
+
+The lab also checks metadata supplied by callers, whereas the complete
+textbook program establishes valid counts itself. Smaller three-item inquiry
+and test fixtures remain useful for applying the same invariant. The
+student notes provide an optional appendix topic map; the lab separately
+explains the required function and test-body syntax. Do not require students
+to finish every reference topic before attempting the lab.
+
 ## Public API
 
 ```c
@@ -190,6 +214,8 @@ production repair. Keep the autopsy separate from the normal test suite.
 - [ ] Runtime checks are clean for the reference implementation.
 - [ ] The guarded autopsy builds and prints its expected invariant failure.
 - [ ] The starter compiles before TODO completion.
+- [ ] The lecture copy matches the complete textbook program and expected output.
+- [ ] Stage D includes both textbook languages and their optional C reference.
 - [ ] No obsolete test target is mentioned in release build files.
 - [ ] Every diagram has a text equivalent.
 - [ ] Student and instructor API names match the header.

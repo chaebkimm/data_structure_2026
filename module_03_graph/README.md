@@ -1,6 +1,6 @@
 # Module 3 Teaching Package
 
-## Directed Graphs in a Fixed Adjacency Matrix
+## SNS Follower Networks in a Fixed Adjacency Matrix
 
 This package is the Graph stage of the first Linear -> Tree -> Graph spiral
 in **Data Structures Course 2026**.
@@ -14,8 +14,8 @@ not memorized terminology.
 
 ## Module question
 
-> How can a fixed grid record one-way relationships that may cross branches,
-> point backward, or form cycles?
+> How can a fixed grid record who follows whom when relationships may share
+> destinations or form cycles?
 
 ## Canonical implementation
 
@@ -68,27 +68,60 @@ Students will be able to:
 7. perform a guarded direct lookup and count one row's outgoing edges;
 8. explain the fixed-matrix invariant and operation costs;
 9. compare the implemented matrix conceptually with undirected graphs,
-   weighted edges, edge lists, adjacency lists, and components; and
+   weighted edges, edge lists, adjacency lists, and weakly and strongly
+   connected components, including their possible use in feed candidate
+   selection; and
 10. support claims with three student-authored tests and tool evidence.
 
 Undirected mutation, weights, graph traversal, component computation, edge
 lists, and adjacency lists are not implementation requirements. Formal DFS
 and BFS begin in later modules.
 
-## Canonical three-vertex trace
+## Canonical SNS follower example
 
-Use active vertices 0, 1, and 2 with edges:
+The module models seven accounts with arrows from follower to followed
+account. It explains weakly connected components by ignoring arrow direction
+and strongly connected components by requiring directed paths both ways
+between every pair. Components are maximal groups under the chosen rule.
+An illustrative feed design uses these groups to reason about recommendation
+candidates and feed diversity, alongside direct follows and separate ranking
+rules. Component membership alone does not establish shared interests.
+
+Use this graph in both textbook editions, the inquiry, worksheets, lab,
+diagrams, and canonical core test:
 
 ```text
+Accounts: 0 Mina, 1 Joon, 2 Sora, 3 Dae, 4 Hana, 5 Leo, 6 Nuri
+
 0 -> 1
 1 -> 2
-1 -> 0
+2 -> 0
+2 -> 3
+4 -> 5
+5 -> 4
 ```
 
-The two opposite edges `0 -> 1` and `1 -> 0` are separate facts and form a
-valid length-two directed cycle. Initially row 1 is `[1, 0, 1]`, so vertex
-1 has out-degree 2. After removing `1 -> 2`, row 1 is `[1, 0, 0]` and its
-out-degree is 1.
+Mina, Joon, and Sora form the directed cycle `0 -> 1 -> 2 -> 0`. Hana and
+Leo's opposite follows are separate facts. Nuri is an isolated active
+account; Dae initially has one incoming follow and no outgoing follow.
+
+Initially Sora's row 2 is `[1, 0, 0, 1, 0, 0, 0]`, so her out-degree is 2.
+After removing `2 -> 3`, row 2 is `[1, 0, 0, 0, 0, 0, 0]` and her out-degree
+is 1. Dae becomes isolated. The weak component `{0, 1, 2, 3}` splits into
+`{0, 1, 2}` and `{3}`; the strong components stay unchanged.
+
+Before removal, the strong components are `{0, 1, 2}`, `{3}`, `{4, 5}`,
+and `{6}`. The weak components are `{0, 1, 2, 3}`, `{4, 5}`, and `{6}`.
+Discuss these groups and feed choices after the Stage C attempt is saved.
+The boundary tests and standalone autopsy use their own small fixtures to
+check general API and inactive-cell behavior.
+
+## Textbook editions
+
+Stage D supplies [the English chapter](student/textbook.md) and
+[the Korean chapter](student/textbook_korean.md). They present the same
+example, diagrams, and executable C. Choose either language; reading both
+is not an additional requirement.
 
 ## Package map
 
@@ -112,6 +145,7 @@ module_03_graph/
 |   |-- representation_reveal.md
 |   |-- rubric.md
 |   |-- textbook.md
+|   |-- textbook_korean.md
 |   `-- vocabulary.md
 |-- release/
 |   |-- release_manifest.md
@@ -143,8 +177,9 @@ module_03_graph/
 3. Preserve the first model, then release Stage B's representation,
    vocabulary, and three-target Cognitive Pause.
 4. Release Stage C after the pause and instructor calibration.
-5. Release Stage D's textbook and diagram/text models only after the Stage C
-   attempt is saved. Do not reveal the Stage E autopsy result.
+5. Release Stage D's English and Korean textbooks and diagram/text models
+   only after the Stage C attempt is saved. Do not reveal the Stage E autopsy
+   result.
 6. Release Stage E for Meeting B.
 7. Keep instructor materials, the solution, and extension tests private until
    the chosen review point.

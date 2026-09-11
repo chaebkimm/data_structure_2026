@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "solution", "autopsy")]
+    [ValidateSet("starter", "solution", "lecture", "autopsy")]
     [string]$Target = "starter",
 
     [switch]$Extensions,
@@ -51,6 +51,15 @@ if ($Target -eq "autopsy") {
         (Join-Path $codeRoot "autopsy\faulty_append.c")
     )
     $outputName = "autopsy"
+} elseif ($Target -eq "lecture") {
+    if ($Extensions -or $StudentTests) {
+        throw "Lecture cannot be combined with a normal test switch."
+    }
+
+    $sources = @(
+        (Join-Path $codeRoot "lecture\simplified_array_list.c")
+    )
+    $outputName = "lecture"
 } else {
     if ($Extensions -and $StudentTests) {
         throw "Choose either -Extensions or -StudentTests, not both."

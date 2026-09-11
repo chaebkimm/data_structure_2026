@@ -6,7 +6,7 @@ CPPFLAGS ?= -Iinclude
 BUILD_DIR := build
 
 .PHONY: all solution-core solution-extension starter-core \
-	starter-extension starter-student-tests autopsy clean
+	starter-extension starter-student-tests lecture autopsy clean
 
 all: starter-core
 
@@ -32,6 +32,10 @@ starter-extension: | $(BUILD_DIR)
 starter-student-tests: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) starter/int_list.c tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
 	$(BUILD_DIR)/starter_student_tests
+
+lecture: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) lecture/simplified_array_list.c -o $(BUILD_DIR)/lecture
+	$(BUILD_DIR)/lecture
 
 autopsy: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) autopsy/faulty_append.c -o $(BUILD_DIR)/autopsy

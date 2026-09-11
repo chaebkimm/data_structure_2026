@@ -33,6 +33,26 @@ integer indices into `nodes`, with `-1` for no child. Index `0` is valid.
 No additional reset API, wrapper, status type, or structural validator is
 required.
 
+## Relationship to the full C companion
+
+Both textbooks' **Full C Code Explanation** sections explain the same four
+functions in 15 corresponding topics. The complete program in topic 13
+combines the chapter's six code blocks; its initial expression is still
+`1+2*3`, and its output is still `1+2*3 = 7`. The companion is optional
+reference material released at Stage D, with the chapter's worked code.
+
+The lab keeps these definitions in separate files: the header declares
+the shared interface, the starter or solution defines the objects and
+functions, and each test or lecture driver supplies `main`. The lab's
+syntax bridge explains the added file-layout and test-harness notation.
+Do not ask students to paste the complete standalone program into the
+starter or add a second `main` to the test build.
+
+The lecture's `(void)printf(...)` explicitly discards `printf`'s return
+value; the textbook simply ignores that return value. Both calls
+produce the same output. The cast is not a new expression-tree operation.
+Reference code, starter contracts, and assessment scope remain the same.
+
 ## Input and tree preconditions
 
 Each complete input is:
@@ -63,13 +83,13 @@ exactly one incoming child link per other reachable node. Do not call
 The struct can represent general binary-tree shapes, including a node with
 only one child. Such a shape is not a completed operator expression for
 this evaluator. The four functions assume their contracts; they do not
-certify arbitrary field assignments.
+certify arbitrary member assignments.
 
 ## Array state and independent runs
 
 `size` is both the used-node count and the next unused slot. Array elements
 outside `[0, size)` are not active nodes, even if C initialized their
-storage to zero. A newly reserved node explicitly receives two `-1` fields.
+storage to zero. A newly reserved node explicitly receives two `-1` members.
 
 An independent valid fixture may be set up directly in a test:
 
@@ -180,8 +200,8 @@ path measured in child links.
 Construction uses loops; the `terms()` to `term()` calls do not add one
 stack frame per expression node. Evaluation is recursive and can encounter
 a skewed tree from repeated operators. Each node contains one character
-and two integer fields; padding means `sizeof(struct TreeNode)` need not
-equal the simple sum of field sizes. The program reserves a fixed
+and two integer members; padding means `sizeof(struct TreeNode)` need not
+equal the simple sum of member sizes. The program reserves a fixed
 20-element array; conceptually its used node storage grows with `n`.
 State these costs in terms of expression size even though the classroom
 program has a fixed small capacity.
@@ -228,11 +248,12 @@ Before release, verify:
 - valid parsing covers single digits, repeated operators, mixed precedence,
   left-associated links, and the 19-character boundary;
 - independent runs reset both counters and use bounded valid inputs;
-- evaluation returns the right value and preserves fields and shared state;
+- evaluation returns the right value and preserves members and shared state;
 - the standalone autopsy produces a deterministic semantic discrepancy;
 - the starter compiles with exactly four implementation TODOs;
 - all release paths use the current header, implementation, and autopsy names;
 - the three authored-test categories align with the 100-point rubric;
 - vocabulary appears only from Stage B onward;
-- Stage D includes both textbooks and no worked autopsy prediction; and
+- Stage D includes both complete textbooks with their optional C companions
+  and no worked autopsy prediction; and
 - Stage E excludes the solution, instructor extension tests, and answer key.

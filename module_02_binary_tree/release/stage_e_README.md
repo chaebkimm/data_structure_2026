@@ -10,6 +10,12 @@ fixed array, character data, `-1` empty links, and shared reading position.
 Write three distinct tests for node creation, construction, and evaluation.
 Do not modify supplied tests to hide failures.
 
+Keep your Stage D textbook available. Its **Full C Code Explanation** is
+optional help for a particular statement, with the same 15 topic numbers
+in English and Korean. The lab includes a topic map and explains how the
+textbook's standalone program becomes this release's header, starter, and
+tests. The companion's practice questions add no submission requirements.
+
 Use valid single-digit expressions with `+` and `*`, no spaces or
 parentheses, at most 19 characters, and all intermediate/results within
 `int`. Reset `size` and `pos` before each independent build. Input validation

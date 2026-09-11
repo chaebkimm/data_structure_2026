@@ -23,7 +23,7 @@ nodes[index]
 ```
 
 Text equivalent: one node stores a character and two independent child
-indices. All nodes live in `nodes[20]`; no parent field is stored. `size`
+indices. All nodes live in `nodes[20]`; no parent member is stored. `size`
 counts occupied slots. Index 0 is valid, and -1 means an absent child.
 
 ## 2. The canonical expression: 1+2*3
@@ -55,7 +55,7 @@ addition, so it produces a value before the addition combines its operands.
 consumption; child links supply the hierarchy. A root need not be the first
 or last array position.
 
-## 3. Read nested field expressions
+## 3. Read nested member expressions
 
 | Expression | Meaning and canonical value |
 |---|---|
@@ -66,7 +66,7 @@ or last array position.
 | `nodes[nodes[root].right].data` | Right child's character, `'*'` |
 | `nodes[0].left` | -1, meaning the digit has no left child |
 
-Text equivalent: brackets select an array element and dots select fields.
+Text equivalent: brackets select an array element and dots select members.
 Follow a child link by using its nonnegative index to select another node.
 Never use the absence marker -1 as an array index.
 
@@ -122,7 +122,7 @@ addition returns 7
 ```
 
 Text equivalent: calls enter indices 1, 0, 3, 2, 4. Calls complete with values
-1, 2, 3, 6, 7. Each call keeps its own local results. Every node field and
+1, 2, 3, 6, 7. Each call keeps its own local results. Every node member and
 shared variable remains unchanged; the root still stores `'+'`.
 
 ## 7. General trees and completed expressions
@@ -188,7 +188,7 @@ root-to-leaf path measured in links.
 | Build a whole expression | `O(n)` | `O(1)` |
 | Evaluate a whole expression | `O(n)` | `O(h + 1)` |
 
-Text equivalent: creation and linking touch fixed numbers of fields.
+Text equivalent: creation and linking touch fixed numbers of members.
 Parsing consumes every character once and uses loops plus two parser levels.
 Evaluation visits each node once, and its longest active call chain follows
 the tree's depth. The literal array always reserves 20 nodes; `n` slots are

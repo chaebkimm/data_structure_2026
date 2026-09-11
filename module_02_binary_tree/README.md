@@ -7,6 +7,32 @@ This module follows [Chapter 2](student/textbook.md) and its
 of `1+2*3` and evaluate it to obtain `7`. The chapter extends Chapter 1's
 fixed arrays with structures, child indices, and recursive evaluation.
 
+## Optional help with reading C
+
+Both textbooks now include **Full C Code Explanation** (Korean:
+**C 코드 전체 설명 (Full C Code Explanation)**), a companion that assumes no
+previous C knowledge. Keep the original chapter as the main reading path.
+After Stage D is released, use a small part of the companion when a symbol
+or statement needs explanation; reading all 15 topics is not a prerequisite
+or an additional submission.
+
+The topic numbers match in both languages:
+
+| When a reader needs help with… | Companion topics |
+|---|---|
+| Program execution, variables, types, punctuation, and conditions | 1–3 |
+| Structures, member access, the node array, and `-1` | 4–5 |
+| Function calls, node creation, characters, strings, and `pos++` | 6–7 |
+| `term`, `terms`, and a complete construction trace | 8–10 |
+| Every evaluator statement and the recursive return trace | 11–12 |
+| The complete program, printing, and terminal commands | 13 |
+| Input boundaries, independent runs, and optional prediction practice | 14–15 |
+
+The [lab](student/lab.md) also explains how this single-file example maps
+to the supplied header, starter, and tests. The appendix includes worked
+examples and practice answers, so it remains part of Stage D, after the
+initial inquiry, Cognitive Pause, calibration, and Stage C attempt.
+
 ## Module question
 
 > How can array elements record an expression's hierarchy, and how can we
@@ -32,7 +58,7 @@ int terms(void);
 int eval_tree(int node);
 ```
 
-`data` stores a digit character or operator. Child fields and the returned
+`data` stores a digit character or operator. Child members and the returned
 root are indices into `nodes`; `-1` means no child and `0` is a valid index.
 `size` counts used nodes and identifies the next unused position. `pos`
 identifies the next unread character of `eq`.
@@ -75,7 +101,7 @@ completed operator for this evaluator.
 Students will:
 
 1. Explain nodes, roots, parent/child relationships, leaves, and subtrees.
-2. Translate among expression text, a hierarchy, an index table, and C fields.
+2. Translate among expression text, a hierarchy, an index table, and C members.
 3. Reserve initialized nodes and distinguish a character, index, and result.
 4. Trace `size`, `pos`, and changing subtree roots during construction.
 5. Explain multiplication precedence and left grouping within operator chains.
@@ -84,7 +110,7 @@ Students will:
 7. Explain why fresh nodes preserve the root, single-parent, and no-cycle rules.
 8. Support correctness and operation costs with tests and diagnostic evidence.
 
-Node reservation and assignment to a known child field take constant work.
+Node reservation and assignment to a known child member take constant work.
 Construction and complete evaluation take work proportional to the number
 of input characters/nodes. The parser uses loops with bounded function-call
 depth; recursive evaluation uses temporary call space proportional to the

@@ -8,7 +8,7 @@
 **Expected answer:** For `1+2*3`, addition is the root. Its left child stores
 `'1'`; its right child stores `'*'`, with children `'2'` and `'3'`. The
 multiplication subtree supplies `6` before addition returns `7`. Every
-child field stores an integer index into `nodes`, with `-1` for absence.
+child member stores an integer index into `nodes`, with `-1` for absence.
 Index `0` identifies a real node.
 
 ## Why We Need This
@@ -71,7 +71,7 @@ Use `1+2*3` throughout the Stage B reveal:
 | 4 | `'3'` | -1 | -1 |
 
 Explain `nodes[root].right` as selecting the root node and then reading
-its right field. Explain `nodes[nodes[root].right].data` as following the
+its right member. Explain `nodes[nodes[root].right].data` as following the
 stored index to another node and reading that node's character.
 
 Ask students to predict:
@@ -148,7 +148,7 @@ parent. Every present child index refers to an initialized slot below
 `size`.
 
 The builder preserves these rules by joining disjoint subtrees under a
-fresh parent. An empty child field alone does not establish that an
+fresh parent. An empty child member alone does not establish that an
 arbitrary proposed attachment is valid. Discuss sharing and cycles through
 paper traces; the four functions are not graph validators.
 
@@ -182,12 +182,14 @@ are outside the evaluator's contract.
 
 ## Vocabulary Boundaries
 
-**Already available:** C variables, functions, arrays, indices, loops,
-conditions, bounds, and invariants from Chapter 1.
+**Revisit with support:** C variables, functions, arrays, indices, loops,
+conditions, bounds, and invariants from Chapter 1. Previous exposure does
+not guarantee that a student can read every symbol; pause at the unfamiliar
+line and use the chapter's optional explanation.
 
 **Introduce here:** hierarchy, binary tree, expression tree, node, root,
 parent, child, sibling, ancestor, descendant, leaf, subtree, path, depth,
-height, `struct`, field access with `.`, digit-character conversion,
+height, `struct`, member access with `.`, digit-character conversion,
 index links and `-1`, precedence, left association, parsing, shared `pos`,
 recursion, and a base case.
 
@@ -202,7 +204,7 @@ wrapper, reset function, or success/status type.
 | Operation | Main idea | Work |
 |---|---|---|
 | `new_node` | Initialize the next array slot and return its index | `O(1)` |
-| Assign a child link | Write one known integer field | `O(1)` |
+| Assign a child link | Write one known integer member | `O(1)` |
 | `term` | Build one digit and its multiplication pairs | `O(k)` for a term of `k` characters |
 | `terms` | Join complete multiplication terms with addition | `O(n)` for the full expression |
 | `eval_tree` | Get both child results, then apply the operator | `O(n)` for the full tree |
@@ -231,6 +233,20 @@ Use the module's two 90-minute meetings and five release gates:
    the Stage C attempt is preserved.
 5. E: the four-function lab, tests, rubric, evidence, and autopsy.
 
+Both Stage D textbooks now include **Full C Code Explanation** after the
+original chapter. Treat it as a reference for the current difficulty, not
+another chapter to finish before the lab. Topics 1–3 cover basic C reading;
+4–7 explain structures, storage, functions, and strings; 8–10 trace building;
+11–12 trace evaluation; and 13 supplies the complete program. Topics 14–15
+offer boundary reminders and optional prediction practice. The website's
+**Expand full explanation** button opens the guide when it is needed.
+
+Ask students to explain one line, predict its state change, and then return
+to the relevant lab checkpoint. Appendix exercises add no submission or
+rubric points. Use the [lab's file and test guidance](../module_02_binary_tree/student/lab.md)
+for the supplied header, shared declarations, and test helpers that surround
+the textbook's four functions in this package.
+
 Preserve initial attempts and labeled corrections. Hold back solutions,
 instructor extension tests, and worked autopsy answers from student
 releases. The standalone `faulty_precedence.c` autopsy requires a saved
@@ -239,7 +255,7 @@ using valid array accesses and a structurally valid tree. The private
 answer key supplies its exact output and repair.
 
 The three authored tests cover creation, construction with precedence and
-left association, and evaluation with unchanged fields/shared state. The
+left association, and evaluation with unchanged members/shared state. The
 100-point rubric assigns 20 to representation/invariants, 15 to creation,
 20 to construction, 20 to evaluation, 10 to efficiency, 10 to tests/tool
 evidence, and 5 to autopsy/transfer. Do not add API requirements or a

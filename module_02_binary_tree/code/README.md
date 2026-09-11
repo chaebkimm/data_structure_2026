@@ -10,6 +10,20 @@ For `1+2*3`, the root stores `'+'`, its left child stores `'1'`, and its right
 child stores `'*'`. That multiplication has leaves `'2'` and `'3'`. Evaluation
 returns `7` without changing the operator characters or child links.
 
+## Reading support and file layout
+
+Each textbook's **Full C Code Explanation** is an optional reference for
+every symbol and statement in the chapter program. The
+[lab's topic map and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
+connect its 15 topics to the four implementation checkpoints and explain
+the supplied header, placeholders, and test helpers.
+
+The complete example in companion topic 13 is a standalone program. Here,
+`include/binary_tree.h` holds declarations, `starter/binary_tree.c` or
+`solution/binary_tree.c` supplies definitions, and the selected test or
+lecture file provides `main`. Use the targets below to build those files
+together. The lecture driver prints the same `1+2*3 = 7` output.
+
 ## Core work and coding plan
 
 Complete the four `TODO(core)` functions in `starter/binary_tree.c`:

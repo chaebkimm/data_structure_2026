@@ -40,6 +40,7 @@ $stages = @(
         Entries = @(
             @{ Source = "release\stage_d_README.md"; Entry = "README.md" },
             @{ Source = "student\textbook.md"; Entry = "textbook.md" },
+            @{ Source = "student\textbook_korean.md"; Entry = "textbook_korean.md" },
             @{ Source = "diagrams\graph_models.md"; Entry = "diagrams/graph_models.md" }
         )
     },

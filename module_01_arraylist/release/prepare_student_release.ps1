@@ -81,6 +81,10 @@ $stages = @(
                 Entry = "textbook.md"
             },
             @{
+                Source = "student\textbook_korean.md"
+                Entry = "textbook_korean.md"
+            },
+            @{
                 Source = "diagrams\memory_models.md"
                 Entry = "diagrams/memory_models.md"
             }
@@ -96,6 +100,10 @@ $stages = @(
             @{
                 Source = "student\lab.md"
                 Entry = "student/lab.md"
+            },
+            @{
+                Source = "student\day2_plan.md"
+                Entry = "student/day2_plan.md"
             },
             @{
                 Source = "student\evidence_template.md"

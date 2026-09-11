@@ -20,6 +20,10 @@ and functions.
 
 Stage D's textbook and notes become available after Meeting A's investigation
 and exit ticket. Stage E's code and lab materials are released for Meeting B.
+Keep either Stage D textbook available: its **Full C Code Explanation** is
+optional help for a specific symbol or operation. Use the topic map in
+Stage D's `notes.md` to find a starting point. Its practice questions are
+not another required submission.
 
 ## Files
 
@@ -40,11 +44,12 @@ it.
 
 ## Representation and API
 
-The chapter’s example starts with:
+To test the chapter's five-item starting state, use this initialized lab
+fixture:
 
 ```c
-int array[10] = {100, 200, 300};
-int size = 3;
+int array[10] = {100, 200, 300, 400, 500};
+int size = 5;
 int capacity = 10;
 ```
 
@@ -84,6 +89,47 @@ a successful `int_list_valid_index` check.
 - Removal does not need to clear inactive tail values.
 - All integer data values are valid, including zero, negative numbers, and
   duplicates.
+
+## Reading the supplied C scaffold
+
+The textbook puts its operations inside `main`; the lab gives each operation
+a function that tests can call with different arrays and counts. The lab
+name `capacity` has the same role as the textbook's `array_capacity`.
+
+| Form in the lab | How to read it |
+|---|---|
+| `#include "int_list.h"` | Include this project's declarations so the compiler knows the function names and inputs. The quotation marks identify a project header. |
+| `int int_list_append(...)` | Define a function that sends an integer result back to its caller. The names inside the parentheses are its parameters. |
+| `int array[]` in a parameter list | Receive access to the caller's existing array. No new array is created or copied here, and the brackets do not tell the function its length. |
+| `int size, int capacity` | Receive separate integer inputs. Each parameter is a local copy of the supplied integer value. |
+| `const int array[]` | Receive array access that does not permit changing an element through this parameter. Search only reads. |
+| `return size;` | End this function call and send the current local count back. It does not print the count or update the caller by itself. |
+| `size = int_list_append(array, size, capacity, 600);` | Call with the current values, wait for the returned count, then store that count in the caller's `size`. Writes through the array parameter affect the caller's array. |
+| `!condition` | Logical NOT: produce 1 when the condition is zero, or 0 when it is nonzero. The supplied `if (!int_list_valid_metadata(...))` rejects invalid counts. |
+| `static int int_list_valid_metadata(...)` | A supplied helper whose name is private to this source file. You do not need to rewrite it. |
+| `(void)index;` in a TODO body | A placeholder that tells the compiler the unused parameter is intentional. Replace it as you implement the body; it does not initialize or check the index. |
+
+Each function has its own result convention. An index check returns `1` or
+`0`; a mutation returns a count. The textbook's search loop finishes with
+`index == size` when no item matches. The lab's `int_list_find` returns
+`-1` for that case (and for invalid counts). Neither result is a valid index
+to use in brackets.
+
+In `tests/test_student.c`, edit the three marked test bodies. `bool` comes
+from `<stdbool.h>` and holds a true/false result; return `true` only when
+your test's claim holds, and `false` when it fails. You can use ordinary
+`if` checks and return statements already covered in the chapter. Each
+supplied `static bool test_student_case_1(void)` defines a private function
+with no input parameters that reports whether its test passed.
+
+The rest of that file is provided test-running code. Its `typedef` and
+`TestFunction` let it call each named test; its counters and print statements
+report the results. You may leave that code as supplied. If you inspect it,
+`unsigned int` counts nonnegative values, `0U` and `1U` are unsigned integer
+constants, `+=` adds and stores, `%u` displays such a count, and
+`condition ? 0 : 1` selects the program's exit code. `(void)printf(...)`
+discards the library function's return value after displaying text. These
+details do not add implementation tasks to the lab.
 
 ## Core checkpoints
 

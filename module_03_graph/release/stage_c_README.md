@@ -7,7 +7,7 @@ calibration.
 - `investigation_worksheet_linear.md` has the same targets in a linear
   accessible format.
 
-Translate the canonical directed graph, reason about row/column meaning,
-trace idempotent operations, audit active and inactive cells, and compare
-representations conceptually. Complete Sections A–E and preserve the result
-before Stage D.
+Translate the canonical seven-account SNS follower graph, reason about
+row/column meaning, trace idempotent operations, audit active and inactive
+cells, and compare representations conceptually. Complete Sections A–E and
+preserve the result before Stage D.

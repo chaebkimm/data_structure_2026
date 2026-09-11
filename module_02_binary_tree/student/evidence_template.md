@@ -81,7 +81,7 @@ cycles, shared children, or invalid indices into ordinary runtime tests.
 | Repeated operators produce the required left-associated links | | | |
 | Digit '0' evaluates as zero and remains an ordinary node | | | |
 | Mixed terms evaluate to the expected answer | | | |
-| Repeated evaluation preserves every node field and shared variable | | | |
+| Repeated evaluation preserves every node member and shared variable | | | |
 | Independent builds reset size and pos and use their own current roots | | | |
 
 ### Three student-authored tests

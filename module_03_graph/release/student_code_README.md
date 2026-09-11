@@ -38,8 +38,16 @@ IDs against `vertex_count`, then read `graph.grid[from][to]`. Do not invent
 a query function.
 
 The implemented graph is directed and unweighted. Undirected symmetry,
-weights, edge lists, adjacency lists, and components are comparison topics,
-not extra code.
+weights, edge lists, adjacency lists, weakly and strongly connected
+components, and feed applications are conceptual topics, not extra code.
+
+## Shared SNS example
+
+The canonical example has seven active accounts: `0 Mina`, `1 Joon`,
+`2 Sora`, `3 Dae`, `4 Hana`, `5 Leo`, and `6 Nuri`. An edge goes from
+follower to followed account. Start with edges `0 -> 1`, `1 -> 2`, `2 -> 0`,
+`2 -> 3`, `4 -> 5`, and `5 -> 4`. Removing `2 -> 3` clears only
+`grid[2][3]` and changes Sora's out-degree from 2 to 1.
 
 ## PowerShell
 

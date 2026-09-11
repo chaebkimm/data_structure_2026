@@ -1,7 +1,8 @@
 # Student Notes — A List in a Fixed Array
 
-Use these notes after the initial inquiry. The chapter’s main example uses
-`int array[10]`, an item count named `size`, and a fixed capacity of 10.
+Use these notes after the Meeting A investigation and exit ticket. The
+chapter’s main example uses `int array[10]`, an item count named `size`, and
+a fixed capacity of 10.
 
 ## 1. Distinguish storage from current items
 
@@ -55,13 +56,21 @@ The count decreases by one. The inactive tail does not need to be erased.
 The chapter’s sequence is:
 
 ```text
-start:             [100, 200, 300]   size 3
-update index 1:    [100, 500, 300]   size 3
-remove index 1:    [100, 300]        size 2
-insert 600 at 1:   [100, 600, 300]   size 3
+start:             [100, 200, 300, 400, 500]   size 5
+update index 1:    [100, 500, 300, 400, 500]   size 5
+find value 300:    index 2; list unchanged
+remove index 1:    [100, 300, 400, 500]        size 4
+insert 600 at 1:   [100, 600, 300, 400, 500]   size 5
 ```
 
 Each row uses the same ten-slot array; only current items are shown.
+The initial inquiry uses a shorter three-item list to practice these same
+rules.
+
+The textbook's search loop stops at `index == size` if the target is absent.
+That value is not a readable list index. The lab's `int_list_find` packages
+search inside a function and instead returns `-1` for absence. Check the
+result convention for the version you are using before accessing an item.
 
 ## 5. Preserve state when a request is rejected
 
@@ -102,3 +111,27 @@ starts with at least one current item.
 - A function return value communicates a new count or a search index.
 - `const` on the search function’s array parameter means that the function
   does not change the array through that parameter.
+
+## 8. Optional help when any C syntax is unfamiliar
+
+Choose the English `textbook.md` or Korean `textbook_korean.md`. Both have a
+**Full C Code Explanation** appendix with the same topic numbers. Open the
+one topic that helps with your current line, then return to your trace or
+lab. There is no requirement to finish the appendix or submit its practice
+answers.
+
+| Your question | Appendix topic |
+|---|---|
+| What is a program, variable, statement, or expression? | 1–2 |
+| What do names, comments, punctuation, and semicolons mean? | 1–2 |
+| How do array declarations, initial values, size, and capacity work? | 3 |
+| What do assignment, comparison, `&&`, `if`, and braces do? | 4 |
+| How do I read or change an array item? | 5 |
+| How do `for`, `break`, and the search result work? | 6 |
+| How does each left or right shift run? | 7–8 |
+| How do the examples share one changing array? | 9 |
+| Where do `main`, `printf`, and compiler commands fit? | 10 |
+| Where can I try a small prediction with an explained answer? | 11 |
+
+The lab's **Reading the supplied C scaffold** section connects these
+examples to function parameters, returned sizes, and student test bodies.

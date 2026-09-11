@@ -1,16 +1,18 @@
-# Lab — Build a Fixed Directed Permission Matrix
+# Lab — Build a Fixed SNS Follower Matrix
 
 ## Purpose and scope
 
 Build the chapter’s fixed directed, unweighted graph. The matrix uses integer
-`0` and `1` cells; it has capacity for 16 vertices and never grows. An edge in
-the invented model means “communication is permitted.” It does not prove that
-communication occurred or that a service is exploitable.
+`0` and `1` cells; it has capacity for 16 vertices and never grows. An edge
+`u → v` means account `u` follows account `v`. A follow path does not
+automatically deliver posts, establish shared interests, or grant permission
+to view them.
 
 This module implements only initialization, directed add, directed remove,
 out-degree, and a guarded direct cell lookup in caller/test code. The textbook’s
-other graph comparisons do not add hidden implementation requirements, and
-formal graph exploration remains later work.
+other graph comparisons do not add hidden implementation requirements.
+Connected components and feed choices are reasoning activities; do not add
+component-finding, feed selection, or ranking code.
 
 ## Two 90-minute meetings
 
@@ -32,6 +34,31 @@ formal graph exploration remains later work.
 - 60–74: exactly three student-authored tests
 - 74–83: ghost-connection autopsy
 - 83–90: build evidence and submission check
+
+## Stage D — Read and reflect after the Stage C attempt
+
+After preserving the Stage C investigation, choose `textbook.md` in English
+or `textbook_korean.md` in Korean. They cover the same graph and C exercise.
+Read the component and feed sections, then record brief answers for evidence
+section 8:
+
+1. List the original graph's weakly and strongly connected components. Why
+   is Dae in Mina's weak component but outside Mina's strong component? Why
+   does a singleton component not always mean an isolated vertex? Explain
+   why maximal does not mean the largest group.
+2. Remove only `2 → 3`. Which weak components change, and do any strong
+   components change? Explain using paths, not just the number of groups.
+3. For Mina's feed, distinguish directly followed accounts, other accounts
+   in the same strong component, and accounts in the same weak component but
+   a different strong component. Could an eligible post by Dae rank above
+   one by Sora? Name information beyond component labels that a ranking rule
+   needs. Explain why neither a path nor a component guarantees visibility,
+   and why restricting Sora's feed to Sora's strong component would omit a
+   directly followed account.
+
+The feed design is hypothetical. These responses explain one possible use
+of graph groups; they do not claim that a particular SNS uses that rule and
+do not require additional C functions or tests.
 
 ## Files
 
@@ -143,27 +170,34 @@ destination. This is direct caller code, not a fifth public function.
 
 Use the textbook fixture consistently:
 
-- 0: Web
-- 1: App
-- 2: Database
-- add `0 → 1`, `1 → 2`, and `1 → 0`
-- remove `1 → 2`
+- initialize seven active accounts;
+- 0: Mina, 1: Joon, 2: Sora, 3: Dae, 4: Hana, 5: Leo, 6: Nuri;
+- add `0 → 1`, `1 → 2`, `2 → 0`, `2 → 3`, `4 → 5`, and `5 → 4`;
+- read a direct cell only after checking both active indexes;
+- count Sora's out-degree;
+- remove `2 → 3`; and
+- count Sora's out-degree again.
 
-Before removal, App’s active row is `[1, 0, 1]`. After removal, it is
-`[1, 0, 0]`, and App’s out-degree is 1. Use this trace to orient your work;
-the supplied tests also require general boundary behavior.
+Before removal, Sora's active row is `[1, 0, 0, 1, 0, 0, 0]` and her
+out-degree is 2. After removal, it is `[1, 0, 0, 0, 0, 0, 0]` and her
+out-degree is 1. Only `grid[2][3]` changes. Dae remains active and now has
+both a zero row and a zero column, as Nuri already did. Index 7 remains
+inactive despite fitting physically inside the array. Use this trace to
+orient your work; the supplied tests also require general boundary behavior.
 
 ## Exactly three student-authored tests
 
 Add exactly three test cases to `test_student.c`. Give each a one-sentence
 rationale. Do not copy a supplied test verbatim.
 
-1. **Full initialization:** show that initialization clears both the active
-   square and at least one physically stored inactive cell.
+1. **Full initialization:** initialize seven active accounts and show that
+   initialization clears both the active square and at least one physically
+   stored inactive cell, such as `grid[7][1]`.
 2. **Directed sequence:** exercise direction, idempotent add/remove, a guarded
    direct lookup, and an out-degree change in one coherent valid sequence.
-3. **Rejected request:** use a self-loop or inactive endpoint and show that the
-   graph or query output is preserved.
+3. **Rejected request:** with seven active accounts, use a self-loop such as
+   `2 → 2` or an inactive endpoint such as `7 → 1` and show that the graph or
+   query output is preserved.
 
 ## Build and test
 
@@ -191,10 +225,12 @@ tests and matching build support; they do not replace core work.
 
 ## Ghost-connection autopsy
 
-Complete `matrix_autopsy.md`. Predict before running. The fixture stays within
-the physical grid while exposing a stale `1` in an inactive row or column.
-Separate the first broken invariant from the edge that appears only after the
-vertex count later increases.
+Complete `matrix_autopsy.md`. Predict before running. This separate fixture
+uses counts 4, then 3, then 4; it is not the seven-account follower trace. It
+stays within the physical grid while exposing a stale `1` in an inactive row
+or column. Separate the first broken invariant from the edge that appears
+only after the vertex count later increases. Its written regression claim
+does not add a fourth student-authored C test.
 
 ## Required submission
 
@@ -206,4 +242,5 @@ vertex count later increases.
 5. completed `evidence_template.md`;
 6. completed `matrix_autopsy.md`;
 7. corrected Cognitive Pause; and
-8. Stage C exit and structure-choice responses.
+8. Stage C exit and structure-choice responses, plus the Stage D component
+   and feed reflections in evidence section 8.
