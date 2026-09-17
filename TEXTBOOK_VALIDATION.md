@@ -2,6 +2,38 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Webpage-to-Textbook Synchronization — September 16, 2026
+
+Chapters 0–3 were compared with the current English and Korean webpage
+sources. Chapter 0 already matches the webpage's explanations and glossary.
+Chapter 1's main explanations and five C examples also match; the two
+textbooks now include the webpage's revised Full C Code Explanation
+introductions. Their complete appendices match the web content files
+exactly.
+
+Both Chapter 2 textbooks now match `chapter-two.en.md` and
+`chapter-two.ko.md` in `student-textbook-web/content/`. The chapter uses
+ten array-backed alphabet nodes, with `F` at root index 5 and seven
+reachable nodes, followed by the addition-only expression `1+2+3`.
+The addition tree ends at root index 3 and evaluates to 6. The current
+addition-tree preparation steps and full code explanation are included.
+The older `1+2*3` parser lesson is no longer the Chapter 2 textbook.
+
+Both Chapter 3 textbooks already match the current web content files,
+including the eight-account follower network, adjacency-list storage,
+the Nuri–Mina–Yuna route, and the revised connected-group explanations.
+Interactive editing controls and layout remain in the webpage.
+
+Exact source comparisons pass for the Chapter 1 appendices and the full
+Chapter 2–3 textbooks. Chapter 2 retains eight sections and seven C blocks;
+Chapter 3 retains five sections and seven C blocks. Code fences are
+balanced, and the English and Korean C snippets match within each of
+Chapters 2 and 3.
+
+This entry records manuscript synchronization. The module implementation,
+release-package, and runtime checks below apply to the versions named in
+those earlier entries; they were not rerun or realigned in this update.
+
 ## Modules 1–2 Textbook Companion Alignment — September 10, 2026
 
 The supporting packages now point beginners to the English and Korean

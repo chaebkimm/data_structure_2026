@@ -257,7 +257,9 @@ if (pos >= 0 && pos <= size && size < array_capacity) {
 
 ## Full C Code Explanation
 
-This section starts with no assumed knowledge of C. It explains all five
+All C syntax used in the code are explained.
+
+It explains all five
 examples in **C Code**, including the small symbols, the order of execution,
 and the values stored after each operation. You can read one explanation
 alongside its original example and return for the next operation later.

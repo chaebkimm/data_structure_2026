@@ -4,378 +4,495 @@
 
 ### How do we show who follows whom?
 
-On a social networking service (SNS), one account can follow several accounts. Several accounts can follow the same person. Accounts can also follow one another in a circle. A tree cannot represent all these relationships because a tree forbids shared children and cycles.
+On a social networking service (SNS), one account can follow several accounts, and several accounts can follow the same person. In this small example, Mina is a celebrity account who follows just one person, Yuna. Yuna follows no one. Nuri is a newcomer who has just made a first follow: Nuri follows Mina.
 
-We need a model that permits both. Draw one dot for each account and one arrow for each follow. The model is a **graph**. Each account is a **vertex**. Each direct follow relationship is an **edge**.
-
-### Which accounts will we use?
-
-We will use the same seven accounts throughout this chapter. The numbers identify accounts; they do not measure popularity or priority.
-
-| Account number | Name | Accounts this person follows |
-|---|---|---|
-| 0 | Mina | Joon (1) |
-| 1 | Joon | Sora (2) |
-| 2 | Sora | Mina (0), Dae (3) |
-| 3 | Dae | None |
-| 4 | Hana | Leo (5) |
-| 5 | Leo | Hana (4) |
-| 6 | Nuri | None |
-
-An arrow points **from the follower to the followed account**. For example, `0 -> 1` means Mina follows Joon.
+Draw one dot for each account and one arrow for each follow. An arrow points **from the follower to the followed account**, so `6 -> 0` shows Nuri following Mina. The graph below shows the network after that first follow.
 
 ```mermaid
 flowchart LR
-    mina["0 Mina"] --> joon["1 Joon"]
+    nuri["6 Nuri · newcomer"] --> mina["0 Mina · celebrity"]
+    mina --> yuna["7 Yuna"]
+    joon["1 Joon"] --> mina
     joon --> sora["2 Sora"]
     sora --> mina
     sora --> dae["3 Dae"]
+    dae --> mina
+    dae --> joon
     hana["4 Hana"] --> leo["5 Leo"]
     leo --> hana
-    nuri["6 Nuri"]
 ```
 
-Text equivalent: the complete list of edges is `0 -> 1`, `1 -> 2`, `2 -> 0`, `2 -> 3`, `4 -> 5`, and `5 -> 4`. Nuri is an account even though no arrow touches Nuri.
-
-### Why does direction matter?
-
-Mina follows Joon. Joon does not follow Mina directly. These are separate facts. A graph whose edges distinguish a starting account from an ending account is a **directed graph**.
-
-Hana and Leo follow each other. We record two edges: `4 -> 5` and `5 -> 4`. Removing either follow leaves the other one in place.
-
-If a relationship has no direction, we draw a line without an arrow. That model is an **undirected graph**. Our follower network remains directed.
+Text equivalent: the ten follows are `0 -> 7`, `1 -> 0`, `1 -> 2`, `2 -> 0`, `2 -> 3`, `3 -> 0`, `3 -> 1`, `4 -> 5`, `5 -> 4`, and `6 -> 0`. Before Nuri's first follow, the same eight accounts were present, but the last arrow was absent.
 
 ### How many followers and follows does an account have?
 
-To count how many accounts Sora follows, count the arrows leaving Sora. There are two: `2 -> 0` and `2 -> 3`. This count is the **out-degree**.
+Sora follows two accounts: Mina and Dae. Count the arrows leaving Sora, `2 -> 0` and `2 -> 3`. Only Joon follows Sora directly, so Sora has one follower. Dae can reach Sora through Joon, but this does not count as Dae following Sora.
 
-To count Sora's followers, count the arrows entering Sora. There is one: `1 -> 2`. This count is the **in-degree**. Degree counts direct edges, not every possible route through the network.
+Mina has four followers: Joon, Sora, Dae, and Nuri. Mina follows just Yuna, so four arrows enter Mina and one leaves. Yuna has one follower, Mina, and follows no one.
 
-Dae has out-degree 0 and in-degree 1. Nuri has both counts equal to 0. An account with no incoming or outgoing edges is an **isolated vertex**. Dae is not isolated because Sora follows Dae.
+Nuri has one outgoing follow and no followers. Before the first follow, both counts were zero. Nuri's follow raises Mina's follower count from three to four without changing whom Mina follows.
 
-### What can we learn by following several arrows?
+### Where can Nuri go by following arrows?
 
-Mina follows Joon, and Joon follows Sora. Following `0 -> 1 -> 2` reaches Sora from Mina. A sequence of vertices joined by edges, without repeating a vertex, is a **path**. A directed path follows every arrow in its stated direction.
+Nuri follows Mina, and Mina follows Yuna. Following `6 -> 0 -> 7` takes us from Nuri through Mina to Yuna, even though Nuri does not follow Yuna directly.
 
-Sora follows Mina, so `0 -> 1 -> 2 -> 0` returns to the starting account. A route that returns to its start without repeating another vertex is a **cycle**. This cycle is valid in a graph.
+The route stops at Yuna because Yuna follows no one. Neither Mina nor Yuna can follow arrows back to Nuri. Nuri can reach these accounts without them being able to return.
 
-The path `0 -> 1 -> 2 -> 3` reaches Dae from Mina. Dae has no outgoing edge, so there is no directed path back to Mina. Being reachable in one direction does not guarantee reachability in the other direction.
+### Which accounts are connected?
 
-A follow path describes a chain of relationships. It does not automatically put Dae's posts in Mina's feed. The arrow records who follows whom, not the direction in which a post travels. Joon's posts may appear in Mina's feed because Mina follows Joon.
-
-### Which accounts belong to one connected group?
-
-An individual path answers whether one account can reach another. Now we want to divide the whole network into groups. We must first decide whether arrow direction matters.
-
-Begin by temporarily treating each arrow as a line that can be followed either way. Starting at Mina, we can reach Joon, Sora, and Dae. We cannot reach Hana, Leo, or Nuri this way. Mina, Joon, Sora, and Dae therefore form one complete group under this rule.
-
-In an undirected graph, such a group is a **connected component**. Every pair of vertices in the group is joined by a path. We include every vertex that can join the group while preserving this property. This makes the group **maximal**: it cannot be expanded. Maximal does not mean the single largest group in the graph. A smaller separate group is also a component.
-
-For a directed graph, finding these groups after ignoring arrow directions gives the **weakly connected components**. Our network has three:
-
-| Weak component | Why the group belongs together |
-|---|---|
-| {Mina, Joon, Sora, Dae} = {0, 1, 2, 3} | The cycle and Sora's follow of Dae join all four when directions are ignored. |
-| {Hana, Leo} = {4, 5} | Their follow relationships join them to each other, with no link to the first group. |
-| {Nuri} = {6} | No edge joins Nuri to another account. |
-
-Ignoring direction is an analysis rule. It does not add a follow from Dae to Sora or change the stored graph.
-
-### Which accounts can reach one another while respecting arrows?
-
-The first weak component includes Dae, but Dae cannot follow a path back to anyone. We need a stricter rule when both directions of reachability matter.
-
-Require a directed path from each account in a group to every other account in that group. Include every account that can satisfy the rule with the whole group. This maximal group is a **strongly connected component**.
-
-Mina reaches Sora through Joon: `0 -> 1 -> 2`. Sora reaches Joon through Mina: `2 -> 0 -> 1`. Joon reaches Mina through Sora: `1 -> 2 -> 0`. The cycle gives all three accounts paths to one another.
-
-Our network has four strong components:
-
-| Strong component | Why the group cannot grow |
-|---|---|
-| {Mina, Joon, Sora} = {0, 1, 2} | All three can reach one another. Dae cannot return to them. |
-| {Dae} = {3} | Dae cannot reach another account. |
-| {Hana, Leo} = {4, 5} | Each reaches the other. Neither can reach another group. |
-| {Nuri} = {6} | Nuri has no path to another account. |
-
-An account reaches itself by taking zero edges. A single account can therefore form a strong component without a self-follow. A singleton strong component need not be isolated: Dae still has an incoming edge.
-
-Strong connectivity does not require every pair to follow each other directly. Mina, Joon, and Sora satisfy the rule through paths. Their group is also maximal: `{Mina, Joon}` alone is not a component because Sora belongs in the same group.
-
-Every account belongs to exactly one strong component and exactly one weak component. Each strong component lies entirely within one weak component. In the first weak component, the strong components are `{0, 1, 2}` and `{3}`. The distinction follows the standard [definitions of directed connectivity in Stanford's graph notes](https://stanford-cs161.github.io/winter2022/assets/files/lecture10-notes.pdf).
-
-### How could components help build a feed?
-
-A feed displays selected posts in an order. Knowing who is connected can help a service choose posts to consider. It still needs a separate rule for deciding which posts are most relevant to the viewer.
-
-Consider a teaching design with two stages. First, collect **candidate posts**: posts eligible to be considered for the feed. Second, **rank** those candidates: assign scores and put them in order. Real feed systems can separate candidate collection and ranking; [Meta's 2021 description of News Feed](https://engineering.fb.com/2021/01/26/core-infra/news-feed-ranking/) gives one example. The component rules below are a hypothetical design for our network, not a claim that a particular SNS uses them.
-
-For Mina's feed, the original seven-account graph gives these choices:
-
-| Source of candidates | Example for Mina | Possible use |
-|---|---|---|
-| Accounts Mina directly follows | Joon | Collect eligible posts for the following part of the feed. |
-| Other accounts in Mina's strong component | Sora | Consider additional posts from accounts with directed paths both ways. |
-| Accounts in the same weak component but a different strong component | Dae | Explore a broader connection through Sora. |
-| Accounts outside Mina's weak component | Hana, Leo, Nuri | Consider eligible public posts using interests or other signals. |
-
-After collecting candidates, remove duplicate posts. Rank them using signals such as relevance to Mina's interests, recent interactions, and post freshness. A component label can be one signal; the label alone does not say which post should appear first.
-
-For a small worked decision, suppose Sora and Dae each have an eligible public post. A component rule puts both posts into Mina's candidate pool. If Mina has shown interest in Dae's post topic, the ranking rule may place Dae's post first even though Dae is outside Mina's strong component.
-
-The service could also limit how many recommended posts in a row come from one strong component and try candidates from other groups. This changes the mix of graph groups in the feed. It does not guarantee different topics or viewpoints.
-
-Component membership needs care in this design:
-
-- A direct follow can cross a strong-component boundary. Sora follows Dae, so restricting Sora's feed to Sora's strong component would discard a directly followed account.
-- A weak component can become very large. One follow can join two previously separate weak components. Membership alone does not establish shared interests or a close social community.
-- Nuri has no follow connections. A useful feed for Nuri needs other signals, such as interests selected by Nuri. It need not be empty.
-- Neither a path nor a component grants permission to view a post. Candidate selection must respect visibility, blocks, and other feed eligibility rules.
-
-The graph stores relationships between accounts. Posts, interests, interaction history, and ranking scores require additional data. This chapter explains the possible use of components by hand; implementing component-finding algorithms and a feed system is outside the C exercise.
-
-### How should we store the follower network?
-
-We need to answer direct questions such as “Does Sora follow Dae?” Numbering accounts lets us place each answer in a table. Use the follower's number as the row and the followed account's number as the column. Store `1` for a follow and `0` for its absence. This table is an **adjacency matrix**.
-
-The original network has this active matrix:
+Now ask who can stay in contact through other accounts. Record a new relationship: contact links allow communication in both directions. Give the same eight accounts these eight links:
 
 ```text
-                    followed account
-                    0  1  2  3  4  5  6
-follower 0 Mina     0  1  0  0  0  0  0
-         1 Joon     0  0  1  0  0  0  0
-         2 Sora     1  0  0  1  0  0  0
-         3 Dae      0  0  0  0  0  0  0
-         4 Hana     0  0  0  0  0  1  0
-         5 Leo      0  0  0  0  1  0  0
-         6 Nuri     0  0  0  0  0  0  0
+0—1, 0—2, 1—2, 2—3, 3—6, 3—7, 6—7, 4—5
 ```
 
-Sora's row is `[1, 0, 0, 1, 0, 0, 0]`. Counting its two `1` values gives Sora's out-degree. Looking only at `grid[0][2]` gives `0`: Mina does not directly follow Sora, even though a path connects them. A single cell does not answer a component question.
+These new relationships do not turn earlier follows into mutual follows.
 
-We could instead save the six endpoint pairs in an **edge list**. We could also collect outgoing neighbors separately for each account in an **adjacency list**. In the latter representation, Sora's list contains `0, 3`, and Nuri's list is empty. We compare these storage choices here and implement the matrix.
+Accounts are **vertices**; direct relationships are **edges**. Together they form a **graph**. The earlier arrows form a **directed graph**. Contact links have no direction: they form an **undirected graph**, used throughout the remaining chapter.
 
-For an undirected graph, each relationship would appear in both mirror cells. Such a matrix is **symmetric**. Our directed matrix need not be symmetric: `grid[0][1]` is `1`, while `grid[1][0]` is `0`.
+A **path** joins vertices through edges without repeating a vertex. Mina can reach Yuna along `0—2—3—7`. The groups are `{0, 1, 2, 3, 6, 7}` and `{4, 5}`. Each is a **connected component**: every pair is joined by a path, and no outside vertex can be added. This means maximal, not largest. An account with no links is an **isolated vertex**, forming its own component.
 
-### What conditions must the stored graph keep?
+### How should we store an undirected graph?
 
-An active account must have a valid position in the table. Our implementation reserves space for at most 16 accounts and records the number currently active in `vertex_count`. These conditions must stay true after every valid operation. They form the graph's **invariant**.
+To leave Sora, collect Sora's direct contacts. Such a neighbor list is an **adjacency list**:
 
-1. `vertex_count` is at most `GRAPH_MAX_VERTICES`, which is 16. Active account numbers run from `0` through `vertex_count - 1`.
-2. Every cell contains either `0` or `1`.
-3. Every cell in an inactive row or column remains `0`.
-4. Every diagonal cell stays `0`. This model forbids an account from following itself. Such an edge would be a **self-loop**.
+```text
+0 Mina   : 1, 2
+1 Joon   : 0, 2
+2 Sora   : 0, 1, 3
+3 Dae    : 2, 6, 7
+4 Hana   : 5
+5 Leo    : 4
+6 Nuri   : 3, 7
+7 Yuna   : 3, 6
+```
 
-Nuri is active because `6 < vertex_count`, not because a cell contains `1`. With seven active accounts, rows and columns 7 through 15 are inactive. Clearing those positions prevents stale follows from appearing if they become active later.
+Each edge appears at both endpoints. `2—3` puts `3` in Sora's list and `2` in Dae's list. Both entries share one edge ID: eight edges need sixteen entries.
 
-We store only whether a follow exists. This makes the graph **unweighted**. A numerical value attached to an edge is a **weight**. A different model might attach an interaction count to each follow, but our `0` and `1` cells are not ranking scores.
+The C arrays use `head` for each list's first entry, `to` for an entry's neighbor, and `next` for the next entry's index. `-1` ends a list. Linked entries need not occupy adjacent positions. Insert each entry at its ordered position to keep neighbor numbers ascending.
 
-### What changes when Sora unfollows Dae?
+### How do we find every connected component?
 
-Until this point, every example has used the original six edges. Now remove only `2 -> 3`. Change row 2, column 3 from `1` to `0`. Sora's row becomes `[1, 0, 0, 0, 0, 0, 0]`, and Sora's out-degree becomes 1.
+Starting at Mina, label everyone reachable exactly once. Without marks, the triangle `0—1—2—0` could send us around repeatedly.
 
-Dae now has no incoming or outgoing edge. The first weak component splits into `{0, 1, 2}` and `{3}`. There are now four weak components. The four strong components remain unchanged because Dae already had no path back to the other accounts.
+1. Start with every account unmarked. Choose the smallest unmarked account and give it a new component number.
+2. Read its neighbors in ascending order. For an unmarked neighbor, mark it immediately and make a recursive call to explore its neighbors with the same component number.
+3. Finish that call before continuing the current account's remaining neighbors. Skip already marked neighbors.
+4. When the starting call returns, choose the next unmarked account and begin another component.
 
-A feed design using component labels would need to update affected labels after follow changes. Dae leaves Mina's weak component, but Dae's eligible public posts could still be candidates through interest matching.
+Discover `0, 1, 2, 3, 6, 7`, then start at `4` and discover `5`: two components. An isolated starting account returns immediately and still receives a component number.
+
+### Which accounts can split a connected group?
+
+Remove Sora and its incident edges. Mina and Joon lose contact with Dae, Nuri, and Yuna. Removing Dae also splits the component. Removing Mina does not: Joon still reaches Sora.
+
+A vertex whose removal increases the graph's number of connected components is a **cut vertex**, also called a **cut node** or articulation point. Sora (`2`) and Dae (`3`) are cut vertices. An edge whose removal increases the component count is a **bridge**. Here `2—3` and `4—5` are bridges.
+
+Trying every removal repeats work. Instead, record whether each explored branch has another way back.
+
+### What do dfn and low record?
+
+A recursive call makes each newly reached account a child of its caller. These first-arrival links form a tree per component. Other edges can connect descendants to earlier ancestors.
+
+Assign increasing numbers when accounts are first reached. **`dfn[u]`** is account `u`'s discovery number. **`low[u]`** is the smallest discovery number reachable from `u` by following zero or more first-arrival links toward descendants, then at most one other edge to an ancestor. Using no final edge is allowed. Routes using several other edges do not define `low`.
+
+Initialize `low[u] = dfn[u]`. Then read each neighbor `v`:
+
+- Skip the exact edge used to enter `u`, identified by `parent_edge`. Its reverse entry is not another route.
+- If `v` is new, explore it completely. On return, set `low[u] = min(low[u], low[v])`.
+- If `v` is an earlier ancestor, set `low[u] = min(low[u], dfn[v])`. Use its discovery number, not `low[v]`: this update represents one additional edge.
+
+`2—0` reaches discovery number 1; `7—3` reaches discovery number 4. Returning calls carry those values upward.
+
+| Account | `dfn` | Final `low` |
+|---|---:|---:|
+| 0 Mina | 1 | 1 |
+| 1 Joon | 2 | 1 |
+| 2 Sora | 3 | 1 |
+| 3 Dae | 4 | 4 |
+| 4 Hana | 7 | 7 |
+| 5 Leo | 8 | 8 |
+| 6 Nuri | 5 | 4 |
+| 7 Yuna | 6 | 4 |
+
+Continue numbering across components. Visiting order changes numbers, but not cut vertices.
+
+### How does Tarjan’s algorithm find cut vertices?
+
+A returning child's `low` reveals whether its branch reaches above its parent. This is part of **Tarjan's algorithm** for undirected graph blocks.
+
+For a non-root account `u`, a child `v` with `low[v] >= dfn[u]` makes `u` a cut vertex. The branch can reach `u` at best; removing `u` separates it from the parent side.
+
+Dae's return gives `4 >= 3`, identifying Sora. Nuri's return gives `4 >= 4`, identifying Dae. Equality matters: returning to Dae cannot bypass Dae's removal.
+
+A starting root has no parent side. It is a cut vertex only if it discovers at least two new children. Count first-arrival children, not neighbors. Mina has two neighbors but only one new child, Joon, because Joon's call discovers Sora.
+
+A child edge is a bridge only when `low[v] > dfn[u]`. Equality gives a route back to `u` that avoids that edge. Thus `2—3` is a bridge, while `3—6` is not.
+
+### How do we separate the biconnected blocks?
+
+Each triangle stays connected after any account is removed. We want maximal pieces with this property.
+
+A **biconnected component**, or **block** here, is a maximal connected subgraph with no cut vertex of its own. For decomposition, include each bridge with its two endpoints as a block, and each isolated vertex as a singleton block. Definitions requiring at least three vertices call only the larger pieces biconnected; we use these additional blocks so the entire graph is represented.
+
+Keep an array of edges waiting for a block assignment. Append a first-arrival edge before its recursive call. Append an edge to an earlier ancestor when it is inspected from its later endpoint. Do not append the reverse parent edge or an edge to a later descendant.
+
+On return from child `v`, if `low[v] >= dfn[u]`, remove edges from the array's end through the first-arrival edge `u—v`, including that edge. Their endpoints form one block. Apply this boundary rule to roots too, even when the root is not a cut vertex.
+
+The blocks finish in this order:
+
+| Block | Vertices | Edges |
+|---|---|---|
+| B1 | `{3, 6, 7}` | `3—6, 3—7, 6—7` |
+| B2 | `{2, 3}` | `2—3` |
+| B3 | `{0, 1, 2}` | `0—1, 0—2, 1—2` |
+| B4 | `{4, 5}` | `4—5` |
+
+Every edge belongs to exactly one block. Cut vertices belong to multiple blocks.
+
+### How do the blocks form a tree?
+
+Hide each block's internal edges to show how pieces meet. Make separate nodes for blocks and cut vertices. Connect a block to each cut vertex it contains.
+
+This is a **block-cut tree** for a connected component. Our graph gives:
+
+```text
+B3 — C2 — B2 — C3 — B1       B4
+```
+
+`C2` is Sora; `C3` is Dae. Ordinary vertices stay inside block nodes. B4 is a one-node tree. A disconnected graph produces a **forest**, or collection of trees. Singleton blocks also become isolated tree nodes.
+
+The first-arrival tree records exploration of accounts. The block-cut tree records shared cut vertices between blocks. Their nodes represent different objects.
+
+### What conditions must the graph keep?
+
+Both entries of every contact edge must agree. Reserve 16 vertex positions and 120 edge positions, enough for every distinct pair.
+
+- Active vertex numbers are consecutive from `0`; unused positions are not isolated vertices.
+- Each edge joins two different active vertices. Self-loops and duplicate pairs are excluded.
+- Each edge ID occurs in exactly two adjacency entries, one at each endpoint.
+- Every list ends at `-1`, and the two entries are added together only after validation and capacity checks.
+- Rejected additions leave the graph unchanged. Duplicate requests are rejected and leave one edge.
+
+The example uses eight active vertices and eight edges. It stores contact existence, with no numerical edge weights.
 
 ## Calculating Efficiency
 
-### How much work does one follow change take?
+### How much work finds every connected component?
 
-Adding `2 -> 3` writes one cell. Removing it writes that same cell. A direct follow check reads one cell. After checking the account numbers, each action takes a fixed amount of work: `O(1)` time.
+Mark eight accounts and inspect sixteen neighbor entries. Generally, process `V` active vertices and `2E` entries. Initializing active marks and scanning for starting accounts also cost `O(V)`. Total time is `O(V + E)`.
 
-### How much work does counting follows take?
+### How much work does Tarjan’s algorithm take?
 
-Counting Sora's follows checks seven cells in row 2, even when only two are `1`. Counting followers would check seven cells in column 2. With `V` active accounts, either count checks `V` cells and takes `O(V)` time.
+Again, inspect eight accounts and sixteen entries. Each edge enters and leaves the pending array once. Per-block vertex marks avoid repeating endpoints when producing blocks and the block-cut forest. Total time, including output, is `O(V + E)`.
 
-### How much work does inspecting the whole matrix take?
+### How much work stores or adds an edge?
 
-Seven active accounts give 7 rows of 7 cells, so reading the active square inspects 49 cells. Doubling the active account count to 14 gives 196 cells, four times as many. With `V` accounts, this scan takes `O(V²)` time. The squared term describes rows multiplied by columns.
+Reading all lists takes `O(V + E)`. Adding `u—v` searches for duplicates and finds both ordered insertion positions. With `d(u)` and `d(v)` neighbors, called the endpoints' **degrees**, this costs `O(1 + d(u) + d(v))`. Filling two entries then takes constant work. Repeated checked additions need not build the graph in linear time.
 
-Inspecting the cells tells us the direct edges. Computing components also requires tracing connections and tracking which accounts belong together. A matrix scan alone is not a complete component-finding algorithm.
+### How much memory is reserved and used?
 
-### How much memory does the matrix reserve?
+Reserve `M = 16` vertex positions, `L = 120` edge positions, and `2L = 240` adjacency entries. Fixed analysis and output arrays also scale with these capacities. Reserved space is `O(M + L)`; only eight vertices and sixteen adjacency entries are active here.
 
-Our fixed C object always reserves 16 by 16 cells: 256 integers. Only 49 cells describe pairs of active accounts in the example, and only six contain `1` before the unfollow. Changing `vertex_count` does not resize the array.
-
-If the reserved capacity is `M`, matrix storage grows as `M²` integers. For this implementation, `M` is fixed at 16. Initialization clears all 256 cells, including inactive positions.
-
-An SNS with many accounts but relatively few follows per account would leave most matrix cells empty. An edge list or adjacency list can save storage by recording existing edges instead of reserving an entry for every possible account pair. The small matrix makes direction and updates easy to inspect in this chapter.
+Arrays sized to actual input use `O(V + E)` space, including pending edges and results. Recursive calls add at most `O(V)` space. The code initializes active analysis entries in `O(V + E)` time; reserving larger arrays does not make inactive positions into vertices.
 
 ## Glossary
 
-These terms name the relationships, groups, and storage choices used in the follower example.
+These names describe the contact graph and its analysis.
 
 | Term | Meaning |
 |---|---|
-| Graph | A model of objects and their relationships. |
-| Vertex | One object, such as an SNS account. |
-| Edge | One direct relationship, such as a follow. |
-| Directed graph | A graph whose edges have a starting vertex and an ending vertex. |
-| Undirected graph | A graph whose edges have no direction. |
-| Out-degree | Number of direct edges leaving a vertex; accounts followed in our model. |
-| In-degree | Number of direct edges entering a vertex; followers in our model. |
-| Path | A sequence of vertices joined by edges without repeating a vertex; directed paths respect arrows. |
-| Cycle | A route returning to its start without repeating another vertex. |
-| Maximal | Cannot be expanded while preserving the required property; not necessarily largest. |
-| Connected component | A maximal group joined by paths in an undirected graph. |
-| Weakly connected component | A connected component obtained by ignoring a directed graph's edge directions. |
-| Strongly connected component | A maximal group in which every vertex can reach every other vertex through directed paths. |
-| Isolated vertex | An active vertex with no incoming or outgoing edge; a singleton under either component rule. |
-| Edge list | Storage with one endpoint pair for each edge. |
-| Adjacency list | Storage collecting each vertex's neighbors; outgoing neighbors for our directed graph. |
-| Adjacency matrix | A table recording direct edges by source row and destination column. |
-| Symmetric matrix | A matrix whose values match across the main diagonal. |
-| Invariant | Conditions that must remain true after valid operations. |
-| Self-loop | An edge from a vertex to itself; forbidden in our implementation. |
-| Weight | A numerical value attached to an edge. |
-| Unweighted graph | A graph recording edge existence without edge weights. |
-| Candidate post | An eligible post being considered for a feed. |
-| Ranking | Scoring candidate posts and putting them in order. |
+| Vertex / edge | An object / a direct relationship. |
+| Directed / undirected graph | Edges with direction / edges usable in either direction. |
+| Adjacency list | Each vertex's direct neighbors. |
+| Degree | Number of incident edges in this simple undirected graph. |
+| Connected component | A maximal set of vertices joined by paths. |
+| Cut vertex / bridge | A vertex / edge whose removal increases the component count. |
+| First-arrival tree | Parent-child links created when new vertices are discovered. |
+| `dfn` / `low` | Discovery number / earliest number reachable under the descendant-and-ancestor-edge rule. |
+| Block | A maximal connected piece without its own cut vertex; bridge and singleton pieces are included here. |
+| Block-cut tree | A tree linking blocks to their shared cut vertices. |
+| Forest | A collection of disjoint trees. |
+
+References: [Algorithm](https://www.cs.cmu.edu/~15451-s15/LectureNotes/lecture08.pdf), [block convention](https://www.math.tugraz.at/~cela/Vorlesungen/AlgGrTheo24/Connectivity_H.pdf), [edge partition and cost](https://www.boost.org/doc/libs/1_86_0/libs/graph/doc/biconnected_components.html).
 
 ## Coding Plan
 
-The C exercise stores follows in the same seven-account graph. Component membership and feed choices remain reasoning exercises. The lab uses `graph_init`, `graph_add_edge`, `graph_remove_edge`, and `graph_out_degree` to package the matrix operations into functions. The examples below show the underlying steps.
+The program builds the contact graph, labels its components, and extracts its blocks.
 
-1. Define the fixed grid and active account count.
-2. Initialize all cells to `0` and set the active count to 7.
-3. Add the six follows after checking each pair of account numbers.
-4. Check one direct follow by reading a guarded matrix cell.
-5. Count Sora's follows by scanning row 2.
-6. Remove Sora's follow of Dae by clearing `grid[2][3]`.
-7. Count Sora's follows again to observe the change from 2 to 1.
+1. Define fixed arrays for vertices, edge IDs, and paired adjacency entries.
+2. Initialize the graph and insert the eight checked contact edges.
+3. Mark each new account before exploring its neighbors; restart at every unmarked account to assign `component` numbers.
+4. Compute `dfn` and `low` during recursive exploration, keeping `parent_edge` and the number of newly discovered children.
+5. Set `cut` with the non-root and root rules. Assign pending edges to blocks at each return boundary.
+6. Give isolated vertices singleton blocks. Connect blocks to their cut vertices and print the results.
 
 ## C Code
 
-### How do we write rows, columns, and counts in C?
+Concatenate the following eight C blocks in order to make one complete C11 program. Each block adds the functions used by later blocks.
 
-The table needs two indexes. In C, `grid[16][16]` declares an array of 16 rows, each containing 16 integers. `grid[2][3]` selects row 2, column 3. This is a **two-dimensional array**.
+### Storing edges and analysis records
 
-The count and indexes use `size_t`, an unsigned integer type declared by `<stddef.h>` and used for object sizes and array counts. It cannot represent a negative value. A value of type `size_t` can still be too large, so bounds checks remain necessary. `<stdio.h>` supplies `printf`; `%zu` prints a `size_t` value.
+One undirected edge needs two neighbor entries with the same edge ID. `typedef` gives the structure the short name `Neighbor`. Its `next` field stores an array index, and `head[u]` stores the first index for account `u`. The value `-1` means no entry. All arrays here are shared by the functions below.
 
-The first block defines the type. The remaining blocks are consecutive statements to place inside `main`.
+`pending` holds edges whose blocks are not finished. `block_vertex` and `block_edge` store all block members consecutively. Block `b` occupies indexes from `block_vertex_start[b]` up to, but not including, `block_vertex_start[b + 1]`; edges use the same pattern. These boundary arrays include one final end position. A vertex can occur once in each of several blocks, so allow up to `2 * MAX_EDGES + MAX_VERTICES` member entries. `in_block[u]` remembers the most recent block that included `u`.
 
 ```c
-#include <stddef.h>
 #include <stdio.h>
 
-#define GRAPH_MAX_VERTICES 16
+#define MAX_VERTICES 16
+#define MAX_EDGES 120
+#define MAX_BLOCKS (MAX_EDGES + MAX_VERTICES)
+#define MAX_MEMBERS (2 * MAX_EDGES + MAX_VERTICES)
 
-struct DirectedGraph {
-        size_t vertex_count;
-        int grid[GRAPH_MAX_VERTICES][GRAPH_MAX_VERTICES];
-};
+typedef struct {
+    int to, edge, next;
+} Neighbor;
+
+int vertex_count, edge_count, entry_count;
+int head[MAX_VERTICES], edge_u[MAX_EDGES], edge_v[MAX_EDGES];
+Neighbor neighbor[2 * MAX_EDGES];
+const char *name[MAX_VERTICES];
+
+int dfn[MAX_VERTICES], low[MAX_VERTICES], component[MAX_VERTICES];
+int cut[MAX_VERTICES], clock_value, component_count;
+int pending[MAX_EDGES], pending_count;
+int block_count, member_count, block_edge_count;
+int block_vertex[MAX_MEMBERS], block_edge[MAX_EDGES];
+int block_vertex_start[MAX_BLOCKS + 1], block_edge_start[MAX_BLOCKS + 1];
+int in_block[MAX_VERTICES];
 ```
 
-### Initializing the follower network
+### Initializing active accounts
 
-Seven accounts fit within the capacity of 16. For an input count, reject a value above `GRAPH_MAX_VERTICES` before changing the graph. Our fixed example uses the known valid count 7.
+Initialize the graph before adding edges. The caller supplies one valid name for each active account. Set each active list head to `-1`; reserving 16 positions does not create 16 accounts. Analysis records are reset separately by `analyze`.
 
 ```c
-struct DirectedGraph network;
+int initialize(int count, const char *labels[]) {
+    if (count < 0 || count > MAX_VERTICES) return 0;
+    vertex_count = count;
+    edge_count = entry_count = 0;
+    for (int u = 0; u < count; ++u) {
+        head[u] = -1;
+        name[u] = labels[u];
+    }
+    return 1;
+}
+```
 
-for (size_t row = 0; row < GRAPH_MAX_VERTICES; row = row + 1) {
-        for (size_t col = 0; col < GRAPH_MAX_VERTICES; col = col + 1) {
-                network.grid[row][col] = 0;
+### Adding both entries of one edge
+
+Reject inactive endpoints, self-connections, duplicates, and exhausted edge capacity before changing storage. A rejected duplicate returns 0 and preserves the existing edge. Each accepted edge adds two entries.
+
+`link` points to the integer slot that must change: first `head[from]`, then a preceding entry’s `next`. `&` takes that slot’s address and `*link` reads or updates its integer value. Stop at the ordered insertion position. The new entry keeps the old next index, then `*link` is changed to the new entry index. `(Neighbor){...}` creates one structure value containing the three listed fields.
+
+```c
+/* Keep each account's neighbors in ascending account-ID order. */
+void insert_neighbor(int from, int to, int edge) {
+    int *link = &head[from];
+    while (*link != -1 && neighbor[*link].to < to)
+        link = &neighbor[*link].next;
+    neighbor[entry_count] = (Neighbor){to, edge, *link};
+    *link = entry_count++;
+}
+
+/* One undirected edge receives two neighbor entries with one shared ID. */
+int add_edge(int u, int v) {
+    if (u < 0 || v < 0 || u >= vertex_count || v >= vertex_count || u == v)
+        return 0;
+    for (int p = head[u]; p != -1; p = neighbor[p].next)
+        if (neighbor[p].to == v) return 0;
+    if (edge_count == MAX_EDGES) return 0;
+    int edge = edge_count++;
+    edge_u[edge] = u;
+    edge_v[edge] = v;
+    insert_neighbor(u, v, edge);
+    insert_neighbor(v, u, edge);
+    return 1;
+}
+```
+
+### Finishing one block
+
+Append an endpoint only if its `in_block` mark differs from the current block number. This avoids scanning an entire block for duplicates. To finish a block, take pending edges from the end, including the edge that opened the child branch. Save their edge IDs and endpoints, then record the end positions. `--pending_count` reduces the count before reading the former last entry.
+
+```c
+void add_block_vertex(int u) {
+    if (in_block[u] == block_count) return;
+    in_block[u] = block_count;
+    block_vertex[member_count++] = u;
+}
+
+/* The next block begins immediately after this block's entries. */
+void close_block(void) {
+    ++block_count;
+    block_vertex_start[block_count] = member_count;
+    block_edge_start[block_count] = block_edge_count;
+}
+
+/* Read pending edges backward through the edge that opened this block. */
+void finish_block(int opening_edge) {
+    int edge;
+    do {
+        edge = pending[--pending_count];
+        block_edge[block_edge_count++] = edge;
+        add_block_vertex(edge_u[edge]);
+        add_block_vertex(edge_v[edge]);
+    } while (edge != opening_edge);
+    close_block();
+}
+```
+
+### Exploring a branch and returning
+
+A first visit assigns both numbers and the current component label. The loop skips the arrival edge. A recursive call completes a new neighbor’s branch before the current loop continues. Returning updates `low` and checks the block boundary. Connections to earlier ancestors use their `dfn` values.
+
+The non-root cut test and root cut test are separate. Block extraction still happens when returning to a root with just one child. This is why Mina can finish B3 without being a cut vertex.
+
+```c
+void explore(int u, int parent_edge) {
+    dfn[u] = low[u] = ++clock_value;
+    component[u] = component_count;
+    int children = 0;
+
+    for (int p = head[u]; p != -1; p = neighbor[p].next) {
+        int v = neighbor[p].to;
+        int edge = neighbor[p].edge;
+        if (edge == parent_edge) continue;
+
+        if (dfn[v] == 0) {
+            ++children;
+            pending[pending_count++] = edge;
+            explore(v, edge);
+            if (low[v] < low[u]) low[u] = low[v];
+
+            if (low[v] >= dfn[u]) {
+                if (parent_edge != -1) cut[u] = 1;
+                finish_block(edge);
+            }
+        } else if (dfn[v] < dfn[u]) {
+            /* Record this earlier connection once, from its later end. */
+            pending[pending_count++] = edge;
+            if (dfn[v] < low[u]) low[u] = dfn[v];
         }
+    }
+    if (parent_edge == -1 && children > 1) cut[u] = 1;
 }
-network.vertex_count = 7; /* Mina, Joon, Sora, Dae, Hana, Leo, Nuri */
 ```
 
-### Adding the six follows
+### Starting again in every unvisited component
 
-The temporary `follows` array holds six rows of two account numbers. Each row names the follower first and the followed account second. The loop copies those relationships into the matrix.
+Reset analysis state so the same stored graph can be analyzed again. Set `in_block` to `-1` so no account is considered part of block 0 yet. Scan all active accounts, starting another component wherever `dfn` is still zero. An isolated account receives its own component and a singleton block; its block has no edge entries.
 
 ```c
-size_t follows[6][2] = {
-        {0, 1}, /* Mina follows Joon */
-        {1, 2}, /* Joon follows Sora */
-        {2, 0}, /* Sora follows Mina */
-        {2, 3}, /* Sora follows Dae */
-        {4, 5}, /* Hana follows Leo */
-        {5, 4}  /* Leo follows Hana */
-};
+void analyze(void) {
+    clock_value = component_count = pending_count = block_count = 0;
+    member_count = block_edge_count = 0;
+    block_vertex_start[0] = block_edge_start[0] = 0;
+    for (int u = 0; u < vertex_count; ++u) {
+        dfn[u] = low[u] = component[u] = cut[u] = 0;
+        in_block[u] = -1;
+    }
 
-for (size_t edge = 0; edge < 6; edge = edge + 1) {
-        size_t from = follows[edge][0];
-        size_t to = follows[edge][1];
-
-        if (from < network.vertex_count &&
-            to < network.vertex_count && from != to) {
-                network.grid[from][to] = 1;
+    for (int u = 0; u < vertex_count; ++u) {
+        if (dfn[u] != 0) continue;
+        ++component_count;
+        explore(u, -1);
+        /* Convention: an isolated account is a singleton block. */
+        if (head[u] == -1) {
+            add_block_vertex(u);
+            close_block();
         }
+    }
 }
 ```
 
-An inactive account number or a self-follow fails the condition and changes no cell for that request. Adding an existing follow writes `1` again and leaves the graph in the same state. The six valid pairs produce the matrix shown earlier.
+### Printing blocks and their cut-vertex links
 
-### Checking one direct follow
-
-To check whether Mina follows Joon, read row 0, column 1 after checking both account numbers. The code assumes the initialized graph still satisfies its invariant.
+Print each saved range instead of scanning all edges for every block. Within each block, print a block-cut link only for a member marked as a cut vertex. A block with no such links is a one-node tree. The block members are printed in extraction order; that order does not change the sets shown earlier.
 
 ```c
-size_t from = 0; /* Mina */
-size_t to = 1;   /* Joon */
+void print_results(void) {
+    printf("Connected components: %d\n", component_count);
+    puts("Account  component  dfn  low  cut");
+    for (int u = 0; u < vertex_count; ++u)
+        printf("%-7s  %9d  %3d  %3d  %s\n", name[u], component[u],
+               dfn[u], low[u], cut[u] ? "yes" : "no");
 
-if (from < network.vertex_count && to < network.vertex_count) {
-        printf("Mina follows Joon: %d\n", network.grid[from][to]);
-}
-```
-
-This prints `Mina follows Joon: 1`. It reads one edge and changes nothing. An invalid account number skips the read.
-
-### Counting Sora's follows
-
-Sora is account 2. Scan only the active columns of row 2 and count the cells containing `1`.
-
-```c
-size_t target_account = 2; /* Sora */
-size_t outgoing_count = 0;
-
-if (target_account < network.vertex_count) {
-        for (size_t col = 0; col < network.vertex_count; col = col + 1) {
-                if (network.grid[target_account][col] == 1) {
-                        outgoing_count = outgoing_count + 1;
-                }
+    puts("\nBlocks (vertices; edges):");
+    for (int block = 0; block < block_count; ++block) {
+        printf("B%d:", block + 1);
+        for (int i = block_vertex_start[block]; i < block_vertex_start[block + 1]; ++i)
+            printf(" %s", name[block_vertex[i]]);
+        printf(" ;");
+        for (int i = block_edge_start[block]; i < block_edge_start[block + 1]; ++i) {
+            int edge = block_edge[i];
+            printf(" %s--%s", name[edge_u[edge]], name[edge_v[edge]]);
         }
-        printf("Sora follows before removal: %zu\n", outgoing_count);
-}
-```
+        if (block_edge_start[block] == block_edge_start[block + 1]) printf(" (no edges)");
+        putchar('\n');
+    }
 
-The result is 2 because Sora follows Mina and Dae. An invalid target skips the scan and leaves `outgoing_count` unchanged.
-
-### Removing Sora's follow of Dae
-
-Unfollowing clears the selected cell. It does not remove either account or alter other follows.
-
-```c
-size_t cut_from = 2; /* Sora */
-size_t cut_to = 3;   /* Dae */
-
-if (cut_from < network.vertex_count && cut_to < network.vertex_count) {
-        network.grid[cut_from][cut_to] = 0;
-}
-```
-
-An invalid endpoint changes nothing. Removing an already absent follow writes `0` again and keeps the same graph.
-
-### Counting after the unfollow
-
-Start the count at zero again. Otherwise, the old count would be added to the new one.
-
-```c
-if (target_account < network.vertex_count) {
-        outgoing_count = 0;
-        for (size_t col = 0; col < network.vertex_count; col = col + 1) {
-                if (network.grid[target_account][col] == 1) {
-                        outgoing_count = outgoing_count + 1;
-                }
+    puts("\nBlock-cut forest (block -- cut account):");
+    for (int block = 0; block < block_count; ++block) {
+        int links = 0;
+        for (int i = block_vertex_start[block]; i < block_vertex_start[block + 1]; ++i) {
+            int u = block_vertex[i];
+            if (!cut[u]) continue;
+            printf("B%d -- %s\n", block + 1, name[u]);
+            ++links;
         }
-        printf("Sora follows after removal: %zu\n", outgoing_count);
+        if (links == 0) printf("B%d (standalone block node)\n", block + 1);
+    }
 }
 ```
 
-The result is 1. Only `grid[2][0]` remains `1` in Sora's row. Dae is still an active account, but now both Dae's row and column contain only zeros.
+### Running the contact-graph example
 
-Trace the final graph by hand: the weak components are `{0, 1, 2}`, `{3}`, `{4, 5}`, and `{6}`. The strong components have exactly the same memberships as before the unfollow. The C code stores the edge change; it does not compute those groups.
+The input contains exactly the eight undirected edges from the text. Build them, analyze the graph, and print the records. These fixed arrays require no dynamic allocation or cleanup.
+
+```c
+int main(void) {
+    const char *labels[] = {"Mina", "Joon", "Sora", "Dae", "Hana", "Leo", "Nuri", "Yuna"};
+    const int edges[][2] = {{0, 1}, {0, 2}, {1, 2}, {2, 3},
+                            {3, 6}, {3, 7}, {6, 7}, {4, 5}};
+    if (!initialize(8, labels)) return 1;
+    for (unsigned int i = 0; i < sizeof edges / sizeof edges[0]; ++i) {
+        if (!add_edge(edges[i][0], edges[i][1])) {
+            fputs("Invalid edge.\n", stderr);
+            return 1;
+        }
+    }
+    analyze();
+    print_results();
+    return 0;
+}
+```
+
+The output is:
+
+```text
+Connected components: 2
+Account  component  dfn  low  cut
+Mina             1    1    1  no
+Joon             1    2    1  no
+Sora             1    3    1  yes
+Dae              1    4    4  yes
+Hana             2    7    7  no
+Leo              2    8    8  no
+Nuri             1    5    4  no
+Yuna             1    6    4  no
+
+Blocks (vertices; edges):
+B1: Dae Yuna Nuri ; Dae--Yuna Nuri--Yuna Dae--Nuri
+B2: Sora Dae ; Sora--Dae
+B3: Mina Sora Joon ; Mina--Sora Joon--Sora Mina--Joon
+B4: Hana Leo ; Hana--Leo
+
+Block-cut forest (block -- cut account):
+B1 -- Dae
+B2 -- Sora
+B2 -- Dae
+B3 -- Sora
+B4 (standalone block node)
+```
