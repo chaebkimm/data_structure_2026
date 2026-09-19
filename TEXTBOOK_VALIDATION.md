@@ -2,6 +2,28 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 3 lab.c Textbook Alignment — September 19, 2026
+
+Both Chapter 3 textbooks now use `module_03_graph/student/lab.c`.
+The first six C blocks reproduce its code, apart from trailing whitespace;
+a seventh block adds a driver for one fresh execution from A. Both editions
+contain identical C blocks and identical expected output.
+
+The examples keep A–J at indices 0–9, store nine undirected edges in eighteen
+neighbor entries, and label four connected groups. The discovery and back-number
+passes visit only A–F. Their results are `0 1 2 3 4 5` and `0 1 2 1 1 1`;
+G–J retain `-1` in those arrays. Cut vertices, bridges, blocks, and the
+block-cut forest are explained as hand-worked extensions of the same graph.
+The storage discussion counts all 100 reserved neighbor slots.
+
+The extracted C11 program compiles with warning flags and runs successfully
+under AddressSanitizer and UndefinedBehaviorSanitizer. Standard output matches
+the documented output exactly. The unchanged source produces warnings for
+empty parameter lists, the integer-to-character assignment, and unused
+`data_read`; this was not a warnings-as-errors check. Both manuscripts retain
+five main sections and balanced code fences. Source and output parity checks
+pass. Validation covers the standalone textbook example.
+
 ## Webpage-to-Textbook Synchronization — September 16, 2026
 
 Chapters 0–3 were compared with the current English and Korean webpage

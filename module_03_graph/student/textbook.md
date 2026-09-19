@@ -4,9 +4,11 @@
 
 ### How do we show who follows whom?
 
-On a social networking service (SNS), one account can follow several accounts, and several accounts can follow the same person. In this small example, Mina is a celebrity account who follows just one person, Yuna. Yuna follows no one. Nuri is a newcomer who has just made a first follow: Nuri follows Mina.
+On a social networking service (SNS), one account can follow several accounts, and several accounts can follow the same person. Mina follows Yuna. Yuna follows no one. Nuri is a newcomer who has just made a first follow: Nuri follows Mina.
 
-Draw one dot for each account and one arrow for each follow. An arrow points from the follower to the followed account, so `A -> B` shows Nuri following Mina. The graph below shows the network after that first follow.
+Draw one dot for each account and one arrow for each follow. This collection is a **graph**. A dot is a **vertex**, and a direct relationship is an **edge**. An arrow points from the follower to the followed account. A graph whose edges have direction is a **directed graph**.
+
+Use letters A through J for ten accounts. I and J have no relationships yet. The graph below shows the network after Nuri's first follow.
 
 ```mermaid
 flowchart LR
@@ -20,447 +22,422 @@ flowchart LR
     dae --> joon
     hana["G Hana, friend"] --> leo["H Leo, friend"]
     leo --> hana
+    account_i["I, no relationships"]
+    account_j["J, no relationships"]
 ```
 
-Text equivalent: the ten follows are `A -> B`, `B -> C`, `D -> B`, `D -> E`, `E -> B`, `E -> F`, `F -> D`, `F -> B`, `G -> H`, `H -> G`.
+Text equivalent: the ten follows are `A -> B`, `B -> C`, `D -> B`, `D -> E`, `E -> B`, `E -> F`, `F -> D`, `F -> B`, `G -> H`, and `H -> G`. I and J have no incoming or outgoing arrows.
 
 ### How many followers and follows does an account have?
 
-Sora follows two accounts: Mina and Dae. Count the arrows leaving Sora, `E -> B` and `E -> F`. Only Joon follows Sora directly, so Sora has one follower. Dae can reach Sora through Joon, but this does not count as Dae following Sora.
+Sora follows Mina and Dae. Count the arrows leaving Sora, `E -> B` and `E -> F`: two follows. Only Joon follows Sora directly, so Sora has one follower. The number of outgoing edges is the **out-degree**. The number of incoming edges is the **in-degree**.
 
-Mina has four followers: Joon, Sora, Dae, and Nuri. Mina follows just Yuna, so four arrows enter Mina and one leaves. Yuna has one follower, Mina, and follows no one.
+Mina has four followers: Joon, Sora, Dae, and Nuri. Mina follows just Yuna. Yuna has one follower and follows no one. Having no outgoing edges does not mean having no relationships.
 
-Nuri has one outgoing follow and no followers. Before the first follow, both counts were zero. Nuri's follow raises Mina's follower count from three to four without changing whom Mina follows.
+Nuri has one outgoing follow and no followers. Before the first follow, both counts were zero. The new follow increases Mina's follower count without changing whom Mina follows.
 
 ### Where can Nuri go by following arrows?
 
-Nuri follows Mina, and Mina follows Yuna. Following `A -> B -> C` takes us from Nuri through Mina to Yuna, even though Nuri does not follow Yuna directly.
+Following `A -> B -> C` takes us from Nuri through Mina to Yuna. This sequence is a **path**. Nuri can reach Yuna even though Nuri does not follow Yuna directly.
 
-The route stops at Yuna because Yuna follows no one. Neither Mina nor Yuna can follow arrows back to Nuri. Nuri can reach these accounts without them being able to return.
+The route stops at Yuna because Yuna follows no one. Neither Mina nor Yuna can follow arrows back to Nuri. Direction determines which routes are possible.
 
 ### Which accounts are connected?
 
-Now ask which accounts are connected when direction does not matter. Keep the same eight accounts, their positions, and every connection from the directed graph after Nuri’s first follow. Remove the arrowheads and combine Hana and Leo’s two opposite arrows into one line. This gives nine undirected links:
+Now ask which accounts are connected when direction does not matter. Keep all ten accounts. Remove the arrowheads and combine Hana and Leo's two opposite arrows into one line. An edge can now be followed in either direction. This is an **undirected graph** with nine edges:
 
 ```text
 A—B, B—C, B—D, B—E, B—F, D—E, D—F, E—F, G—H
 ```
 
+I and J each have no incident edge. Each is an **isolated vertex**. Both are active accounts in the graph. The C example stores this undirected graph. The original arrow directions are no longer part of the stored relationships.
+
 ### How should we store an undirected graph?
 
-To leave Sora, collect Sora's direct contacts.
+To leave Sora, collect Sora's direct neighbors. Store one list for each account. This representation is an **adjacency list**. Keep the same array index for each letter throughout the chapter: A is 0, B is 1, through J at 9.
+
+| Index | Account | Neighbor letters | Stored neighbor indices |
+|---|---|---|---|
+| 0 | A Nuri | B | 1 |
+| 1 | B Mina | A, C, D, E, F | 0, 2, 3, 4, 5 |
+| 2 | C Yuna | B | 1 |
+| 3 | D Joon | B, E, F | 1, 4, 5 |
+| 4 | E Sora | B, D, F | 1, 3, 5 |
+| 5 | F Dae | B, D, E | 1, 3, 4 |
+| 6 | G Hana | H | 7 |
+| 7 | H Leo | G | 6 |
+| 8 | I | none | empty |
+| 9 | J | none | empty |
+
+Each edge appears at both endpoints. `E—F` puts index 5 in E's list and index 4 in F's list. Nine edges need eighteen neighbor entries. A vertex's number of neighbors is its **degree**. B has degree 5.
+
+Each node reserves ten neighbor slots in `adj_list`. `adj_size` records how many are used. Read positions 0 through `adj_size - 1`; an empty list has size 0. The input edge order produces the table's neighbor order.
+
+### How do we find every connected group?
+
+Starting at Nuri, follow neighbors to reach everyone connected to A. The route `B—D—E—B` returns to its starting vertex. Such a route is a **cycle**. Without a visited mark, recursive calls could keep following it.
+
+Mark a vertex before exploring its neighbors. Finish a new neighbor's recursive call before continuing the current vertex's list. This is **depth-first search (DFS)**. For this graph, the first discoveries from A are `A, B, C, D, E, F`. Returning from C lets B continue with D.
+
+Give every vertex reached from A group number 0. This is a **connected component**: a maximal group whose vertices are joined by paths. Maximal means that no outside vertex can be added while preserving that property. It does not mean the largest group.
+
+After A's call returns, scan for the next unvisited vertex. Start at G and label G and H with 1. Then label I with 2 and J with 3. A call on an isolated vertex has no neighbors to explore, but the vertex still forms a group.
 
 ```text
-A Nuri   : B
-B Mina   : A, C, D, E, F
-C Yuna   : B
-D Joon   : B, E, F
-E Sora   : B, D, F
-F Dae    : B, D, E
-G Hana   : H
-H Leo    : G
+Vertex: A B C D E F G H I J
+group:  0 0 0 0 0 0 1 1 2 3
+groups_count: 4
 ```
 
-Each edge appears at both endpoints. `E—F` puts `F` in Sora's list and `E` in Dae's list. Both entries share one edge ID: nine edges need eighteen entries.
+### Which account can split a connected group?
 
-### How do we find every connected component?
+Remove Mina and its incident edges. Joon, Sora, and Dae stay connected, but Nuri and Yuna each become isolated. Together with G–H, I, and J, there are now six groups instead of four. Removing Sora or Dae leaves the other members of their group connected through Mina.
 
-Starting at Nuri (`A`), label everyone reachable exactly once. Without marks, the triangle `B—D—E—B` could send us around repeatedly.
+A vertex whose removal increases the number of connected components is a **cut vertex**, also called an articulation point. B, at index 1, is the only cut vertex. An edge whose removal increases the number of components is a **bridge**. Here `A—B`, `B—C`, and `G—H` are bridges.
 
-1. Start with every account unmarked. Choose the alphabetically first unmarked account and give it a new component number.
-2. Read its neighbors in alphabetical order. For an unmarked neighbor, mark it immediately and make a recursive call to explore its neighbors with the same component number.
-3. Finish that call before continuing the current account's remaining neighbors. Skip already marked neighbors.
-4. When the starting call returns, choose the next unmarked account and begin another component.
+Trying every removal repeats work. Instead, record when a vertex was discovered and whether its branch can return to an earlier vertex by another edge.
 
-Discover `A, B, C, D, E, F`, then start at `G` and discover `H`: two components. An isolated starting account returns immediately and still receives a component number.
+### What do search numbers and back numbers record?
 
-### Which accounts can split a connected group?
+Number vertices as they are first discovered from A. The array `search_num` stores these discovery numbers, starting at 0. The starting vertex has no parent. Each other vertex is first discovered by a call from its parent. These links form the **DFS tree**. The second pass records the links in the `parent` array:
 
-From here, the analysis and C examples use numeric array indices: `B Mina = 0`, `D Joon = 1`, `E Sora = 2`, `F Dae = 3`, `G Hana = 4`, `H Leo = 5`, `A Nuri = 6`, and `C Yuna = 7`. For the numbered traces, restart at Mina (`0`) and visit accounts and neighbors in increasing index order. This gives discovery order `0, 1, 2, 3, 6, 7, 4, 5`.
+```text
+A (0)
+└── B (1)
+    ├── C (2)
+    └── D (3)
+        └── E (4)
+            └── F (5)
+```
 
-Remove Mina and its incident edges. Joon, Sora, and Dae stay connected to one another, but Nuri and Yuna each become isolated. With Hana and Leo still together, the graph now has four connected components instead of two. Removing Sora or Dae leaves the original component connected through Mina.
+Other edges can return from a descendant to an earlier ancestor. For example, `E—B` bypasses E's parent D. The array `back_num` stores the smallest discovery number reachable by moving down zero or more DFS tree edges and then taking at most one non-parent edge to an ancestor. Taking no final edge is allowed. This value is often called a **low-link value**, written `low`; discovery numbers are often written `dfn`.
 
-A vertex whose removal increases the graph's number of connected components is a **cut vertex**, also called a **cut node** or articulation point. Mina (`0`) is the only cut vertex. An edge whose removal increases the component count is a **bridge**. Here `0—6`, `0—7`, and `4—5` are bridges.
+Start with `back_num[i] = search_num[i]`. For each neighbor:
 
-Trying every removal repeats work. Instead, record whether each explored branch has another way back.
+- If the neighbor is unvisited, set its parent and explore it. On return, lower the current back number if the child's back number is smaller.
+- If the neighbor is already visited and is not the parent, compare its discovery number with the current back number. Use `search_num[neighbor]` for this edge.
+- Skip the already visited parent. The reverse entry of the arrival edge does not provide another route.
 
-### What do dfn and low record?
+E and F can each reach B by a non-parent edge, so their back numbers become 1. D receives 1 from its child E. C has only its parent edge to B, so its back number stays 2. B cannot use its parent edge to A as an alternative route, so B's back number stays 1.
 
-A recursive call makes each newly reached account a child of its caller. These first-arrival links form a tree per component. Other edges can connect descendants to earlier ancestors.
+| Vertex | Index | Group | `search_num` | `back_num` | `parent` |
+|---|---:|---:|---:|---:|---:|
+| A | 0 | 0 | 0 | 0 | -1 |
+| B | 1 | 0 | 1 | 1 | 0 |
+| C | 2 | 0 | 2 | 2 | 1 |
+| D | 3 | 0 | 3 | 1 | 1 |
+| E | 4 | 0 | 4 | 1 | 3 |
+| F | 5 | 0 | 5 | 1 | 4 |
+| G | 6 | 1 | -1 | -1 | -1 |
+| H | 7 | 1 | -1 | -1 | -1 |
+| I | 8 | 2 | -1 | -1 | -1 |
+| J | 9 | 3 | -1 | -1 | -1 |
 
-Assign increasing numbers when accounts are first reached. **`dfn[u]`** is account `u`'s discovery number. **`low[u]`** is the smallest discovery number reachable from `u` by following zero or more first-arrival links toward descendants, then at most one other edge to an ancestor. Using no final edge is allowed. Routes using several other edges do not define `low`.
+Group labeling scans the whole graph. The two number-saving functions start only at A. G–J therefore keep their initial `-1` numbers. Here `-1` means unvisited by those passes. G and H are connected to one another despite having no discovery numbers from A.
 
-Initialize `low[u] = dfn[u]`. Then read each neighbor `v`:
+### How can these numbers identify cut vertices?
 
-- Skip the exact edge used to enter `u`, identified by `parent_edge`. Its reverse entry is not another route.
-- If `v` is new, explore it completely. On return, set `low[u] = min(low[u], low[v])`.
-- If `v` is an earlier ancestor, set `low[u] = min(low[u], dfn[v])`. Use its discovery number, not `low[v]`: this update represents one additional edge.
+A child's back number reveals whether its branch can reach above its parent. These numbers support the cut-vertex rules used in **Tarjan's algorithm**. The following deductions are a hand analysis; `lab.c` computes the numbers but does not mark cut vertices or bridges.
 
-`2—0` and `3—0` reach discovery number 1. Returning calls carry that value upward. Nuri and Yuna have only their parent edge to Mina, so their `low` values stay equal to their own discovery numbers.
+For a non-root vertex `u`, a DFS child `v` with `back_num[v] >= search_num[u]` makes `u` a cut vertex. The branch can return to `u` at best. Removing `u` separates it from the parent side.
 
-| Account | `dfn` | Final `low` |
-|---|---:|---:|
-| 0 Mina | 1 | 1 |
-| 1 Joon | 2 | 1 |
-| 2 Sora | 3 | 1 |
-| 3 Dae | 4 | 1 |
-| 4 Hana | 7 | 7 |
-| 5 Leo | 8 | 8 |
-| 6 Nuri | 5 | 5 |
-| 7 Yuna | 6 | 6 |
+B has DFS children C and D. C gives `2 >= 1`, and D gives `1 >= 1`. Both branches depend on B to reach A. B is a cut vertex. E's back number is `1 < 3`, so D is not a cut vertex. F's back number is `1 < 4`, so E is not one either.
 
-Continue numbering across components. Visiting order changes numbers, but not cut vertices.
+A root has no parent side. It is a cut vertex only when it discovers at least two DFS children. A discovers only B, so A is not a cut vertex. Count DFS children, not all neighbors.
 
-### How does Tarjan’s algorithm find cut vertices?
+A child edge `u—v` is a bridge when `back_num[v] > search_num[u]`. Thus A–B gives `1 > 0`, and B–C gives `2 > 1`. B–D gives equality, so it is not a bridge. G–H is also a bridge by inspection; the run from A does not compute numbers for it.
 
-A returning child's `low` reveals whether its branch reaches above its parent. This is part of **Tarjan's algorithm** for undirected graph blocks.
+### How do the connected pieces meet?
 
-For a non-root account `u`, a child `v` with `low[v] >= dfn[u]` makes `u` a cut vertex. The branch can reach `u` at best; removing `u` separates it from the parent side.
+The four vertices B, D, E, and F are all directly connected to one another. They stay connected after any one is removed. We can describe maximal pieces with no cut vertex of their own as **blocks**, or biconnected components. Include each bridge with its two endpoints as a block and each isolated vertex as a singleton block. Some definitions reserve “biconnected” for pieces with at least three vertices; this chapter includes the smaller blocks to cover the whole graph.
 
-Dae’s return to Sora gives `1 < 3`, and Sora’s return to Joon gives `1 < 2`. Both branches reach Mina without their parent, so neither Sora nor Joon is a cut vertex. Equality would still satisfy the non-root cut test: a route back only to the parent cannot bypass that parent’s removal.
-
-A starting root has no parent side. It is a cut vertex only if it discovers at least two new children. Count first-arrival children, not neighbors. Mina has five neighbors but three new children: Joon, Nuri, and Yuna. Joon’s call also discovers Sora and Dae. Mina is therefore a cut vertex.
-
-A child edge is a bridge only when `low[v] > dfn[u]`. Equality gives a route back to `u` that avoids that edge. Thus `0—6` and `0—7` are bridges. For `0—1`, `low[1] = dfn[0] = 1`, so it is not a bridge.
-
-### How do we separate the biconnected blocks?
-
-The four accounts `{0, 1, 2, 3}` are all directly connected to one another and stay connected after any one is removed. We want maximal pieces with this property.
-
-A **biconnected component**, or **block** here, is a maximal connected subgraph with no cut vertex of its own. For decomposition, include each bridge with its two endpoints as a block, and each isolated vertex as a singleton block. Definitions requiring at least three vertices call only the larger pieces biconnected; we use these additional blocks so the entire graph is represented.
-
-Keep an array of edges waiting for a block assignment. Append a first-arrival edge before its recursive call. Append an edge to an earlier ancestor when it is inspected from its later endpoint. Do not append the reverse parent edge or an edge to a later descendant.
-
-On return from child `v`, if `low[v] >= dfn[u]`, remove edges from the array's end through the first-arrival edge `u—v`, including that edge. Their endpoints form one block. Apply this boundary rule to roots too, even when the root is not a cut vertex.
-
-The blocks finish in this order:
+The same graph has these six blocks. This table is a hand-worked extension of the stored graph, not output produced by `lab.c`.
 
 | Block | Vertices | Edges |
 |---|---|---|
-| B1 | `{0, 1, 2, 3}` | `0—1, 0—2, 0—3, 1—2, 1—3, 2—3` |
-| B2 | `{0, 6}` | `0—6` |
-| B3 | `{0, 7}` | `0—7` |
-| B4 | `{4, 5}` | `4—5` |
+| B1 | `{B, C}` | `B—C` |
+| B2 | `{B, D, E, F}` | `B—D, B—E, B—F, D—E, D—F, E—F` |
+| B3 | `{A, B}` | `A—B` |
+| B4 | `{G, H}` | `G—H` |
+| B5 | `{I}` | none |
+| B6 | `{J}` | none |
 
-Every edge belongs to exactly one block. Cut vertices belong to multiple blocks.
-
-### How do the blocks form a tree?
-
-Hide each block's internal edges to show how pieces meet. Make separate nodes for blocks and cut vertices. Connect a block to each cut vertex it contains.
-
-This is a **block-cut tree** for a connected component. Our graph gives:
+Every edge belongs to one block. The cut vertex B belongs to three blocks. To show how blocks meet, draw a separate node for each block and each cut vertex. Connect each block to the cut vertices it contains. The result for one connected component is a **block-cut tree**.
 
 ```text
-B1 — C0 — B3       B4
-      |
-      B2
+B1 — cut B — B2       B4       B5       B6
+        |
+        B3
 ```
 
-`C0` is Mina, shared by B1, B2, and B3. Ordinary vertices stay inside block nodes. B4 is a one-node tree. A disconnected graph produces a **forest**, or collection of trees. Singleton blocks also become isolated tree nodes.
+The four connected components produce four trees. This collection is a **forest**. B4, B5, and B6 are one-node trees. The DFS tree records the order of discovering vertices; the block-cut forest records how blocks share cut vertices.
 
-The first-arrival tree records exploration of accounts. The block-cut tree records shared cut vertices between blocks. Their nodes represent different objects.
+### What assumptions does this example use?
 
-### What conditions must the graph keep?
+The C example uses ten active vertices and the nine listed undirected edges. It stores only whether vertices are connected, with no numerical edge weights. Every edge has distinct endpoints, and no pair is repeated. Such an undirected graph is called a **simple graph**.
 
-Both entries of every contact edge must agree. Reserve 16 vertex positions and 120 edge positions, enough for every distinct pair.
+Each stored neighbor index is between 0 and 9. Each node has room for ten neighbors, and the largest list has five entries. Initialization sets each list's size to zero. Adding the known edges appends both endpoint entries once.
 
-- Active vertex numbers are consecutive from `0`; unused positions are not isolated vertices.
-- Each edge joins two different active vertices. Self-loops and duplicate pairs are excluded.
-- Each edge ID occurs in exactly two adjacency entries, one at each endpoint.
-- Every list ends at `-1`, and the two entries are added together only after validation and capacity checks.
-- Rejected additions leave the graph unchanged. Duplicate requests are rejected and leave one edge.
-
-The example uses eight active vertices and nine edges. It stores contact existence, with no numerical edge weights.
+Run the example once in a fresh program, starting at A. Save discovery numbers before back numbers. Keep the start index, graph, and neighbor order unchanged between those two passes so they follow the same DFS tree. The functions assume these inputs; they do not validate arbitrary edges or reset every result array for reuse with a different root.
 
 ## Calculating Efficiency
 
-### How much work finds every connected component?
+### How much work builds the graph?
 
-Mark eight accounts and inspect eighteen neighbor entries. Generally, process `V` active vertices and `2E` entries. Initializing active marks and scanning for starting accounts also cost `O(V)`. Total time is `O(V + E)`.
+Initialize ten node records. For each of nine edges, append two neighbor indices. The graph therefore stores eighteen entries. If there are `V` active vertices and `E` edges, this construction takes `O(V + E)` time. Appending one known edge takes constant work when both lists have room.
 
-### How much work does Tarjan’s algorithm take?
+### How much work finds every connected group?
 
-Again, inspect eight accounts and eighteen entries. Each edge enters and leaves the pending array once. Per-block vertex marks avoid repeating endpoints when producing blocks and the block-cut forest. Total time, including output, is `O(V + E)`.
+Clear ten visited marks and scan ten possible starting vertices. Across the recursive calls, process each vertex once and inspect all eighteen neighbor entries. Already visited vertices return without scanning their lists again. The work grows with `V + 2E`, so component labeling takes `O(V + E)` time.
 
-### How much work stores or adds an edge?
+### How much work computes the two sets of numbers?
 
-Reading all lists takes `O(V + E)`. Adding `u—v` searches for duplicates and finds both ordered insertion positions. With `d(u)` and `d(v)` neighbors, called the endpoints' **degrees**, this costs `O(1 + d(u) + d(v))`. Filling two entries then takes constant work. Repeated checked additions need not build the graph in linear time.
+From A, each numbering pass processes six reachable vertices and sixteen neighbor entries. The reachable group has eight edges. The group G–H and the isolated vertices are not explored by these passes.
+
+Let `V_r` and `E_r` count reachable vertices and edges. Each wrapper also clears the visited array for all `V` active vertices. Each pass takes `O(V + V_r + E_r)` time. Running the two passes doubles the work without changing that growth rate. Recursive calls need at most `O(V_r)` additional space.
 
 ### How much memory is reserved and used?
 
-Reserve `M = 16` vertex positions, `L = 120` edge positions, and `2L = 240` adjacency entries. Fixed analysis and output arrays also scale with these capacities. Reserved space is `O(M + L)`; only eight vertices and eighteen adjacency entries are active here.
+Each of ten nodes reserves ten neighbor slots, for one hundred integer slots. Eighteen are used. The node data, sizes, capacities, and five analysis arrays (`visited`, `group`, `search_num`, `back_num`, and `parent`) add storage proportional to the vertex capacity.
 
-Arrays sized to actual input use `O(V + E)` space, including pending edges and results. Recursive calls add at most `O(V)` space. The code initializes active analysis entries in `O(V + E)` time; reserving larger arrays does not make inactive positions into vertices.
+For this fixed program, the reserved array storage is constant. If a version reserves `M` vertices and `M` neighbors per vertex, the adjacency arrays reserve `O(M²)` space even when few edges exist. The active lists contain `2E` entries. An adjacency-list representation that allocates only the needed entries can use `O(V + E)` storage, but this fixed per-node layout reserves the full capacity.
 
 ## Glossary
 
-These names describe the contact graph and its analysis.
+The following names describe the stored relationships and the records created while exploring them.
 
 | Term | Meaning |
 |---|---|
-| Vertex / edge | An object / a direct relationship. |
+| Graph / vertex / edge | A collection of relationships / an object / a direct relationship. |
 | Directed / undirected graph | Edges with direction / edges usable in either direction. |
-| Adjacency list | Each vertex's direct neighbors. |
-| Degree | Number of incident edges in this simple undirected graph. |
+| In-degree / out-degree | Number of incoming / outgoing edges in a directed graph. |
+| Path / cycle | A route along edges / a route that returns to its start. |
+| Adjacency list / degree | A vertex's direct neighbors / its number of incident edges here. |
+| Isolated vertex | An active vertex with no incident edges. |
 | Connected component | A maximal set of vertices joined by paths. |
+| Depth-first search | Explore a newly reached vertex's branch before continuing the caller's other neighbors. |
+| DFS tree / parent | First-discovery links / the vertex whose call first discovered the current vertex. |
+| `search_num` / `back_num` | Discovery number / earliest number reachable under the descendant-and-ancestor-edge rule. |
 | Cut vertex / bridge | A vertex / edge whose removal increases the component count. |
-| First-arrival tree | Parent-child links created when new vertices are discovered. |
-| `dfn` / `low` | Discovery number / earliest number reachable under the descendant-and-ancestor-edge rule. |
-| Block | A maximal connected piece without its own cut vertex; bridge and singleton pieces are included here. |
-| Block-cut tree | A tree linking blocks to their shared cut vertices. |
-| Forest | A collection of disjoint trees. |
-
-References: [Algorithm](https://www.cs.cmu.edu/~15451-s15/LectureNotes/lecture08.pdf), [block convention](https://www.math.tugraz.at/~cela/Vorlesungen/AlgGrTheo24/Connectivity_H.pdf), [edge partition and cost](https://www.boost.org/doc/libs/1_86_0/libs/graph/doc/biconnected_components.html).
+| Block | A maximal connected piece with no cut vertex of its own, including bridge and singleton pieces here. |
+| Block-cut tree / forest | A tree connecting blocks to their shared cut vertices / a collection of trees. |
+| Simple graph | An undirected graph with no self-loop or repeated edge. |
 
 ## Coding Plan
 
-The program builds the contact graph, labels its components, and extracts its blocks.
+Build the graph and record what each recursive pass discovers. Use the functions and global arrays from [lab.c](lab.c).
 
-1. Define fixed arrays for vertices, edge IDs, and paired adjacency entries.
-2. Initialize the graph and insert the nine checked contact edges.
-3. Mark each new account before exploring its neighbors; restart at every unmarked account to assign `component` numbers.
-4. Compute `dfn` and `low` during recursive exploration, keeping `parent_edge` and the number of newly discovered children.
-5. Set `cut` with the non-root and root rules. Assign pending edges to blocks at each return boundary.
-6. Give isolated vertices singleton blocks. Connect blocks to their cut vertices and print the results.
+1. Define ten node records and initialize the letters, neighbor capacities, and list sizes.
+2. Append both neighbor entries for each of the nine known edges.
+3. Clear visited marks and explore neighbors recursively, marking each vertex before continuing.
+4. Start a new connected group at every unvisited vertex.
+5. Starting at A, save discovery numbers in the first pass.
+6. Starting at A again, save parents and back numbers in the second pass.
+7. Add a small driver to run the sequence once and print the results.
 
 ## C Code
 
-Concatenate the following eight C blocks in order to make one complete C11 program. Each block adds the functions used by later blocks.
+The first six C blocks reproduce `lab.c` in order. The last block adds a driver because `lab.c` has no `main` function. Concatenate all seven blocks into a separate file to run the example as a C11 program.
 
-### Storing edges and analysis records
+### Storing and initializing the nodes
 
-One undirected edge needs two neighbor entries with the same edge ID. `typedef` gives the structure the short name `Neighbor`. Its `next` field stores an array index, and `head[u]` stores the first index for account `u`. The value `-1` means no entry. All arrays here are shared by the functions below.
+Each `GraphNode` contains a character label and an array of neighbor indices. `adj_cap` records the array's capacity, and `adj_size` records its current length. `alphabet_nodes_init` activates all ten nodes, assigns A–J, and starts with empty neighbor lists. The unused slots are not read because every loop stops at `adj_size`.
 
-`pending` holds edges whose blocks are not finished. `block_vertex` and `block_edge` store all block members consecutively. Block `b` occupies indexes from `block_vertex_start[b]` up to, but not including, `block_vertex_start[b + 1]`; edges use the same pattern. These boundary arrays include one final end position. A vertex can occur once in each of several blocks, so allow up to `2 * MAX_EDGES + MAX_VERTICES` member entries. `in_block[u]` remembers the most recent block that included `u`.
+```c
+struct GraphNode {
+    char data;
+    int adj_list[10];
+    int adj_cap;
+    int adj_size;
+};
+
+struct GraphNode nodes[10];
+int nodes_cap = 10;
+int nodes_size = 0;
+
+void alphabet_nodes_init() {
+    nodes_size = nodes_cap;
+
+    for (int i = 0; i < nodes_cap; i++) {
+        nodes[i].data = 'A' + i;
+        nodes[i].adj_cap = 10;
+        nodes[i].adj_size = 0;
+    }
+}
+```
+
+### Adding the nine edges
+
+Each row of `edges` contains two endpoint indices. For `A—B`, `u` is 0 and `v` is 1. The expression `nodes[u].adj_size++` returns the old size as the insertion position, then increases the size. The two assignments put each endpoint in the other's list.
+
+Call `edges_init` once after initialization. The supplied endpoints are valid and fit the reserved lists. `adj_cap` records capacity but this function does not check it. Entries follow insertion order; this particular edge list gives the neighbor order shown earlier.
+
+```c
+void edges_init() {
+    int edges[9][2] = {{0, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {3, 4}, {3, 5}, {4, 5}, {6, 7}};
+    int edges_count = 9;
+    for (int i = 0; i < edges_count; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        int u_adj_end = nodes[u].adj_size++;
+        int v_adj_end = nodes[v].adj_size++;
+        nodes[u].adj_list[u_adj_end] = v;
+        nodes[v].adj_list[v_adj_end] = u;
+    }
+}
+```
+
+### Marking before exploring neighbors
+
+The zero entries of `visited` mean unvisited. `visited_init` clears the active entries before a new pass. `graph_recursion` marks a vertex before calling itself on its neighbors. A call on an already visited vertex returns immediately, so cycles terminate.
+
+The local `data_read` shows where a vertex's label can be read. It is unused afterward and does not print anything. A compiler can warn about this unused variable. After `alphabet_nodes_init()` and `edges_init()`, `visited_init(); graph_recursion(0);` visits A–F.
+
+```c
+int visited[10] = {0};
+
+void visited_init() {
+    for (int i = 0; i < nodes_size; i++) {
+        visited[i] = 0;
+    }
+}
+
+void graph_recursion(int i) {
+    if (visited[i] == 0) {
+        visited[i] = 1;
+        char data_read = nodes[i].data;
+        for (int j = 0; j < nodes[i].adj_size; j++) {
+            graph_recursion(nodes[i].adj_list[j]);
+        }
+    }
+}
+```
+
+### Labeling every connected group
+
+The recursive function now saves a group number as well as a visited mark. All calls within one connected component share `current_group`.
+
+The outer loop in `mark_all_groups` starts another call wherever a vertex remains unvisited. In `current_group = groups_count++`, the old count becomes the label and the count then increases. The first group is 0, and the final count is 4. I and J each receive their own label despite having no neighbors.
+
+```c
+int group[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+int groups_count = 0;
+int current_group = 0;
+
+void search_connected_group(int i) {
+    if (visited[i] == 0) {
+        visited[i] = 1;
+        group[i] = current_group;
+        for (int j = 0; j < nodes[i].adj_size; j++) {
+            search_connected_group(nodes[i].adj_list[j]);
+        }
+    }
+}
+
+void mark_all_groups() {
+    visited_init();
+    groups_count = 0;
+
+    for(int i = 0; i < nodes_size; i++) {
+        if (visited[i] == 0) {
+            current_group = groups_count++;
+            search_connected_group(i);
+        }
+    }
+}
+```
+
+### Saving discovery numbers from A
+
+At each first visit, store the current `search_time` and then increase it. Here callers check a neighbor's visited mark before making the recursive call. Every newly reached vertex receives exactly one number.
+
+The wrapper clears visited marks and resets the counter. `start_index` is 0, so the traversal starts at A. It does not restart at G, I, or J. Their discovery numbers remain at the initial value `-1` in this fresh execution.
+
+```c
+int search_num[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+int search_time = 0;
+
+void save_search_num(int i) {
+    visited[i] = 1;
+    search_num[i] = search_time++;
+    for (int j = 0; j < nodes[i].adj_size; j++) {
+        int neighbor = nodes[i].adj_list[j];
+        if (visited[neighbor] == 0) {
+            save_search_num(neighbor);
+        }
+    }
+}
+
+int start_index = 0;
+
+void save_search_nums() {
+    visited_init();
+    search_time = 0;
+
+    save_search_num(start_index);
+}
+```
+
+### Saving back numbers from the same start
+
+The second pass clears visited marks but keeps the first pass's discovery numbers. Starting at A with unchanged neighbor lists recreates the same DFS tree. Set `parent[neighbor]` before descending into a new neighbor. On return, compare the child's back number with the current vertex's back number.
+
+For an already visited neighbor other than the parent, compare its discovery number instead. If that neighbor is a later descendant, its larger number cannot lower the current value. The useful decreases come from earlier ancestors. Excluding the parent by vertex index works here because each pair has at most one edge.
+
+A's parent stays at its initial `-1`. This example runs each numbering pass once. Before adapting it for a fresh traversal from another root, reset the discovery, back-number, and parent arrays as well as the visited marks.
+
+```c
+int back_num[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+int parent[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+void save_back_num(int i) {
+    visited[i] = 1;
+    back_num[i] = search_num[i];
+    for (int j = 0; j < nodes[i].adj_size; j++) {
+        int neighbor = nodes[i].adj_list[j];
+        if (visited[neighbor] == 0) {
+            parent[neighbor] = i;
+            save_back_num(neighbor);
+            if (back_num[i] > back_num[neighbor]) {
+                back_num[i] = back_num[neighbor];
+            }
+        }
+        else if (neighbor != parent[i]) {
+            if (back_num[i] > search_num[neighbor]) {
+                back_num[i] = search_num[neighbor];
+            }
+        }
+    }
+}
+
+void save_back_nums() {
+    visited_init();
+    save_back_num(start_index);
+}
+```
+
+### Running the example once
+
+Build the graph, label all groups, and then run the two numbering passes from A in order. The wrappers each reset their own visited marks, so the previous group-labeling pass does not prevent discovery. The driver prints the global result arrays after all three passes.
+
+Append this block after the six blocks above. Alternatively, put it in a separate driver file with `#include "lab.c"` to reuse the existing source.
 
 ```c
 #include <stdio.h>
 
-#define MAX_VERTICES 16
-#define MAX_EDGES 120
-#define MAX_BLOCKS (MAX_EDGES + MAX_VERTICES)
-#define MAX_MEMBERS (2 * MAX_EDGES + MAX_VERTICES)
-
-typedef struct {
-    int to, edge, next;
-} Neighbor;
-
-int vertex_count, edge_count, entry_count;
-int head[MAX_VERTICES], edge_u[MAX_EDGES], edge_v[MAX_EDGES];
-Neighbor neighbor[2 * MAX_EDGES];
-const char *name[MAX_VERTICES];
-
-int dfn[MAX_VERTICES], low[MAX_VERTICES], component[MAX_VERTICES];
-int cut[MAX_VERTICES], clock_value, component_count;
-int pending[MAX_EDGES], pending_count;
-int block_count, member_count, block_edge_count;
-int block_vertex[MAX_MEMBERS], block_edge[MAX_EDGES];
-int block_vertex_start[MAX_BLOCKS + 1], block_edge_start[MAX_BLOCKS + 1];
-int in_block[MAX_VERTICES];
-```
-
-### Initializing active accounts
-
-Initialize the graph before adding edges. The caller supplies one valid name for each active account. Set each active list head to `-1`; reserving 16 positions does not create 16 accounts. Analysis records are reset separately by `analyze`.
-
-```c
-int initialize(int count, const char *labels[]) {
-    if (count < 0 || count > MAX_VERTICES) return 0;
-    vertex_count = count;
-    edge_count = entry_count = 0;
-    for (int u = 0; u < count; ++u) {
-        head[u] = -1;
-        name[u] = labels[u];
-    }
-    return 1;
-}
-```
-
-### Adding both entries of one edge
-
-Reject inactive endpoints, self-connections, duplicates, and exhausted edge capacity before changing storage. A rejected duplicate returns 0 and preserves the existing edge. Each accepted edge adds two entries.
-
-`link` points to the integer slot that must change: first `head[from]`, then a preceding entry’s `next`. `&` takes that slot’s address and `*link` reads or updates its integer value. Stop at the ordered insertion position. The new entry keeps the old next index, then `*link` is changed to the new entry index. `(Neighbor){...}` creates one structure value containing the three listed fields.
-
-```c
-/* Keep each account's neighbors in ascending account-ID order. */
-void insert_neighbor(int from, int to, int edge) {
-    int *link = &head[from];
-    while (*link != -1 && neighbor[*link].to < to)
-        link = &neighbor[*link].next;
-    neighbor[entry_count] = (Neighbor){to, edge, *link};
-    *link = entry_count++;
-}
-
-/* One undirected edge receives two neighbor entries with one shared ID. */
-int add_edge(int u, int v) {
-    if (u < 0 || v < 0 || u >= vertex_count || v >= vertex_count || u == v)
-        return 0;
-    for (int p = head[u]; p != -1; p = neighbor[p].next)
-        if (neighbor[p].to == v) return 0;
-    if (edge_count == MAX_EDGES) return 0;
-    int edge = edge_count++;
-    edge_u[edge] = u;
-    edge_v[edge] = v;
-    insert_neighbor(u, v, edge);
-    insert_neighbor(v, u, edge);
-    return 1;
-}
-```
-
-### Finishing one block
-
-Append an endpoint only if its `in_block` mark differs from the current block number. This avoids scanning an entire block for duplicates. To finish a block, take pending edges from the end, including the edge that opened the child branch. Save their edge IDs and endpoints, then record the end positions. `--pending_count` reduces the count before reading the former last entry.
-
-```c
-void add_block_vertex(int u) {
-    if (in_block[u] == block_count) return;
-    in_block[u] = block_count;
-    block_vertex[member_count++] = u;
-}
-
-/* The next block begins immediately after this block's entries. */
-void close_block(void) {
-    ++block_count;
-    block_vertex_start[block_count] = member_count;
-    block_edge_start[block_count] = block_edge_count;
-}
-
-/* Read pending edges backward through the edge that opened this block. */
-void finish_block(int opening_edge) {
-    int edge;
-    do {
-        edge = pending[--pending_count];
-        block_edge[block_edge_count++] = edge;
-        add_block_vertex(edge_u[edge]);
-        add_block_vertex(edge_v[edge]);
-    } while (edge != opening_edge);
-    close_block();
-}
-```
-
-### Exploring a branch and returning
-
-A first visit assigns both numbers and the current component label. The loop skips the arrival edge. A recursive call completes a new neighbor’s branch before the current loop continues. Returning updates `low` and checks the block boundary. Connections to earlier ancestors use their `dfn` values.
-
-The non-root cut test and root cut test are separate. Each return to Mina closes a block: B1 after Joon, B2 after Nuri, and B3 after Yuna. Once all its neighbors are processed, Mina’s three first-arrival children identify it as a cut vertex. Block extraction also applies to a root with just one child, even though such a root is not a cut vertex.
-
-```c
-void explore(int u, int parent_edge) {
-    dfn[u] = low[u] = ++clock_value;
-    component[u] = component_count;
-    int children = 0;
-
-    for (int p = head[u]; p != -1; p = neighbor[p].next) {
-        int v = neighbor[p].to;
-        int edge = neighbor[p].edge;
-        if (edge == parent_edge) continue;
-
-        if (dfn[v] == 0) {
-            ++children;
-            pending[pending_count++] = edge;
-            explore(v, edge);
-            if (low[v] < low[u]) low[u] = low[v];
-
-            if (low[v] >= dfn[u]) {
-                if (parent_edge != -1) cut[u] = 1;
-                finish_block(edge);
-            }
-        } else if (dfn[v] < dfn[u]) {
-            /* Record this earlier connection once, from its later end. */
-            pending[pending_count++] = edge;
-            if (dfn[v] < low[u]) low[u] = dfn[v];
-        }
-    }
-    if (parent_edge == -1 && children > 1) cut[u] = 1;
-}
-```
-
-### Starting again in every unvisited component
-
-Reset analysis state so the same stored graph can be analyzed again. Set `in_block` to `-1` so no account is considered part of block 0 yet. Scan all active accounts, starting another component wherever `dfn` is still zero. An isolated account receives its own component and a singleton block; its block has no edge entries.
-
-```c
-void analyze(void) {
-    clock_value = component_count = pending_count = block_count = 0;
-    member_count = block_edge_count = 0;
-    block_vertex_start[0] = block_edge_start[0] = 0;
-    for (int u = 0; u < vertex_count; ++u) {
-        dfn[u] = low[u] = component[u] = cut[u] = 0;
-        in_block[u] = -1;
-    }
-
-    for (int u = 0; u < vertex_count; ++u) {
-        if (dfn[u] != 0) continue;
-        ++component_count;
-        explore(u, -1);
-        /* Convention: an isolated account is a singleton block. */
-        if (head[u] == -1) {
-            add_block_vertex(u);
-            close_block();
-        }
-    }
-}
-```
-
-### Printing blocks and their cut-vertex links
-
-Print each saved range instead of scanning all edges for every block. Within each block, print a block-cut link only for a member marked as a cut vertex. A block with no such links is a one-node tree. The block members are printed in extraction order; that order does not change the sets shown earlier.
-
-```c
-void print_results(void) {
-    printf("Connected components: %d\n", component_count);
-    puts("Account  component  dfn  low  cut");
-    for (int u = 0; u < vertex_count; ++u)
-        printf("%-7s  %9d  %3d  %3d  %s\n", name[u], component[u],
-               dfn[u], low[u], cut[u] ? "yes" : "no");
-
-    puts("\nBlocks (vertices; edges):");
-    for (int block = 0; block < block_count; ++block) {
-        printf("B%d:", block + 1);
-        for (int i = block_vertex_start[block]; i < block_vertex_start[block + 1]; ++i)
-            printf(" %s", name[block_vertex[i]]);
-        printf(" ;");
-        for (int i = block_edge_start[block]; i < block_edge_start[block + 1]; ++i) {
-            int edge = block_edge[i];
-            printf(" %s--%s", name[edge_u[edge]], name[edge_v[edge]]);
-        }
-        if (block_edge_start[block] == block_edge_start[block + 1]) printf(" (no edges)");
-        putchar('\n');
-    }
-
-    puts("\nBlock-cut forest (block -- cut account):");
-    for (int block = 0; block < block_count; ++block) {
-        int links = 0;
-        for (int i = block_vertex_start[block]; i < block_vertex_start[block + 1]; ++i) {
-            int u = block_vertex[i];
-            if (!cut[u]) continue;
-            printf("B%d -- %s\n", block + 1, name[u]);
-            ++links;
-        }
-        if (links == 0) printf("B%d (standalone block node)\n", block + 1);
-    }
-}
-```
-
-### Running the contact-graph example
-
-The input contains exactly the nine undirected edges from the text. Build them, analyze the graph, and print the records. These fixed arrays require no dynamic allocation or cleanup.
-
-```c
 int main(void) {
-    const char *labels[] = {"Mina", "Joon", "Sora", "Dae", "Hana", "Leo", "Nuri", "Yuna"};
-    const int edges[][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 6}, {0, 7},
-                            {1, 2}, {1, 3}, {2, 3}, {4, 5}};
-    if (!initialize(8, labels)) return 1;
-    for (unsigned int i = 0; i < sizeof edges / sizeof edges[0]; ++i) {
-        if (!add_edge(edges[i][0], edges[i][1])) {
-            fputs("Invalid edge.\n", stderr);
-            return 1;
-        }
+    alphabet_nodes_init();
+    edges_init();
+    mark_all_groups();
+    save_search_nums();
+    save_back_nums();
+
+    printf("Connected groups: %d\n", groups_count);
+    puts("Node Index Group Search Back Parent");
+    for (int i = 0; i < nodes_size; i++) {
+        printf("%c %d %d %d %d %d\n", nodes[i].data, i, group[i],
+               search_num[i], back_num[i], parent[i]);
     }
-    analyze();
-    print_results();
     return 0;
 }
 ```
@@ -468,26 +445,16 @@ int main(void) {
 The output is:
 
 ```text
-Connected components: 2
-Account  component  dfn  low  cut
-Mina             1    1    1  yes
-Joon             1    2    1  no
-Sora             1    3    1  no
-Dae              1    4    1  no
-Hana             2    7    7  no
-Leo              2    8    8  no
-Nuri             1    5    5  no
-Yuna             1    6    6  no
-
-Blocks (vertices; edges):
-B1: Joon Dae Mina Sora ; Joon--Dae Mina--Dae Sora--Dae Mina--Sora Joon--Sora Mina--Joon
-B2: Mina Nuri ; Mina--Nuri
-B3: Mina Yuna ; Mina--Yuna
-B4: Hana Leo ; Hana--Leo
-
-Block-cut forest (block -- cut account):
-B1 -- Mina
-B2 -- Mina
-B3 -- Mina
-B4 (standalone block node)
+Connected groups: 4
+Node Index Group Search Back Parent
+A 0 0 0 0 -1
+B 1 0 1 1 0
+C 2 0 2 2 1
+D 3 0 3 1 1
+E 4 0 4 1 3
+F 5 0 5 1 4
+G 6 1 -1 -1 -1
+H 7 1 -1 -1 -1
+I 8 2 -1 -1 -1
+J 9 3 -1 -1 -1
 ```
