@@ -26,8 +26,9 @@ int tree_connect() {
 	nodes[1].left = 3;
 	nodes[1].right = 4;
 
-	nodes[2].left = 5;
-	nodes[2].right = 6;
+	nodes[5].left = root;
+	root = 5;
+  	nodes[5].right = 6;
 
 	return root;
 }
