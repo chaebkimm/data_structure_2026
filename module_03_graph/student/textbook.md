@@ -6,27 +6,27 @@
 
 On a social networking service (SNS), one account can follow several accounts, and several accounts can follow the same person. In this small example, Mina is a celebrity account who follows just one person, Yuna. Yuna follows no one. Nuri is a newcomer who has just made a first follow: Nuri follows Mina.
 
-Draw one dot for each account and one arrow for each follow. An arrow points **from the follower to the followed account**, so `6 -> 0` shows Nuri following Mina. The graph below shows the network after that first follow.
+Draw one dot for each account and one arrow for each follow. An arrow points from the follower to the followed account, so `A -> B` shows Nuri following Mina. The graph below shows the network after that first follow.
 
 ```mermaid
 flowchart LR
-    nuri["6 Nuri · newcomer"] --> mina["0 Mina · celebrity"]
-    mina --> yuna["7 Yuna"]
-    joon["1 Joon"] --> mina
-    joon --> sora["2 Sora"]
+    nuri["A Nuri, newcomer"] --> mina["B Mina, celebrity"]
+    mina --> yuna["C Yuna, corporation"]
+    joon["D Joon, fan"] --> mina
+    joon --> sora["E Sora, fan"]
     sora --> mina
-    sora --> dae["3 Dae"]
+    sora --> dae["F Dae, fan"]
     dae --> mina
     dae --> joon
-    hana["4 Hana"] --> leo["5 Leo"]
+    hana["G Hana, friend"] --> leo["H Leo, friend"]
     leo --> hana
 ```
 
-Text equivalent: the ten follows are `0 -> 7`, `1 -> 0`, `1 -> 2`, `2 -> 0`, `2 -> 3`, `3 -> 0`, `3 -> 1`, `4 -> 5`, `5 -> 4`, and `6 -> 0`. Before Nuri's first follow, the same eight accounts were present, but the last arrow was absent.
+Text equivalent: the ten follows are `A -> B`, `B -> C`, `D -> B`, `D -> E`, `E -> B`, `E -> F`, `F -> D`, `F -> B`, `G -> H`, `H -> G`.
 
 ### How many followers and follows does an account have?
 
-Sora follows two accounts: Mina and Dae. Count the arrows leaving Sora, `2 -> 0` and `2 -> 3`. Only Joon follows Sora directly, so Sora has one follower. Dae can reach Sora through Joon, but this does not count as Dae following Sora.
+Sora follows two accounts: Mina and Dae. Count the arrows leaving Sora, `E -> B` and `E -> F`. Only Joon follows Sora directly, so Sora has one follower. Dae can reach Sora through Joon, but this does not count as Dae following Sora.
 
 Mina has four followers: Joon, Sora, Dae, and Nuri. Mina follows just Yuna, so four arrows enter Mina and one leaves. Yuna has one follower, Mina, and follows no one.
 
@@ -34,59 +34,53 @@ Nuri has one outgoing follow and no followers. Before the first follow, both cou
 
 ### Where can Nuri go by following arrows?
 
-Nuri follows Mina, and Mina follows Yuna. Following `6 -> 0 -> 7` takes us from Nuri through Mina to Yuna, even though Nuri does not follow Yuna directly.
+Nuri follows Mina, and Mina follows Yuna. Following `A -> B -> C` takes us from Nuri through Mina to Yuna, even though Nuri does not follow Yuna directly.
 
 The route stops at Yuna because Yuna follows no one. Neither Mina nor Yuna can follow arrows back to Nuri. Nuri can reach these accounts without them being able to return.
 
 ### Which accounts are connected?
 
-Now ask who can stay in contact through other accounts. Record a new relationship: contact links allow communication in both directions. Give the same eight accounts these eight links:
+Now ask which accounts are connected when direction does not matter. Keep the same eight accounts, their positions, and every connection from the directed graph after Nuri’s first follow. Remove the arrowheads and combine Hana and Leo’s two opposite arrows into one line. This gives nine undirected links:
 
 ```text
-0—1, 0—2, 1—2, 2—3, 3—6, 3—7, 6—7, 4—5
+A—B, B—C, B—D, B—E, B—F, D—E, D—F, E—F, G—H
 ```
-
-These new relationships do not turn earlier follows into mutual follows.
-
-Accounts are **vertices**; direct relationships are **edges**. Together they form a **graph**. The earlier arrows form a **directed graph**. Contact links have no direction: they form an **undirected graph**, used throughout the remaining chapter.
-
-A **path** joins vertices through edges without repeating a vertex. Mina can reach Yuna along `0—2—3—7`. The groups are `{0, 1, 2, 3, 6, 7}` and `{4, 5}`. Each is a **connected component**: every pair is joined by a path, and no outside vertex can be added. This means maximal, not largest. An account with no links is an **isolated vertex**, forming its own component.
 
 ### How should we store an undirected graph?
 
-To leave Sora, collect Sora's direct contacts. Such a neighbor list is an **adjacency list**:
+To leave Sora, collect Sora's direct contacts.
 
 ```text
-0 Mina   : 1, 2
-1 Joon   : 0, 2
-2 Sora   : 0, 1, 3
-3 Dae    : 2, 6, 7
-4 Hana   : 5
-5 Leo    : 4
-6 Nuri   : 3, 7
-7 Yuna   : 3, 6
+A Nuri   : B
+B Mina   : A, C, D, E, F
+C Yuna   : B
+D Joon   : B, E, F
+E Sora   : B, D, F
+F Dae    : B, D, E
+G Hana   : H
+H Leo    : G
 ```
 
-Each edge appears at both endpoints. `2—3` puts `3` in Sora's list and `2` in Dae's list. Both entries share one edge ID: eight edges need sixteen entries.
-
-The C arrays use `head` for each list's first entry, `to` for an entry's neighbor, and `next` for the next entry's index. `-1` ends a list. Linked entries need not occupy adjacent positions. Insert each entry at its ordered position to keep neighbor numbers ascending.
+Each edge appears at both endpoints. `E—F` puts `F` in Sora's list and `E` in Dae's list. Both entries share one edge ID: nine edges need eighteen entries.
 
 ### How do we find every connected component?
 
-Starting at Mina, label everyone reachable exactly once. Without marks, the triangle `0—1—2—0` could send us around repeatedly.
+Starting at Nuri (`A`), label everyone reachable exactly once. Without marks, the triangle `B—D—E—B` could send us around repeatedly.
 
-1. Start with every account unmarked. Choose the smallest unmarked account and give it a new component number.
-2. Read its neighbors in ascending order. For an unmarked neighbor, mark it immediately and make a recursive call to explore its neighbors with the same component number.
+1. Start with every account unmarked. Choose the alphabetically first unmarked account and give it a new component number.
+2. Read its neighbors in alphabetical order. For an unmarked neighbor, mark it immediately and make a recursive call to explore its neighbors with the same component number.
 3. Finish that call before continuing the current account's remaining neighbors. Skip already marked neighbors.
 4. When the starting call returns, choose the next unmarked account and begin another component.
 
-Discover `0, 1, 2, 3, 6, 7`, then start at `4` and discover `5`: two components. An isolated starting account returns immediately and still receives a component number.
+Discover `A, B, C, D, E, F`, then start at `G` and discover `H`: two components. An isolated starting account returns immediately and still receives a component number.
 
 ### Which accounts can split a connected group?
 
-Remove Sora and its incident edges. Mina and Joon lose contact with Dae, Nuri, and Yuna. Removing Dae also splits the component. Removing Mina does not: Joon still reaches Sora.
+From here, the analysis and C examples use numeric array indices: `B Mina = 0`, `D Joon = 1`, `E Sora = 2`, `F Dae = 3`, `G Hana = 4`, `H Leo = 5`, `A Nuri = 6`, and `C Yuna = 7`. For the numbered traces, restart at Mina (`0`) and visit accounts and neighbors in increasing index order. This gives discovery order `0, 1, 2, 3, 6, 7, 4, 5`.
 
-A vertex whose removal increases the graph's number of connected components is a **cut vertex**, also called a **cut node** or articulation point. Sora (`2`) and Dae (`3`) are cut vertices. An edge whose removal increases the component count is a **bridge**. Here `2—3` and `4—5` are bridges.
+Remove Mina and its incident edges. Joon, Sora, and Dae stay connected to one another, but Nuri and Yuna each become isolated. With Hana and Leo still together, the graph now has four connected components instead of two. Removing Sora or Dae leaves the original component connected through Mina.
+
+A vertex whose removal increases the graph's number of connected components is a **cut vertex**, also called a **cut node** or articulation point. Mina (`0`) is the only cut vertex. An edge whose removal increases the component count is a **bridge**. Here `0—6`, `0—7`, and `4—5` are bridges.
 
 Trying every removal repeats work. Instead, record whether each explored branch has another way back.
 
@@ -102,18 +96,18 @@ Initialize `low[u] = dfn[u]`. Then read each neighbor `v`:
 - If `v` is new, explore it completely. On return, set `low[u] = min(low[u], low[v])`.
 - If `v` is an earlier ancestor, set `low[u] = min(low[u], dfn[v])`. Use its discovery number, not `low[v]`: this update represents one additional edge.
 
-`2—0` reaches discovery number 1; `7—3` reaches discovery number 4. Returning calls carry those values upward.
+`2—0` and `3—0` reach discovery number 1. Returning calls carry that value upward. Nuri and Yuna have only their parent edge to Mina, so their `low` values stay equal to their own discovery numbers.
 
 | Account | `dfn` | Final `low` |
 |---|---:|---:|
 | 0 Mina | 1 | 1 |
 | 1 Joon | 2 | 1 |
 | 2 Sora | 3 | 1 |
-| 3 Dae | 4 | 4 |
+| 3 Dae | 4 | 1 |
 | 4 Hana | 7 | 7 |
 | 5 Leo | 8 | 8 |
-| 6 Nuri | 5 | 4 |
-| 7 Yuna | 6 | 4 |
+| 6 Nuri | 5 | 5 |
+| 7 Yuna | 6 | 6 |
 
 Continue numbering across components. Visiting order changes numbers, but not cut vertices.
 
@@ -123,15 +117,15 @@ A returning child's `low` reveals whether its branch reaches above its parent. T
 
 For a non-root account `u`, a child `v` with `low[v] >= dfn[u]` makes `u` a cut vertex. The branch can reach `u` at best; removing `u` separates it from the parent side.
 
-Dae's return gives `4 >= 3`, identifying Sora. Nuri's return gives `4 >= 4`, identifying Dae. Equality matters: returning to Dae cannot bypass Dae's removal.
+Dae’s return to Sora gives `1 < 3`, and Sora’s return to Joon gives `1 < 2`. Both branches reach Mina without their parent, so neither Sora nor Joon is a cut vertex. Equality would still satisfy the non-root cut test: a route back only to the parent cannot bypass that parent’s removal.
 
-A starting root has no parent side. It is a cut vertex only if it discovers at least two new children. Count first-arrival children, not neighbors. Mina has two neighbors but only one new child, Joon, because Joon's call discovers Sora.
+A starting root has no parent side. It is a cut vertex only if it discovers at least two new children. Count first-arrival children, not neighbors. Mina has five neighbors but three new children: Joon, Nuri, and Yuna. Joon’s call also discovers Sora and Dae. Mina is therefore a cut vertex.
 
-A child edge is a bridge only when `low[v] > dfn[u]`. Equality gives a route back to `u` that avoids that edge. Thus `2—3` is a bridge, while `3—6` is not.
+A child edge is a bridge only when `low[v] > dfn[u]`. Equality gives a route back to `u` that avoids that edge. Thus `0—6` and `0—7` are bridges. For `0—1`, `low[1] = dfn[0] = 1`, so it is not a bridge.
 
 ### How do we separate the biconnected blocks?
 
-Each triangle stays connected after any account is removed. We want maximal pieces with this property.
+The four accounts `{0, 1, 2, 3}` are all directly connected to one another and stay connected after any one is removed. We want maximal pieces with this property.
 
 A **biconnected component**, or **block** here, is a maximal connected subgraph with no cut vertex of its own. For decomposition, include each bridge with its two endpoints as a block, and each isolated vertex as a singleton block. Definitions requiring at least three vertices call only the larger pieces biconnected; we use these additional blocks so the entire graph is represented.
 
@@ -143,9 +137,9 @@ The blocks finish in this order:
 
 | Block | Vertices | Edges |
 |---|---|---|
-| B1 | `{3, 6, 7}` | `3—6, 3—7, 6—7` |
-| B2 | `{2, 3}` | `2—3` |
-| B3 | `{0, 1, 2}` | `0—1, 0—2, 1—2` |
+| B1 | `{0, 1, 2, 3}` | `0—1, 0—2, 0—3, 1—2, 1—3, 2—3` |
+| B2 | `{0, 6}` | `0—6` |
+| B3 | `{0, 7}` | `0—7` |
 | B4 | `{4, 5}` | `4—5` |
 
 Every edge belongs to exactly one block. Cut vertices belong to multiple blocks.
@@ -157,10 +151,12 @@ Hide each block's internal edges to show how pieces meet. Make separate nodes fo
 This is a **block-cut tree** for a connected component. Our graph gives:
 
 ```text
-B3 — C2 — B2 — C3 — B1       B4
+B1 — C0 — B3       B4
+      |
+      B2
 ```
 
-`C2` is Sora; `C3` is Dae. Ordinary vertices stay inside block nodes. B4 is a one-node tree. A disconnected graph produces a **forest**, or collection of trees. Singleton blocks also become isolated tree nodes.
+`C0` is Mina, shared by B1, B2, and B3. Ordinary vertices stay inside block nodes. B4 is a one-node tree. A disconnected graph produces a **forest**, or collection of trees. Singleton blocks also become isolated tree nodes.
 
 The first-arrival tree records exploration of accounts. The block-cut tree records shared cut vertices between blocks. Their nodes represent different objects.
 
@@ -174,17 +170,17 @@ Both entries of every contact edge must agree. Reserve 16 vertex positions and 1
 - Every list ends at `-1`, and the two entries are added together only after validation and capacity checks.
 - Rejected additions leave the graph unchanged. Duplicate requests are rejected and leave one edge.
 
-The example uses eight active vertices and eight edges. It stores contact existence, with no numerical edge weights.
+The example uses eight active vertices and nine edges. It stores contact existence, with no numerical edge weights.
 
 ## Calculating Efficiency
 
 ### How much work finds every connected component?
 
-Mark eight accounts and inspect sixteen neighbor entries. Generally, process `V` active vertices and `2E` entries. Initializing active marks and scanning for starting accounts also cost `O(V)`. Total time is `O(V + E)`.
+Mark eight accounts and inspect eighteen neighbor entries. Generally, process `V` active vertices and `2E` entries. Initializing active marks and scanning for starting accounts also cost `O(V)`. Total time is `O(V + E)`.
 
 ### How much work does Tarjan’s algorithm take?
 
-Again, inspect eight accounts and sixteen entries. Each edge enters and leaves the pending array once. Per-block vertex marks avoid repeating endpoints when producing blocks and the block-cut forest. Total time, including output, is `O(V + E)`.
+Again, inspect eight accounts and eighteen entries. Each edge enters and leaves the pending array once. Per-block vertex marks avoid repeating endpoints when producing blocks and the block-cut forest. Total time, including output, is `O(V + E)`.
 
 ### How much work stores or adds an edge?
 
@@ -192,7 +188,7 @@ Reading all lists takes `O(V + E)`. Adding `u—v` searches for duplicates and f
 
 ### How much memory is reserved and used?
 
-Reserve `M = 16` vertex positions, `L = 120` edge positions, and `2L = 240` adjacency entries. Fixed analysis and output arrays also scale with these capacities. Reserved space is `O(M + L)`; only eight vertices and sixteen adjacency entries are active here.
+Reserve `M = 16` vertex positions, `L = 120` edge positions, and `2L = 240` adjacency entries. Fixed analysis and output arrays also scale with these capacities. Reserved space is `O(M + L)`; only eight vertices and eighteen adjacency entries are active here.
 
 Arrays sized to actual input use `O(V + E)` space, including pending edges and results. Recursive calls add at most `O(V)` space. The code initializes active analysis entries in `O(V + E)` time; reserving larger arrays does not make inactive positions into vertices.
 
@@ -221,7 +217,7 @@ References: [Algorithm](https://www.cs.cmu.edu/~15451-s15/LectureNotes/lecture08
 The program builds the contact graph, labels its components, and extracts its blocks.
 
 1. Define fixed arrays for vertices, edge IDs, and paired adjacency entries.
-2. Initialize the graph and insert the eight checked contact edges.
+2. Initialize the graph and insert the nine checked contact edges.
 3. Mark each new account before exploring its neighbors; restart at every unmarked account to assign `component` numbers.
 4. Compute `dfn` and `low` during recursive exploration, keeping `parent_edge` and the number of newly discovered children.
 5. Set `cut` with the non-root and root rules. Assign pending edges to blocks at each return boundary.
@@ -347,7 +343,7 @@ void finish_block(int opening_edge) {
 
 A first visit assigns both numbers and the current component label. The loop skips the arrival edge. A recursive call completes a new neighbor’s branch before the current loop continues. Returning updates `low` and checks the block boundary. Connections to earlier ancestors use their `dfn` values.
 
-The non-root cut test and root cut test are separate. Block extraction still happens when returning to a root with just one child. This is why Mina can finish B3 without being a cut vertex.
+The non-root cut test and root cut test are separate. Each return to Mina closes a block: B1 after Joon, B2 after Nuri, and B3 after Yuna. Once all its neighbors are processed, Mina’s three first-arrival children identify it as a cut vertex. Block extraction also applies to a root with just one child, even though such a root is not a cut vertex.
 
 ```c
 void explore(int u, int parent_edge) {
@@ -449,13 +445,13 @@ void print_results(void) {
 
 ### Running the contact-graph example
 
-The input contains exactly the eight undirected edges from the text. Build them, analyze the graph, and print the records. These fixed arrays require no dynamic allocation or cleanup.
+The input contains exactly the nine undirected edges from the text. Build them, analyze the graph, and print the records. These fixed arrays require no dynamic allocation or cleanup.
 
 ```c
 int main(void) {
     const char *labels[] = {"Mina", "Joon", "Sora", "Dae", "Hana", "Leo", "Nuri", "Yuna"};
-    const int edges[][2] = {{0, 1}, {0, 2}, {1, 2}, {2, 3},
-                            {3, 6}, {3, 7}, {6, 7}, {4, 5}};
+    const int edges[][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 6}, {0, 7},
+                            {1, 2}, {1, 3}, {2, 3}, {4, 5}};
     if (!initialize(8, labels)) return 1;
     for (unsigned int i = 0; i < sizeof edges / sizeof edges[0]; ++i) {
         if (!add_edge(edges[i][0], edges[i][1])) {
@@ -474,25 +470,24 @@ The output is:
 ```text
 Connected components: 2
 Account  component  dfn  low  cut
-Mina             1    1    1  no
+Mina             1    1    1  yes
 Joon             1    2    1  no
-Sora             1    3    1  yes
-Dae              1    4    4  yes
+Sora             1    3    1  no
+Dae              1    4    1  no
 Hana             2    7    7  no
 Leo              2    8    8  no
-Nuri             1    5    4  no
-Yuna             1    6    4  no
+Nuri             1    5    5  no
+Yuna             1    6    6  no
 
 Blocks (vertices; edges):
-B1: Dae Yuna Nuri ; Dae--Yuna Nuri--Yuna Dae--Nuri
-B2: Sora Dae ; Sora--Dae
-B3: Mina Sora Joon ; Mina--Sora Joon--Sora Mina--Joon
+B1: Joon Dae Mina Sora ; Joon--Dae Mina--Dae Sora--Dae Mina--Sora Joon--Sora Mina--Joon
+B2: Mina Nuri ; Mina--Nuri
+B3: Mina Yuna ; Mina--Yuna
 B4: Hana Leo ; Hana--Leo
 
 Block-cut forest (block -- cut account):
-B1 -- Dae
-B2 -- Sora
-B2 -- Dae
-B3 -- Sora
+B1 -- Mina
+B2 -- Mina
+B3 -- Mina
 B4 (standalone block node)
 ```

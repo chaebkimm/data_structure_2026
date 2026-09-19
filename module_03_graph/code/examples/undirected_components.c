@@ -168,8 +168,8 @@ void print_results(void) {
 
 int main(void) {
     const char *labels[] = {"Mina", "Joon", "Sora", "Dae", "Hana", "Leo", "Nuri", "Yuna"};
-    const int edges[][2] = {{0, 1}, {0, 2}, {1, 2}, {2, 3},
-                            {3, 6}, {3, 7}, {6, 7}, {4, 5}};
+    const int edges[][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 6}, {0, 7},
+                            {1, 2}, {1, 3}, {2, 3}, {4, 5}};
     if (!initialize(8, labels)) return 1;
     for (unsigned int i = 0; i < sizeof edges / sizeof edges[0]; ++i) {
         if (!add_edge(edges[i][0], edges[i][1])) {
