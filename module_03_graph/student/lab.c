@@ -29,87 +29,52 @@ void edges_init() {
 	}
 }
 
-int visited[10];
-
-void visited_init() {
-	for (int i = 0; i < nodes_size; i++) {
-		visited[i] = 0;
-	}
-}
-
-void graph_recursion(int i) {
-	char data_read = nodes[i].data;
-	for (int j = 0; j < nodes[i].adj_size; j++) {
-		int adj = nodes[i].adj_list[j];
-		if (visited[adj] == 0) {
-			visited[adj] = 1;
-			graph_recursion(adj);
-		}
-	}
-}
-
-int group[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-int groups_count = 0;
-int current_group = 0;
-
-void search_connected_group(int i) {
-	group[i] = current_group;
-
-	for (int j = 0; j < nodes[i].adj_size; j++) {
-		int adj = nodes[i].adj_list[j];
-
-		if (visited[adj] == 0) {
-			visited[adj] = 1;
-			search_connected_group(adj);
-		}
-	}
-}
-
-void mark_all_groups() {
-	visited_init();
-	groups_count = 0;
-
-	for (int i = 0; i < nodes_size; i++) {
-		if (visited[i] == 0) {
-			visited[i] = 1;
-			current_group = groups_count++;
-			search_connected_group(i);
-		}
-	}
-}
-
-int visit_num[10];
+int visit_num[10] = {0};
 int visit_time = 0;
 
 void save_visit_num(int i) {
-	visit_num[i] = visit_time++;
+	visit_num[i] = ++visit_time;
 	for (int j = 0; j < nodes[i].adj_size; j++) {
 		int adj = nodes[i].adj_list[j];
-		if (visited[adj] == 0) {
-			visited[adj] = 1;
+		if (visit_num[adj] == 0) {
 			save_visit_num(adj);
 		}
 	}
 }
 
-int start_index = 0;
+int group[10] = {0};
+int current_group = 0;
 
-void save_visit_nums() {
-	visited_init();
-	visit_time = 0;
-	visited[start_index] = 1;
-	save_visit_num(start_index);
-}
+void mark_group(int i) {
+	visit_num[i] = ++visit_time;
+	group[i] = current_group;
 
-int back_num[10];
-int parent[10];
-
-void save_back_num(int i) {
-	back_num[i] = visit_num[i];
 	for (int j = 0; j < nodes[i].adj_size; j++) {
 		int adj = nodes[i].adj_list[j];
-		if (visited[adj] == 0) {
-			visited[adj] = 1;
+
+		if (visit_num[adj] == 0) {
+			mark_group(adj);
+		}
+	}
+}
+
+void mark_all_groups() {
+	for (int i = 0; i < nodes_size; i++) {
+		if (visit_num[i] == 0) {
+			current_group++;
+			mark_group(i);
+		}
+	}
+}
+
+int back_num[10] = {0};
+int parent[10] = {0};
+
+void save_back_num(int i) {
+	back_num[i] = visit_num[i] = ++visit_time;
+	for (int j = 0; j < nodes[i].adj_size; j++) {
+		int adj = nodes[i].adj_list[j];
+		if (visit_num[adj] == 0) {
 			parent[adj] = i;
 			save_back_num(adj);
 			if (back_num[i] > back_num[adj]) {
@@ -121,11 +86,4 @@ void save_back_num(int i) {
 			}
 		}
 	}
-}
-
-void save_back_nums() {
-	visited_init();
-	visited[start_index] = 1;
-	parent[start_index] = -1;
-	save_back_num(start_index);
 }
