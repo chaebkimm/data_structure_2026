@@ -2,17 +2,109 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
-## Chapter 3 lab.c Textbook Alignment — September 19, 2026
+## Chapter 3 Class Lecture and Web Alignment — September 20, 2026
+
+Reviewed the updated lecture source `module_03_graph/student/ppt_day_c_code.md`
+against `lab.c`. Both textbooks now explain array-list storage at the graph
+and neighbor-list levels, arrays of arrays, traversal-dependent tree and back
+edges, and the child/parent/ancestor/descendant cases. An additional D-rooted
+example shows why the same edge can change roles. The lecture's `back` and
+`save_back` names are mapped to `back_num` and `save_back_num`. Split versus
+chained entry assignment and combined versus nested conditions are explained
+as equivalent forms. Low values are defined by reachable discovery numbers;
+cut-vertex and bridge tests remain separate deductions.
+
+After normalizing the lecture's nonbreaking spaces, its code and `lab.c`
+produce identical discovery, component, and A-rooted/D-rooted back-number
+results in warning-as-error C11 builds with AddressSanitizer and
+UndefinedBehaviorSanitizer. Both textbook editions retain eight sections and
+six C blocks: five canonical source excerpts and one supplemental driver.
+The extracted programs match their expected output under sanitizers, and
+their C blocks match each other byte for byte. The canonical source is unchanged.
+
+The webpage manuscripts match the textbooks exactly. All 100 translated
+subsections retain an interactive activity. A new bilingual activity walks
+through the 16 neighbor-list encounters from A: five children, five parents,
+three ancestors, and three descendants. Early classification uses discovery
+and parent records; the later back-number activity explains why descendant
+comparisons cannot lower a value. All 16 webpage tests, TypeScript checking,
+the production build, and whitespace checks pass. Local browser checks cover
+both languages, navigation, state selection, parent skipping, and ancestor
+and descendant explanations.
+
+This is technical and editorial validation of the lecture-aligned chapter,
+not a new beginner reading pilot. The lecture source and separate matrix-based
+module package are unchanged.
+
+## Chapter 3 Entry-Marking Lab and Web Alignment — September 20, 2026
+
+Both graph textbooks now reproduce the current `module_03_graph/student/lab.c`
+in five C blocks, followed by the same supplemental driver. The eight-section
+structure and hand-worked cut-vertex, bridge, block, and forest explanations
+are preserved. The Chapter 3 vocabulary boundary is updated accordingly.
+
+Discovery numbers now begin at 1, with zero serving as the unvisited marker.
+Each recursive helper marks its own entry. `mark_group` and `mark_all_groups`
+produce component labels 1–4, and `save_back_num` assigns discovery and back
+numbers in the same traversal. The driver explicitly resets shared discovery
+state before each independent pass, resets `current_group` before grouping,
+and initializes all back numbers to zero and parents to -1 before the final
+A-rooted search. The reset helper belongs to the textbook driver, not `lab.c`.
+A–F finish with visits `1 2 3 4 5 6` and back numbers `1 2 3 2 2 2`; G–J
+retain zero visit/back numbers and reset parents -1. Group labels survive.
+
+The English and Korean code blocks and expected output match byte for byte.
+Both extracted programs compile as C11 with warnings enabled and produce the
+expected output under AddressSanitizer and UndefinedBehaviorSanitizer. The
+unchanged source has three existing empty-parameter-list warnings; this is
+not a warnings-as-errors check. Independent C review also checked all 32,768
+simple six-vertex graphs across every starting root against removal-based
+component, bridge, and articulation checks, including repeated reset passes.
+No algorithm defect was found within the stated input and caller-state contract.
+
+The webpage content matches both manuscripts exactly, and its downloadable
+`lab.c` matches the source. The discovery animation, component labels, syntax
+exercises, work counts, driver output, and section mapping now use the same
+contracts. All 98 translated subsections retain an interactive activity.
+The 14 webpage tests, TypeScript check, production build, and whitespace
+checks pass. Local browser checks confirm English and Korean rendering,
+entry numbering at 1, final visit/back tables, and component labels 1–4
+without browser console errors.
+
+This validates the standalone graph lab, textbooks, and webpage. The separate
+matrix-based module package and release materials were not changed or rerun.
+It is technical and editorial validation, not a new beginner reading pilot.
+
+## Superseded Chapter 3 lab.c Textbook Alignment — September 19, 2026
 
 Both Chapter 3 textbooks now use `module_03_graph/student/lab.c`.
 The first six C blocks reproduce its code, apart from trailing whitespace;
 a seventh block adds a driver for one fresh execution from A. Both editions
 contain identical C blocks and identical expected output.
 
+The expanded editions add Invariant, a revised Coding Plan, New C Syntax
+Explained, and Full C Code Explanation in the Chapter 2 section order.
+The source excerpts follow the latest caller-marking implementation: recursive
+callers mark new vertices, the group and numbering wrappers mark their roots,
+and `save_back_nums` explicitly resets the root parent. Direct
+`graph_recursion` examples mark A before the first call. The explanations
+distinguish discovery from completion, completed edge insertions from
+intermediate writes, and each helper's results at its return point.
+
+The latest source names are `visit_num`, `visit_time`, `save_visit_num`,
+`save_visit_nums`, and local neighbor index `adj`. The textbooks use the
+fixed array lengths directly for capacity and loop bounds, matching the
+removal of the capacity fields and separate edge-count variable. The syntax
+sections distinguish implicit zero initialization of global arrays from
+uninitialized ordinary local arrays. Only `group` has ten explicit `-1`
+initializers; the starting vertex's parent is assigned `-1` by its wrapper.
+
 The examples keep A–J at indices 0–9, store nine undirected edges in eighteen
 neighbor entries, and label four connected groups. The discovery and back-number
 passes visit only A–F. Their results are `0 1 2 3 4 5` and `0 1 2 1 1 1`;
-G–J retain `-1` in those arrays. Cut vertices, bridges, blocks, and the
+G–J retain zero in the visit, back, and parent arrays. The driver and result
+tables include the final `Visited` flag: zero identifies those untouched
+entries, whose values are not computed results. Cut vertices, bridges, blocks, and the
 block-cut forest are explained as hand-worked extensions of the same graph.
 The storage discussion counts all 100 reserved neighbor slots.
 
@@ -20,8 +112,8 @@ The extracted C11 program compiles with warning flags and runs successfully
 under AddressSanitizer and UndefinedBehaviorSanitizer. Standard output matches
 the documented output exactly. The unchanged source produces warnings for
 empty parameter lists, the integer-to-character assignment, and unused
-`data_read`; this was not a warnings-as-errors check. Both manuscripts retain
-five main sections and balanced code fences. Source and output parity checks
+`data_read`; this was not a warnings-as-errors check. Both manuscripts contain
+eight main sections and balanced code fences. Source and output parity checks
 pass. Validation covers the standalone textbook example.
 
 ## Webpage-to-Textbook Synchronization — September 16, 2026
