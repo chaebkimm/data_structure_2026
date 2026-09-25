@@ -20,7 +20,7 @@ This is last in, first out, regardless of how the cells are arranged.
 ## 2. Canonical character trace
 
 ```text
-request       returned character    logical Stack    size    count
+request       returned code         logical Stack    size    count
 start         none                  empty              0      0
 push('A')     none                  A                  1      1
 push('B')     none                  A, B               2      2
@@ -32,7 +32,7 @@ pop()         A                     empty              0      0
 ```
 
 Text equivalent: pushes increase `size`; pops decrease it. The count equals
-`size`. Push has return type `void`; peek and pop return characters.
+`size`. Push has return type `void`; peek and pop return integers, shown here as character labels.
 
 ## 3. Physical cells and the active prefix
 
@@ -56,113 +56,113 @@ bottom-to-top order follows increasing physical indexes. The top read is
 ## 4. Empty, full, and the invariant
 
 ```text
-valid state:   0 <= size <= capacity     (capacity = 10)
-empty:         size == 0,  count 0, no top item
-nonempty:      size == 3,  count 3, top item at stack[2]
-full:          size == 10, count 10, push makes no change
+valid caller-maintained state: 0 <= size <= capacity  (capacity = 10)
+empty:    size == 0, no top; is_empty() is true; do not peek or pop
+nonempty: size == 3, top at stack[2]
+full:     size == 10; is_full() is true; do not push
 ```
 
-Text equivalent: the full next-insertion position 10 is not an array cell.
-Peek and pop check empty before selecting index -1 and return `'\0'` when
-empty. A full push stops before writing at index 10. The invariant describes
-valid state; the source does not repair arbitrary invalid `size` values.
-`capacity` controls the full check and is initialized to 10; the actual array
-has ten fixed cells.
+Text equivalent: the predicates report boundaries but do not guard the
+operations. A full push accesses index 10; empty peek/pop access index -1.
+These invalid calls have undefined behavior and no promised return or final
+state. `capacity` affects `is_full()` only; it cannot resize the ten-cell array.
 
 ## 5. Peek and pop
 
 ```text
 before: size = 3; stack[0] = 'A', stack[1] = 'B', stack[2] = 'C'
-
-peek: read stack[size - 1], index 2 -> 'C'; size remains 3
-
-pop:  decrease size to 2; read stack[size], index 2 -> 'C'; return 'C'
-      stack[2] can still contain 'C', but that cell is now inactive
+peek:   read stack[size - 1], index 2 -> integer code for 'C'; size stays 3
+pop:    --size makes size 2; read stack[2] -> integer code for 'C'
+        stack[2] can still contain 'C', but that cell is now inactive
 ```
 
-Text equivalent: both operations inspect the current top after checking
-nonempty. Only pop changes logical membership. It need not erase or shift
-characters. At empty both return `'\0'` and leave the array and `size`
-unchanged. A full push also leaves state unchanged but returns no value.
+Text equivalent: for a nonempty Stack, both operations report the current
+top. Only pop changes membership. Neither operation erases or shifts stored
+values. Callers must establish the nonempty precondition.
 
-## 6. Two expression phases
+## 6. Two phases reuse one Stack
+
+The PPT first calculates with conceptual operator and value Stacks. When
+`+` arrives in `1-2*3+4`, waiting `*` and then `-` produce 6 and -5; the final
+addition with 4 gives -1. Recording this order produces `123*-4+`.
 
 ```text
-infix text         conversion           postfix text        evaluation
-1-2*3+4       ----------------->        123*-4+        -----------------> -1
-                 char stack[10]                            int values[10]
-                 global count size                          local count size
+eq: 1-2*3+4  -- conversion -->  eq_re: 123*-4+  -- evaluation -->  -1
+                    |                                 |
+             int stack[10]                     same int stack[10]
+             operator codes + sentinel         numeric values
+             reset global size                 reset global size
+             local cursor pos starts 0         no sentinel
 
-postfix_size = 7
-postfix[7] = '\0'     (terminator, not an eighth token)
+eq_re[7] = '\0'; conversion pos ends 8; visible token length is 7
 ```
 
-Text equivalent: conversion rearranges character tokens using waiting
-operators. Evaluation later processes postfix tokens, converting each digit
-to a number and storing intermediate integer results. Global `postfix_size` counts
-postfix tokens; it is not the character Stack count. Local `size` counts
-active integer values. Global and local `value_size` are separate variables
-with the same next-insertion convention.
+Text equivalent: conversion writes postfix characters using a local cursor
+`pos`. Its Stack holds operator codes above a real bottom sentinel. Evaluation
+resets the same global count and reuses the same integer array for operands
+and intermediate results. No separate value array or global output count exists.
 
 ## 7. Converting `1-2*3+4`
 
 ```text
-read/work     postfix so far     waiting operators, bottom to top
-start         empty              empty
-1             1                  empty
--             1                  -
-2             12                 -
-*             12                 -, *
-3             123                -, *
-+             123*-              +
-4             123*-4             +
-drain         123*-4+            empty
+read/work       visible postfix     Stack, bottom to top    size  pos
+push sentinel   empty               '\0'                       1    0
+1               1                   '\0'                       1    1
+-               1                   '\0', -                    2    1
+2               12                  '\0', -                    2    2
+*               12                  '\0', -, *                 3    2
+3               123                 '\0', -, *                 3    3
++               123*-               '\0', +                    2    5
+4               123*-4              '\0', +                    2    6
+drain +         123*-4+             '\0'                       1    7
+drain sentinel  123*-4+ terminated  empty                      0    8
 ```
 
-Text equivalent: digits go straight to the output. When `+` arrives, `*`
-has greater precedence and `-` has equal precedence, so both are popped to
-output before `+` is pushed. The `>=` comparison enforces left associativity.
-After the scan, drain the final operator and write the terminator. Reset
-`postfix_size` at the next conversion and write a fresh terminator for shorter text.
+Text equivalent: digits go directly to output. Incoming `+` pops `*` and `-`
+because their precedence is greater or equal, then stops at the precedence-0
+sentinel. The final drain writes `+`, then writes the sentinel to `eq_re[7]`.
+That last write increments `pos` to 8. Each conversion resets `size` and `pos`.
 
 ## 8. Evaluating `123*-4+`
 
 ```text
-token    integer values, bottom to top    value_size    calculation
-1        1                                1     digit -> integer
-2        1, 2                             2     digit -> integer
-3        1, 2, 3                          3     digit -> integer
-*        1, 6                             2     2 * 3 = 6
--        -5                               1     1 - 6 = -5
-4        -5, 4                            2     digit -> integer
-+        -1                               1     -5 + 4 = -1
+token        integer stack, bottom to top    size    calculation
+1            1                               1      digit -> integer
+2            1, 2                            2      digit -> integer
+3            1, 2, 3                         3      digit -> integer
+*            1, 6                            2      2 * 3 = 6
+-            -5                              1      1 - 6 = -5
+4            -5, 4                           2      digit -> integer
++            -1                              1      -5 + 4 = -1
+final pop    empty                           0      return -1
 ```
 
-Text equivalent: the value array grows upward, with its top at
-`values[value_size - 1]`. Each operator pops `num2`, the right operand, before
-`num1`, the left operand. Negative results such as -5 are integers in
-`values`, not characters in the operator Stack.
+Text equivalent: evaluation resets global `size`, converts digit characters
+using `c - '0'`, and reuses `int stack[10]`. Each operator pops right operand
+`num2` before left operand `num1`. `pop()` decrements `size` before reading.
+The seven-token loop excludes the terminator; the final pop empties the Stack.
 
 ## 9. Current input boundary
 
 ```text
-infix[8]:    at most 7 token characters + '\0'
-postfix[8]:  the same tokens reordered  + '\0'
+eq[8]:       exactly 7 token characters + '\0'
+eq_re[8]:    those 7 tokens reordered  + '\0'
 operators:   + -       precedence 1
              * / %     precedence 2
+sentinel:    '\0'      precedence 0
 ```
 
-Text equivalent: core examples assume a nonempty alternating sequence of
-single digits and these operators, with no spaces, parentheses, unary
-operators, or multi-digit numbers. Divisors must be nonzero and intermediates
-must fit C `int`. These conditions are assumed, not fully checked by the
-source. Do not infer safe rejection from a successful valid example.
+Text equivalent: four single digits alternate with three binary operators.
+Both loops run exactly seven times; shorter expressions are unsupported.
+Exclude spaces, parentheses, unary signs, multi-digit operands, zero divisors,
+and arithmetic outside C `int`. These conditions are assumptions, not checked
+rejections.
 
 ## 10. Three related meanings
 
 ```text
 Stack ADT          LIFO behavior through push, peek, pop
-explicit storage   char stack[10] and its next-insertion/count size
+explicit storage   int stack[10] and its next-insertion/count size
 runtime call stack bookkeeping for actual active function calls
 ```
 

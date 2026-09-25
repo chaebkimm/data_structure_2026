@@ -16,7 +16,9 @@ Before running, inspect `faulty_top.c` and record:
 2. The correct and faulty indexes and their predicted characters.
 3. Why an allocated array position can still be outside the logical Stack.
 4. Why the next insertion position `size` differs from the top index
-   `size - 1`, in both the character Stack and the integer evaluator.
+   `size - 1`, and how both lab phases reuse the same global `size` and
+   integer Stack. This separate fixture stores characters to make the wrong
+   index visible.
 
 From `code`, run `make autopsy`, or:
 

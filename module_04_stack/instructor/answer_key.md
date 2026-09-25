@@ -1,14 +1,14 @@
-# Instructor Answer Key — Module 4 Character Stack
+# Instructor Answer Key — Module 4 Integer Stack
 
 ## Macro-Question synthesis
 
 A Stack permits access at one end, the top. Last in, first out (LIFO) means
 that the newest remaining item leaves first. In the motivating function-call
 story, 300 finishes before 200 resumes, then 100 resumes after 200 finishes.
-Those IDs are abstract labels. The concrete character Stack uses `'A'`,
-`'B'`, and `'C'`; do not put integer IDs such as 300 into `char` storage.
+Those IDs are abstract labels. Trace `'A'`, `'B'`, and `'C'` as character
+labels stored in the integer array; the array can also hold integer IDs.
 
-`student/lab.c` is the current source. Its character Stack grows toward
+`student/lab.c` is the current source. Its integer Stack grows toward
 larger indexes. The Stack ADT is the access rule, not this particular array
 layout and not the runtime's bookkeeping for actual C calls.
 
@@ -36,7 +36,7 @@ model before supplying formal vocabulary or code.
 
 States below are logical bottom to top. `push` has no return value.
 
-| Request | Returned character | State | `size` | Item count |
+| Request | Returned integer code | State | `size` | Item count |
 |---|---|---|---:|---:|
 | start | none | empty | 0 | 0 |
 | `push('A')` | none | A | 1 | 1 |
@@ -49,17 +49,20 @@ States below are logical bottom to top. `push` has no return value.
 
 ### Target 2: boundaries
 
-At `size == 10`, push returns without a write or index change. At `size == 0`,
-peek and pop return `'\0'`; both preserve the array and `size`. There is no
-output parameter whose old value is preserved. A caller assigning the
-returned character receives `'\0'`.
+At `size == 10`, `is_full()` is true; an invalid push would write index 10.
+At `size == 0`, `is_empty()` is true; invalid peek reads index -1, and invalid
+pop decrements toward -1 before its out-of-bounds read. These calls have
+undefined behavior, with no promised return or final state. Predicates report
+boundaries; callers must prevent invalid operations. Diagnose them on paper.
 
 ### Target 3: expression transfer
 
-Conversion produces `123*-4+` from `1-2*3+4`. `postfix_size` is seven; the terminating
-`'\0'` is not a token. Evaluation computes `2*3 = 6`, `1-6 = -5`, and
-`-5+4 = -1`. Characters wait in `stack`; numbers and intermediate results
-occupy local `int values[10]`.
+Conversion produces `123*-4+` from `1-2*3+4`. It resets `size`, sets local
+`pos = 0`, and pushes a real `'\0'` sentinel. The final drain writes that
+sentinel to `eq_re[7]`, leaving `size == 0` and `pos == 8`. Seven tokens precede
+the terminator. Evaluation resets `size` again and reuses `int stack[10]`
+for integers: `2*3 = 6`, `1-6 = -5`, then `-5+4 = -1`. The final pop returns
+-1 and empties the Stack.
 
 ## Stage C investigation
 
@@ -74,100 +77,97 @@ state unchanged. Pop order is C, B, A.
 
 ### B. Operation contracts and inactive slots
 
-| Operation | When allowed | Action | Boundary behavior |
+| Operation | When allowed | Action | If precondition fails |
 |---|---|---|---|
-| `push(data)` | `size < capacity` in a valid state | write `stack[size]`, increment `size` | at full, no change and no return value |
-| `peek()` | `size > 0` in a valid state | return `stack[size - 1]` | at empty, return `'\0'` |
-| `pop()` | `size > 0` in a valid state | decrement `size`, read `stack[size]`, return that character | at empty, return `'\0'` |
+| `push(int data)` | room remains, `size < 10` | write `stack[size++]` | at full, index 10 is outside storage |
+| `peek()` | `size > 0` | return integer `stack[size - 1]` | at empty, index -1 is outside storage |
+| `pop()` | `size > 0` | decrement `size`, return integer `stack[size]` | at empty, index -1 is outside storage |
 
-For valid states, `0 <= size <= capacity`. The item count is `size`. Active
-indexes form the prefix 0 through `size - 1`; indexes from `size` through 9
-are inactive.
-The next push writes at the old `size`. Pop does not erase the old bits;
-lowering `size` makes that cell inactive. `postfix_size` does not control this Stack:
-it counts characters already written to `postfix`. An intentionally stored
-`'\0'` would be indistinguishable from the empty-read return by value alone;
-`is_empty()` supplies the missing state distinction.
+With `capacity == 10`, maintain `0 <= size <= capacity`. The count is `size`,
+and active indexes form the prefix 0 through `size - 1`. The next push writes
+at the old count; pop decrements before reading. No old bits are erased.
+A stored `'\0'` is an active item like any other integer value, not an
+empty-read signal. Local conversion cursor `pos` counts output writes,
+including the sentinel, rather than Stack items.
 
 ### C. Empty/full boundaries and fixed capacity
 
-| Independent case | Return | Final `size` | Preserved state |
-|---|---|---:|---|
-| empty peek, `size = 0` | `'\0'` | 0 | all array cells |
-| empty pop, `size = 0` | `'\0'` | 0 | all array cells |
-| full push, `size = 10` | no value | 10 | all array cells |
-| A, B with `size = 2`; pop | B | 1 | array cells, including old B |
+For an empty Stack, `is_empty()` is true and push is allowed; peek and pop
+are invalid. For a full Stack, `is_full()` is true and peek/pop are allowed;
+push is invalid. The predicates preserve state but do not guard operations.
+A valid pop from A, B returns B and leaves `size == 1`, with the former B
+cell unchanged and inactive.
 
-A full push must stop before writing at index 10. An empty peek or pop
-must stop before selecting index -1. Empty and full are valid states; arbitrary `size`
-values outside 0–10 violate the invariant and are not repaired by the code.
-The variable `capacity` is initialized to 10 and controls the full check.
-If it is set to 3 while empty, pushes can activate only indexes 0 through 2; the
-array still has ten allocated cells. Changing the variable does not resize
-the array or validate corrupted state.
+If `capacity` is 3 and `size` is 3, `is_full()` is true. Push nevertheless
+writes index 3 and increments `size`, because it never calls the predicate.
+The ten-cell allocation is unchanged. Equality predicates cannot validate
+all corrupted counts; callers maintain the invariant.
 
 ### D. Two expression phases
 
-Conversion appends digits immediately and uses the operator Stack to delay
-operators. When `+` arrives, waiting `*` and `-` each have precedence at least
-as great as `+`, so both are appended before `+` is pushed.
+Conversion resets `size`, initializes local `pos = 0`, and pushes `'\0'`.
+Digits go directly to `eq_re`. Incoming `+` emits waiting `*` and `-` because
+their precedence is greater or equal, then stops at the precedence-0 sentinel.
 
-| Read/work | Postfix so far | Operators, bottom to top | `size` | `postfix_size` |
+| Read/work | Visible postfix | Stack, bottom to top | `size` | `pos` |
 |---|---|---|---:|---:|
-| start | empty | empty | 0 | 0 |
-| `1` | `1` | empty | 0 | 1 |
-| `-` | `1` | `-` | 1 | 1 |
-| `2` | `12` | `-` | 1 | 2 |
-| `*` | `12` | `-`, `*` | 2 | 2 |
-| `3` | `123` | `-`, `*` | 2 | 3 |
-| `+` | `123*-` | `+` | 1 | 5 |
-| `4` | `123*-4` | `+` | 1 | 6 |
-| drain | `123*-4+` | empty | 0 | 7 |
+| reset and push sentinel | empty | `'\0'` | 1 | 0 |
+| `1` | `1` | `'\0'` | 1 | 1 |
+| `-` | `1` | `'\0'`, `-` | 2 | 1 |
+| `2` | `12` | `'\0'`, `-` | 2 | 2 |
+| `*` | `12` | `'\0'`, `-`, `*` | 3 | 2 |
+| `3` | `123` | `'\0'`, `-`, `*` | 3 | 3 |
+| `+` | `123*-` | `'\0'`, `+` | 2 | 5 |
+| `4` | `123*-4` | `'\0'`, `+` | 2 | 6 |
+| drain `+` | `123*-4+` | `'\0'` | 1 | 7 |
+| drain sentinel | `123*-4+` terminated | empty | 0 | 8 |
 
-The final terminator occupies `postfix[7]`. Resetting `postfix_size` before scanning
-prevents appending to a previous conversion. Writing a fresh terminator
-prevents stale characters from displaying after a shorter new expression.
+The final sentinel write terminates `eq_re` at index 7 and increments `pos`
+to 8. The token length is 7. A later supported conversion resets both
+`size` and local `pos`, even if earlier work left active Stack items.
 
-Evaluation scans the seven postfix tokens:
+Evaluation resets `size = 0` and reuses the same integer array, without
+pushing a sentinel. It scans exactly seven postfix tokens:
 
-| Token | Active `values`, bottom to top | `value_size` | Work |
+| Token | Active `stack`, bottom to top | `size` | Work |
 |---|---|---:|---|
-| `1` | 1 | 1 | convert character to integer |
+| `1` | 1 | 1 | `push(c - '0')` converts a character to an integer |
 | `2` | 1, 2 | 2 | push number |
 | `3` | 1, 2, 3 | 3 | push number |
-| `*` | 1, 6 | 2 | `num2 = 3`, `num1 = 2` |
-| `-` | -5 | 1 | `num2 = 6`, `num1 = 1` |
+| `*` | 1, 6 | 2 | right `num2 = 3`, left `num1 = 2` |
+| `-` | -5 | 1 | right `num2 = 6`, left `num1 = 1` |
 | `4` | -5, 4 | 2 | push number |
-| `+` | -1 | 1 | `num2 = 4`, `num1 = -5` |
+| `+` | -1 | 1 | right `num2 = 4`, left `num1 = -5` |
+| final pop | empty | 0 | return -1 |
 
-`value_size` counts integers, with top number at `values[value_size - 1]`. Each operator
-pops the right operand into `num2` first, then the left into `num1`. The order
-is observable for `-`, `/`, and `%`. Equal-precedence reduction is left to
-right; for example, `8-3-2` produces `83-2-` and result 3.
+The nonempty top remains `stack[size - 1]`. Pop order is observable for
+`-`, `/`, and `%`. Equal-precedence reduction is left to right; for example,
+`8-3-2+1` produces `83-2-1+` and result 4.
 
 The D3 classifications are:
 
 | Input | Within assumptions? | Result if valid | Reason |
 |---|---|---:|---|
-| `"7"` | yes | 7 | one digit is a complete expression |
+| `"7"` | no | — | shorter than the fixed seven-token scan |
 | `"1-2*3+4"` | yes | -1 | precedence and operand order |
-| `"8/2/2"` | yes | 2 | equal precedence is left associative |
-| `"7%4+1"` | yes | 4 | remainder precedes addition |
-| `""` | no | — | nonempty input required |
-| `"1+"` | no | — | right operand missing |
-| `"12+3"` | no | — | multi-digit operands are outside the grammar |
-| `"1 +2"` | no | — | spaces are outside the grammar |
-| `"(1+2)"` | no | — | parentheses are outside the grammar |
-| `"1/0"` | no | — | zero divisor |
-| more than seven characters | no | — | input/output buffers need a terminator |
+| `"8/2/2+1"` | yes | 3 | division is left associative |
+| `"7%4+1*2"` | yes | 5 | remainder and multiplication precede addition |
+| `""` | no | — | shorter than seven tokens |
+| `"1+"` | no | — | too short and missing an operand |
+| `"12+3"` | no | — | too short and multi-digit operands unsupported |
+| `"1 +2"` | no | — | too short and spaces unsupported |
+| `"(1+2)"` | no | — | too short and parentheses unsupported |
+| `"1/0+2*3"` | no | — | zero divisor |
+| more than seven characters | no | — | exceeds fixed expression buffers |
 
-Core input assumptions are nonempty text of at most seven characters,
-single digits alternating with `+ - * / %`, no spaces/parentheses/unary
-operators/multi-digit operands, nonzero divisors, and representable `int`
-intermediate results. The current program assumes these conditions; it does
-not validate them. `1++2`, an empty expression, or a space is outside this
-contract, not a promised safe rejection. Arithmetic checks, explicit errors,
-and final operand-count validation are possible extensions.
+Core input has exactly seven characters: four single digits alternating with
+three `+ - * / %` operators, plus the terminator in `eq[7]`. No spaces,
+parentheses, unary operators, or multi-digit operands are supported. Divisors
+are nonzero and intermediates fit `int`. The source does not validate these
+conditions: an early terminator or unsupported character has precedence 0
+and can pop the sentinel, leading to an empty peek. These are limitations,
+not promised safe rejections. General parsing and checked arithmetic are
+extensions.
 
 ### E. Physical slot versus logical item — instructor answer
 
@@ -196,24 +196,21 @@ postfix buffer for arbitrary length would require `O(n)` output storage.
 
 ### G. Three meanings of stack
 
-The Stack ADT is LIFO behavior. `char stack[10]` plus `size` is one explicit
-representation. Runtime call-stack bookkeeping supports actual function
-calls. A character such as `'A'` is a teaching label; storing it does not
-create a runtime call frame. The variable's name does not enforce LIFO;
-`push`, `peek`, and `pop` implement the access rule. The local integer
-Stack is another explicit representation: `values[0..value_size - 1]` is an active
-prefix, as is the character array `stack[0..size - 1]`. These arrays have
-separate `size` variables; the local integer count hides the global name
-inside `eval_postfix()`.
+The Stack ADT is LIFO behavior. `int stack[10]` plus shared `size` is one
+explicit representation, reused across the two expression phases. Runtime
+call-stack bookkeeping supports actual C calls. A character such as `'A'`
+is a teaching label; storing it does not create a call frame. The variable
+name does not enforce LIFO; `push`, `peek`, and `pop` implement that rule.
 
 ### H. Exit ticket
 
-A complete response identifies `stack[size - 1]` as the top when `size > 0`,
-`size` as the count, increasing `size` on push/decreasing `size` on pop, and empty `'\0'` versus
-full no-op behavior. It separates global `size`, postfix `postfix_size`, and local integer `value_size`,
-states `1-2*3+4 -> 123*-4+ -> -1`, and names at least one assumption that is
-not checked. Questions can be sorted into behavior, indexes, representation,
-expression phases, C notation, or evidence needs.
+A complete response identifies the nonempty top as `stack[size - 1]`, the
+count as `size`, and the unchecked boundary preconditions. It distinguishes
+shared Stack count `size`, local output cursor `pos`, and seven-token length;
+explains the stored sentinel and shared-array resets; states
+`1-2*3+4 -> 123*-4+ -> -1`; and identifies at least one missing check.
+Questions can be sorted into behavior, indexes, representation, expression
+phases, C notation, or evidence needs.
 
 ## Current lab evidence and tests
 
@@ -222,21 +219,22 @@ The demo should report:
 ```text
 infix: 1-2*3+4
 postfix: 123*-4+
-postfix_size: 7
 result: -1
 ```
 
-The current `code/tests/test_lab.c` exercises character LIFO, full/empty
-boundaries, canonical conversion, precedence and operand order, repeated and
-shorter conversions, and the distinction between character digits and numeric
+The current `code/tests/test_lab.c` exercises integer LIFO, full/empty
+boundaries, canonical conversion, precedence and operand order, repeated seven-character
+conversions with shared-state resets, and the distinction between character digits and numeric
 results. Use `make lab-demo` and `make lab-tests` from `code`, or
 `build.ps1 -Target lab` and `build.ps1 -Target lab-tests` on PowerShell.
 
 Students add exactly three justified cases to the current lab test file:
 
 1. a LIFO sequence, such as pop then push a different visible character;
-2. a full/empty boundary case comparing `size` and all ten stored characters;
-3. a valid expression case checking postfix, `postfix_size`, and numeric result.
+2. a boundary-predicate or valid-operation case comparing `size` and all
+   ten stored integers, without invoking undefined behavior;
+3. a seven-character expression case checking `eq_re`, its terminator, final
+   `size`, and numeric result.
 
 Require rationale beyond repeating a supplied assertion. Suitable evidence
 includes a return/state trace, array snapshot, both expression-phase tables,

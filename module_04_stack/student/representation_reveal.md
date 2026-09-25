@@ -14,21 +14,20 @@ first item that may be removed.
 - `pop` removes and reports the top.
 
 An empty Stack has no top. **Underflow** means asking to inspect or remove an
-item from an empty Stack. The functions in `lab.c` return `'\0'` in that case.
-This is a character result, not a separate success flag.
+item from an empty Stack. The functions in `lab.c` do not check for it:
+callers must ensure a top exists before calling peek or pop.
 
-## 2. Store characters in a global fixed array
+## 2. Store integers in a global fixed array
 
 The current [lab.c](lab.c) declares:
 
 ```c
-char stack[10];
+int stack[10];
 int capacity = 10;
 int size = 0;
 ```
 
-These objects are global: the functions share one array and one next-free
-position.
+These objects are global: the functions share one array and its item count.
 The inquiry used function IDs 100, 200, and 300. The C lab uses character
 labels `'A'`, `'B'`, and `'C'` to illustrate the same return order. Storing a
 label does not create a real C function call.
@@ -44,7 +43,8 @@ This representation grows toward larger indexes:
 
 `capacity` is initialized to 10 and is used by the full check. The array
 still has exactly ten cells; changing a variable cannot resize that array.
-The global `postfix_size` introduced later counts postfix characters; it does not count items in this Stack.
+Conversion later uses a separate local output cursor `pos`; evaluation reuses
+this same array and `size` for numeric values.
 
 ## 3. State the invariant and operation behavior
 
@@ -57,13 +57,14 @@ active indexes: 0 through size - 1, or none when size == 0
 
 | Operation | Successful behavior | Boundary behavior |
 |---|---|---|
-| `push(data)` | Write `stack[size]`, then increase `size`; no return value | If full, return without changing `size` or the array |
-| `peek()` | Return `stack[size - 1]`; change nothing | If empty, return `'\0'`; change nothing |
-| `pop()` | Decrease `size`, read `stack[size]`, return that character | If empty, return `'\0'`; change nothing |
+| `push(int data)` | Write `stack[size++]`; no return value | Caller must ensure room |
+| `peek()` | Return integer `stack[size - 1]`; change nothing | Caller must ensure nonempty |
+| `pop()` | Decrease `size`, then return integer `stack[size]` | Caller must ensure nonempty |
 
 Pop leaves the old character in memory. The new `size` makes that cell
-inactive. These checks assume `size` already satisfies the invariant; they do
-not repair arbitrary changes to the global index.
+inactive. The full/empty predicates only report state; they are not guards
+inside these operations. A full push or empty peek/pop accesses outside the
+array and has undefined behavior, with no promised result or preserved state.
 
 ## 4. Trace the canonical function labels
 
@@ -84,6 +85,11 @@ in the same direction: after three pushes, `'A'` is at 0, `'B'` at 1, and
 
 ## 5. Transfer the rule in two phases
 
+The PPT first uses two Stacks to calculate directly: one holds waiting
+operators and the other holds numbers. In `1-2*3+4`, `+` triggers `2*3 = 6`
+and then `1-6 = -5` before `+` is stored. After 4 arrives, the final addition
+gives -1. Writing operators at those calculation times gives postfix order.
+
 The lab first converts **infix**, where operators appear between operands,
 into **postfix**, where an operator follows its two operands:
 
@@ -92,25 +98,29 @@ into **postfix**, where an operator follows its two operands:
   infix      postfix    result
 ```
 
-`infix_to_postfix()` uses the global character Stack for waiting operators.
-Digits go directly to `postfix`. `*`, `/`, and `%` have precedence 2; `+` and
+`infix_to_postfix()` uses the global integer Stack for waiting operators.
+Digits go directly to `eq_re`. `*`, `/`, and `%` have precedence 2; `+` and
 `-` have precedence 1. Waiting operators of equal or greater precedence move
 to the output before the incoming operator is pushed. This preserves left
 associativity: equal-precedence operators are applied from left to right.
 
-`eval_postfix()` then uses a separate local `int values[10]`. Its local `value_size` is a
-separate count with the same next-free convention as global `size`. It
-hides the global name within `eval_postfix()`; changing it does not change
-the character Stack count. Digits become numbers with `c - '0'`. For an
-operator, the right operand `num2` is removed before the left operand `num1`.
-`calc(num1, num2, c)` computes the result, which is put back into `values`.
+Conversion first resets `size`, initializes local `pos = 0`, and pushes
+`'\0'`. That stored sentinel has lower precedence than supported operators,
+so the operator-pop loop stops before the Stack becomes empty. After exactly
+seven input characters, the final drain includes this sentinel: it writes
+`eq_re[7] = '\0'`, leaves `size == 0`, and advances `pos` to 8.
 
-For this exercise, provide a nonempty alternating sequence of single digits
-and `+`, `-`, `*`, `/`, or `%`, at most seven characters in `infix[8]`. Use no
-spaces, parentheses, unary signs, or multi-digit operands. Divisors must be
-nonzero and all arithmetic must fit `int`. Begin conversion with the operator
-Stack empty. These are input assumptions: the current code does not validate
-malformed input, zero divisors, or integer overflow.
+`eval_postfix()` resets `size = 0` and reuses the same `int stack[10]` for
+numeric operands/results, without a sentinel. Digits become numbers with
+`c - '0'`. At an operator, pop right operand `num2` before left operand
+`num1`, then push `calc(num1, num2, c)`. The seven-token loop excludes the
+terminator. Its final `pop()` returns -1 and leaves `size == 0`.
+
+Provide exactly seven characters: four single digits alternating with three
+`+ - * / %` operators, plus a terminator in `eq[7]`. Use no spaces,
+parentheses, unary signs, or multi-digit operands. Divisors must be nonzero
+and arithmetic must fit `int`. Shorter expressions are unsupported. The
+current source assumes these conditions without validating them.
 
 ## 6. Prepare for the Cognitive Pause
 

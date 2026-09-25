@@ -8,34 +8,35 @@ Open this page after completing and preserving the Cognitive Pause.
 | data structure | A planned way to organize information in a program |
 | abstract data type (ADT) | A collection described by its operations and rules rather than a required storage method |
 | Stack ADT | An ADT that permits adding, inspecting, and removing at one end |
-| top | The accessible end of a Stack; in the character Stack, the nonempty top is at index `size - 1` |
+| top | The accessible end of a Stack; in the integer Stack, the nonempty top is at index `size - 1` |
 | last in, first out (LIFO) | The most recently added item is the first item that may be removed |
 | operation | One task provided by a data structure |
-| `push` | Add one item at the top; this character implementation writes at `size` before increasing it |
+| `push` | Add one item at the top; this integer implementation writes at `size` before increasing it |
 | `peek` | Report the top without removing it |
-| `pop` | Remove and report the top; this character implementation decreases `size` before reading |
-| empty Stack | No active items; the character Stack has `size == 0` |
-| underflow | A request to peek or pop an empty Stack; the character functions return `'\0'` |
-| full Stack | All ten character positions are active and `size == 10`; another push changes nothing |
+| `pop` | Decrease `size`, then return the integer at `stack[size]`; requires a nonempty Stack |
+| empty Stack | No active items; the integer Stack has `size == 0` |
+| underflow | A request to peek or pop an empty Stack; unchecked here, so callers must prevent it |
+| full Stack | All ten positions are active and `size == 10`; another push would access outside the array |
 | representation | A chosen way to store or show information |
 | fixed-capacity array | An array with a prepared number of positions that does not change |
 | character | One C `char` value, such as `'A'`, `'3'`, or `'*'` |
-| integer | A whole-number value; the local `values` array stores C `int` results |
+| integer | A whole-number value; global `stack` stores C `int` values and character codes |
 | call frame | Bookkeeping for an active function call; character labels are not real call frames |
 | array | A numbered row of values of one type |
 | index | A numbered array position; C begins at zero |
 | logical item | A stored value that belongs to the current Stack's active region |
 | inactive slot | A physical cell inside an array but outside the active region |
-| active prefix | Indexes 0 through `size - 1` in either Stack, using its own `size` |
-| `capacity` | The global initialized to 10 and used by the character Stack full check; the actual array has ten cells |
+| active prefix | Indexes 0 through `size - 1` in the shared Stack |
+| `capacity` | The global initialized to 10 and used by the `is_full()` predicate; the actual array has ten cells |
 | global variable | An object declared outside functions and shared by the functions that use it |
-| local variable | An object declared within a function or block, such as `values` and `size` |
-| `postfix_size` | Number of postfix characters produced, excluding the terminator; not character Stack item count |
-| `size` | Next insertion index and active item count; global `size` belongs to `stack`, while local `value_size` belongs to `values` |
-| null character | `'\0'`, used as a string terminator and as this Stack's empty peek/pop result |
+| local variable | An object declared within a function or block, such as conversion cursor `pos` |
+| `pos` | Local conversion cursor; next output index, ending at 8 after the sentinel write |
+| `size` | Shared global Stack item count and next insertion index, reset by each expression phase |
+| null character | `'\0'`, stored as the bottom conversion sentinel, then written as the output terminator |
+| sentinel | A real bottom Stack item of precedence 0 that stops valid operator reductions |
 | invariant | A rule true in every valid completed state, such as `0 <= size <= capacity` |
 | contract | Rules stating what a function assumes, changes, returns, and preserves |
-| preservation | Keeping required prior state unchanged, as with full push or empty peek/pop |
+| preservation | Keeping required prior state unchanged, as with a predicate or valid peek |
 | trace | A step-by-step record of changing state |
 | infix | Expression order with operators between operands, such as `1+2` |
 | postfix | Expression order with each operator after its operands, such as `12+` |

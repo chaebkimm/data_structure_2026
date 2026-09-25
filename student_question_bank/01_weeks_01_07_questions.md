@@ -205,49 +205,50 @@
 - What new support must Module 6 add before it can operate on undirected graphs?
 - How do the ArrayList, tree, and graph representations differ in their central invariant?
 
-## Week 4 — Character Stack and Postfix Evaluation
+## Week 4 — Integer Stack and Postfix Evaluation
 
 ### Meaning and mental model
 
 - Why must the newest saved item leave before older items?
 - How do push, peek, and pop differ?
 - Why can LIFO behavior stay the same when array indexes grow in a different direction?
-- How is the explicit character Stack different from runtime call bookkeeping?
+- How is the explicit integer Stack different from runtime call bookkeeping?
 
 ### Representation and invariants
 
-- Which indexes are active when `pos == 3`, and how many characters are stored?
-- Why does push write `stack[pos]` before incrementing, while peek reads `stack[pos - 1]`?
+- Which indexes are active when `size == 3`, and how many items are stored?
+- Why does push write `stack[size]` before incrementing, while peek reads `stack[size - 1]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `pos == 0` and `pos == 10` the empty and full states respectively?
+- Why are `size == 0` and `size == 10` the empty and full states respectively?
 
 ### Operations and C API
 
-- What does a full push do, and why does it return no value?
-- What do empty peek and pop return, and which state stays unchanged?
-- Why does a successful pop decrement `pos` before reading, without erasing its old cell?
+- Why must callers avoid full push even though `is_full()` exists?
+- Which out-of-bounds index would empty peek/pop select, and why is no return value promised?
+- Why does `pop()` decrement `size` before reading `stack[size]`, without erasing the old cell?
 - How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- Why does `pos` equal the count, while the nonempty top index is `pos - 1`?
-- How can an array snapshot prove that a full push changed nothing?
+- Why does `size` equal the count, while the nonempty top index is `size - 1`?
+- How can a snapshot show that a boundary predicate preserves state without calling an invalid operation?
 
 ### Expression conversion and evaluation
 
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do global `pos`, global `size`, and local `pos` describe different state?
+- How do shared global `size`, local output cursor `pos`, and token length describe different state?
+- Why does conversion count the sentinel in `size` and finish with `pos == 8`?
 
 ### Tests and debugging
 
 - Which tests distinguish empty, one-item, and full Stack states?
-- How can `8-3-2` distinguish left associativity from right associativity?
+- How can `8-3-2+1` distinguish left associativity from right associativity?
 - Why can a faulty top read stay inside the physical array and still be wrong?
-- Why do repeated conversion and a shorter replacement expression test both reset and termination?
+- Why do repeated seven-character conversions and prior active items test shared-state reset and termination?
 
 ### Complexity
 
@@ -258,10 +259,10 @@
 
 ### Safety and interpretation
 
-- Why do eight-character input and output arrays allow at most seven token characters?
+- Why do the fixed seven-iteration loops require exactly seven token characters, even for a shorter valid mathematical expression?
 - Which syntax restrictions are assumptions rather than validated rejections in this source?
 - Why must divisors be nonzero and intermediate integer results be representable?
-- Why can an empty-read sentinel be ambiguous if a caller stores `'\0'` as data?
+- How does the stored `'\0'` sentinel prevent an empty peek during valid conversion?
 
 ### Assignment and evidence
 
@@ -273,7 +274,7 @@
 ### Transfer and prerequisites
 
 - How does this active prefix reuse Chapter 1's count and next-insertion convention?
-- How can a later Stack use integer or pointer items while preserving LIFO?
+- How can a later Stack use pointer items while preserving the same LIFO rule?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
 

@@ -1,10 +1,12 @@
-# Week 4 — Character Stack and Postfix Evaluation: Vocabulary and Questions
+# Week 4 — Integer Stack and Postfix Evaluation: Vocabulary and Questions
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-Required scope: trace the current `student/lab.c` character Stack, its
-forward next-insertion position and full/empty behavior, then convert `1-2*3+4` to
-`123*-4+` and evaluate it as -1 using a separate integer value Stack. Describe
+Required scope: trace the current `student/lab.c` integer Stack, its
+forward growth with item count `size` and full/empty preconditions. First use the PPT’s direct
+calculation of `1-2*3+4` to explain why a number Stack remembers values while
+an operator Stack remembers waiting operations. Then convert `1-2*3+4` to
+`123*-4+` and evaluate it as -1 in the lab’s two separate phases. Describe
 the supported-input assumptions and missing validation accurately. The older
 checked integer API is optional legacy material.
 
@@ -18,24 +20,24 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 |---|---|
 | Stack | A collection whose accessible end is the top. |
 | last in, first out (LIFO) | The newest remaining item is the first item removed. |
-| top | The accessible end; its nonempty index is `pos - 1` in this source. |
-| `push` | Write one character at `pos`, then increment `pos`. |
-| `peek` | Return the top character without removal. |
-| `pop` | Decrement `pos`, then read and return the character there. |
-| empty Stack | No active characters; `pos == 0`. |
+| top | The accessible end; its nonempty index is `size - 1` in this source. |
+| `push` | Write integer data at `size`, then increment `size`; caller ensures room. |
+| `peek` | Return the top integer without removal; caller ensures nonempty. |
+| `pop` | Decrement `size`, then return integer `stack[size]`; caller ensures nonempty. |
+| empty Stack | No active items; `size == 0`. |
 | underflow | An inspection/removal request made while empty. |
-| full Stack | Ten active characters; `pos == 10`. |
+| full Stack | Ten active items; `size == 10`. |
 | fixed capacity | A number of available positions that does not grow. |
-| item count | `pos` for the character Stack. |
+| item count | `size` for the integer Stack. |
 | capacity | Ten positions here; the variable controls the full check but does not resize the array. |
-| active prefix | Character-Stack indexes 0 through `pos - 1`. |
+| active prefix | Shared Stack indexes 0 through `size - 1`. |
 | inactive slot | A physical array cell outside the active prefix. |
-| invariant | A rule true in every valid completed state, here `0 <= pos <= capacity`. |
+| invariant | A rule true in every valid completed state, here `0 <= size <= capacity`. |
 | representation | The physical storage and variables implementing the access rule. |
 | contract | Input assumptions, effects, returns, and preserved state. |
 | global state | Shared variables declared outside the functions. |
-| state preservation | Leaving `pos` and all stored characters unchanged on a boundary request. |
-| sentinel | A special returned value, here `'\0'` on an empty read. |
+| state preservation | Leaving state unchanged, as with a predicate or a valid peek. |
+| sentinel | A real bottom `'\0'` item in conversion, later drained as the output terminator. |
 | function label | An abstract name used to model unfinished work. |
 | runtime call stack | Runtime bookkeeping for actual active function calls. |
 | operand | A number used by an operator. |
@@ -47,15 +49,16 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 | postfix | Expression notation with an operator after its operands. |
 | conversion | Rearranging infix tokens into postfix order. |
 | expression evaluator | Code that computes a number from expression tokens. |
-| number Stack | Local `int values[10]` containing operands and results. |
-| operator Stack | Global character Stack holding waiting operators during conversion. |
+| number Stack | Shared `int stack[10]` reused for numeric operands and results during evaluation. |
+| operator Stack | The same global integer Stack holding operator codes and the bottom sentinel during conversion. |
 | single-digit operand | One character from `'0'` through `'9'` converted to a number. |
 | token | One operand or operator character. |
 | grammar | The allowed order and kinds of tokens. |
 | input assumption | A condition the current code expects without necessarily checking. |
 | null terminator | The `'\0'` character marking the end of a C string. |
-| postfix length | Global `size`, excluding the terminating null character. |
-| `pos` | The next insertion index and count; global for `stack`, separately local for `values`. |
+| postfix length | Seven token characters, excluding the terminator at `eq_re[7]`. |
+| `size` | Shared global item count and next insertion index, reset at each expression phase. |
+| `pos` | Local conversion cursor, ending at 8 after seven tokens and the sentinel are written. |
 | intermediate result | A numeric result used by a later operation, such as -5. |
 | time complexity | How the amount of work changes with input length. |
 | `O(1)` | A fixed amount of work or reserved storage in this program. |
@@ -68,42 +71,43 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 - Why must the newest saved item leave before older items?
 - How do push, peek, and pop differ?
 - Why can LIFO behavior stay the same when array indexes grow in a different direction?
-- How is the explicit character Stack different from runtime call bookkeeping?
+- How is the explicit integer Stack different from runtime call bookkeeping?
 
 ### Representation and invariants
 
-- Which indexes are active when `pos == 3`, and how many characters are stored?
-- Why does push write `stack[pos]` before incrementing, while peek reads `stack[pos - 1]`?
+- Which indexes are active when `size == 3`, and how many items are stored?
+- Why does push write `stack[size]` before incrementing, while peek reads `stack[size - 1]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `pos == 0` and `pos == 10` the empty and full states respectively?
+- Why are `size == 0` and `size == 10` the empty and full states respectively?
 
 ### Operations and C API
 
-- What does a full push do, and why does it return no value?
-- What do empty peek and pop return, and which state stays unchanged?
-- Why does a successful pop decrement `pos` before reading, without erasing its old cell?
+- Why must callers avoid full push even though `is_full()` exists?
+- Which out-of-bounds index would empty peek/pop select, and why is no return value promised?
+- Why does `pop()` decrement `size` before reading `stack[size]`, without erasing the old cell?
 - How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- Why does `pos` equal the count, while the nonempty top index is `pos - 1`?
-- How can an array snapshot prove that a full push changed nothing?
+- Why does `size` equal the count, while the nonempty top index is `size - 1`?
+- How can a snapshot show that a boundary predicate preserves state without calling an invalid operation?
 
 ### Expression conversion and evaluation
 
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do global `pos`, global `size`, and local `pos` describe different state?
+- How do shared global `size`, local output cursor `pos`, and token length describe different state?
+- Why does conversion count the sentinel in `size` and finish with `pos == 8`?
 
 ### Tests and debugging
 
 - Which tests distinguish empty, one-item, and full Stack states?
-- How can `8-3-2` distinguish left associativity from right associativity?
+- How can `8-3-2+1` distinguish left associativity from right associativity?
 - Why can a faulty top read stay inside the physical array and still be wrong?
-- Why do repeated conversion and a shorter replacement expression test both reset and termination?
+- Why do repeated seven-character conversions and prior active items test shared-state reset and termination?
 
 ### Complexity
 
@@ -114,10 +118,10 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 ### Safety and interpretation
 
-- Why do eight-character input and output arrays allow at most seven token characters?
+- Why do the fixed seven-iteration loops require exactly seven token characters, even for a shorter valid mathematical expression?
 - Which syntax restrictions are assumptions rather than validated rejections in this source?
 - Why must divisors be nonzero and intermediate integer results be representable?
-- Why can an empty-read sentinel be ambiguous if a caller stores `'\0'` as data?
+- How does the stored `'\0'` sentinel prevent an empty peek during valid conversion?
 
 ### Assignment and evidence
 
@@ -129,7 +133,7 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 ### Transfer and prerequisites
 
 - How does this active prefix reuse Chapter 1's count and next-insertion convention?
-- How can a later Stack use integer or pointer items while preserving LIFO?
+- How can a later Stack use pointer items while preserving the same LIFO rule?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
 

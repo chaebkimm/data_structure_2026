@@ -43,7 +43,7 @@ issued as a second weekly programming submission.
 | 1 | Fixed-capacity ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1: access, search, append, insert, and remove | Additional boundary and operation-sequence tests | [Week 1 page](student_question_bank/week_01_arraylist.md) |
 | 2 | Array-indexed expression trees and recursive evaluation — [Module 2](module_02_binary_tree/README.md), with English and Korean textbooks | Ordinary lab 2: `new_node`, `term`, `terms`, and `eval_tree` | Additional valid expressions and construction/evaluation traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
 | 3 | Directed integer adjacency matrices — [Module 3](module_03_graph/README.md) core | Ordinary lab 3: initialize, add, remove, and count outgoing edges | Additional valid directed fixtures and traces | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
-| 4 | Character Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: forward-growing character Stack and `1-2*3+4 -> 123*-4+ -> -1` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
+| 4 | Integer Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: forward-growing integer Stack and `1-2*3+4 -> 123*-4+ -> -1` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
 | 5 | Preorder, inorder, and postorder using explicit stacks without recursion — [Module 5 textbook](module_05_tree_dfs/student/textbook.md) | Ordinary lab 5; existing package exercise remains separate from the textbook examples | Additional tree shapes and stack traces | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer — [Module 7](module_07_queue/README.md) core | Ordinary lab 6 | Package extensions | [Week 7 page](student_question_bank/week_07_queue.md) |
@@ -57,25 +57,34 @@ issued as a second weekly programming submission.
 
 ## Required scope decisions
 
-### Week 4 — Current character-Stack lab
+### Week 4 — Current integer-Stack lab
 
 The required source is [Module 4 `student/lab.c`](module_04_stack/student/lab.c).
-Trace A, B, C with empty `pos == 0`, full `pos == capacity`, active indexes
-`0..pos - 1`, and next insertion index and item count `pos`. Full push is a silent no-op; empty
-peek/pop return the null character and preserve state. Separate conversion
-from evaluation: global `pos` counts character-Stack items, global `size`
-counts postfix characters, and a separate local `pos` counts integer values.
-The canonical expression converts to `123*-4+` with
-size 7 and evaluates to -1.
+Trace A, B, C as character codes in `int stack[10]`, with empty `size == 0`,
+full `size == capacity`, active indexes `0..size - 1`, and item count and next
+insertion index `size`. Push writes with `stack[size++]`; peek reads
+`stack[size - 1]`; pop decrements before reading with `stack[--size]`.
+The full/empty predicates only report state. Callers must avoid a full push
+or an empty peek/pop; those operations are unchecked.
 
-Core examples assume valid nonempty expressions of at most seven characters,
-with alternating single digits and `+ - * / %`, no spaces, parentheses,
-unary operators, or multi-digit operands, nonzero divisors, and representable
-integer intermediates. Those assumptions are not a promise of safe rejection.
-Use the current lab demo/tests and three justified added LIFO, boundary, and
-valid-expression cases. The checked caller-owned integer library remains an
-optional extension, not a second required assignment. Preserve the five
-release gates, three-target pause, and standard/linear response alternatives.
+First use the PPT’s direct two-Stack calculation of `1-2*3+4` to explain
+waiting operators and values. The lab then separates conversion and evaluation
+while reusing the same global integer Stack. Conversion resets `size`, pushes
+`'\0'` at the bottom, and writes to `eq_re` using local output position `pos`.
+Draining the sentinel writes `eq_re[7] = '\0'` and leaves `pos == 8` and
+`size == 0`. Evaluation resets `size` again, processes the seven postfix
+tokens, and returns the final pop. The canonical expression becomes
+`123*-4+` and evaluates to -1.
+
+Core examples assume exactly seven characters in `eq[8]`: four single digits
+alternating with three operators from `+ - * / %`. Both loops run seven times.
+Shorter strings, spaces, parentheses, unary signs, and multi-digit operands
+are unsupported. Divisors must be nonzero and integer intermediates
+representable. These assumptions are not checked rejections.
+Use the current lab demo/tests and three justified added LIFO, boundary-predicate,
+and valid-expression cases. The checked caller-owned integer library remains an
+optional extension. Preserve the five release gates, three-target pause,
+and standard/linear response alternatives.
 
 ### Week 5 — Tree DFS
 

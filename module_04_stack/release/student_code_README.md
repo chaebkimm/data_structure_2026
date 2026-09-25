@@ -10,28 +10,32 @@ the stack and expression functions; it has no `main` function.
 - `autopsy/faulty_top.c` is an isolated program with a deliberate logical
   defect. Predict its output before running it.
 
-The baseline groups cover character LIFO order, full/empty boundaries,
-canonical conversion, precedence and operand order, repeated/shorter
-conversion, and character digits versus integer values. Record the original
+The baseline groups cover integer LIFO order, full/empty predicates and valid boundary operations,
+canonical conversion, precedence and operand order, repeated seven-character
+conversion with shared-state resets, and character digits versus integer values. Record the original
 behavior before making source changes or adding tests.
 
 ## Representation and input limits
 
-`char stack[10]` stores pending operators. Empty means `size == 0`; full means
-`size == capacity` (10 here). Pushing writes `stack[size]`, then increments
-`size`; popping decrements `size`, then reads `stack[size]`. `postfix_size` counts postfix tokens; it is not the operator-stack
-size. Postfix evaluation uses a separate local `int values[10]` with `size` as
-the next free position. Its local `value_size` is a separate variable that hides
-the global character count inside `eval_postfix()`.
+`int stack[10]` stores operator codes and a bottom `'\0'` sentinel during
+conversion, then numeric operands/results during evaluation. `size` is the
+shared item count and next insertion index. Push writes `stack[size++]`;
+pop returns `stack[--size]`; peek returns `stack[size - 1]`. The predicates
+`is_full()` and `is_empty()` report boundaries but do not guard operations.
+Callers must avoid full push and empty reads, which have undefined behavior.
 
-The default pipeline is `1-2*3+4` → `123*-4+` → `-1`. Supported experiments
-use syntactically valid expressions of at most seven characters, single-digit
-operands, and binary `+`, `-`, `*`, `/`, or `%` operators. Start with an empty
-operator stack, avoid zero divisors, and keep integer results representable.
-Spaces, parentheses, unary signs, multi-digit operands, and malformed input
-are outside this implementation. The program does not check all of these
-preconditions; passing valid-input tests does not establish safe handling of
-invalid input.
+Both phases reset `size`. Conversion also initializes local `pos = 0` and
+pushes the sentinel. Its final drain writes that sentinel to `eq_re[7]`,
+advancing `pos` to 8; visible token length is 7. Evaluation reuses the same
+integer array without a sentinel, then returns the final pop and leaves
+`size == 0`.
+
+The default pipeline is `1-2*3+4` → `123*-4+` → `-1`. Supported expressions
+have exactly seven characters: four single digits alternating with three
+binary `+ - * / %` operators. `eq[7]` holds the terminator. Shorter expressions
+are unsupported because both loops run seven times. Exclude spaces,
+parentheses, unary signs, multi-digit operands, zero divisors, and arithmetic
+outside C `int`. The source assumes these conditions without validating them.
 
 ## PowerShell
 
@@ -66,9 +70,7 @@ use `make CC=clang lab-tests` for Clang. For Clang or GCC with sanitizers:
 make CC=clang CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g -fsanitize=address,undefined -fno-omit-frame-pointer' lab-tests
 ```
 
-Some compilers warn about the current source's old-style empty parameter
-lists, such as `is_full()`. A `(void)` parameter list explicitly declares no
-parameters in C11. `-Wshadow` also reports local `value_size` hiding global `size`;
-these are separate variables for the two Stacks. The supplied source is not
-claimed to be warning-clean.
+Compilers may warn about empty parameter lists such as `is_full()` and
+about narrowing integer operator codes to `char`. A `(void)` parameter list explicitly declares no
+parameters in C11. The supplied source is not claimed to be warning-clean.
 Run `make clean` to remove generated files in `build`.

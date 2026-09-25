@@ -5,8 +5,8 @@
 This module begins the third Linear → Tree → Graph spiral. It retrieves:
 
 - fixed indexed storage, bounds checks, and rejection contracts from Module 1;
-- the Stack abstract data type (ADT), last-in, first-out rule, full-push
-  no-op, and empty-read null-character behavior from Module 4;
+- the Stack abstract data type (ADT), last-in, first-out rule, and caller
+  preconditions for unchecked push/peek/pop from Module 4;
 - owned-storage responsibilities introduced in Modules 5 and 6; and
 - the habit of separating a scheduling rule from its storage
   representation, reinforced in Modules 5 and 6.

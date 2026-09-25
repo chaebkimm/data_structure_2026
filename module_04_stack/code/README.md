@@ -3,7 +3,7 @@
 ## Current lab
 
 [../student/lab.c](../student/lab.c) defines a forward-growing global
-character Stack and two expression phases. `lab_demo.c` supplies `main`;
+integer Stack and two expression phases. `lab_demo.c` supplies `main`;
 `tests/test_lab.c` checks its documented behavior. Compile either harness
 with the lab source, not both harnesses together.
 
@@ -46,9 +46,8 @@ cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g \
 ```
 
 The supplied lab still uses `()` for six parameterless definitions. Some
-compilers warn about these missing prototypes; use `(void)` when revising
-them. With `-Wshadow`, local `value_size` also warns because it hides global `size`.
-These are separate variables for the two Stacks. A successful build is not
+compilers warn about these missing prototypes and int-to-char conversions; use `(void)` when revising
+them. A successful build is not
 evidence that the expression parser checks invalid inputs.
 
 ## Demo output
@@ -56,35 +55,37 @@ evidence that the expression parser checks invalid inputs.
 ```text
 infix: 1-2*3+4
 postfix: 123*-4+
-postfix_size: 7
 result: -1
 ```
 
-The tests cover six groups: character LIFO, full/empty boundaries,
-canonical conversion, precedence and operand order, repeated/shorter
-conversion, and character digits versus integer values. An unchanged
+The tests cover six groups: integer LIFO, full/empty predicates and valid boundary operations,
+canonical conversion, precedence and operand order, repeated seven-character
+conversion with shared-state resets, and character digits versus integer values. An unchanged
 baseline ends with `6 lab test(s), 0 failure(s)`. Add three justified cases
 to this file and record predictions as part of the lab evidence.
 
-## Input assumptions
+## Input assumptions and shared state
 
-Use nonempty expressions of alternating single digits and binary
-`+`, `-`, `*`, `/`, `%`. The eight-character string arrays allow at most
-seven expression characters and their null terminator. The operator Stack
-starts empty. Exclude whitespace, parentheses, unary operators, multi-digit
-operands, zero divisors, and nonrepresentable arithmetic results.
+Use exactly seven expression characters: four single digits alternating with
+three binary `+ - * / %` operators, with `'\0'` in `eq[7]`. Both expression
+loops run seven iterations, so shorter strings are unsupported. Exclude
+spaces, parentheses, unary signs, multi-digit operands, zero divisors, and
+nonrepresentable arithmetic results.
 
-The current functions do not validate these assumptions or return failure
-status. Unsupported characters can overrun the postfix buffer; malformed
-operands can underflow the local integer Stack; division/remainder by zero
-and overflow are unchecked. The core tests stay within the supported
-domain. Discuss rejection checks as extensions before expecting invalid
-inputs to run safely.
+`int stack[10]` is shared by both phases. Push writes `stack[size++]`; pop
+returns `stack[--size]`; peek returns `stack[size - 1]`. Full/empty predicates
+only report state. Callers must avoid full push and empty reads: the source
+has no guards or safe rejection contract. `capacity` affects the full
+predicate without resizing storage or stopping push.
 
-Global `size` is the next insertion index and character count, `postfix_size` counts
-postfix characters without the terminator, and local `value_size` counts integer
-values during evaluation. The two `size` variables are separate. `capacity`
-is initialized to 10 and controls the full check; the array has ten cells.
+Conversion resets `size`, initializes local `pos = 0`, and pushes `'\0'`.
+The final drain writes that sentinel to `eq_re[7]`, ending with `pos == 8`
+and `size == 0`. Evaluation resets `size` again, reuses `stack` for integers,
+processes seven tokens, and returns its final `pop()`, leaving `size == 0`.
+
+Malformed syntax, output bounds, operand counts, division/remainder by zero,
+and signed overflow are unchecked. Tests exercise supported inputs and
+valid Stack calls only; discuss unsupported cases as paper diagnoses.
 
 ## Isolated autopsy
 

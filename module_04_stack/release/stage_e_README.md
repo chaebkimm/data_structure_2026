@@ -1,8 +1,9 @@
 # Module 4 — Stage E: Lab and Evidence
 
 Start with `student/lab.md`, then study and trace `student/lab.c`. This is the
-program used throughout the module: a fixed character stack whose `size`
-moves forward, infix-to-postfix conversion, and integer postfix evaluation.
+program used throughout the module: a fixed integer stack counted by `size`,
+infix-to-postfix conversion with a stored sentinel, and postfix evaluation
+that resets and reuses the same Stack.
 The initial expression is `1-2*3+4`; its postfix form is `123*-4+` and its
 result is `-1`.
 
@@ -15,7 +16,8 @@ supplied checks with `make lab-tests`. PowerShell users can run
 `code/README.md` for compiler setup and sanitizer options. `lab.c` has no
 `main`; the demonstration and tests supply separate entry points.
 
-Use valid expressions within the lab's documented limits. The source does
+Use exactly-seven-character expressions within the lab's documented limits,
+and respect the unchecked push/peek/pop preconditions. The source does
 not yet validate malformed input, buffer limits, or zero divisors; identifying
 those limits is part of the lab. Extend `code/tests/test_lab.c` with three
 justified cases while preserving the supplied checks. The Stack-Top Autopsy

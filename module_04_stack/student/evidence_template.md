@@ -58,44 +58,46 @@ not resize the ten-cell array?
 
 ____________________________________________________________________
 
-Distinguish global `size`, global `postfix_size`, and local `value_size`. Which two structures
-use the same next-insertion convention with separate variables?
+Distinguish global `size`, local conversion cursor `pos`, and postfix token
+length. How do the two phases reuse the same array and count?
 
 ____________________________________________________________________
 
 ## 4. Boundary behavior
 
-For each case, record the return, final `size`, and whether any array cell
-changes. Include evidence for preserved state.
+For valid operations, record the return, final `size`, and array contents.
+For invalid calls, identify the out-of-bounds index on paper; do not execute
+them or promise a deterministic return or preserved final state.
 
-1. `push('K')` when all ten character positions are active.
-2. `peek()` when empty.
-3. `pop()` when empty.
-4. Successful pop followed by peek of the newly exposed character.
+1. Observe `is_full()` after ten valid pushes; explain why an eleventh push is invalid.
+2. Observe `is_empty()` when `size == 0`; explain why peek is invalid.
+3. Explain the decrement and invalid index of empty pop.
+4. Execute a valid pop followed by peek of the newly exposed item.
 
 ____________________________________________________________________
 
-Why is returning `'\0'` not a separate success flag? What assumption about
-ordinary test characters avoids ambiguity?
+Why is the conversion sentinel a stored item rather than an empty-read result?
+Which caller checks prevent invalid primitive calls?
 
 ____________________________________________________________________
 
 ## 5. Expression transfer
 
 Trace conversion of `1-2*3+4`. At each token, record the character operator
-Stack, `size`, postfix prefix, and `postfix_size`. Explain the final terminator and
-why the operator Stack is empty afterward.
+Stack (including the sentinel), `size`, postfix prefix, and local `pos`.
+Explain why draining the sentinel writes the final terminator, advances `pos`
+to 8, and leaves the operator Stack empty afterward.
 
 ____________________________________________________________________
 
 Trace evaluation of the completed postfix. At each token, record the integer
-`values` Stack, `size`, and any calculation. Explain `c - '0'` and why `num2`
+`stack` values, global `size`, and any calculation. Explain `c - '0'` and why `num2`
 is popped before `num1`.
 
 ____________________________________________________________________
 
-State the permitted operators, seven-character bound, operand format,
-initial-Stack requirement, and arithmetic assumptions.
+State the permitted operators, exactly-seven-character requirement, operand
+format, phase-entry resets, and arithmetic assumptions.
 
 ____________________________________________________________________
 
@@ -111,13 +113,14 @@ ____________________________________________________________________
 | Canonical A, B, C LIFO trace | | | |
 | Peek preserves `size` and array | | | |
 | Pop exposes previous character without erasing the old cell | | | |
-| Full push preserves all ten cells and `size` | | | |
-| Empty peek/pop return `'\0'` and preserve state | | | |
+| Full predicate reports true after ten valid pushes; no eleventh push is called | | | |
+| Empty predicate reports true after draining; no empty read is called | | | |
 | `1-2*3+4` converts to `123*-4+`, length 7 | | | |
 | Canonical postfix evaluates to `-1` | | | |
 | Equal-precedence operators remain left associative | | | |
 | Noncommutative operands have the correct order | | | |
-| A second, shorter valid conversion resets `postfix_size` and terminates output | | | |
+| Repeated seven-character conversion resets `size` and local `pos`; sentinel terminates output | | | |
+| Evaluation discards prior active items by resetting shared `size` | | | |
 | Character digits become numeric values | | | |
 
 ### Three student-authored cases
@@ -150,14 +153,14 @@ ____________________________________________________________________
 
 | Work | Cost | Reason |
 |---|---|---|
-| Character push | | |
-| Character peek | | |
-| Character pop | | |
+| Valid integer push | | |
+| Valid integer peek | | |
+| Valid integer pop | | |
 | Convert `n` valid infix tokens | | |
 | Evaluate `n` valid postfix tokens | | |
 | Storage with the present fixed arrays | | |
 
-Explain the current seven-token limit and how storage would change if the
+Explain the current exactly-seven-token requirement and how storage would change if the
 arrays grew with input length.
 
 ____________________________________________________________________
@@ -165,8 +168,8 @@ ____________________________________________________________________
 ## 8. Three uses of “stack”
 
 Distinguish the Stack ADT, the runtime call stack, and this lab's global
-character array. Explain why the local integer `values` array is also a
-Stack representation even though its variable is not named `stack`.
+integer array. Explain how its active values change from operator codes
+and a sentinel to numeric operands and results across the two phases.
 
 ____________________________________________________________________
 

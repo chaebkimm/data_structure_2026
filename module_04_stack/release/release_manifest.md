@@ -20,12 +20,12 @@ code, solution, or instructor material.
 
 Release after initial return-order models are preserved:
 
-- fixed character-array representation reveal;
+- fixed integer-array representation reveal;
 - exactly-three-target Cognitive Pause; and
 - vocabulary reference, opened only after the pause response is preserved.
 
 The reveal connects the abstract function-return trace to characters
-`'A'`, `'B'`, and `'C'` in `lab.c`'s concrete `char stack[10]`. Its active range
+`'A'`, `'B'`, and `'C'` in `lab.c`'s concrete `int stack[10]`. Its active range
 is `stack[0]` through `stack[size - 1]` when nonempty, with `0 <= size <= capacity`. The pause preserves
 return-order reasoning, boundary decisions, and expression-precedence
 transfer. Approved timing or response accommodations retain those same
@@ -38,11 +38,11 @@ Release after the pause and instructor calibration:
 - standard investigation worksheet;
 - linear accessible investigation worksheet.
 
-This stage asks about LIFO operations, forward-moving `size`, fixed storage,
+This stage asks about LIFO operations, an active prefix counted by `size`, fixed storage,
 boundary behavior, operator precedence, postfix evaluation, and inactive
-slots without supplying instructor answers. The postfix token count `postfix_size`
-and the evaluator's local next-free position `size` are separate from the
-character Stack's global `size`. Both Stacks use the same count convention.
+slots without supplying instructor answers. Conversion uses local output
+cursor `pos` and a stored sentinel; both phases reset and reuse the same
+global integer array and `size`. Inputs have exactly seven token characters.
 
 ## Stage D — Textbook and Models
 
@@ -90,9 +90,8 @@ Before release:
 1. Run the lab demonstration and supplied lab tests using `../code/README.md`.
 2. Build and run the isolated Stack-Top Autopsy after recording its prediction.
 3. Review compiler output. The current `lab.c` uses old-style empty parameter
-   lists and may produce prototype warnings. With `-Wshadow`, local `value_size`
-   also warns because it hides global `size`; do not describe the source as
-   warning-clean.
+   lists and integer-to-character assignments that may produce prototype
+   or narrowing warnings; do not describe the source as warning-clean.
 4. Inspect all five source/entry lists for unique, existing paths.
 5. Verify Stage A has no formal vocabulary and Stage D has no autopsy answer.
 6. Inspect Stage E contents for instructor files and older exercise files,

@@ -6,9 +6,9 @@ another person to repeat a check against `student/lab.c`.
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
 | Stack model and canonical trace | 20 | LIFO and `'A'`, `'B'`, `'C'` trace are correct; returns, physical indexes, and bottom-to-top logical states agree |
-| Character Stack operations | 25 | `size` increases on push and decreases on pop; full push is a no-op; empty peek/pop return `'\0'`; unchanged state is demonstrated |
-| Representation and limits | 20 | `0 <= size <= capacity`, active prefix, inactive cells, capacity and empty boundaries, and the distinct meanings of global `size`, global `postfix_size`, and local `value_size` are explained |
-| Two expression phases | 15 | `1-2*3+4` becomes `123*-4+` with `postfix_size == 7`, then evaluates to `-1`; precedence, left associativity, operand order, termination, and input assumptions are accurate |
+| Integer Stack operations | 25 | `push` writes before incrementing; `pop` decrements before reading; full/empty predicates and caller preconditions are accurate; invalid calls are not treated as safe |
+| Representation and limits | 20 | `0 <= size <= capacity`, active prefix, inactive cells, capacity and empty boundaries, and the distinct meanings of shared global `size`, local `pos`, and seven-token length are explained |
+| Two expression phases | 15 | `1-2*3+4` becomes `123*-4+` with seven tokens, a sentinel terminator at `eq_re[7]`, and final `pos == 8`, then evaluates to `-1`; precedence, left associativity, operand order, termination, and input assumptions are accurate |
 | Tests and tool evidence | 10 | Three justified new cases extend `test_lab.c`; demo, passing lab tests, commands, and actual compiler diagnostics are recorded |
 | Autopsy and cost reasoning | 10 | The inactive-cell read is distinguished from the correct top; physical bounds and logical correctness are separated; operation and expression costs are explained |
 | **Total** | **100** | |
@@ -18,8 +18,8 @@ another person to repeat a check against `student/lab.c`.
 ### Exceeds expectations
 
 The student predicts unfamiliar valid states, tests preservation deliberately,
-and explains how character conversion and integer evaluation use different
-representations of the same LIFO rule.
+and explains how operator conversion and integer evaluation reuse the
+same Stack while preserving the LIFO rule.
 
 ### Meets expectations
 
@@ -28,7 +28,7 @@ the claims, and unchecked input assumptions are identified honestly.
 
 ### Developing
 
-Common cases work, but boundary preservation, index direction, `postfix_size` versus
+Common cases work, but caller preconditions, index direction, `pos` versus
 `size`, operand order, or reproducible evidence still needs guidance.
 
 ### Beginning

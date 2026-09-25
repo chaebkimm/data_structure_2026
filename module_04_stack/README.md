@@ -1,6 +1,6 @@
 # Module 4 Teaching Package
 
-## Character Stack, Infix-to-Postfix Conversion, and Evaluation
+## Integer Stack, Infix-to-Postfix Conversion, and Evaluation
 
 This package is the Linear stage of the second Linear → Tree → Graph
 spiral in **Data Structures Course 2026**. Its current implementation is
@@ -14,7 +14,7 @@ Students begin by predicting the order of unfinished function calls before
 being given Stack vocabulary. The conceptual IDs 100, 200, and 300 are
 later represented by character labels `'A'`, `'B'`, and `'C'`. Keep the
 initial reasoning, then revise it with a concrete array trace. Neither
-these labels nor the character array is a real runtime call frame.
+these labels nor the integer array is a real runtime call frame.
 
 ## Module question
 
@@ -24,20 +24,20 @@ these labels nor the character array is a real runtime call frame.
 ## Authoritative model
 
 ```c
-char stack[10];
+int stack[10];
 int capacity = 10;
 int size = 0;
 ```
 
-The global character Stack grows toward larger indexes. Its invariant is
-`0 <= size <= capacity`; active items occupy indexes 0 through `size - 1`. Empty means
-`size == 0`, full means `size == 10`, and the active count is `size`.
-Push writes `stack[size]` and then increases `size`. Peek reads `stack[size - 1]`
-when nonempty; pop decreases `size` and then reads `stack[size]`, without
-erasing the array cell.
-A full push does nothing. Empty peek/pop return `'\0'`. There is no
-separate status output. `capacity` is initialized to 10 and controls the full
-check; the array itself still has a fixed ten-cell allocation.
+The global integer Stack grows toward larger indexes. With `capacity == 10`,
+callers maintain `0 <= size <= capacity`; active items occupy 0 through
+`size - 1`. The count and next insertion index are `size`, and the nonempty
+top is `stack[size - 1]`. Push writes `stack[size++]`; pop reads
+`stack[--size]`. Neither erases or shifts earlier cells.
+
+`is_full()` and `is_empty()` report boundaries but do not guard push, peek,
+or pop. A full push or an empty read has undefined behavior. `capacity`
+controls the full predicate only, and changing it does not resize the array.
 
 Expression processing has two phases:
 
@@ -46,23 +46,30 @@ infix_to_postfix():  1-2*3+4 → 123*-4+
 eval_postfix():      123*-4+ → -1
 ```
 
-Conversion uses the global character Stack for operators. `postfix_size` counts
-postfix characters, excluding the terminating null. It is reset before
-each conversion. Evaluation uses its own `int values[10]`, with `size`
-counting active integers. The first value popped is the right operand.
+The PPT first calculates directly with conceptual operator and value Stacks:
+an incoming `+` causes `2*3` to become 6, then `1-6` to become -5. Writing
+operators at their calculation times produces `123*-4+`. The C lab separates
+this ordering work from arithmetic and reuses the same global integer array.
 
-The input assumption is one digit followed by zero or more operator/digit
-pairs. Operators are `+`, `-`, `*`, `/`, `%`; multiplication, division,
-and remainder have higher precedence. Equal precedence is left associative.
-Both strings have eight positions, so an input must fit in seven characters
-plus `'\0'`. There are no spaces, parentheses, unary operators, or multi-digit
-operands. Divisors must be nonzero and intermediate results representable as
-`int`. Conversion starts with an empty operator Stack.
+Conversion initializes local `pos = 0`, resets `size = 0`, and pushes a
+`'\0'` sentinel. It scans exactly seven `eq` characters and writes postfix
+tokens to `eq_re`. The final drain writes the sentinel to `eq_re[7]`: `pos`
+ends at 8, visible token length is 7, and `size` is 0. Evaluation resets
+`size` again, scans exactly seven tokens, and reuses `stack` for integer
+operands/results. It pops the right operand first; the final pop returns
+-1 and leaves `size == 0`.
 
-The expression functions do **not** enforce all these assumptions. Invalid
-characters can cause an unbounded pop loop, malformed operands can underflow
-the value Stack, and zero divisors/overflow are unchecked. These limitations
-are discussion and extension work; safe rejection is not a core guarantee.
+Supported input is exactly seven characters: four single digits alternating
+with three binary operators from `+ - * / %`, then a terminator in `eq[7]`.
+Multiplication, division, and remainder have higher precedence; equal
+precedence is left associative. Exclude spaces, parentheses, unary operators,
+and multi-digit operands. Divisors must be nonzero and intermediates must fit
+C `int`. Shorter strings are unsupported because both loops run seven times.
+
+The functions assume this grammar and arithmetic domain. Invalid characters,
+early terminators, and missing operands can lead to out-of-bounds accesses;
+zero divisors and overflow are unchecked. Safe rejection is an extension,
+not a guarantee of the current source.
 
 ## Core learning targets
 
@@ -71,11 +78,11 @@ Students will be able to:
 1. explain LIFO and distinguish push, peek, and pop;
 2. trace `'A'`, `'B'`, `'C'` through indexes 0, 1, and 2;
 3. distinguish the top index, active item count, and inactive slots;
-4. state the actual full/empty behavior of the character functions;
+4. state the actual full/empty preconditions of the integer Stack functions;
 5. convert infix to postfix using precedence and left associativity;
 6. evaluate postfix with correct left/right operand order;
 7. distinguish character digits from integer intermediate results;
-8. explain global `size`, global `postfix_size`, local `value_size`, and the null terminator;
+8. explain shared `size`, local `pos`, the stored sentinel, and the null terminator;
 9. justify constant-time Stack operations and linear expression processing;
 10. identify assumptions that would need checks in a more general evaluator.
 
@@ -115,10 +122,9 @@ solutions are excluded.
 Submit `student/lab.c`, `code/tests/test_lab.c` with three additional
 justified cases, predictions and observed test/build output, the completed
 evidence and autopsy records, and the preserved/revised Cognitive Pause.
-Existing `()` declarations can produce prototype warnings; use `(void)`
-when revising parameterless definitions. `-Wshadow` also reports local `value_size`
-hiding global `size`; explain their separate scopes and record diagnostics
-honestly.
+Existing `()` declarations can produce prototype warnings; integer-to-character
+assignments can produce narrowing warnings. Use `(void)` when revising
+parameterless definitions, and record diagnostics honestly.
 
 ## Optional earlier checked implementation
 

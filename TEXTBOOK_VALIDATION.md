@@ -2,6 +2,101 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 4 Shared Integer Stack and Sentinel — September 25, 2026
+
+The authoritative `module_04_stack/student/lab.c` now uses global
+`int stack[10]` and `size` for both phases. Push uses `stack[size++]`;
+peek reads `stack[size - 1]`; pop uses `stack[--size]`. None of these
+operations has a full/empty guard. The predicates report state only.
+This entry supersedes the guarded character Stack and separate local
+value Stack described in the historical records below.
+
+Conversion initializes local `pos`, resets `size`, and pushes a bottom
+null sentinel. Both expression loops process exactly seven tokens.
+The final drain writes the sentinel to `eq_re[7]`, leaving `pos == 8`
+and `size == 0`. Evaluation resets `size` and reuses the global array;
+it pops the right operand before the left and returns a final pop.
+`1-2*3+4 -> 123*-4+ -> -1` remains the canonical example.
+
+The demo and all six updated C lab test groups pass with AddressSanitizer
+and UndefinedBehaviorSanitizer. Tests cover integer LIFO and inactive cells,
+full/empty predicates using valid operations, sentinel termination,
+precedence/operand order, phase-entry resets and repeated seven-token
+conversions, and integer results through 6561. Shorter expressions and
+unchecked out-of-bounds calls are excluded from runnable success tests.
+The isolated autopsy still produces the expected inactive-cell observation.
+Clang reports ten warnings from the unchanged instructional source: six
+empty-parameter-list warnings and four implicit int-to-char conversions.
+The demo reports infix, postfix, and result; it has no output-count line.
+
+Both textbook editions and their web/download copies now agree. Each edition
+retains seven main sections, the existing topic hierarchy, thirteen tables,
+and eight C blocks overall. The six implementation/driver blocks in the C Code
+section are identical across languages and match the authoritative sources
+ignoring whitespace. Their combined program compiles and runs with both
+sanitizers and produces the same three-line demo output.
+
+The teaching package, PPT source, worksheets, diagrams, assessments, instructor
+notes, release instructions, question banks, and related course references
+use the new contract. The direct two-Stack calculation remains the conceptual
+motivation; the lab's sequential reuse of one Stack is explicit.
+
+All 24 webpage tests, TypeScript checking, changed-file lint, production build,
+and whitespace checks pass. Browser checks cover integer push/peek/pop,
+inactive cells, browser-only full/empty button guards, the real sentinel,
+final `pos == 8`, shared-array evaluation to -1, rejection of shorter and
+zero-divisor input by the webpage, English/Korean switching with retained
+anchor, and absence of old identifiers in both rendered editions. Both
+editions have no page-width overflow in the checked desktop viewport.
+Browser logs report no errors or warnings.
+
+Site version 139, built from source commit
+`aa468f24e7ad3c24521fb371017f897c0b509959`, was successfully published at
+`https://data-structures.chaebinkim.chatgpt.site` with its existing public
+audience. The local Sites helper disappeared after source opening; native
+source push, archive save, and deployment completed publication. The accepted
+archive includes the matching build and downloadable manuscripts/C source.
+
+## Chapter 4 PPT Alignment and Stack Counts — September 25, 2026
+
+Reviewed the 13-slide source in `module_04_stack/student/ppt_material.md`.
+Both textbook editions now introduce a Stack as a list used only at its
+end, work through direct two-stack evaluation of `1-2*3+4`, derive the
+postfix order, evaluate postfix, and then explain formal conversion.
+The direct trace shows both reductions before saving the incoming `+`:
+`2 * 3 = 6`, then `1 - 6 = -5`. The final addition gives `-1`.
+
+The current representation uses global `size` for active characters,
+`postfix_size` for output tokens, and local `value_size` for active
+integers. Character push writes before incrementing; character pop saves
+`stack[size - 1]` before decrementing. The integer evaluator's compact
+`values[--value_size]` form selects the same last active item. This entry
+supersedes the `pos` naming and pop sequencing in the earlier entry below.
+Teaching notes, worksheets, diagrams, question banks, and course references
+use the same names and behavior.
+
+The six C lab test groups, demo, and autopsy pass with AddressSanitizer and
+UndefinedBehaviorSanitizer. The demo reports postfix `123*-4+`,
+`postfix_size: 7`, and result `-1`. The six existing empty-parameter-list
+warnings remain; the previous shadow warning is gone. Embedded textbook
+implementation blocks match the lab and driver.
+
+The webpage adds an eleven-frame direct two-stack activity in both
+languages. Its trace test checks valid stack transitions, arithmetic,
+operand order, and agreement with the lab's postfix order and result.
+Local browser checks verified the two reductions for incoming `+`, the
+final `-1`, and the English and Korean activity text.
+
+All 23 webpage tests, TypeScript checking, the final production build,
+and whitespace checks pass. The web manuscripts and downloadable editions
+match their source textbooks. A final browser check confirmed that the
+activity links and lesson headings follow the slide sequence.
+
+Site version 138, built from source commit
+`351b05cf96f9cb6808dab56fed03da9b348168c8`, was successfully published at
+`https://data-structures.chaebinkim.chatgpt.site` with the existing public
+audience. This supersedes the publishing blocker in the earlier entry.
+
 ## Chapter 4 Forward-Growing Stack — September 25, 2026
 
 The current lab now uses global `pos` as the next character insertion index

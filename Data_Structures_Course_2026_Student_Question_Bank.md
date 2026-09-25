@@ -36,7 +36,7 @@ before requesting help.
 | 1 | Fixed-capacity ArrayList | 13 | 0 | 26 | [Week 1](student_question_bank/week_01_arraylist.md) |
 | 2 | Array-indexed expression construction and recursive evaluation | 30 | 0 | 40 | [Week 2](student_question_bank/week_02_binary_tree.md) |
 | 3 | SNS follower adjacency matrices | 30 | 0 | 49 | [Week 3](student_question_bank/week_03_graph_representations.md) |
-| 4 | Character Stack and postfix evaluation | 44 | 0 | 40 | [Week 4](student_question_bank/week_04_stack.md) |
+| 4 | Integer Stack and postfix evaluation | 44 | 0 | 40 | [Week 4](student_question_bank/week_04_stack.md) |
 | 5 | Recursive Tree DFS | 40 | 0 | 40 | [Week 5](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Iterative Graph DFS and Practical 1 | 41 | 5 | 40 | [Week 6](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer | 49 | 6 | 40 | [Week 7](student_question_bank/week_07_queue.md) |

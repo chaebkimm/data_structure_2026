@@ -1,23 +1,23 @@
 /*
  * Core checks for student/lab.c under its documented input assumptions.
  * Add three justified cases and record their predictions in the evidence file.
- * Invalid expressions are discussion/extension cases, not safe rejection tests
- * for this version: the supplied evaluator has no error-status interface.
+ * Stack operations are unchecked: test boundary predicates without performing
+ * a full push or an empty read. Expressions must contain exactly seven tokens.
  */
 #include <stdio.h>
 #include <string.h>
 
-extern char stack[10];
+extern int stack[10];
+extern int capacity;
 extern int size;
-extern char infix[8];
-extern char postfix[8];
-extern int postfix_size;
+extern char eq[8];
+extern char eq_re[8];
 
 int is_full(void);
 int is_empty(void);
-void push(char data);
-char peek(void);
-char pop(void);
+void push(int data);
+int peek(void);
+int pop(void);
 void infix_to_postfix(void);
 int eval_postfix(void);
 
@@ -28,7 +28,7 @@ int eval_postfix(void);
     } \
 } while (0)
 
-static int character_lifo(void)
+static int integer_lifo(void)
 {
     size = 0;
     push('A');
@@ -39,60 +39,53 @@ static int character_lifo(void)
     CHECK(peek() == 'C' && size == 3);
     CHECK(pop() == 'C' && size == 2);
     CHECK(stack[2] == 'C'); /* Logical removal does not erase the cell. */
-    push('D');
-    CHECK(size == 3 && stack[2] == 'D');
-    CHECK(pop() == 'D' && size == 2);
+    push(300);
+    CHECK(size == 3 && stack[2] == 300);
+    CHECK(pop() == 300 && size == 2);
     CHECK(pop() == 'B');
     CHECK(pop() == 'A');
     CHECK(is_empty());
     return 1;
 }
 
-static int full_empty_boundaries(void)
+static int full_empty_predicates(void)
 {
-    char saved[10];
+    int saved[10];
     size = 0;
-    (void)memset(stack, '?', sizeof stack);
-    (void)memcpy(saved, stack, sizeof saved);
-    CHECK(peek() == '\0' && pop() == '\0');
-    CHECK(size == 0 && memcmp(saved, stack, sizeof saved) == 0);
-    for (int i = 0; i < 10; ++i) {
-        push((char)('0' + i));
+    CHECK(capacity == 10 && is_empty() && !is_full());
+    for (int i = 0; i < capacity; ++i) {
+        push(i - 5);
     }
-    CHECK(is_full());
+    CHECK(size == 10 && is_full() && !is_empty());
     (void)memcpy(saved, stack, sizeof saved);
-    push('X');
-    CHECK(size == 10 && memcmp(saved, stack, sizeof saved) == 0);
-    for (int i = 9; i >= 0; --i) {
-        CHECK(pop() == (char)('0' + i));
+    CHECK(is_full() && size == 10);
+    CHECK(memcmp(saved, stack, sizeof saved) == 0);
+    for (int i = capacity - 1; i >= 0; --i) {
+        CHECK(peek() == i - 5 && size == i + 1);
+        CHECK(pop() == i - 5);
     }
-    CHECK(is_empty() && pop() == '\0' && size == 0);
+    CHECK(is_empty() && size == 0);
+    /* Do not call peek/pop here, or push while full: lab.c has no guards. */
     return 1;
 }
 
-/* Copy only fixtures that fit the actual input buffer. Leave size alone so
- * successive calls test the converter's own restoration of empty state. */
 static int expression_case(const char *input, const char *output, int result)
 {
-    CHECK(strlen(input) < sizeof infix);
-    CHECK(is_empty());
-    (void)strcpy(infix, input);
+    CHECK(strlen(input) == 7 && strlen(output) == 7);
+    (void)strcpy(eq, input);
+    (void)memset(eq_re, '?', sizeof eq_re);
     infix_to_postfix();
-    CHECK(postfix_size == (int)strlen(output));
-    CHECK(postfix_size >= 0 && postfix_size < (int)sizeof postfix);
-    CHECK(postfix[postfix_size] == '\0');
-    CHECK(strcmp(postfix, output) == 0);
-    CHECK(is_empty());
+    CHECK(eq_re[7] == '\0'); /* The drained sentinel supplies the terminator. */
+    CHECK(strcmp(eq_re, output) == 0);
+    CHECK(size == 0 && stack[0] == '\0');
     CHECK(eval_postfix() == result);
-    CHECK(size == 0); /* The evaluator uses a separate local value_size. */
+    CHECK(size == 0 && stack[0] == result); /* Final pop leaves its cell. */
     return 1;
 }
 
 static int canonical_conversion(void)
 {
-    size = 0;
     CHECK(expression_case("1-2*3+4", "123*-4+", -1));
-    CHECK(postfix_size == 7);
     return 1;
 }
 
@@ -103,39 +96,39 @@ static int precedence_and_operand_order(void)
         const char *output;
         int result;
     } cases[] = {
-        { "1+2*3", "123*+", 7 },
-        { "8-3-2", "83-2-", 3 },
-        { "8/2*3", "82/3*", 12 },
-        { "7%4+1", "74%1+", 4 },
-        { "7/2", "72/", 3 },
-        { "1-8/3", "183/-", -1 },
-        { "1-8-2", "18-2-", -9 },
-        { "0*9+2", "09*2+", 2 }
+        { "1+2*3+4", "123*+4+", 11 },
+        { "8-3-2-1", "83-2-1-", 2 },
+        { "8/2*3+1", "82/3*1+", 13 },
+        { "7%4+1*2", "74%12*+", 5 },
+        { "7/2+0+0", "72/0+0+", 3 },
+        { "1-8/3+0", "183/-0+", -1 },
+        { "1-8-2+0", "18-2-0+", -9 },
+        { "0*9+2+0", "09*2+0+", 2 }
     };
-    size = 0;
     for (size_t i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
         CHECK(expression_case(cases[i].input, cases[i].output, cases[i].result));
     }
     return 1;
 }
 
-static int repeated_and_shorter_conversion(void)
+static int repeated_calls_reset_shared_stack(void)
 {
     size = 0;
+    push(99);
+    push(100);
     CHECK(expression_case("1-2*3+4", "123*-4+", -1));
-    CHECK(expression_case("1-2*3+4", "123*-4+", -1));
-    CHECK(expression_case("1+2*3", "123*+", 7));
-    CHECK(expression_case("5", "5", 5));
-    CHECK(postfix_size == 1 && postfix[1] == '\0');
+    CHECK(expression_case("8-3-2-1", "83-2-1-", 2));
+    push(777);
+    CHECK(eval_postfix() == 2); /* Evaluation resets size independently. */
+    CHECK(size == 0 && stack[0] == 2);
     CHECK(expression_case("1-2*3+4", "123*-4+", -1));
     return 1;
 }
 
 static int character_digits_and_integer_values(void)
 {
-    size = 0;
-    CHECK(expression_case("0", "0", 0));
-    CHECK(expression_case("9", "9", 9));
+    CHECK(expression_case("0+0+0+0", "00+0+0+", 0));
+    CHECK(expression_case("9+0+0+0", "90+0+0+", 9));
     CHECK(expression_case("9*9*9*9", "99*9*9*", 6561));
     return 1;
 }
@@ -146,11 +139,11 @@ int main(void)
         const char *name;
         int (*run)(void);
     } tests[] = {
-        { "character stack LIFO", character_lifo },
-        { "full and empty boundaries", full_empty_boundaries },
+        { "integer stack LIFO", integer_lifo },
+        { "full and empty predicates", full_empty_predicates },
         { "canonical infix and postfix", canonical_conversion },
         { "precedence and operand order", precedence_and_operand_order },
-        { "repeated and shorter conversion", repeated_and_shorter_conversion },
+        { "repeated calls reset shared stack", repeated_calls_reset_shared_stack },
         { "character digits and integer values", character_digits_and_integer_values }
     };
     int failures = 0;
