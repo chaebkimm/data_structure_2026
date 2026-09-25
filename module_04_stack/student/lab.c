@@ -1,38 +1,14 @@
-char stack[10];
+int stack[10];
 int capacity = 10;
 int size = 0;
 
-int is_full() {
-    return size == capacity;
-}
+void push(int data) {stack[size++] = data;}
 
-void push(char data) {
-    if (is_full()) {
-        return;
-    }
-    stack[size] = data;
-    size += 1;
-}
+int peek() {return stack[size - 1];}
+int pop() {return stack[--size];}
 
-int is_empty() {
-    return size == 0;
-}
-
-char peek() {
-    if (is_empty()) {
-        return '\0';
-    }
-    return stack[size - 1];
-}
-
-char pop() {
-    if (is_empty()) {
-        return '\0';
-    }
-    char data = stack[size - 1];
-    size -= 1;
-    return data;
-}
+int is_full() {return size == capacity;}
+int is_empty() {return size == 0;}
 
 int prec(char op) {
     if (op == '+' || op == '-') {
@@ -44,32 +20,31 @@ int prec(char op) {
     return 0;
 }
 
-char infix[8] = "1-2*3+4";
-
-char postfix[8] = "";
-int postfix_size = 0;
+char eq[8] = "1-2*3+4";
+char eq_re[8] = "";
 
 void infix_to_postfix() {
-    postfix_size = 0;
-    for (int i = 0; infix[i] != '\0'; i++) {
-        char c = infix[i];
+    int pos = 0;
+    size = 0;
+    push('\0');
+    for (int i = 0; i < 7; i++) {
+        char c = eq[i];
 
         if (c >= '0' && c <= '9') {
-            postfix[postfix_size++] = c;
+            eq_re[pos++] = c;
         }
         else {
             char op = peek();
             while (prec(op) >= prec(c)) {
-                postfix[postfix_size++] = pop();
+                eq_re[pos++] = pop();
                 op = peek();
             }
             push(c);
         }
     }
     while (!is_empty()) {
-        postfix[postfix_size++] = pop();
+        eq_re[pos++] = pop();
     }
-    postfix[postfix_size] = '\0';
 }
 
 int calc(int num1, int num2, int op) {
@@ -84,20 +59,19 @@ int calc(int num1, int num2, int op) {
 }
 
 int eval_postfix() {
-    int values[10];
-    int value_size = 0;
+    size = 0;
 
-    for (int i = 0; i < postfix_size; i++) {
-        char c = postfix[i];
+    for (int i = 0; i < 7; i++) {
+        char c = eq_re[i];
         if (c >= '0' && c <= '9') {
-            values[value_size++] = c - '0';
+            push(c - '0');
         }
         else {
-            int num2 = values[--value_size];
-            int num1 = values[--value_size];
-            values[value_size++] = calc(num1, num2, c);
+            int num2 = pop();
+            int num1 = pop();
+            push(calc(num1, num2, c));
         }
     }
 
-    return values[--value_size];
+    return pop();
 }
