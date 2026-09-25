@@ -6,18 +6,18 @@ An autopsy is a careful study of a supplied defect. This isolated program
 uses the same direction of growth as `student/lab.c`. Its fixture is:
 
 ```c
-char stack[10] = {'?', '?', '?', '?', '?', '?', '?', '?', '*', '+'};
-int top = 8;
+char stack[10] = {'+', '*', '?', '?', '?', '?', '?', '?', '?', '?'};
+int size = 2;
 ```
 
-Linear description: indexes 0 through 7 contain `'?'`; index 8 contains
-`'*'`; index 9 contains `'+'`; `top` is 8. A chosen marker such as `'?'`
+Linear description: index 0 contains `'+'`; index 1 contains `'*'`;
+indexes 2 through 9 contain `'?'`; `size` is 2. A chosen marker such as `'?'`
 makes an incorrect read repeatable and visible.
 
 The intentionally faulty operation reads:
 
 ```c
-return stack[top - 1];
+return stack[size];
 ```
 
 ## 1. Predict before running
@@ -28,7 +28,7 @@ Preserve these responses before viewing the autopsy output.
 2. Which character should correct peek report?
 3. Which index does the faulty expression select, and what character will
    it report?
-4. Does either peek change `top`?
+4. Does either peek change `size`?
 5. If a push were allowed, which physical index would receive its character?
 
 Prediction:
@@ -49,14 +49,14 @@ Or use PowerShell:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
 ```
 
-Record the initial `top`, the correct top character, the faulty character,
+Record the initial `size`, the correct top character, the faulty character,
 and the two indexes. Copy the important output lines:
 
 ```text
-top:
+size:
 capacity:
-correct top stack[top]:
-faulty top stack[top - 1]:
+correct top stack[size - 1]:
+faulty top stack[size]:
 faulty read selected the next inactive slot:
 ```
 
@@ -86,7 +86,7 @@ active indexes = __________ through __________
 2. Why does being within the array not prove that the selected cell belongs
    to the logical Stack?
 3. Would a memory sanitizer necessarily report this fixture's read? Explain.
-4. Would the same faulty expression stay in bounds when `top == 0`?
+4. Would the same faulty expression stay in bounds when `size == 10`?
 
 Response:
 
@@ -100,7 +100,7 @@ a wrong conversion or calculation?
 
 ____________________________________________________________________
 
-Why is leaving `top` unchanged insufficient to make peek correct?
+Why is leaving `size` unchanged insufficient to make peek correct?
 
 ____________________________________________________________________
 

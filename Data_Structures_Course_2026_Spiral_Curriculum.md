@@ -457,13 +457,13 @@ Students will:
 
 - specify the LIFO access rule independently of its representation;
 - trace the global fixed character Stack in `student/lab.c` using A, B, C;
-- explain downward growth, `stack[top]`, active suffix `top..9`, and count
-  `10 - top`;
+- explain forward growth, next insertion index and count `pos`, active prefix
+  `0..pos - 1`, and the nonempty top at `stack[pos - 1]`;
 - explain full push as a silent no-op and empty peek/pop as null-character
   returns that preserve Stack state;
 - convert infix to postfix, then evaluate postfix with a separate integer
   value Stack while preserving precedence, associativity, and operand order;
-- distinguish `top`, postfix length `size`, and numeric count `pos`; and
+- distinguish global character `pos`, postfix length `size`, and local numeric `pos`; and
 - separate supported-input assumptions from validation actually implemented.
 
 ### Macro-Question
@@ -474,20 +474,20 @@ Students will:
 ### Micro-Questions
 
 - Which item may be removed next?
-- Why is empty represented by `top == 10` and full by `top == 0`?
-- Why does push decrement before writing while peek reads `stack[top]`?
+- Why is empty represented by `pos == 0` and full by `pos == capacity`?
+- Why does push write before incrementing while peek reads `stack[pos - 1]`?
 - What remains unchanged after full push or empty peek/pop?
-- Why does pop increment `top` without erasing or shifting characters?
+- Why does pop decrement `pos` before reading without erasing or shifting characters?
 - How does `1-2*3+4` become `123*-4+`, then -1?
 - Why must the right operand be popped before the left operand?
 
 ### C lab and cybersecurity context
 
 Read, trace, run, and test the current `module_04_stack/student/lab.c`.
-The global `char stack[10]` grows toward smaller indexes. Conversion uses it
+The global `char stack[10]` grows toward larger indexes. Conversion uses it
 for waiting operators, appends tokens to `postfix[8]`, resets `size` at entry,
 and writes a terminator at the end. Evaluation then uses local
-`int values[10]` and upward count `pos` for operands and numeric results.
+`int values[10]` and its own local count `pos` for operands and numeric results.
 The canonical transfer is `1-2*3+4 -> 123*-4+ -> -1`, with postfix `size` 7.
 
 Core input assumes nonempty text of at most seven characters, single digits
@@ -498,8 +498,8 @@ or check arithmetic. Discuss these limitations accurately; a checked parser
 and the older caller-owned integer API are optional extensions.
 
 The representation revisits physical bounds and logical membership using an
-active suffix. Valid state satisfies `0 <= top <= 10`; the count is
-`10 - top`. Constant-time push/peek/pop allocate, shift, and release no
+active prefix. With capacity 10, valid state satisfies `0 <= pos <= 10`;
+`pos` is also the item count. Constant-time push/peek/pop allocate, shift, and release no
 storage. The isolated autopsy contrasts a valid physical index with logical
 Stack membership, so a clean memory diagnostic is not proof of a correct top
 read. Students preserve their prediction before running it.
@@ -510,7 +510,7 @@ types, storage policies, and error contracts.
 
 ### Evidence of learning
 
-- character returns, `top`, count, and active-index trace;
+- character returns, `pos`, top-item index, and active-index trace;
 - full/empty state-preservation snapshots;
 - separate infix-to-postfix and postfix-evaluation tables;
 - valid precedence, operand-order, repeated-conversion, and shorter-input tests;
@@ -523,7 +523,7 @@ types, storage policies, and error contracts.
 logical membership, and unchanged state at boundaries; character data and
 expression precedence from Module 2.
 
-**Introduces:** Stack, LIFO, downward top index, active suffix, push, peek,
+**Introduces:** Stack, LIFO, next insertion index `pos`, active prefix, push, peek,
 pop, underflow, postfix notation, two separate expression phases, and the
 right-before-left operand-pop convention.
 
@@ -1490,7 +1490,7 @@ representation-specific requirements when they are introduced: Chapter 1
 uses fixed-array bounds and plain integer counts. Module 2 introduces array-indexed
 nodes, loop-based construction, and recursive expression evaluation. Its
 small parser assumes valid inputs and representable integer results. Module 4 adds a
-downward character-Stack representation and separate infix-to-postfix and
+forward-growing character-Stack representation and separate infix-to-postfix and
 postfix-evaluation phases, also under explicit valid-input assumptions. Its
 full/empty Stack guards do not constitute a checked parser. Module 5 adds
 allocated tree nodes and explicit release.
@@ -1572,7 +1572,7 @@ Scope controls:
 | 1 | Keeping data together with a fixed-capacity ArrayList | Module 1; checked operations and bounds/invariant autopsy |
 | 2 | Recursion, binary-tree links, and expression trees | Module 2 bilingual textbooks and four-function construction/evaluation lab |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
-| 4 | Character Stack and postfix | Module 4; downward top, LIFO boundaries, top-index autopsy, and `1-2*3+4 -> 123*-4+ -> -1` |
+| 4 | Character Stack and postfix | Module 4; next insertion index `pos`, LIFO boundaries, top-index autopsy, and `1-2*3+4 -> 123*-4+ -> -1` |
 | 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
 | 7 | Queue | Module 7; circular-buffer incident analysis |

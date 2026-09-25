@@ -20,40 +20,39 @@ They are not required implementations for this lab.
 ```c
 char stack[10];
 int capacity = 10;
-int top = 10;
+int size = 0;
 char infix[8] = "1-2*3+4";
 char postfix[8] = "";
-int size = 0;
+int postfix_size = 0;
 ```
 
-These are global objects. The character Stack grows toward lower indexes.
-Its invariant is `0 <= top <= 10`; active cells occupy `top` through 9.
-Empty means `top == 10`, full means `top == 0`, and a nonempty top is
-`stack[top]`. The item count is `10 - top`.
+These are global objects. The character Stack grows toward higher indexes.
+Its invariant is `0 <= size <= capacity`; active cells occupy 0 through `size - 1`.
+Empty means `size == 0`, full means `size == capacity` (10 here), and a nonempty top is
+`stack[size - 1]`. The item count is `size`.
 
-`capacity` records the intended ten positions, but this implementation uses
-literal `10` in its boundaries. Changing `capacity` alone has no effect on
-the actual array or checks. The global `size` counts characters written to
-`postfix`, excluding the terminating `'\0'`; it is not a Stack item count.
+`capacity` is initialized to 10 and controls the full check. The array
+remains fixed at ten cells; changing the variable does not resize it.
+The global `postfix_size` counts characters written to `postfix`, excluding the terminating `'\0'`; it is not a Stack item count.
 
 ## 2. Trace the character Stack
 
 | Function | Actual behavior |
 |---|---|
-| `is_full()` | Reports whether `top == 0` |
-| `push(char data)` | If full, does nothing; otherwise decreases `top` and writes `stack[top]`; returns no value |
-| `is_empty()` | Reports whether `top == 10` |
-| `peek()` | If empty, returns `'\0'`; otherwise returns `stack[top]`; changes nothing |
-| `pop()` | If empty, returns `'\0'`; otherwise saves `stack[top]`, increases `top`, and returns the saved character |
+| `is_full()` | Reports whether `size == capacity` |
+| `push(char data)` | If full, does nothing; otherwise writes `stack[size]` and increases `size`; returns no value |
+| `is_empty()` | Reports whether `size == 0` |
+| `peek()` | If empty, returns `'\0'`; otherwise returns `stack[size - 1]`; changes nothing |
+| `pop()` | If empty, returns `'\0'`; otherwise decreases `size`, reads `stack[size]`, and returns that character |
 
-Begin with `top == 10` and trace:
+Begin with `size == 0` and trace:
 
 ```text
 push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-Record each return, `top`, and logical state from bottom to top. Locate each
-character physically as well: the logical order is not increasing array
+Record each return, `size`, and logical state from bottom to top. Locate each
+character physically as well: the logical order follows increasing array
 index order. Show why pop can leave old characters in inactive cells.
 
 Use ordinary nonzero character labels. A stored `'\0'` would be
@@ -64,30 +63,32 @@ indistinguishable from the empty return value using the return alone.
 `prec(op)` returns 1 for `+` or `-`, 2 for `*`, `/`, or `%`, and 0 otherwise.
 `infix_to_postfix()` performs these steps:
 
-1. Set `size = 0`; begin with the operator Stack already empty.
+1. Set `postfix_size = 0`; begin with the operator Stack already empty.
 2. Read `infix` until its `'\0'` terminator.
 3. Append each digit directly to `postfix`.
 4. For an operator, pop waiting operators of equal or greater precedence
    into `postfix`, then push the incoming operator.
 5. Drain the remaining operators at end of input.
-6. Write `postfix[size] = '\0'` without counting that terminator.
+6. Write `postfix[postfix_size] = '\0'` without counting that terminator.
 
-For `1-2*3+4`, the completed output is `123*-4+`, `size` is 7, and `top` is
-10. The `>=` comparison makes equal-precedence operators left associative.
+For `1-2*3+4`, the completed output is `123*-4+`, `postfix_size` is 7, and global `size` is
+0. The `>=` comparison makes equal-precedence operators left associative.
 This phase rearranges characters; it does not calculate the numeric answer.
 
-Conversion resets the output count but does not reset `top` at entry. A
+Conversion resets the output count but does not reset `size` at entry. A
 successful conversion drains the Stack, so another valid conversion starts
 empty if no intervening character operations leave items there. Stale output
 characters beyond the new terminator do not belong to the new result.
 
 ## 4. Trace postfix evaluation
 
-`eval_postfix()` starts with a local `int values[10]` and `pos = 0`. This
-Stack uses an active prefix, indexes 0 through `pos - 1`.
+`eval_postfix()` starts with a local `int values[10]` and `value_size = 0`. This
+Stack uses the same active-prefix convention, indexes 0 through `value_size - 1`.
+The local `value_size` is separate from, and hides, the global character-Stack
+`value_size` inside this function.
 
-- `values[pos++] = c - '0'` pushes a numeric digit and increases the count.
-- `values[--pos]` decreases the count before reading a popped value.
+- `values[value_size++] = c - '0'` pushes a numeric digit and increases the count.
+- `values[--value_size]` decreases the count before reading a popped value.
 - At an operator, pop `num2` first, then `num1`.
 - Push `calc(num1, num2, c)` as the replacement value.
 
@@ -97,9 +98,9 @@ The postfix trace calculates `2*3 = 6`, `1-6 = -5`, then `-5+4 = -1`.
 The input operands are single digits, but intermediate values can be negative
 or larger than 9 because `values` stores integers.
 
-Evaluation processes exactly `size` tokens; it does not process the string
+Evaluation processes exactly `postfix_size` tokens; it does not process the string
 terminator. With valid postfix, one value remains before the final
-`return values[--pos]`.
+`return values[--value_size]`.
 
 ## 5. Keep the input assumptions visible
 
@@ -148,7 +149,9 @@ Predict the autopsy before running it. Use the build instructions in
 Record the compiler and complete command with the output. The current
 no-parameter definitions use `()`; under C11, writing `(void)` explicitly
 states that a function takes no parameters and can resolve prototype
-warnings. Record actual diagnostics instead of assuming a quiet run.
+warnings. With `-Wshadow`, the local `value_size` also produces a warning because
+it hides the separate global variable. Record actual diagnostics and
+explain these two scopes instead of assuming a quiet run.
 
 ## 7. Add exactly three student tests
 
@@ -158,9 +161,9 @@ new case is called. State what additional claim each tests.
 
 1. A character LIFO sequence with repeated values or interleaved push/pop.
 2. A full/empty boundary or inactive-cell case that checks both the returned
-   character, when applicable, and preserved `top` or array contents.
+   character, when applicable, and preserved `size` or array contents.
 3. A valid expression or a sequence of valid conversions that checks the
-   postfix text, `size`, terminator, final `top`, and integer result.
+   postfix text, `postfix_size`, terminator, final `size`, and integer result.
 
 Choose cases that add evidence beyond the baseline tests. Reset the global
 Stack deliberately between independent cases. Keep expression strings within

@@ -3,7 +3,7 @@
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
 Required scope: trace the current `student/lab.c` character Stack, its
-downward top index and full/empty behavior, then convert `1-2*3+4` to
+forward next-insertion position and full/empty behavior, then convert `1-2*3+4` to
 `123*-4+` and evaluate it as -1 using a separate integer value Stack. Describe
 the supported-input assumptions and missing validation accurately. The older
 checked integer API is optional legacy material.
@@ -18,23 +18,23 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 |---|---|
 | Stack | A collection whose accessible end is the top. |
 | last in, first out (LIFO) | The newest remaining item is the first item removed. |
-| top | The accessible end; variable `top` is its index in this source. |
-| `push` | Add one character after decrementing `top`. |
+| top | The accessible end; its nonempty index is `pos - 1` in this source. |
+| `push` | Write one character at `pos`, then increment `pos`. |
 | `peek` | Return the top character without removal. |
-| `pop` | Return the top character and increment `top`. |
-| empty Stack | No active characters; `top == 10`. |
+| `pop` | Decrement `pos`, then read and return the character there. |
+| empty Stack | No active characters; `pos == 0`. |
 | underflow | An inspection/removal request made while empty. |
-| full Stack | Ten active characters; `top == 0`. |
+| full Stack | Ten active characters; `pos == 10`. |
 | fixed capacity | A number of available positions that does not grow. |
-| item count | `10 - top` for the character Stack. |
-| capacity | Ten positions here; changing the variable alone does not alter the hardcoded bounds. |
-| active suffix | Character-Stack indexes `top` through 9. |
-| inactive slot | A physical array cell outside the active suffix. |
-| invariant | A rule true in every valid completed state, here `0 <= top <= 10`. |
+| item count | `pos` for the character Stack. |
+| capacity | Ten positions here; the variable controls the full check but does not resize the array. |
+| active prefix | Character-Stack indexes 0 through `pos - 1`. |
+| inactive slot | A physical array cell outside the active prefix. |
+| invariant | A rule true in every valid completed state, here `0 <= pos <= capacity`. |
 | representation | The physical storage and variables implementing the access rule. |
 | contract | Input assumptions, effects, returns, and preserved state. |
 | global state | Shared variables declared outside the functions. |
-| state preservation | Leaving `top` and all stored characters unchanged on a boundary request. |
+| state preservation | Leaving `pos` and all stored characters unchanged on a boundary request. |
 | sentinel | A special returned value, here `'\0'` on an empty read. |
 | function label | An abstract name used to model unfinished work. |
 | runtime call stack | Runtime bookkeeping for actual active function calls. |
@@ -55,7 +55,7 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 | input assumption | A condition the current code expects without necessarily checking. |
 | null terminator | The `'\0'` character marking the end of a C string. |
 | postfix length | Global `size`, excluding the terminating null character. |
-| `pos` | The active integer count and next free index in `values`. |
+| `pos` | The next insertion index and count; global for `stack`, separately local for `values`. |
 | intermediate result | A numeric result used by a later operation, such as -5. |
 | time complexity | How the amount of work changes with input length. |
 | `O(1)` | A fixed amount of work or reserved storage in this program. |
@@ -72,23 +72,23 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 ### Representation and invariants
 
-- Which indexes are active when `top == 7`, and how many characters are stored?
-- Why does push decrement `top` before writing, while peek reads `stack[top]`?
+- Which indexes are active when `pos == 3`, and how many characters are stored?
+- Why does push write `stack[pos]` before incrementing, while peek reads `stack[pos - 1]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `top == 10` and `top == 0` the empty and full states respectively?
+- Why are `pos == 0` and `pos == 10` the empty and full states respectively?
 
 ### Operations and C API
 
 - What does a full push do, and why does it return no value?
 - What do empty peek and pop return, and which state stays unchanged?
-- Why does a successful pop increment `top` without erasing its old cell?
-- Why does changing `capacity` alone not change the actual ten-position Stack?
+- Why does a successful pop decrement `pos` before reading, without erasing its old cell?
+- How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- How do `top` and `10 - top` change in opposite directions?
+- Why does `pos` equal the count, while the nonempty top index is `pos - 1`?
 - How can an array snapshot prove that a full push changed nothing?
 
 ### Expression conversion and evaluation
@@ -96,7 +96,7 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do `top`, global `size`, and local `pos` describe different state?
+- How do global `pos`, global `size`, and local `pos` describe different state?
 
 ### Tests and debugging
 
@@ -124,11 +124,11 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 - How do the lab driver and current tests use `student/lab.c`?
 - What LIFO, boundary, and valid-expression cases provide three distinct additions to `test_lab.c`?
 - Which warning and sanitizer outputs should accompany the trace evidence?
-- What must an autopsy explanation distinguish about physical bounds and the active suffix?
+- What must an autopsy explanation distinguish about physical bounds and the active prefix?
 
 ### Transfer and prerequisites
 
-- How does this active suffix compare with Chapter 1's active prefix?
+- How does this active prefix reuse Chapter 1's count and next-insertion convention?
 - How can a later Stack use integer or pointer items while preserving LIFO?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
@@ -138,4 +138,4 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 - How could explicit error reporting safely reject unsupported characters and missing operands?
 - What additional parsing rules and buffers would multi-digit operands require?
 - How would parentheses change the operator-Stack algorithm?
-- How does the optional legacy caller-owned integer API differ in layout and error reporting?
+- How does the optional legacy caller-owned integer API share the active-prefix layout but differ in ownership and error reporting?

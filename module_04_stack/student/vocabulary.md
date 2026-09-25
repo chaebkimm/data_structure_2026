@@ -8,15 +8,15 @@ Open this page after completing and preserving the Cognitive Pause.
 | data structure | A planned way to organize information in a program |
 | abstract data type (ADT) | A collection described by its operations and rules rather than a required storage method |
 | Stack ADT | An ADT that permits adding, inspecting, and removing at one end |
-| top | The accessible end of a Stack; in the character Stack, `top` is its current array index |
+| top | The accessible end of a Stack; in the character Stack, the nonempty top is at index `size - 1` |
 | last in, first out (LIFO) | The most recently added item is the first item that may be removed |
 | operation | One task provided by a data structure |
-| `push` | Add one item at the top; this character implementation decreases `top` before writing |
+| `push` | Add one item at the top; this character implementation writes at `size` before increasing it |
 | `peek` | Report the top without removing it |
-| `pop` | Remove and report the top; this character implementation increases `top` after reading |
-| empty Stack | No active items; the character Stack has `top == 10` |
+| `pop` | Remove and report the top; this character implementation decreases `size` before reading |
+| empty Stack | No active items; the character Stack has `size == 0` |
 | underflow | A request to peek or pop an empty Stack; the character functions return `'\0'` |
-| full Stack | All ten character positions are active and `top == 0`; another push changes nothing |
+| full Stack | All ten character positions are active and `size == 10`; another push changes nothing |
 | representation | A chosen way to store or show information |
 | fixed-capacity array | An array with a prepared number of positions that does not change |
 | character | One C `char` value, such as `'A'`, `'3'`, or `'*'` |
@@ -26,15 +26,14 @@ Open this page after completing and preserving the Cognitive Pause.
 | index | A numbered array position; C begins at zero |
 | logical item | A stored value that belongs to the current Stack's active region |
 | inactive slot | A physical cell inside an array but outside the active region |
-| active suffix | The character Stack's indexes `top` through 9 |
-| active prefix | The numeric Stack's indexes 0 through `pos - 1` |
-| `capacity` | The descriptive global initialized to 10; current character operations hardcode their boundaries |
+| active prefix | Indexes 0 through `size - 1` in either Stack, using its own `size` |
+| `capacity` | The global initialized to 10 and used by the character Stack full check; the actual array has ten cells |
 | global variable | An object declared outside functions and shared by the functions that use it |
-| local variable | An object declared within a function or block, such as `values` and `pos` |
-| `size` | Number of postfix characters produced, excluding the terminator; not character Stack item count |
-| `pos` | Number of active integers in `values` during postfix evaluation |
+| local variable | An object declared within a function or block, such as `values` and `size` |
+| `postfix_size` | Number of postfix characters produced, excluding the terminator; not character Stack item count |
+| `size` | Next insertion index and active item count; global `size` belongs to `stack`, while local `value_size` belongs to `values` |
 | null character | `'\0'`, used as a string terminator and as this Stack's empty peek/pop result |
-| invariant | A rule true in every valid completed state, such as `0 <= top <= 10` |
+| invariant | A rule true in every valid completed state, such as `0 <= size <= capacity` |
 | contract | Rules stating what a function assumes, changes, returns, and preserves |
 | preservation | Keeping required prior state unchanged, as with full push or empty peek/pop |
 | trace | A step-by-step record of changing state |

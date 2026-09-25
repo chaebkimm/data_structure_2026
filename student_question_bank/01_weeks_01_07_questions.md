@@ -216,23 +216,23 @@
 
 ### Representation and invariants
 
-- Which indexes are active when `top == 7`, and how many characters are stored?
-- Why does push decrement `top` before writing, while peek reads `stack[top]`?
+- Which indexes are active when `pos == 3`, and how many characters are stored?
+- Why does push write `stack[pos]` before incrementing, while peek reads `stack[pos - 1]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `top == 10` and `top == 0` the empty and full states respectively?
+- Why are `pos == 0` and `pos == 10` the empty and full states respectively?
 
 ### Operations and C API
 
 - What does a full push do, and why does it return no value?
 - What do empty peek and pop return, and which state stays unchanged?
-- Why does a successful pop increment `top` without erasing its old cell?
-- Why does changing `capacity` alone not change the actual ten-position Stack?
+- Why does a successful pop decrement `pos` before reading, without erasing its old cell?
+- How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- How do `top` and `10 - top` change in opposite directions?
+- Why does `pos` equal the count, while the nonempty top index is `pos - 1`?
 - How can an array snapshot prove that a full push changed nothing?
 
 ### Expression conversion and evaluation
@@ -240,7 +240,7 @@
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do `top`, global `size`, and local `pos` describe different state?
+- How do global `pos`, global `size`, and local `pos` describe different state?
 
 ### Tests and debugging
 
@@ -268,11 +268,11 @@
 - How do the lab driver and current tests use `student/lab.c`?
 - What LIFO, boundary, and valid-expression cases provide three distinct additions to `test_lab.c`?
 - Which warning and sanitizer outputs should accompany the trace evidence?
-- What must an autopsy explanation distinguish about physical bounds and the active suffix?
+- What must an autopsy explanation distinguish about physical bounds and the active prefix?
 
 ### Transfer and prerequisites
 
-- How does this active suffix compare with Chapter 1's active prefix?
+- How does this active prefix reuse Chapter 1's count and next-insertion convention?
 - How can a later Stack use integer or pointer items while preserving LIFO?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
@@ -282,7 +282,7 @@
 - How could explicit error reporting safely reject unsupported characters and missing operands?
 - What additional parsing rules and buffers would multi-digit operands require?
 - How would parentheses change the operator-Stack algorithm?
-- How does the optional legacy caller-owned integer API differ in layout and error reporting?
+- How does the optional legacy caller-owned integer API share the active-prefix layout but differ in ownership and error reporting?
 
 ## Week 5 — Tree DFS with Recursive Core
 

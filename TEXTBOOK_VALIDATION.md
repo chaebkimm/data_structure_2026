@@ -2,6 +2,42 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 4 Forward-Growing Stack — September 25, 2026
+
+The current lab now uses global `pos` as the next character insertion index
+and item count. Empty is zero; full is `pos == capacity`. Push writes before
+incrementing, peek reads `stack[pos - 1]`, and pop decrements before reading.
+The evaluator retains its separate local `pos` with the same convention.
+This representation supersedes the descending `top` convention described
+in the historical entries below.
+
+Both textbooks, their webpage/download copies, interactive activities,
+diagrams, worksheets, instructor answers, and related course references
+now agree on the forward representation. The isolated autopsy uses
+`pos == 2`, with correct `stack[pos - 1]` returning `'*'` and faulty
+`stack[pos]` returning the inactive marker `'?'`.
+
+The six C lab test groups, demo, and autopsy pass with AddressSanitizer and
+UndefinedBehaviorSanitizer. The C blocks extracted from both textbooks are
+identical and match the lab plus driver; their combined program produces
+`123*-4+`, size 7, and result -1. The compiler reports the six existing
+empty-parameter-list warnings and one shadow warning for the intentionally
+separate local `pos`.
+
+All 22 webpage tests, TypeScript checking, the production build, and
+whitespace checks pass. Local browser checks cover A/B/C pushes, peek,
+pop and slot reuse, full/empty boundaries, canonical conversion/evaluation,
+and Korean language switching. The activity labels distinguish the next
+insertion boundary from the actual top item. Browser logs contain no
+errors or warnings during these checks.
+The development server reported context-provider warnings during hot
+replacement; the subsequent page reloads and interaction checks succeeded.
+
+Publishing was not completed: the Sites publishing scripts became
+unavailable after the existing Site was opened. The updated source and
+successful production build remain local; this entry does not claim a new
+live version. Historical publication records below refer to earlier source.
+
 ## Chapter 4 Bilingual Webpage — September 24, 2026
 
 The existing student textbook site now includes Chapter 4 at `/chapter-4`

@@ -8,7 +8,7 @@ Open these materials only after completing and preserving the Stage C core.
   text equivalents.
 
 Choose either textbook language; reading both is optional. Both editions
-develop the top-only rule, downward-growing character stack, and the
+develop the top-only rule, forward-growing character stack, and the
 `1-2*3+4` → `123*-4+` → `-1` expression pipeline in `lab.c`.
 
 The runnable source, driver, and build files mentioned in the textbook arrive

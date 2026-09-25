@@ -20,16 +20,16 @@ ____________________________________________________________________
 
 ## 2. Canonical character trace
 
-Start empty. Record the return, `top`, item count, and bottom-to-top logical
+Start empty. Record the return, `size`, item count, and bottom-to-top logical
 state. A `void` push has no return value.
 
 ```text
 push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-| Step | Return | `top` | Item count | Logical Stack |
+| Step | Return | `size` | Item count | Logical Stack |
 |---:|---|---:|---:|---|
-| Start | none | 10 | 0 | empty |
+| Start | none | 0 | 0 | empty |
 | 1 | | | | |
 | 2 | | | | |
 | 3 | | | | |
@@ -44,7 +44,7 @@ ____________________________________________________________________
 
 ## 3. Representation invariant
 
-State the valid range of `top`, the active index range, and the expressions
+State the valid range of `size`, the active index range, and the expressions
 for the nonempty top, the next push position, and current item count.
 
 ____________________________________________________________________
@@ -53,19 +53,19 @@ What can remain in a popped cell? Why is it no longer a logical item?
 
 ____________________________________________________________________
 
-Why does changing the global `capacity` alone not change this implementation's
-array length or full/empty checks?
+Which full check uses global `capacity`, and why does changing that variable
+not resize the ten-cell array?
 
 ____________________________________________________________________
 
-Distinguish global `top`, global `size`, and local `pos`. Which two structures
-have opposite growth directions?
+Distinguish global `size`, global `postfix_size`, and local `value_size`. Which two structures
+use the same next-insertion convention with separate variables?
 
 ____________________________________________________________________
 
 ## 4. Boundary behavior
 
-For each case, record the return, final `top`, and whether any array cell
+For each case, record the return, final `size`, and whether any array cell
 changes. Include evidence for preserved state.
 
 1. `push('K')` when all ten character positions are active.
@@ -83,13 +83,13 @@ ____________________________________________________________________
 ## 5. Expression transfer
 
 Trace conversion of `1-2*3+4`. At each token, record the character operator
-Stack, `top`, postfix prefix, and `size`. Explain the final terminator and
+Stack, `size`, postfix prefix, and `postfix_size`. Explain the final terminator and
 why the operator Stack is empty afterward.
 
 ____________________________________________________________________
 
 Trace evaluation of the completed postfix. At each token, record the integer
-`values` Stack, `pos`, and any calculation. Explain `c - '0'` and why `num2`
+`values` Stack, `size`, and any calculation. Explain `c - '0'` and why `num2`
 is popped before `num1`.
 
 ____________________________________________________________________
@@ -109,15 +109,15 @@ ____________________________________________________________________
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
 | Canonical A, B, C LIFO trace | | | |
-| Peek preserves `top` and array | | | |
+| Peek preserves `size` and array | | | |
 | Pop exposes previous character without erasing the old cell | | | |
-| Full push preserves all ten cells and `top` | | | |
+| Full push preserves all ten cells and `size` | | | |
 | Empty peek/pop return `'\0'` and preserve state | | | |
 | `1-2*3+4` converts to `123*-4+`, length 7 | | | |
 | Canonical postfix evaluates to `-1` | | | |
 | Equal-precedence operators remain left associative | | | |
 | Noncommutative operands have the correct order | | | |
-| A second, shorter valid conversion resets `size` and terminates output | | | |
+| A second, shorter valid conversion resets `postfix_size` and terminates output | | | |
 | Character digits become numeric values | | | |
 
 ### Three student-authored cases

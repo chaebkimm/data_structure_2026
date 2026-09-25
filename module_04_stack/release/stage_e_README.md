@@ -1,8 +1,8 @@
 # Module 4 — Stage E: Lab and Evidence
 
 Start with `student/lab.md`, then study and trace `student/lab.c`. This is the
-program used throughout the module: a fixed character stack whose `top`
-moves downward, infix-to-postfix conversion, and integer postfix evaluation.
+program used throughout the module: a fixed character stack whose `size`
+moves forward, infix-to-postfix conversion, and integer postfix evaluation.
 The initial expression is `1-2*3+4`; its postfix form is `123*-4+` and its
 result is `-1`.
 

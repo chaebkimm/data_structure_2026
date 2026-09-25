@@ -10,18 +10,18 @@ Sections G and H may be completed during the independent-work window.
 ## Quick reference
 
 A Stack follows last in, first out (LIFO). In the global `char stack[10]`,
-empty means `top == 10`, full means `top == 0`, and active items occupy
-indexes `top` through 9. The nonempty top is `stack[top]`. Item count is
-`10 - top`. The global `size` counts postfix characters instead.
+empty means `size == 0`, full means `size == 10`, and active items occupy
+indexes 0 through `size - 1`. The nonempty top is `stack[size - 1]`. Item count is
+`size`. The global `postfix_size` counts postfix characters instead.
 
 ## A. Trace the canonical characters
 
-Start empty. Write logical states from bottom to top, not in increasing
+Start empty. Write logical states from bottom to top, following increasing
 physical index order. `push` has no return value.
 
-| Request | Return | Logical state after request | New `top` | Item count |
+| Request | Return | Logical state after request | New `size` | Item count |
 |---|---|---|---:|---:|
-| start | none | empty | 10 | 0 |
+| start | none | empty | 0 | 0 |
 | `push('A')` | | | | |
 | `push('B')` | | | | |
 | `push('C')` | | | | |
@@ -51,8 +51,8 @@ receive a replacement size.
 | `peek()` | | empty: `'\0'` | |
 | `pop()` | | empty: `'\0'` | |
 
-1. Why must `push` decrease `top` before writing?
-2. Why must `pop` save the character before increasing `top`?
+1. Why must `push` write at `size` before increasing it?
+2. Why must `pop` decrease `size` before reading the character?
 3. After a pop, does the old character disappear from physical storage?
 4. What makes that former top cell inactive?
 5. What ambiguity would appear if `'\0'` were used as an ordinary data item?
@@ -63,22 +63,22 @@ ____________________________________________________________________
 
 ## C. Check empty and full boundaries
 
-Consider each row independently. Assume valid `top` values at entry.
+Consider each row independently. Assume valid `size` values at entry.
 
-| Starting state and request | Return | Final `top` | Array changed? |
+| Starting state and request | Return | Final `size` | Array changed? |
 |---|---|---:|---|
-| empty (`top == 10`); `peek()` | | | |
-| empty (`top == 10`); `pop()` | | | |
-| ten active characters (`top == 0`); `push('K')` | | | |
-| A, B bottom to top (`top == 8`); `pop()` | | | |
+| empty (`size == 0`); `peek()` | | | |
+| empty (`size == 0`); `pop()` | | | |
+| ten active characters (`size == 10`); `push('K')` | | | |
+| A, B bottom to top (`size == 2`); `pop()` | | | |
 
 1. Which attempted write would occur if a full push lacked its guard?
 2. Which attempted read would occur if empty peek lacked its guard?
-3. The global `capacity` is set to 3 while the array still has ten cells.
+3. While empty, global `capacity` is set to 3 and the array still has ten cells.
    Does the current `is_full()` or `is_empty()` change behavior? Inspect
    the actual expressions in `lab.c` and explain.
 4. Why must callers avoid assigning arbitrary values outside `0..10` to
-   the global `top`? Do the equality checks validate every invalid index?
+   the global `size`? Do the equality checks validate every invalid index?
 
 Response:
 
@@ -98,9 +98,9 @@ Digits go directly to `postfix`. Before pushing an operator, pop waiting
 operators of equal or greater precedence into the output. List the operator
 Stack bottom to top. No integer calculation happens in this phase.
 
-| Event | Operator Stack | `top` | Postfix prefix | `size` |
+| Event | Operator Stack | `size` | Postfix prefix | `postfix_size` |
 |---|---|---:|---|---:|
-| start | empty | 10 | empty | 0 |
+| start | empty | 0 | empty | 0 |
 | read `1` | | | | |
 | read `-` | | | | |
 | read `2` | | | | |
@@ -111,7 +111,7 @@ Stack bottom to top. No integer calculation happens in this phase.
 | drain operators and terminate output | | | | |
 
 Why are both `*` and `-` removed when `+` arrives? Why does `'\0'` not
-increase `size`? What prevents an earlier conversion's output from being
+increase `postfix_size`? What prevents an earlier conversion's output from being
 appended to on a second valid call?
 
 Response:
@@ -120,10 +120,10 @@ ____________________________________________________________________
 
 ### D2. Evaluate the postfix result
 
-`values[10]` is a local integer array. `pos` counts its active prefix and
+`values[10]` is a local integer array. `value_size` counts its active prefix and
 starts at 0. List numeric values bottom to top.
 
-| Postfix event | Integer values | `pos` after token | Calculation |
+| Postfix event | Integer values | `value_size` after token | Calculation |
 |---|---|---:|---|
 | read `1` | | | |
 | read `2` | | | |
@@ -133,7 +133,7 @@ starts at 0. List numeric values bottom to top.
 | read `4` | | | |
 | read `+` | | | |
 
-State the final returned integer. Why does `values[pos++] = c - '0'` store
+State the final returned integer. Why does `values[value_size++] = c - '0'` store
 numbers rather than character codes? Why is `num2` popped before `num1`?
 Which expression locates the top of this numeric Stack before a pop?
 
@@ -171,19 +171,19 @@ ____________________________________________________________________
 
 ## E. Distinguish a physical slot from a logical item
 
-Consider this deliberately prepared array with `top == 8`:
+Consider this deliberately prepared array with `size == 2`:
 
 ```c
-char stack[10] = {'?', '?', '?', '?', '?', '?', '?', '?', '*', '+'};
+char stack[10] = {'+', '*', '?', '?', '?', '?', '?', '?', '?', '?'};
 ```
 
 1. Which indexes are active? Which are inactive?
 2. Which character is the correct top?
-3. What does the faulty expression `stack[top - 1]` read?
+3. What does the faulty expression `stack[size]` read?
 4. Why is that read inside the array but outside the logical Stack?
 5. Which expression reads the correct top?
 6. How could a wrong operator change a later expression calculation even if
-   the faulty read leaves `top` unchanged?
+   the faulty read leaves `size` unchanged?
 
 Response:
 
@@ -220,7 +220,7 @@ one array representation of the ADT. The local `int values[10]` is another.
 1. Does storing `'A'` in the global array create a real C call frame?
 2. Does naming an array `stack` make it obey LIFO automatically?
 3. Which functions enforce LIFO for the global character array?
-4. How do the active regions and index directions differ between `stack`
+4. How do the active regions and index directions agree between `stack`
    and `values`?
 
 Response:
@@ -234,7 +234,7 @@ ____________________________________________________________________
 3. Distinguish `peek` from `pop`.
 4. What is returned and preserved after empty peek?
 5. What is preserved after a full push?
-6. Distinguish `top`, `size`, and `pos`.
+6. Distinguish global `size`, global `postfix_size`, and local `value_size`.
 7. State the expression input assumptions and one unchecked limitation.
 8. State one question you still have.
 

@@ -3,7 +3,7 @@
 Open `representation_reveal.md` only when the instructor tells you. It names
 the last-in, first-out rule and connects Functions 100, 200, and 300 to
 character tokens `'A'`, `'B'`, and `'C'` in `lab.c`'s fixed `char stack[10]`.
-Its `top` moves down from 10 toward 0 when characters are pushed.
+Its `size` moves from 0 toward 10 when characters are pushed.
 
 Then complete exactly the three targets in `cognitive_pause.md` before
 calibration. Preserve the A, B, C character trace, boundary decisions, output

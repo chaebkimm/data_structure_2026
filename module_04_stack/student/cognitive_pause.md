@@ -14,11 +14,11 @@ quality are not assessed. Preserve the initial response before correcting it.
 A Stack follows last in, first out. `push` adds at the top, `peek` reports the
 top without removing it, and `pop` removes and reports it.
 
-The lab uses global `char stack[10]` and `top`. Empty means `top == 10`;
-full means `top == 0`. Active indexes run from `top` through 9, and the
-nonempty top is `stack[top]`. A successful push decreases `top` before
-writing; a successful pop increases `top` after reading. A full push changes
-nothing. Empty peek and pop return `'\0'` without changing state.
+The lab uses global `char stack[10]` and `size`. Empty means `size == 0`;
+full means `size == capacity` (10 in this lab). Active indexes run from 0
+through `size - 1`, and the nonempty top is `stack[size - 1]`. A successful
+push writes at `size`, then increases it; a successful pop decreases `size`
+before reading. A full push changes nothing. Empty peek and pop return `'\0'` without changing state.
 
 Infix places operators between operands. Postfix places each operator after
 its operands. Multiplication has greater precedence than addition and
@@ -35,7 +35,7 @@ Start empty and trace:
 push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-Record each return, the new `top`, and the bottom-to-top logical state.
+Record each return, the new `size`, and the bottom-to-top logical state.
 Which physical index contains `'C'` after the third push?
 
 Response:
@@ -46,11 +46,11 @@ ____________________________________________________________________
 
 Consider each case independently.
 
-1. All ten positions are active and `top == 0`. State what `push('K')`
-   returns and what happens to the array and `top`.
-2. The Stack is empty with `top == 10`. State the result and final `top`
+1. All ten positions are active and `size == 10`. State what `push('K')`
+   returns and what happens to the array and `size`.
+2. The Stack is empty with `size == 0`. State the result and final `size`
    after `peek()`.
-3. Begin empty again. State the result and final `top` after `pop()`.
+3. Begin empty again. State the result and final `size` after `pop()`.
 
 Response:
 

@@ -17,11 +17,12 @@ behavior before making source changes or adding tests.
 
 ## Representation and input limits
 
-`char stack[10]` stores pending operators. Empty means `top == 10`; full means
-`top == 0`. Pushing decrements `top` before writing, and popping reads before
-incrementing it. `size` counts postfix tokens; it is not the operator-stack
-size. Postfix evaluation uses a separate local `int values[10]` with `pos` as
-the next free position.
+`char stack[10]` stores pending operators. Empty means `size == 0`; full means
+`size == capacity` (10 here). Pushing writes `stack[size]`, then increments
+`size`; popping decrements `size`, then reads `stack[size]`. `postfix_size` counts postfix tokens; it is not the operator-stack
+size. Postfix evaluation uses a separate local `int values[10]` with `size` as
+the next free position. Its local `value_size` is a separate variable that hides
+the global character count inside `eval_postfix()`.
 
 The default pipeline is `1-2*3+4` → `123*-4+` → `-1`. Supported experiments
 use syntactically valid expressions of at most seven characters, single-digit
@@ -67,5 +68,7 @@ make CC=clang CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 
 Some compilers warn about the current source's old-style empty parameter
 lists, such as `is_full()`. A `(void)` parameter list explicitly declares no
-parameters in C11. The supplied source is not claimed to be warning-clean.
+parameters in C11. `-Wshadow` also reports local `value_size` hiding global `size`;
+these are separate variables for the two Stacks. The supplied source is not
+claimed to be warning-clean.
 Run `make clean` to remove generated files in `build`.

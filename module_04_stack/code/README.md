@@ -2,7 +2,7 @@
 
 ## Current lab
 
-[../student/lab.c](../student/lab.c) defines a downward-growing global
+[../student/lab.c](../student/lab.c) defines a forward-growing global
 character Stack and two expression phases. `lab_demo.c` supplies `main`;
 `tests/test_lab.c` checks its documented behavior. Compile either harness
 with the lab source, not both harnesses together.
@@ -47,15 +47,16 @@ cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g \
 
 The supplied lab still uses `()` for six parameterless definitions. Some
 compilers warn about these missing prototypes; use `(void)` when revising
-them. A successful build is not evidence that the expression parser checks
-invalid inputs.
+them. With `-Wshadow`, local `value_size` also warns because it hides global `size`.
+These are separate variables for the two Stacks. A successful build is not
+evidence that the expression parser checks invalid inputs.
 
 ## Demo output
 
 ```text
 infix: 1-2*3+4
 postfix: 123*-4+
-size: 7
+postfix_size: 7
 result: -1
 ```
 
@@ -80,14 +81,15 @@ and overflow are unchecked. The core tests stay within the supported
 domain. Discuss rejection checks as extensions before expecting invalid
 inputs to run safely.
 
-`top` indexes the top character, `size` counts postfix characters without
-the terminator, and `pos` counts integer values during evaluation. The
-descriptive `capacity` variable does not control the hardcoded limit of 10.
+Global `size` is the next insertion index and character count, `postfix_size` counts
+postfix characters without the terminator, and local `value_size` counts integer
+values during evaluation. The two `size` variables are separate. `capacity`
+is initialized to 10 and controls the full check; the array has ten cells.
 
 ## Isolated autopsy
 
 `make autopsy` builds an intentional wrong-index read using the current
-downward representation. Follow [autopsy/README.md](autopsy/README.md) and
+forward representation. Follow [autopsy/README.md](autopsy/README.md) and
 preserve predictions before running. Changing `lab.c` cannot change this
 separate program's result.
 

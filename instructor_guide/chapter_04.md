@@ -11,28 +11,29 @@ callers can resume. Preserve the initial reasoning before naming LIFO.
 
 The Stack rule restricts access to the newest remaining item. The motivating
 function IDs are abstract labels. The current `module_04_stack/student/lab.c`
-stores characters in global `char stack[10]` and uses `top = 10` for empty.
+stores characters in global `char stack[10]` and uses `pos = 0` for empty.
 Its runtime call-stack bookkeeping is a separate object.
 
 ## Board Walkthrough
 
 Use characters A, B, C. Write logical states from bottom to top.
 
-| Request | Return | Logical state | `top` | Count |
+| Request | Return | Logical state | `pos` | Count |
 |---|---|---|---:|---:|
-| start | none | empty | 10 | 0 |
-| `push('A')` | none | A | 9 | 1 |
-| `push('B')` | none | A, B | 8 | 2 |
-| `push('C')` | none | A, B, C | 7 | 3 |
-| `peek()` | C | A, B, C | 7 | 3 |
-| `pop()` | C | A, B | 8 | 2 |
-| `pop()` | B | A | 9 | 1 |
+| start | none | empty | 0 | 0 |
+| `push('A')` | none | A | 1 | 1 |
+| `push('B')` | none | A, B | 2 | 2 |
+| `push('C')` | none | A, B, C | 3 | 3 |
+| `peek()` | C | A, B, C | 3 | 3 |
+| `pop()` | C | A, B | 2 | 2 |
+| `pop()` | B | A | 1 | 1 |
 
-The active suffix is `top` through index 9. Push decrements before writing;
-peek reads `stack[top]`; pop reads then increments. A full push (`top == 0`)
+The active prefix is 0 through `pos - 1`. Push writes `stack[pos]` and
+then increments `pos`; peek reads `stack[pos - 1]`; pop decrements `pos`
+and then reads `stack[pos]`. A full push (`pos == 10`)
 is a silent no-op. Empty peek/pop return `'\0'` without changing state.
-The count is `10 - top`. The declared `capacity` does not reconfigure the
-array or the literal 10 used by the empty check.
+The count is `pos`. The declared `capacity` controls the full
+check but does not resize the ten-cell array.
 
 Then trace two separate phases:
 
@@ -41,15 +42,16 @@ Then trace two separate phases:
 ```
 
 Conversion uses the character Stack for operators; global `size` is postfix
-length seven. Evaluation uses local `int values[10]` with upward count `pos`.
+length seven. Evaluation uses local `int values[10]` and its own `pos`, with the same
+next-insertion/count convention as the global character Stack.
 Pop the right operand into `num2` before the left into `num1`. The intermediate
 results are 6, -5, and -1. The terminating `'\0'` is outside the token count.
 
 ## Common First Thoughts
 
-- “`top` is the number of stored characters.”
-- “The newest item is at `stack[top - 1]`.”
-- “Empty means `top == 0`.”
+- “`pos` is the index of the current top character.”
+- “The newest item is at `stack[pos]`.”
+- “Empty means `pos == 10`.”
 - “Pop must erase the old cell.”
 - “Global `size` counts the operator Stack.”
 - “Character `'3'` and integer 3 are interchangeable.”
@@ -57,7 +59,7 @@ results are 6, -5, and -1. The terminating `'\0'` is outside the token count.
 
 ## Neutral Questions
 
-- What are `top` and the count before and after this request?
+- What are `pos` and the count before and after this request?
 - Which physical indexes currently belong to the Stack?
 - Which index was written by the most recent push?
 - Which array and variable belong to the current expression phase?
@@ -67,7 +69,7 @@ results are 6, -5, and -1. The terminating `'\0'` is outside the token count.
 ## Vocabulary Rules
 
 **Words we can use:** Fixed arrays, characters, integers, indexes, counts,
-active suffix, invariant, sentinel, and simple function calls.
+active prefix, invariant, sentinel, and simple function calls.
 
 **Names introduced here:** Stack, LIFO, top, push, peek, pop, underflow, infix,
 postfix, operand, operator, precedence, associativity, and null terminator.

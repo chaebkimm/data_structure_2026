@@ -26,17 +26,18 @@ these labels nor the character array is a real runtime call frame.
 ```c
 char stack[10];
 int capacity = 10;
-int top = 10;
+int size = 0;
 ```
 
-The global character Stack grows toward smaller indexes. Its invariant is
-`0 <= top <= 10`; active items occupy indexes `top` through 9. Empty means
-`top == 10`, full means `top == 0`, and the active count is `10 - top`.
-Push decreases `top` before writing; peek and pop read `stack[top]` only
-when nonempty; pop then increases `top` without erasing the array cell.
+The global character Stack grows toward larger indexes. Its invariant is
+`0 <= size <= capacity`; active items occupy indexes 0 through `size - 1`. Empty means
+`size == 0`, full means `size == 10`, and the active count is `size`.
+Push writes `stack[size]` and then increases `size`. Peek reads `stack[size - 1]`
+when nonempty; pop decreases `size` and then reads `stack[size]`, without
+erasing the array cell.
 A full push does nothing. Empty peek/pop return `'\0'`. There is no
-separate status output, and changing the descriptive `capacity` variable
-does not change the hardcoded array/empty boundary.
+separate status output. `capacity` is initialized to 10 and controls the full
+check; the array itself still has a fixed ten-cell allocation.
 
 Expression processing has two phases:
 
@@ -45,9 +46,9 @@ infix_to_postfix():  1-2*3+4 → 123*-4+
 eval_postfix():      123*-4+ → -1
 ```
 
-Conversion uses the global character Stack for operators. `size` counts
+Conversion uses the global character Stack for operators. `postfix_size` counts
 postfix characters, excluding the terminating null. It is reset before
-each conversion. Evaluation uses its own `int values[10]`, with `pos`
+each conversion. Evaluation uses its own `int values[10]`, with `size`
 counting active integers. The first value popped is the right operand.
 
 The input assumption is one digit followed by zero or more operator/digit
@@ -68,13 +69,13 @@ are discussion and extension work; safe rejection is not a core guarantee.
 Students will be able to:
 
 1. explain LIFO and distinguish push, peek, and pop;
-2. trace `'A'`, `'B'`, `'C'` through indexes 9, 8, and 7;
+2. trace `'A'`, `'B'`, `'C'` through indexes 0, 1, and 2;
 3. distinguish the top index, active item count, and inactive slots;
 4. state the actual full/empty behavior of the character functions;
 5. convert infix to postfix using precedence and left associativity;
 6. evaluate postfix with correct left/right operand order;
 7. distinguish character digits from integer intermediate results;
-8. explain `top`, `size`, `pos`, and the null terminator;
+8. explain global `size`, global `postfix_size`, local `value_size`, and the null terminator;
 9. justify constant-time Stack operations and linear expression processing;
 10. identify assumptions that would need checks in a more general evaluator.
 
@@ -88,7 +89,7 @@ Students will be able to:
 | `instructor/` | Lesson plan, answer key, and technical notes |
 | `code/lab_demo.c` | Entry point for the supplied expression |
 | `code/tests/test_lab.c` | Six core test groups; students add three justified cases |
-| `code/autopsy/` | Isolated, intentional `top - 1` defect |
+| `code/autopsy/` | Isolated, intentional `stack[size]` top-read defect |
 | `release/` | Five-stage manifest and student build/package templates |
 
 From `code`, run `make lab-demo`, `make lab-tests`, or `make autopsy`.
@@ -114,20 +115,22 @@ solutions are excluded.
 Submit `student/lab.c`, `code/tests/test_lab.c` with three additional
 justified cases, predictions and observed test/build output, the completed
 evidence and autopsy records, and the preserved/revised Cognitive Pause.
-Existing `()` declarations can produce prototype warnings; record them
-honestly and use `(void)` when revising parameterless definitions.
+Existing `()` declarations can produce prototype warnings; use `(void)`
+when revising parameterless definitions. `-Wshadow` also reports local `value_size`
+hiding global `size`; explain their separate scopes and record diagnostics
+honestly.
 
 ## Optional earlier checked implementation
 
 `code/include/`, `code/starter/`, `code/solution/`, and the older
 `test_core.c`, `test_extension.c`, and `test_student.c` retain the earlier
-caller-owned integer Stack and checked `+`/`*` evaluator. Their `size`-based
-representation and status/output contracts differ from `lab.c`. They are
+caller-owned integer Stack and checked `+`/`*` evaluator. They use the same active-prefix idea with `size` as the count,
+but their status/output contracts differ from `lab.c`. They are
 an optional comparison and are not the current submission or Stage E lab.
 
 ## Spiral links
 
 The module revisits fixed arrays, indexes, character arithmetic, and saved
-work. It introduces LIFO, a downward-growing active suffix, postfix,
+work. It introduces LIFO, a forward-growing active prefix, postfix,
 precedence, and operand order. Later tree and graph modules reuse LIFO
 behavior with their own item types and storage policies.

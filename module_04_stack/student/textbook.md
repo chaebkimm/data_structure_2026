@@ -15,54 +15,54 @@ The lab uses this global state:
 ```c
 char stack[10];
 int capacity = 10;
-int top = 10;
+int size = 0;
 ```
 
-The valid array indexes are 0 through 9. The initial `top == 10` marks an
-empty Stack; it is not an index we may read. Push decreases `top` before
-writing, so the first item goes into `stack[9]`. Later items go into indexes
-8, 7, and so on. The Stack grows toward smaller indexes.
+The valid array indexes are 0 through 9. `size` is the position where the
+next item will be added. It also counts the active items. The initial
+`size == 0` marks an empty Stack. Push writes at `stack[size]`, then
+increases `size`, so the first item goes into `stack[0]`. Later items go
+into indexes 1, 2, and so on. The Stack grows toward larger indexes.
 
-With `top == 7`, the active items occupy indexes 7 through 9. The top item
-is `stack[7]`, and the number of items is `10 - top`, or 3. Positions below
-`top` are inactive. A high physical index does not necessarily mean the
-newest item.
+With `size == 3`, the active items occupy indexes 0 through 2. The top item
+is `stack[size - 1]`, or `stack[2]`, and the number of items is 3. Positions
+at or above `size` are inactive. When the Stack is full, `size == capacity`
+marks the boundary past the array; `stack[10]` is not a cell we may write.
 
-`capacity` records the intended capacity, but the current implementation
-uses literal `10` for initialization and the empty check. Changing
-`capacity` alone does not resize the array or change those operations.
+`capacity` is used by the full check. It must match the ten cells reserved
+by `stack[10]`. Changing `capacity` alone does not resize the array.
 
 ### How do push, peek, and pop change the state?
 
 Use character labels `'A'`, `'B'`, and `'C'` for three saved tasks. In the
-logical lists below, the rightmost item is the top. Those lists show arrival
-order, not increasing array-index order.
+logical lists below, the rightmost item is the top. Arrival order and
+increasing array-index order are the same here.
 
-| Request | Returned value | Items, bottom to top | `top` | Active indexes |
+| Request | Returned value | Items, bottom to top | `size` | Active indexes |
 |---|---|---|---:|---|
-| start | — | empty | 10 | none |
-| `push('A')` | none (`void`) | A | 9 | 9 |
-| `push('B')` | none (`void`) | A, B | 8 | 8–9 |
-| `push('C')` | none (`void`) | A, B, C | 7 | 7–9 |
-| `peek()` | `'C'` | A, B, C | 7 | 7–9 |
-| `pop()` | `'C'` | A, B | 8 | 8–9 |
-| `pop()` | `'B'` | A | 9 | 9 |
-| `pop()` | `'A'` | empty | 10 | none |
+| start | — | empty | 0 | none |
+| `push('A')` | none (`void`) | A | 1 | 0 |
+| `push('B')` | none (`void`) | A, B | 2 | 0–1 |
+| `push('C')` | none (`void`) | A, B, C | 3 | 0–2 |
+| `peek()` | `'C'` | A, B, C | 3 | 0–2 |
+| `pop()` | `'C'` | A, B | 2 | 0–1 |
+| `pop()` | `'B'` | A | 1 | 0 |
+| `pop()` | `'A'` | empty | 0 | none |
 
-Pop does not erase the array cell. Increasing `top` makes the old top
+Pop does not erase the array cell. Decreasing `size` makes the old top
 inactive. The next push may overwrite it.
 
 ### What happens at the boundaries?
 
-The Stack is full when `top == 0`. A full `push` returns without changing
-the array or `top`; it does not return a success flag. The Stack is empty
-when `top == 10`. Empty `peek` and `pop` return `'\0'` and leave `top`
-unchanged. This is a sentinel value, not a separate error status. If a
-caller deliberately stores `'\0'`, the returned character alone cannot
-distinguish that item from an empty Stack.
+The Stack is full when `size == capacity`. A full `push` returns without
+changing the array or `size`; it does not return a success flag. The Stack
+is empty when `size == 0`. Empty `peek` and `pop` return `'\0'` and leave
+`size` unchanged. This is a sentinel value, not a separate error status.
+If a caller deliberately stores `'\0'`, the returned character alone
+cannot distinguish that item from an empty Stack.
 
 These checks protect normal full and empty Stack operations. They do not
-validate the expression or repair an externally corrupted `top`.
+validate the expression or repair an externally corrupted `size`.
 
 ### How does this relate to function calls?
 
@@ -105,33 +105,33 @@ or 2. The lab does not push a null sentinel onto the Stack.
 
 #### How does the example convert?
 
-Start with `top == 10`. Operator lists run bottom to top.
+Start with `size == 0`. Operator lists run bottom to top.
 
-| Input/action | Postfix characters so far | Waiting operators | `top` |
+| Input/action | Postfix characters so far | Waiting operators | `size` |
 |---|---|---|---:|
-| read `1` | `1` | empty | 10 |
-| read `-` | `1` | `-` | 9 |
-| read `2` | `12` | `-` | 9 |
-| read `*` | `12` | `-`, `*` | 8 |
-| read `3` | `123` | `-`, `*` | 8 |
-| read `+`: pop `*`, pop `-`, push `+` | `123*-` | `+` | 9 |
-| read `4` | `123*-4` | `+` | 9 |
-| end: pop remaining `+` | `123*-4+` | empty | 10 |
+| read `1` | `1` | empty | 0 |
+| read `-` | `1` | `-` | 1 |
+| read `2` | `12` | `-` | 1 |
+| read `*` | `12` | `-`, `*` | 2 |
+| read `3` | `123` | `-`, `*` | 2 |
+| read `+`: pop `*`, pop `-`, push `+` | `123*-` | `+` | 1 |
+| read `4` | `123*-4` | `+` | 1 |
+| end: pop remaining `+` | `123*-4+` | empty | 0 |
 
 The input and output arrays each contain eight positions:
 
 ```c
 char infix[8] = "1-2*3+4";
 char postfix[8] = "";
-int size = 0;
+int postfix_size = 0;
 ```
 
-`size` counts postfix characters, not the number of items in the operator
-Stack. Conversion resets `size` to 0, scans until the input's `'\0'`, and
-finishes by writing `postfix[size] = '\0'`. For the example, `size == 7`;
+`postfix_size` counts postfix characters, not the number of items in the operator
+Stack. Conversion resets `postfix_size` to 0, scans until the input's `'\0'`, and
+finishes by writing `postfix[postfix_size] = '\0'`. For the example, `postfix_size == 7`;
 the terminator occupies index 7 and is not counted as an expression token.
 
-Resetting `size` prevents a second conversion from appending to an old
+Resetting `postfix_size` prevents a second conversion from appending to an old
 result. Writing the terminator prevents leftover characters from appearing
 when a later expression is shorter. Normal conversion drains the operator
 Stack, leaving it empty for the next conversion.
@@ -142,26 +142,28 @@ Stack, leaving it empty for the next conversion.
 
 ```c
 int values[10];
-int pos = 0;
+int value_size = 0;
 ```
 
-Here `pos` counts the active integers. Active indexes are 0 through
-`pos - 1`; the top is `values[pos - 1]`. This Stack grows toward larger
-indexes. It uses the same LIFO rule as the character Stack with a different
-index convention.
+Here the local `value_size` counts the active integers and gives the next insertion
+index. Active indexes are 0 through `value_size - 1`; the top is `values[value_size - 1]`.
+Both Stacks grow toward larger indexes and use the same index convention.
+The local `value_size` belongs to `eval_postfix()` and hides the global variable
+with the same name inside that function. Updating it does not change the
+character Stack's `value_size`.
 
 | Variable | Meaning | How an item is added |
 |---|---|---|
-| `top` | index of the character Stack's top; 10 means empty | decrement, then write `stack[top]` |
-| `size` | number of postfix characters, excluding `'\0'` | append `postfix[size++]` |
-| `pos` | count of active integer values | write `values[pos++]` |
+| global `value_size` | next character insertion index and count of active characters | write `stack[value_size]`, then increase `value_size` |
+| `postfix_size` | number of postfix characters, excluding `'\0'` | append `postfix[postfix_size++]` |
+| local `value_size` in `eval_postfix()` | next integer insertion index and count of active integers | write `values[value_size++]` |
 
 For a digit, `c - '0'` gives the integer value. For an operator, pop two
 integers, calculate, and push the result. The first popped value is the
 **right** operand, `num2`. The second is the **left** operand, `num1`.
 Subtraction, division, and remainder depend on that order.
 
-| Postfix token | Action | Values, bottom to top | `pos` |
+| Postfix token | Action | Values, bottom to top | `value_size` |
 |---|---|---|---:|
 | `1` | push 1 | 1 | 1 |
 | `2` | push 2 | 1, 2 | 2 |
@@ -171,7 +173,7 @@ Subtraction, division, and remainder depend on that order.
 | `4` | push 4 | -5, 4 | 2 |
 | `+` | `-5 + 4` | -1 | 1 |
 
-The final `return values[--pos]` returns `-1`. Intermediate values are
+The final `return values[--value_size]` returns `-1`. Intermediate values are
 integers, so they can be negative or larger than a digit. They are not
 stored back into the character Stack.
 
@@ -211,22 +213,24 @@ are already present in the supplied code.
 
 ### What must each operation preserve?
 
-For the global character Stack in a valid completed state:
+For the global character Stack in a valid completed state, `capacity` is
+10 and the following rules hold:
 
 ```text
-0 <= top <= 10
-active indexes: top through 9
-number of active items: 10 - top
-read stack[top] only when top < 10
+0 <= size <= capacity
+active indexes: 0 through size - 1 (none when size == 0)
+number of active items: size
+read stack[size - 1] only when size > 0
+write a new item at stack[size] only when size < capacity
 ```
 
-Push preserves this rule by checking full state, decreasing `top`, then
-writing. Pop checks empty state, reads `stack[top]`, then increases `top`.
-Peek reads the same top without changing it. Neither operation shifts old
-items or erases inactive cells.
+Push preserves this rule by checking full state, writing at `stack[size]`,
+then increasing `size`. Pop checks empty state, decreases `size`, then reads
+`stack[size]`. Peek reads `stack[size - 1]` without changing `size`. Neither
+operation shifts old items or erases inactive cells.
 
-The postfix output has a separate bound: `0 <= size <= 7`, leaving room for
-`postfix[size] = '\0'`. During valid evaluation, `pos` is the number of
+The postfix output has a separate bound: `0 <= postfix_size <= 7`, leaving room for
+`postfix[postfix_size] = '\0'`. During valid evaluation, local `size` is the number of
 available operands/results; an operator needs two values and the complete
 expression leaves exactly one. The current evaluator relies on those facts
 rather than checking them.
@@ -235,7 +239,7 @@ rather than checking them.
 
 ### How much work does one Stack operation do?
 
-Push checks one boundary, changes one index, and writes one cell. Peek checks
+Push checks one boundary, writes one cell, and changes one index. Peek checks
 one boundary and reads one cell. Pop adds one index update to the read. None
 shifts existing elements, so each operation takes `O(1)` time.
 
@@ -267,12 +271,12 @@ Stage B vocabulary reference supplies the wider course vocabulary.
 | Term | Meaning in this chapter |
 |---|---|
 | Stack; LIFO | An access rule that removes the newest remaining item first |
-| top | The accessible end; global `top` is its character-array index |
+| top | The accessible end; its character-array index is `size - 1` when nonempty |
 | push, peek, pop | Add, inspect, or remove the top item |
-| active suffix | Character indexes `top` through 9 |
+| active prefix | Character indexes 0 through `size - 1`; empty when `size == 0` |
 | underflow | A request to read/remove an item when the Stack is empty |
 | sentinel | A special value; here `'\0'` returned by an empty peek/pop |
-| invariant | A rule preserved by valid operations, such as `0 <= top <= 10` |
+| invariant | A rule preserved by valid operations, such as `0 <= size <= capacity` |
 | infix; postfix | Operators between operands; operators after operands |
 | operand; operator | A value; an operation applied to values |
 | precedence | The ordering priority of operators |
@@ -287,18 +291,19 @@ Stage B vocabulary reference supplies the wider course vocabulary.
 The implementation follows the same example in two phases. Keep the
 character operator Stack separate from the integer values used later.
 
-1. **Prepare character storage.** Start `top` at 10. Define full as 0 and
-   empty as 10. On push, check full, decrement, then write. On peek/pop,
-   check empty before reading; only pop increments `top` afterward.
+1. **Prepare character storage.** Start global `size` at 0. Define full
+   as `size == capacity` and empty as `size == 0`. On push, check full,
+   write at `size`, then increment. On peek/pop, check empty first. Peek
+   reads `stack[size - 1]`; pop decrements `size` before reading `stack[size]`.
 2. **Set precedence and strings.** Use level 1 for `+`/`-`, level 2 for
    `*`/`/`/`%`. Reserve space for seven tokens and one terminator in each
-   expression array. `size` counts output tokens only.
+   expression array. `postfix_size` counts output tokens only.
 3. **Convert to postfix.** Start with the operator Stack empty. Reset
-   `size`, scan digits into output, and use precedence to decide when to
+   `postfix_size`, scan digits into output, and use precedence to decide when to
    emit waiting operators. Drain the Stack and terminate the output.
 4. **Define integer calculations.** Calculate `num1 op num2` for each
    supported operator. The caller must satisfy the arithmetic assumptions.
-5. **Evaluate postfix.** Start `pos` at zero in a local integer array.
+5. **Evaluate postfix.** Start `size` at zero in a local integer array.
    Convert digits to numbers. Pop right before left for each operator and
    push the result. A valid complete expression leaves one result.
 6. **Run and collect evidence.** Use the separate driver, then test LIFO,
@@ -322,7 +327,7 @@ has value zero. It differs from the digit character `'0'`.
 `char infix[8] = "1-2*3+4";` reserves eight character positions for seven
 expression characters and the terminator. `char postfix[8] = "";`
 initializes all eight positions to zero. `infix[i] != '\0'` asks whether
-the scan has reached the end. After conversion, `postfix[size] = '\0';`
+the scan has reached the end. After conversion, `postfix[postfix_size] = '\0';`
 writes the terminator after the last output character.
 
 A checked digit becomes a number through `c - '0'`. C guarantees consecutive
@@ -341,23 +346,24 @@ hold and checks the right only when the left is true.
 The final drain must continue while the character Stack has an item.
 `!is_empty()` uses logical NOT: `!` produces 1 when its operand is zero and
 0 otherwise. `is_empty()` returns 1 for an empty Stack, so the negated
-condition is false at that boundary. Comparisons such as `top == 10`
+condition is false at that boundary. Comparisons such as `size == 0`
 also produce integer 1 for true and 0 for false.
 
 ### Updating an index or count
 
-Push and pop move the boundary by one position. `top -= 1;` subtracts one
-from `top`, and `top += 1;` adds one. Here they have the same effect as
-`top = top - 1;` and `top = top + 1;`.
+Push and pop move the boundary by one position. `size += 1;` adds one
+and `size -= 1;` subtracts one. Here they have the same effect as
+`size = size + 1;` and `size = size - 1;`. Push increases the boundary after
+writing; pop decreases it before reading.
 
-An append needs the old free position. In `postfix[size++] = c;`, postfix
-increment supplies the old `size` as the index. Starting at 3 writes
-`postfix[3]` and leaves `size` equal to 4. `values[pos++]` uses the same
+An append needs the old free position. In `postfix[postfix_size++] = c;`, postfix
+increment supplies the old `postfix_size` as the index. Starting at 3 writes
+`postfix[3]` and leaves `postfix_size` equal to 4. `values[value_size++]` uses the same
 rule for integer storage.
 
 Removing an integer needs the last occupied position. Prefix decrement in
-`values[--pos]` decreases `pos` before supplying the index. Starting at 3
-reads `values[2]` and leaves `pos` equal to 2. The two operand reads are
+`values[--value_size]` decreases `size` before supplying the index. Starting at 3
+reads `values[2]` and leaves `size` equal to 2. The two operand reads are
 separate statements, so the right operand is removed before the left.
 
 ### Choosing a calculation with `switch` and `case`
@@ -391,7 +397,7 @@ these operators do not provide an error result when that assumption fails.
 The demonstration driver needs the arrays and functions defined in
 `student/lab.c`. `extern char infix[8];` declares the existing array's name
 and type so the driver can use it. This declaration does not create a
-second array. The same rule applies to `postfix` and `size`. Both source
+second array. The same rule applies to `postfix` and `postfix_size`. Both source
 files must be compiled and linked into the program.
 
 `void infix_to_postfix(void);` declares a function without defining its
@@ -408,8 +414,8 @@ The driver displays the stored characters and the computed answer.
 conversion prints characters until a null terminator; `%d` prints an
 integer. `\n` moves the output to a new line.
 
-In `(void)printf("size: %d\n", size);`, `(void)` is a cast that explicitly
-discards `printf`'s return value. The call still runs and prints the size.
+In `(void)printf("postfix_size: %d\n", postfix_size);`, `(void)` is a cast that explicitly
+discards `printf`'s return value. The call still runs and prints the postfix_size.
 It differs from `(void)` in a function's parameter list. The argument
 `eval_postfix()` in the final display call is evaluated to obtain the
 integer that `%d` will print. `return 0;` then ends `main` and reports
@@ -424,48 +430,48 @@ no `main`; the last block is its separate demonstration driver.
 Before reading, distinguish `'3'` (a character), `3` (an integer), and
 `"3"` (a character string with a terminator). C guarantees consecutive digit
 character values, so `c - '0'` converts a checked digit to its integer value.
-In `postfix[size++] = c`, indexing uses the old count before incrementing.
-In `values[--pos]`, decrement happens first, selecting the current top.
+In `postfix[postfix_size++] = c`, indexing uses the old count before incrementing.
+In `values[--value_size]`, decrement happens first, selecting the current top.
 
 ### Character Stack operations
 
 The checks prevent ordinary full and empty operations from indexing outside
-the array. They do not validate arbitrary changes to the global `top`.
+the array. They do not validate arbitrary changes to the global `size`.
 
 ```c
 char stack[10];
 int capacity = 10;
-int top = 10;
+int size = 0;
 
 int is_full() {
-    return top == 0;
+    return size == capacity;
 }
 
 void push(char data) {
     if (is_full()) {
         return;
     }
-    top -= 1;
-    stack[top] = data;
+    stack[size] = data;
+    size += 1;
 }
 
 int is_empty() {
-    return top == 10;
+    return size == 0;
 }
 
 char peek() {
     if (is_empty()) {
         return '\0';
     }
-    return stack[top];
+    return stack[size - 1];
 }
 
 char pop() {
     if (is_empty()) {
         return '\0';
     }
-    char data = stack[top];
-    top += 1;
+    char data = stack[size - 1];
+    size -= 1;
     return data;
 }
 ```
@@ -489,7 +495,7 @@ int prec(char op) {
 char infix[8] = "1-2*3+4";
 
 char postfix[8] = "";
-int size = 0;
+int postfix_size = 0;
 ```
 
 ### Infix-to-postfix conversion
@@ -500,26 +506,26 @@ For supported operators, an empty peek has lower precedence and ends the loop.
 
 ```c
 void infix_to_postfix() {
-    size = 0;
+    postfix_size = 0;
     for (int i = 0; infix[i] != '\0'; i++) {
         char c = infix[i];
 
         if (c >= '0' && c <= '9') {
-            postfix[size++] = c;
+            postfix[postfix_size++] = c;
         }
         else {
             char op = peek();
             while (prec(op) >= prec(c)) {
-                postfix[size++] = pop();
+                postfix[postfix_size++] = pop();
                 op = peek();
             }
             push(c);
         }
     }
     while (!is_empty()) {
-        postfix[size++] = pop();
+        postfix[postfix_size++] = pop();
     }
-    postfix[size] = '\0';
+    postfix[postfix_size] = '\0';
 }
 ```
 
@@ -549,21 +555,21 @@ removes its right operand first, then its left operand.
 ```c
 int eval_postfix() {
     int values[10];
-    int pos = 0;
+    int value_size = 0;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < postfix_size; i++) {
         char c = postfix[i];
         if (c >= '0' && c <= '9') {
-            values[pos++] = c - '0';
+            values[value_size++] = c - '0';
         }
         else {
-            int num2 = values[--pos];
-            int num1 = values[--pos];
-            values[pos++] = calc(num1, num2, c);
+            int num2 = values[--value_size];
+            int num1 = values[--value_size];
+            values[value_size++] = calc(num1, num2, c);
         }
     }
 
-    return values[--pos];
+    return values[--value_size];
 }
 ```
 
@@ -578,7 +584,7 @@ The companion `code/lab_demo.c` supplies `main`. Compile it together with
 
 extern char infix[8];
 extern char postfix[8];
-extern int size;
+extern int postfix_size;
 
 void infix_to_postfix(void);
 int eval_postfix(void);
@@ -588,7 +594,7 @@ int main(void)
     infix_to_postfix();
     (void)printf("infix: %s\n", infix);
     (void)printf("postfix: %s\n", postfix);
-    (void)printf("size: %d\n", size);
+    (void)printf("postfix_size: %d\n", postfix_size);
     (void)printf("result: %d\n", eval_postfix());
     return 0;
 }
@@ -606,16 +612,18 @@ The demo prints:
 ```text
 infix: 1-2*3+4
 postfix: 123*-4+
-size: 7
+postfix_size: 7
 result: -1
 ```
 
 For new C declarations, write `(void)` when a function takes no parameters.
 The supplied lab still spells those definitions with `()`; C11 compilers
-may warn about the missing prototypes. Record the actual diagnostics.
+may warn about the missing prototypes. With shadow warnings enabled, the
+local `size` also produces a warning because it hides the global `size`.
+The two variables belong to separate Stacks. Record the actual diagnostics.
 
 Before running, explain why the character Stack becomes empty again, why
-`size` is 7 rather than 8, and why subtraction receives 1 as its left
+`postfix_size` is 7 rather than 8, and why subtraction receives 1 as its left
 operand and 6 as its right operand. Then predict another valid expression
 that fits the arrays and compare your trace with the program.
 
@@ -633,16 +641,16 @@ changes in shared storage. Those are separate ways to produce a result.
 ### 1. Reading declarations, function calls, and shared state
 
 First identify the storage that survives between calls. A declaration such
-as `int top = 10;` introduces a variable, gives its type, and sets its
-initial value. An assignment such as `size = 0;` changes an existing
+as `int size = 0;` introduces a variable, gives its type, and sets its
+initial value. An assignment such as `postfix_size = 0;` changes an existing
 variable. Semicolons end these declarations and statements. Curly braces
 group the statements belonging to a function, condition, or loop.
 
 The definitions outside functions create global storage. `stack`,
-`capacity`, `top`, `infix`, `postfix`, and `size` last for the program's
+`capacity`, `size`, `infix`, `postfix`, and `postfix_size` last for the program's
 execution. Their initializers run as part of preparing that storage, not
-whenever a helper is called. Every Stack operation uses the same `stack`
-and `top`.
+whenever a helper is called. Every character Stack operation uses the same
+`stack` and global `size`.
 
 The return type tells us what a call supplies to its caller. `push` and
 `infix_to_postfix` return `void`, so their work is recorded by changing
@@ -661,83 +669,82 @@ calls the converter, prints the stored strings and length, and calls the
 evaluator to obtain the value for the final printed line. The lab functions
 themselves do not print anything.
 
-### 2. Character storage: why an empty Stack starts at ten
+### 2. Character storage: why an empty Stack starts at zero
 
 The first declarations reserve space and describe which cells are active.
 `char stack[10];` reserves ten character cells at indexes 0 through 9. As a
 global array with no explicit initializer, its cells initially contain
 zero characters. Their contents do not determine whether the Stack is
-empty; `top` does.
+empty; `size` does.
 
-`int capacity = 10;` records the intended capacity. It is a separate
-integer, not a command to resize the array. The supplied Stack functions
-use literal `10` for their empty boundary and do not read `capacity`.
-Changing only that variable would leave the actual array and checks as
-they were.
+`int capacity = 10;` records the capacity used by `is_full`. It is a
+separate integer, not a command to resize the array. Keep it equal to the
+number of cells reserved by `stack[10]`.
 
-`int top = 10;` starts just beyond the last valid index. No cell is active
-yet. The program may store the number 10 in `top`, but it must not read
-`stack[10]`. A successful push first moves `top` to 9, making the first
-write valid. With three items, `top` is 7 and the active cells are 7, 8,
-and 9. The item count is `10 - top`.
+`int size = 0;` starts at the first insertion position. No cell is active
+yet. A successful push writes at `stack[0]`, then changes `size` to 1.
+With three items, `size` is 3 and the active cells are 0, 1, and 2. The
+item count is `size`, and the top item is at `size - 1`. When full, `size`
+may equal 10, but the full check prevents a write to `stack[10]`.
 
-### 3. `is_full` and `push`: check, move, then write
+### 3. `is_full` and `push`: check, write, then move
 
 Before adding a character, the program must establish that a free cell
-exists. `is_full` returns the result of `top == 0`. Equality produces
-integer 1 when true and 0 when false. It compares `top` without changing
-it or reading the array.
+exists. `is_full` returns the result of `size == capacity`. Equality
+produces integer 1 when true and 0 when false. It compares the variables
+without changing them or reading the array.
 
 `push(char data)` first calls `is_full`. An `if` condition treats zero as
 false and a nonzero value as true. If the Stack is full, `return;` ends
-the call immediately. Neither `top` nor the array changes. Because `push`
+the call immediately. Neither `size` nor the array changes. Because `push`
 returns `void`, it does not supply a success flag.
 
-Otherwise, `top -= 1;` decreases the index by one. Only then does
-`stack[top] = data;` copy the character into the newly active cell. The
-order prevents an empty Stack from writing at index 10.
+Otherwise, `stack[size] = data;` copies the character into the next free
+cell. Then `size += 1;` moves the insertion position forward and includes
+the new cell in the active prefix. Writing first uses the current free
+position; increasing afterward records that the position is occupied.
 
-| Call | `top` before | Cell written | `top` after |
+| Call | `size` before | Cell written | `size` after |
 |---|---:|---|---:|
-| `push('A')` | 10 | `stack[9] = 'A'` | 9 |
-| `push('B')` | 9 | `stack[8] = 'B'` | 8 |
-| `push('C')` | 8 | `stack[7] = 'C'` | 7 |
+| `push('A')` | 0 | `stack[0] = 'A'` | 1 |
+| `push('B')` | 1 | `stack[1] = 'B'` | 2 |
+| `push('C')` | 2 | `stack[2] = 'C'` | 3 |
 
 Reaching the closing brace returns control to the caller. The parameter
 `data` belongs to the completed call, but its copied character remains in
 the global array. Existing characters do not move.
 
-### 4. `is_empty`, `peek`, and `pop`: read before removing
+### 4. `is_empty`, `peek`, and `pop`: locate the last occupied cell
 
 Reading the next character first requires ruling out the empty state.
-`is_empty` returns the result of `top == 10`. Like `is_full`, it produces
+`is_empty` returns the result of `size == 0`. Like `is_full`, it produces
 1 or 0 without changing storage.
 
 `peek` calls `is_empty` before indexing the array. If empty, it returns
-`'\0'` immediately. Otherwise, `return stack[top];` returns the top
-character. Neither path changes `top`. After the three pushes above,
-`peek()` returns `'C'` and leaves `top` at 7.
+`'\0'` immediately. Otherwise, `return stack[size - 1];` returns the top
+character. Neither path changes `size`. After the three pushes above,
+`peek()` returns `'C'` from index 2 and leaves `size` at 3.
 
 `pop` uses the same empty check and returns the same sentinel for an empty
 Stack. On a nonempty Stack, its three remaining statements have distinct
 jobs:
 
-| Statement | Effect when `top == 7` and `stack[7] == 'C'` |
+| Statement | Effect when `size == 3` and `stack[2] == 'C'` |
 |---|---|
-| `char data = stack[top];` | Save `'C'` in a local variable. |
-| `top += 1;` | Change `top` to 8, making index 7 inactive. |
-| `return data;` | Return the saved `'C'`, even though `top` has changed. |
+| `size -= 1;` | Change `size` to 2, making index 2 inactive. |
+| `char data = stack[size];` | Save the removed `'C'` in a local variable. |
+| `return data;` | Return the saved `'C'`. |
 
-Reading after increasing `top` would select the next item instead. The
-local copy keeps the removed character available until the return. The
-old cell still contains `'C'`; logical removal changes the active range
-without erasing storage. A later push can overwrite that cell.
+Reading `stack[size]` before decreasing `size` would select the next insertion
+position. Decreasing first selects the former top. The old cell still
+contains `'C'`: logical removal changes the active range, not the stored
+bits. A later push can overwrite it.
 
-Empty `peek` and `pop` leave both the array and `top` unchanged. The
-sentinel `'\0'` cannot distinguish empty state from a deliberately stored
-null character. The converter stores supported operator characters, so
-none of its actual items has that value. These checks assume that `top`
-already satisfies `0 <= top <= 10`.
+Empty `peek` and `pop` leave both the array and `size` unchanged. The
+sentinel `'\0'` cannot by itself distinguish an empty Stack from a stored
+null character. The converter stores only supported operator characters,
+so none of its actual items has that value. These checks assume that
+`0 <= size <= capacity` and that `capacity` matches the array length.
 
 ### 5. `prec`: translate an operator into a precedence level
 
@@ -772,19 +779,19 @@ marker. `char infix[8] = "1-2*3+4";` creates these eight cells:
 
 `char postfix[8] = "";` creates an initially empty string. Its first
 character is the null terminator, and its remaining cells also start at
-zero. `int size = 0;` records that there are no postfix tokens yet. The
+zero. `int postfix_size = 0;` records that there are no postfix tokens yet. The
 eight-cell capacity and the token count have different meanings.
 
 The converter copies digit characters and rearranges operator characters.
 It does not calculate `2 * 3` or store the integer answer here. After
 conversion, the seven postfix characters are `123*-4+`, followed by the
-terminator at index 7. `size` is 7, excluding that terminator.
+terminator at index 7. `postfix_size` is 7, excluding that terminator.
 
 ### 7. `infix_to_postfix`: scan digits and release waiting operators
 
 The converter must build a fresh output from the current input. Its first
-statement, `size = 0;`, resets the output count. It does not clear the
-whole output array or reset `top`. The caller must start with an empty
+statement, `postfix_size = 0;`, resets the output count. It does not clear the
+whole output array or reset `size`. The caller must start with an empty
 operator Stack; normal completion of the previous conversion leaves it
 empty.
 
@@ -795,9 +802,9 @@ For the example, the body runs for indexes 0 through 6 and stops at 7.
 `char c = infix[i];` copies the current character into a local variable.
 
 The condition `c >= '0' && c <= '9'` recognizes a digit. If true,
-`postfix[size++] = c;` writes it at the old output count, then leaves
-`size` increased by one. On the first iteration, `'1'` goes into
-`postfix[0]` and `size` becomes 1. No operator is pushed for a digit.
+`postfix[postfix_size++] = c;` writes it at the old output count, then leaves
+`postfix_size` increased by one. On the first iteration, `'1'` goes into
+`postfix[0]` and `postfix_size` becomes 1. No operator is pushed for a digit.
 
 For a non-digit, the `else` branch treats `c` as an operator. This relies
 on the input containing only the five supported operators. `char op =
@@ -805,7 +812,7 @@ peek();` copies the current waiting operator, or the empty sentinel, into
 a local variable. Merely peeking does not remove anything.
 
 The `while` condition compares `prec(op)` with `prec(c)`. When the waiting
-operator has equal or greater precedence, `postfix[size++] = pop();`
+operator has equal or greater precedence, `postfix[postfix_size++] = pop();`
 removes it from the Stack and appends the returned character to output.
 The next statement, `op = peek();`, refreshes the local copy so that the
 next condition examines the newly exposed top. A local variable does not
@@ -818,16 +825,16 @@ The `>=` includes equal precedence, so a waiting `-` leaves before a new
 evaluation.
 
 The arrival of `'+'` at input index 5 shows the inner loop in detail.
-The output so far is `123`, `size` is 3, and the waiting operators are
-`'-'` at index 9 and `'*'` at index 8, with `top == 8`.
+The output so far is `123`, `postfix_size` is 3, and the waiting operators are
+`'-'` at index 0 and `'*'` at index 1, with `size == 2`.
 
-| Step | Comparison or action | Output so far | `size` | `top` |
+| Step | Comparison or action | Output so far | `postfix_size` | global `size` |
 |---|---|---|---:|---:|
-| Read the top | `op = '*'` | `123` | 3 | 8 |
-| First loop pass | `2 >= 1`; pop `'*'`, then peek `'-'` | `123*` | 4 | 9 |
-| Second loop pass | `1 >= 1`; pop `'-'`, then peek `'\0'` | `123*-` | 5 | 10 |
-| Leave the loop | `0 >= 1` is false | `123*-` | 5 | 10 |
-| Save the input operator | `push('+')` | `123*-` | 5 | 9 |
+| Read the top | `op = '*'` | `123` | 3 | 2 |
+| First loop pass | `2 >= 1`; pop `'*'`, then peek `'-'` | `123*` | 4 | 1 |
+| Second loop pass | `1 >= 1`; pop `'-'`, then peek `'\0'` | `123*-` | 5 | 0 |
+| Leave the loop | `0 >= 1` is false | `123*-` | 5 | 0 |
+| Save the input operator | `push('+')` | `123*-` | 5 | 1 |
 
 These intermediate output strings show characters written so far. They
 are not guaranteed to be terminated strings until the converter finishes.
@@ -836,14 +843,14 @@ the current count.
 
 After the outer loop copies the last digit `'4'`, the output count is 6.
 The final `while (!is_empty())` drains the remaining operators. Here it
-pops `'+'` into `postfix[6]`, leaving `size == 7` and `top == 10`. The
+pops `'+'` into `postfix[6]`, leaving `postfix_size == 7` and `size == 0`. The
 loop stops because `is_empty()` now returns 1 and `!1` is 0.
 
-Finally, `postfix[size] = '\0';` writes the terminator without incrementing
-`size`. The result is the string `123*-4+`. A later conversion of a shorter
+Finally, `postfix[postfix_size] = '\0';` writes the terminator without incrementing
+`postfix_size`. The result is the string `123*-4+`. A later conversion of a shorter
 input writes its own earlier terminator, so old trailing characters are
 not displayed. The function returns no value; its results are the global
-`postfix` array, updated `size`, and empty operator Stack. It assumes the
+`postfix` array, updated `postfix_size`, and empty operator Stack. It assumes the
 input and output fit their arrays rather than checking each write.
 
 ### 8. `calc`: return one integer operation
@@ -881,29 +888,30 @@ character array, this ordinary local array has no automatic zero
 initialization. Valid evaluation writes each active cell before reading
 it.
 
-`int pos = 0;` starts the count of available values at zero. Active cells
-are `values[0]` through `values[pos - 1]`. The next push writes at `pos`;
-the next pop decreases `pos` and reads there. This convention differs
-from the downward-growing character Stack. The evaluator never calls
-the global `push` or `pop` functions.
+`int value_size = 0;` starts the count of available values at zero. Active cells
+are `values[0]` through `values[value_size - 1]`. The next push writes at `value_size`;
+the next pop decreases `value_size` and reads there. This is the same convention
+as the character Stack. The local declaration hides the global `value_size` inside
+this function, so its updates affect only the integer Stack. The evaluator
+never calls the global `push` or `pop` functions.
 
-The `for` loop starts `i` at zero, checks `i < size`, and advances `i`
+The `for` loop starts `i` at zero, checks `i < postfix_size`, and advances `i`
 after every body. `char c = postfix[i];` reads one output token. The loop
 uses the stored count rather than searching for a terminator. With
-`size == 7`, it processes indexes 0 through 6 and does not process index 7.
+`postfix_size == 7`, it processes indexes 0 through 6 and does not process index 7.
 
 The digit condition is the same as the converter's. This time,
-`values[pos++] = c - '0';` converts the digit character into an integer
+`values[value_size++] = c - '0';` converts the digit character into an integer
 and pushes that number. For `'3'`, subtraction gives integer 3. The write
-uses the old `pos`; the completed statement leaves `pos` one larger.
+uses the old `value_size`; the completed statement leaves `value_size` one larger.
 
 Otherwise, evaluation expects an operator and at least two active values.
-`int num2 = values[--pos];` decreases `pos` first and reads the former top
-as the right operand. `int num1 = values[--pos];` decreases it again and
+`int num2 = values[--value_size];` decreases `value_size` first and reads the former top
+as the right operand. `int num1 = values[--value_size];` decreases it again and
 reads the left operand. Each declaration is a separate statement, so the
 right-then-left order is explicit.
 
-`values[pos++] = calc(num1, num2, c);` calls `calc`, stores its returned
+`values[value_size++] = calc(num1, num2, c);` calls `calc`, stores its returned
 integer in the next free cell, and leaves the count increased by one.
 The two consumed operands are replaced by one result. Popping does not
 clear their old cells; only the current active prefix matters.
@@ -911,7 +919,7 @@ clear their old cells; only the current active prefix matters.
 The three operators in `123*-4+` produce these changes. The count sequence
 records the starting count, both pops, and the result push.
 
-| Operator | Active values before | `num2` (right) | `num1` (left) | Calculation | `pos` sequence | Active values after |
+| Operator | Active values before | `num2` (right) | `num1` (left) | Calculation | `value_size` sequence | Active values after |
 |---|---|---:|---:|---|---|---|
 | `'*'` | 1, 2, 3 | 3 | 2 | `2 * 3 = 6` | 3 → 2 → 1 → 2 | 1, 6 |
 | `'-'` | 1, 6 | 6 | 1 | `1 - 6 = -5` | 2 → 1 → 0 → 1 | -5 |
@@ -921,11 +929,11 @@ The digit `'4'` is pushed between the subtraction and addition rows.
 Negative intermediate results such as -5 fit the integer array without
 being converted back to characters.
 
-After the loop, a valid expression leaves `pos == 1`. The statement
-`return values[--pos];` changes it to zero, reads `values[0]`, and returns
+After the loop, a valid expression leaves `value_size == 1`. The statement
+`return values[--value_size];` changes it to zero, reads `values[0]`, and returns
 -1. The returned integer survives the call even though the local array
-does not. Evaluation leaves `postfix`, `size`, and the global character
-Stack unchanged. A second call starts with a fresh local `pos` and can
+does not. Evaluation leaves `postfix`, `postfix_size`, and the global character
+Stack unchanged. A second call starts with a fresh local `value_size` and can
 evaluate the same stored expression again.
 
 The code does not check for too few operands or verify that exactly one
@@ -940,7 +948,7 @@ point that calls them. The opening `/* ... */` text is a comment and has
 no runtime effect. `#include <stdio.h>` provides the declaration of
 `printf`, the library function used for output.
 
-`extern char infix[8];`, `extern char postfix[8];`, and `extern int size;`
+`extern char infix[8];`, `extern char postfix[8];`, and `extern int postfix_size;`
 declare names whose storage is defined in `lab.c`. They do not create
 separate arrays or reset existing values. Building both source files
 together lets the linker connect these references to the definitions.
@@ -984,21 +992,22 @@ Use the stored values to answer these questions before running the demo.
 Each answer follows a specific statement in the code.
 
 1. **After the three character pushes, why does `peek()` return `'C'`?**
-   The pushes leave `top == 7` and put `'C'` in `stack[7]`. Peek reads
-   that cell without changing the index.
-2. **Why can a removed character remain in the array?** Pop saves its
-   value, then increases `top`. The active suffix no longer includes the
-   old cell; erasing it is unnecessary.
+   The pushes leave `size == 3` and put `'C'` in `stack[2]`. Peek reads
+   `stack[size - 1]` without changing `size`.
+2. **Why can a removed character remain in the array?** Pop decreases
+   `size`, then reads the removed value there. The active prefix no longer
+   includes the old cell; erasing it is unnecessary.
 3. **Why does arriving `'+'` release both `'*'` and `'-'`?** Their
    precedence levels, 2 and 1, both satisfy `>= prec('+')`. The refreshed
    empty peek has precedence 0, which ends the loop.
-4. **Why are `size` and `pos` different after conversion and evaluation?**
-   Global `size` remains the seven-token postfix length. Local `pos`
-   counts available integers, reaches one result, and becomes zero as
-   the final return reads it. That local variable then ceases to exist.
+4. **Why are `postfix_size` and `size` different after conversion and evaluation?**
+   Global `postfix_size` remains the seven-token postfix length. Global `size`
+   is zero after conversion drains the operators. Local `size` counts
+   available integers, reaches one result, and becomes zero as the final
+   return reads it. That local variable then ceases to exist.
 5. **Why is subtraction `1 - 6`, not `6 - 1`?** Six is popped first into
    `num2`, the right operand. One is popped second into `num1`, the left
    operand. `calc` evaluates `num1 - num2`.
 6. **What stops a shorter second output from showing old characters?**
-   Conversion resets `size` before writing and places `'\0'` at the new
+   Conversion resets `postfix_size` before writing and places `'\0'` at the new
    end. Cells after that terminator can still hold old values.

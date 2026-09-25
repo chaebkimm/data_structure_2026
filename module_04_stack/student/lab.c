@@ -1,36 +1,36 @@
 char stack[10];
 int capacity = 10;
-int top = 10;
+int size = 0;
 
 int is_full() {
-    return top == 0;
+    return size == capacity;
 }
 
 void push(char data) {
     if (is_full()) {
         return;
     }
-    top -= 1;
-    stack[top] = data;
+    stack[size] = data;
+    size += 1;
 }
 
 int is_empty() {
-    return top == 10;
+    return size == 0;
 }
 
 char peek() {
     if (is_empty()) {
         return '\0';
     }
-    return stack[top];
+    return stack[size - 1];
 }
 
 char pop() {
     if (is_empty()) {
         return '\0';
     }
-    char data = stack[top];
-    top += 1;
+    char data = stack[size - 1];
+    size -= 1;
     return data;
 }
 
@@ -47,29 +47,29 @@ int prec(char op) {
 char infix[8] = "1-2*3+4";
 
 char postfix[8] = "";
-int size = 0;
+int postfix_size = 0;
 
 void infix_to_postfix() {
-    size = 0;
+    postfix_size = 0;
     for (int i = 0; infix[i] != '\0'; i++) {
         char c = infix[i];
 
         if (c >= '0' && c <= '9') {
-            postfix[size++] = c;
+            postfix[postfix_size++] = c;
         }
         else {
             char op = peek();
             while (prec(op) >= prec(c)) {
-                postfix[size++] = pop();
+                postfix[postfix_size++] = pop();
                 op = peek();
             }
             push(c);
         }
     }
     while (!is_empty()) {
-        postfix[size++] = pop();
+        postfix[postfix_size++] = pop();
     }
-    postfix[size] = '\0';
+    postfix[postfix_size] = '\0';
 }
 
 int calc(int num1, int num2, int op) {
@@ -85,19 +85,19 @@ int calc(int num1, int num2, int op) {
 
 int eval_postfix() {
     int values[10];
-    int pos = 0;
+    int value_size = 0;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < postfix_size; i++) {
         char c = postfix[i];
         if (c >= '0' && c <= '9') {
-            values[pos++] = c - '0';
+            values[value_size++] = c - '0';
         }
         else {
-            int num2 = values[--pos];
-            int num1 = values[--pos];
-            values[pos++] = calc(num1, num2, c);
+            int num2 = values[--value_size];
+            int num1 = values[--value_size];
+            values[value_size++] = calc(num1, num2, c);
         }
     }
 
-    return values[--pos];
+    return values[--value_size];
 }
