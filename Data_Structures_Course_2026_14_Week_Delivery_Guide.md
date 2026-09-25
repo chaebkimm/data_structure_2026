@@ -43,7 +43,7 @@ issued as a second weekly programming submission.
 | 1 | Fixed-capacity ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1: access, search, append, insert, and remove | Additional boundary and operation-sequence tests | [Week 1 page](student_question_bank/week_01_arraylist.md) |
 | 2 | Array-indexed expression trees and recursive evaluation — [Module 2](module_02_binary_tree/README.md), with English and Korean textbooks | Ordinary lab 2: `new_node`, `term`, `terms`, and `eval_tree` | Additional valid expressions and construction/evaluation traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
 | 3 | Directed integer adjacency matrices — [Module 3](module_03_graph/README.md) core | Ordinary lab 3: initialize, add, remove, and count outgoing edges | Additional valid directed fixtures and traces | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
-| 4 | Fixed-capacity Stack and precedence — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: checked push, peek, pop, and `1+2*3` evaluation | Additional valid expressions and boundary tests | [Week 4 page](student_question_bank/week_04_stack.md) |
+| 4 | Character Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: downward character Stack and `1-2*3+4 -> 123*-4+ -> -1` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
 | 5 | Preorder, inorder, and postorder using explicit stacks without recursion — [Module 5 textbook](module_05_tree_dfs/student/textbook.md) | Ordinary lab 5; existing package exercise remains separate from the textbook examples | Additional tree shapes and stack traces | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer — [Module 7](module_07_queue/README.md) core | Ordinary lab 6 | Package extensions | [Week 7 page](student_question_bank/week_07_queue.md) |
@@ -56,6 +56,25 @@ issued as a second weekly programming submission.
 | 14 | Prim, Kruskal, and capstone integration — [Module 16](module_16_prim_kruskal/README.md): complete Kruskal core plus bounded decision checkpoints in supplied Prim | Lab artifact 12 folds in the individual synthesis and capstone-integration checkpoint | Full Prim implementation and package extensions | [Week 14 page](student_question_bank/week_14_mst_capstone.md) |
 
 ## Required scope decisions
+
+### Week 4 — Current character-Stack lab
+
+The required source is [Module 4 `student/lab.c`](module_04_stack/student/lab.c).
+Trace A, B, C with empty `top == 10`, full `top == 0`, active indexes
+`top..9`, and item count `10 - top`. Full push is a silent no-op; empty
+peek/pop return the null character and preserve state. Separate conversion
+from evaluation: global `size` counts postfix characters, while local `pos`
+counts integer values. The canonical expression converts to `123*-4+` with
+size 7 and evaluates to -1.
+
+Core examples assume valid nonempty expressions of at most seven characters,
+with alternating single digits and `+ - * / %`, no spaces, parentheses,
+unary operators, or multi-digit operands, nonzero divisors, and representable
+integer intermediates. Those assumptions are not a promise of safe rejection.
+Use the current lab demo/tests and three justified added LIFO, boundary, and
+valid-expression cases. The checked caller-owned integer library remains an
+optional extension, not a second required assignment. Preserve the five
+release gates, three-target pause, and standard/linear response alternatives.
 
 ### Week 5 — Tree DFS
 

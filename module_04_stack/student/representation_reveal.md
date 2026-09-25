@@ -5,103 +5,116 @@ Open this file only after preserving the Stage A inquiry.
 ## 1. Name the access rule
 
 An **abstract data type (ADT)** describes a collection by its allowed
-operations and rules. It does not require one storage method.
-
-A **Stack ADT** allows access at one end, called the **top**. Its rule is
-**last in, first out (LIFO)**: the item added most recently is the first item
-that may be removed.
+operations and rules. A **Stack ADT** permits access at one end, the **top**.
+Its rule is **last in, first out (LIFO)**: the item most recently added is the
+first item that may be removed.
 
 - `push` adds one item at the top.
-- `peek` reports the top item without removing it.
-- `pop` removes and reports the top item.
+- `peek` reports the top without removing it.
+- `pop` removes and reports the top.
 
-An empty Stack has no top. **Underflow** is a request to `peek` or `pop` an
-empty Stack. The checked functions reject underflow without changing a
-caller-provided output value.
+An empty Stack has no top. **Underflow** means asking to inspect or remove an
+item from an empty Stack. The functions in `lab.c` return `'\0'` in that case.
+This is a character result, not a separate success flag.
 
-## 2. Store integer values in a fixed array
+## 2. Store characters in a global fixed array
 
-This module uses a caller-owned array of ten integers:
+The current [lab.c](lab.c) declares:
 
 ```c
-int stack[10];
-int size = 0;
+char stack[10];
 int capacity = 10;
+int top = 10;
 ```
 
-The **caller** is the code that creates the array and asks a function to use
-it. Caller-owned means the Stack functions borrow the array; they do not
-create, resize, release, or copy it.
+These objects are global: the functions share one array and one top index.
+The inquiry used function IDs 100, 200, and 300. The C lab uses character
+labels `'A'`, `'B'`, and `'C'` to illustrate the same return order. Storing a
+label does not create a real C function call.
 
-The array stores generic integer data. Function IDs 100, 200, and 300 are the
-canonical example, but the same operations can store other integers.
+This representation grows toward smaller indexes:
 
-- `size` is the number of logical items currently in the Stack.
-- `capacity` is the number of prepared array positions.
-- Logical items occupy indexes 0 through `size - 1`.
-- Positions from `size` through `capacity - 1` are allocated but inactive.
-- When `size > 0`, the top is `stack[size - 1]`.
-- When `size < capacity`, `stack[size]` is the next unused position.
+- `top == 10` means empty; do not read `stack[10]`.
+- `top == 0` means full.
+- When nonempty, `stack[top]` holds the top item.
+- Active items occupy indexes `top` through 9; indexes below `top` are inactive.
+- The item count is `10 - top`.
+- If there is room, the next push writes at `top - 1`, after decreasing `top`.
 
-## 3. State the valid rules
+`capacity` describes the intended ten positions, but the current operations
+use the literal `10`. Changing `capacity` alone does not resize the array or
+change their boundaries. The global `size` introduced later counts postfix
+characters; it does not count items in this Stack.
 
-An **invariant** is a rule that is true in every valid completed state.
+## 3. State the invariant and operation behavior
+
+An **invariant** is a rule that remains true in every valid completed state:
 
 ```text
-0 <= size <= capacity
+0 <= top <= 10
+active indexes: top through 9, or none when top == 10
 ```
 
-The caller must also pass the capacity that matches the prepared array. The
-functions can check the two numbers, but they cannot discover the physical
-length of an array received through a function parameter.
+| Operation | Successful behavior | Boundary behavior |
+|---|---|---|
+| `push(data)` | Decrease `top`, then write `stack[top]`; no return value | If full, return without changing `top` or the array |
+| `peek()` | Return `stack[top]`; change nothing | If empty, return `'\0'`; change nothing |
+| `pop()` | Read `stack[top]`, increase `top`, return the saved character | If empty, return `'\0'`; change nothing |
 
-A rejected operation preserves observable information:
+Pop leaves the old character in memory. The new `top` makes that cell
+inactive. These checks assume `top` already satisfies the invariant; they do
+not repair arbitrary changes to the global index.
 
-- rejected `push` returns the original size and changes no array cell;
-- rejected `peek` returns 0 and leaves its output unchanged; and
-- rejected `pop` returns the original size and leaves its output unchanged.
+## 4. Trace the canonical function labels
 
-Successful `peek` returns 1. Successful `pop` reports the former top and
-returns `size - 1`. Pop does not need to erase the newly inactive position.
-For `peek` and `pop`, the caller must provide output storage separate from the
-Stack array.
+Logical states below are written bottom to top. Physical array indexes run
+in the other direction: after three pushes, `'A'` is at 9, `'B'` at 8, and
+`'C'` at 7.
 
-## 4. Trace the canonical function IDs
+| Request | Return | Logical state, bottom to top | `top` | Item count |
+|---|---|---|---:|---:|
+| start | none | empty | 10 | 0 |
+| `push('A')` | none | A | 9 | 1 |
+| `push('B')` | none | A, B | 8 | 2 |
+| `push('C')` | none | A, B, C | 7 | 3 |
+| `peek()` | `'C'` | A, B, C | 7 | 3 |
+| `pop()` | `'C'` | A, B | 8 | 2 |
+| `pop()` | `'B'` | A | 9 | 1 |
+| `pop()` | `'A'` | empty | 10 | 0 |
 
-List states from bottom to top.
+## 5. Transfer the rule in two phases
 
-| Request | Function return | Output value | State | `size` |
-|---|---:|---:|---|---:|
-| start | none | none | empty | 0 |
-| `push(100)` | 1 | none | 100 | 1 |
-| `push(200)` | 2 | none | 100, 200 | 2 |
-| `push(300)` | 3 | none | 100, 200, 300 | 3 |
-| `peek` | 1 | 300 | 100, 200, 300 | 3 |
-| `pop` | 2 | 300 | 100, 200 | 2 |
-| `pop` | 1 | 200 | 100 | 1 |
-| `pop` | 0 | 100 | empty | 0 |
+The lab first converts **infix**, where operators appear between operands,
+into **postfix**, where an operator follows its two operands:
 
-The inactive array cells may still contain old integer bits. They are not
-Stack items because `size` excludes them.
+```text
+1-2*3+4  →  123*-4+  →  -1
+  infix      postfix    result
+```
 
-## 5. Transfer the rule to `1+2*3`
+`infix_to_postfix()` uses the global character Stack for waiting operators.
+Digits go directly to `postfix`. `*`, `/`, and `%` have precedence 2; `+` and
+`-` have precedence 1. Waiting operators of equal or greater precedence move
+to the output before the incoming operator is pushed. This preserves left
+associativity: equal-precedence operators are applied from left to right.
 
-An expression evaluator can use a fixed integer Stack for numbers and a fixed
-character Stack for operators. `*` has higher precedence than `+`, so `2*3`
-is completed before the waiting addition. The result is 7.
+`eval_postfix()` then uses a separate local `int values[10]`. Its `pos` is a
+count that grows upward. Digits become numbers with `c - '0'`. For an
+operator, the right operand `num2` is removed before the left operand `num1`.
+`calc(num1, num2, c)` computes the result, which is put back into `values`.
 
-The transfer exercise accepts only a nonempty alternating sequence of one
-digit and one operator. The only operators are `+` and `*`. It accepts no
-spaces, parentheses, unary operators, or multi-digit numbers. Each internal
-Stack has ten positions, and each push checks for available space. Input
-length is not otherwise capped. Any malformed input, full internal Stack, or
-integer overflow is rejected, and the caller's result remains unchanged.
+For this exercise, provide a nonempty alternating sequence of single digits
+and `+`, `-`, `*`, `/`, or `%`, at most seven characters in `infix[8]`. Use no
+spaces, parentheses, unary signs, or multi-digit operands. Divisors must be
+nonzero and all arithmetic must fit `int`. Begin conversion with the operator
+Stack empty. These are input assumptions: the current code does not validate
+malformed input, zero divisors, or integer overflow.
 
 ## 6. Prepare for the Cognitive Pause
 
-Make sure you can trace 100, 200, and 300; locate `stack[size - 1]`; and state
-what a rejected operation preserves. Do not open `vocabulary.md` until the
-five-minute response has been completed and preserved.
+Make sure you can trace `'A'`, `'B'`, and `'C'`; locate `stack[top]`; explain
+full and empty behavior; and distinguish conversion from evaluation. Open
+`vocabulary.md` only after preserving the five-minute response.
 
 One question:
 

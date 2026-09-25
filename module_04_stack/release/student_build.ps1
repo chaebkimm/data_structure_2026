@@ -1,9 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "autopsy")]
-    [string]$Target = "starter",
-
-    [switch]$StudentTests,
+    [ValidateSet("lab", "lab-tests", "autopsy")]
+    [string]$Target = "lab",
 
     [switch]$Sanitize
 )
@@ -11,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $codeRoot = $PSScriptRoot
-$includeDirectory = Join-Path $codeRoot "include"
+$moduleRoot = Split-Path -Parent $codeRoot
 $buildDirectory = Join-Path $codeRoot "build"
 
 New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
@@ -41,29 +39,22 @@ PowerShell, then rerun this command.
 }
 
 if ($Target -eq "autopsy") {
-    if ($StudentTests) {
-        throw "Autopsy cannot be combined with -StudentTests."
-    }
-
     $sources = @(
         (Join-Path $codeRoot "autopsy\faulty_top.c")
     )
     $outputName = "stack_top_autopsy"
 } else {
-    $implementationSources = @(
-        (Join-Path $codeRoot "starter\int_stack.c"),
-        (Join-Path $codeRoot "starter\expression_evaluator.c")
-    )
+    $labSource = Join-Path $moduleRoot "student\lab.c"
 
-    if ($StudentTests) {
-        $testSource = Join-Path $codeRoot "tests\test_student.c"
-        $outputName = "starter_student_tests"
+    if ($Target -eq "lab-tests") {
+        $driverSource = Join-Path $codeRoot "tests\test_lab.c"
+        $outputName = "lab_tests"
     } else {
-        $testSource = Join-Path $codeRoot "tests\test_core.c"
-        $outputName = "starter_core"
+        $driverSource = Join-Path $codeRoot "lab_demo.c"
+        $outputName = "lab_demo"
     }
 
-    $sources = $implementationSources + @($testSource)
+    $sources = @($labSource, $driverSource)
 }
 
 $outputExecutable = Join-Path $buildDirectory "$outputName.exe"
@@ -73,8 +64,7 @@ if ($compilerKind -eq "msvc") {
         "/nologo",
         "/std:c11",
         "/W4",
-        "/Zi",
-        "/I$includeDirectory"
+        "/Zi"
     )
 
     if ($Sanitize) {
@@ -91,8 +81,7 @@ if ($compilerKind -eq "msvc") {
         "-Wpedantic",
         "-Wconversion",
         "-Wshadow",
-        "-g",
-        "-I$includeDirectory"
+        "-g"
     )
 
     if ($Sanitize) {

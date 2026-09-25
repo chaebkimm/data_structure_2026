@@ -1,34 +1,28 @@
 # Stack-Top Autopsy
 
-An **autopsy** is a careful examination of a supplied defect. This program is
-separate from both the starter and solution, so changing student code cannot
-change its result.
+An **autopsy** examines a supplied defect. This standalone program uses the
+same downward-growing character representation as `student/lab.c`, but its
+intentional defect is isolated from the lab functions.
 
-The fixed array contains four allocated integer slots. Its current `size` is
-two, so only indexes 0 and 1 are active Stack values. Indexes 2 and 3 are
-allocated but inactive. Reading either inactive slot stays within the array,
-but it does not read a logical Stack value.
+The array has ten allocated positions. With `top == 8`, only indexes 8 and
+9 are active. The correct read uses `stack[top]`; the faulty function reads
+`stack[top - 1]`. In this fixture that wrong index stays inside the array,
+so the experiment is deterministic and memory-safe even though it reads an
+inactive cell.
 
-`faulty_top.c` deliberately reads `stack[size]`. Before running:
+Before running, inspect `faulty_top.c` and record:
 
-1. Draw the array and label active and inactive slots.
-2. Predict the correct top value from `stack[size - 1]`.
-3. Predict the value the faulty read obtains from `stack[size]`.
-4. Explain why the faulty read is memory-safe in this fixture but still breaks
-   the Stack invariant.
+1. The active indexes and logical order from bottom to top.
+2. The correct and faulty indexes and their predicted characters.
+3. Why an allocated array position can still be outside the logical Stack.
+4. Why subtracting one from an index named `top` differs from subtracting
+   one from an item count such as `pos` in the evaluator.
 
-From the `code` directory, run:
+From `code`, run `make autopsy`, or:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target autopsy
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
 ```
 
-or:
-
-```sh
-make autopsy
-```
-
-Record the prediction before running the program. Do not repair the supplied
-program until both the prediction and observed output have been preserved.
+Preserve predictions before recording output in the student autopsy sheet.
+The deliberate defect is not a replacement for `peek` in the actual lab.

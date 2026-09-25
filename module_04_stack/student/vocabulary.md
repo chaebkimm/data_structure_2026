@@ -4,43 +4,47 @@ Open this page after completing and preserving the Cognitive Pause.
 
 | Term | Plain-language definition |
 |---|---|
-| state | The information a program currently remembers |
+| state | Information a program currently remembers |
 | data structure | A planned way to organize information in a program |
-| abstract data type (ADT) | A collection described by allowed operations and rules rather than one required storage method |
+| abstract data type (ADT) | A collection described by its operations and rules rather than a required storage method |
 | Stack ADT | An ADT that permits adding, inspecting, and removing at one end |
-| top | The one accessible end of a Stack |
+| top | The accessible end of a Stack; in the character Stack, `top` is its current array index |
 | last in, first out (LIFO) | The most recently added item is the first item that may be removed |
 | operation | One task provided by a data structure |
-| `push` | Add one item at the top |
-| `peek` | Report the top item without removing it |
-| `pop` | Remove and report the top item |
-| empty Stack | A Stack containing no logical item and therefore having no top |
-| underflow | A request to `peek` or `pop` an empty Stack |
-| full-Stack rejection | Refusal to push when size already equals capacity, with the Stack unchanged |
+| `push` | Add one item at the top; this character implementation decreases `top` before writing |
+| `peek` | Report the top without removing it |
+| `pop` | Remove and report the top; this character implementation increases `top` after reading |
+| empty Stack | No active items; the character Stack has `top == 10` |
+| underflow | A request to peek or pop an empty Stack; the character functions return `'\0'` |
+| full Stack | All ten character positions are active and `top == 0`; another push changes nothing |
 | representation | A chosen way to store or show information |
-| fixed-capacity array | An array whose prepared number of positions does not change |
-| integer | A whole-number value stored with a C integer type |
-| call frame | Information kept for one active function call; the course's integer IDs are simplified labels rather than real call frames |
+| fixed-capacity array | An array with a prepared number of positions that does not change |
+| character | One C `char` value, such as `'A'`, `'3'`, or `'*'` |
+| integer | A whole-number value; the local `values` array stores C `int` results |
+| call frame | Bookkeeping for an active function call; character labels are not real call frames |
 | array | A numbered row of values of one type |
 | index | A numbered array position; C begins at zero |
-| logical item | A value that currently belongs to the Stack according to `size` |
-| inactive slot | A physical array position that is within capacity but outside the current logical Stack |
-| `size` | The number of logical items currently in the Stack |
-| `capacity` | The number of prepared array positions the operations must honor |
-| caller | The program part that creates storage and requests a function |
-| caller-owned storage | An array created and controlled by the caller and borrowed by Stack functions |
-| output parameter | Caller-provided storage through which a function reports an additional result |
-| invariant | A rule true in every valid completed state |
-| contract | Rules stating what a function accepts, changes, returns, and preserves |
-| rejection | Refusal to perform an operation because its requirements are not satisfied |
-| preservation | Keeping required prior state or output unchanged after rejection |
+| logical item | A stored value that belongs to the current Stack's active region |
+| inactive slot | A physical cell inside an array but outside the active region |
+| active suffix | The character Stack's indexes `top` through 9 |
+| active prefix | The numeric Stack's indexes 0 through `pos - 1` |
+| `capacity` | The descriptive global initialized to 10; current character operations hardcode their boundaries |
+| global variable | An object declared outside functions and shared by the functions that use it |
+| local variable | An object declared within a function or block, such as `values` and `pos` |
+| `size` | Number of postfix characters produced, excluding the terminator; not character Stack item count |
+| `pos` | Number of active integers in `values` during postfix evaluation |
+| null character | `'\0'`, used as a string terminator and as this Stack's empty peek/pop result |
+| invariant | A rule true in every valid completed state, such as `0 <= top <= 10` |
+| contract | Rules stating what a function assumes, changes, returns, and preserves |
+| preservation | Keeping required prior state unchanged, as with full push or empty peek/pop |
 | trace | A step-by-step record of changing state |
-| function ID | An integer label used in the canonical example to identify one function |
-| expression | A sequence of operands and operators that describes a calculation |
-| digit | One character from `'0'` through `'9'` |
+| infix | Expression order with operators between operands, such as `1+2` |
+| postfix | Expression order with each operator after its operands, such as `12+` |
+| digit | One character from `'0'` through `'9'`; subtracting `'0'` yields its numeric value |
 | operand | A value used by an operator |
-| operator | A symbol such as `+` or `*` that requests a calculation |
-| operator precedence | The rule that determines which different operator is applied first |
-| left associativity | The rule that equal-precedence operators are applied from left to right |
-| integer overflow | A calculation whose mathematical result is outside the C `int` range |
-| regression test | A test kept so that a repaired defect does not return |
+| operator | A symbol such as `+`, `-`, `*`, `/`, or `%` requesting a calculation |
+| operator precedence | The rule determining which operators are applied before others |
+| left associativity | Applying operators of equal precedence from left to right |
+| integer overflow | A calculation whose mathematical result does not fit C `int`; this lab does not check for it |
+| precondition | A requirement the caller must satisfy, such as valid expression syntax or a nonzero divisor |
+| regression test | A repeatable test kept so that a repaired defect does not return |

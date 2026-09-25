@@ -4,76 +4,97 @@
 
 > When several function calls are paused, which saved call must finish first?
 
-**Expected answer:** The newest unfinished call must finish before the older
-calls below it can resume.
+**Expected answer:** The newest unfinished call finishes before its older
+callers can resume. Preserve the initial reasoning before naming LIFO.
 
 ## Why We Need This
 
-A fixed array can store saved function IDs, but an access rule is still
-needed. New IDs enter at one end. Only the newest ID may be inspected or
-removed. This is the Stack rule: last in, first out.
-
-The runtime call stack is a motivating model, not the `int` Stack object that
-students implement. The course Stack is an ordinary caller-owned array with a
-separate `size` and `capacity`.
+The Stack rule restricts access to the newest remaining item. The motivating
+function IDs are abstract labels. The current `module_04_stack/student/lab.c`
+stores characters in global `char stack[10]` and uses `top = 10` for empty.
+Its runtime call-stack bookkeeping is a separate object.
 
 ## Board Walkthrough
 
-Use capacity 10. Write states from bottom to top.
+Use characters A, B, C. Write logical states from bottom to top.
 
-| Request | Report | State | Size |
-|---|---|---|---:|
-| start | none | empty | 0 |
-| push 100 | none | 100 | 1 |
-| push 200 | none | 100, 200 | 2 |
-| push 300 | none | 100, 200, 300 | 3 |
-| peek | 300 | 100, 200, 300 | 3 |
-| pop | 300 | 100, 200 | 2 |
-| pop | 200 | 100 | 1 |
+| Request | Return | Logical state | `top` | Count |
+|---|---|---|---:|---:|
+| start | none | empty | 10 | 0 |
+| `push('A')` | none | A | 9 | 1 |
+| `push('B')` | none | A, B | 8 | 2 |
+| `push('C')` | none | A, B, C | 7 | 3 |
+| `peek()` | C | A, B, C | 7 | 3 |
+| `pop()` | C | A, B | 8 | 2 |
+| `pop()` | B | A | 9 | 1 |
 
-When `size` is 3, the top is `stack[size - 1]`, or `stack[2]`.
-`stack[size]` is the next inactive slot.
+The active suffix is `top` through index 9. Push decrements before writing;
+peek reads `stack[top]`; pop reads then increments. A full push (`top == 0`)
+is a silent no-op. Empty peek/pop return `'\0'` without changing state.
+The count is `10 - top`. The declared `capacity` does not reconfigure the
+array or the literal 10 used by the empty check.
 
-Then trace the textbook expression `1+2*3` with a number Stack and an
-operator Stack. Multiplication waits above addition. At the end, apply `*`
-before `+`; the sole result is 7.
+Then trace two separate phases:
+
+```text
+1-2*3+4 -> 123*-4+ -> -1
+```
+
+Conversion uses the character Stack for operators; global `size` is postfix
+length seven. Evaluation uses local `int values[10]` with upward count `pos`.
+Pop the right operand into `num2` before the left into `num1`. The intermediate
+results are 6, -5, and -1. The terminating `'\0'` is outside the token count.
 
 ## Common First Thoughts
 
-- “The top is at `stack[size]`.”
-- “Pop must erase the old array cell.”
-- “Peek and pop perform the same mutation.”
-- “A full push can write first and report failure afterward.”
-- “The expression evaluator accepts spaces, parentheses, or multi-digit
-  operands.”
-- “The program-controlled Stack and runtime call bookkeeping are the same
-  object.”
+- “`top` is the number of stored characters.”
+- “The newest item is at `stack[top - 1]`.”
+- “Empty means `top == 0`.”
+- “Pop must erase the old cell.”
+- “Global `size` counts the operator Stack.”
+- “Character `'3'` and integer 3 are interchangeable.”
+- “A valid example proves that malformed input is safely rejected.”
 
 ## Neutral Questions
 
-- What is `size` before and after this request?
-- Which indexes belong to the active Stack?
-- Which value is at `size - 1`?
-- What must remain unchanged when the request is rejected?
+- What are `top` and the count before and after this request?
+- Which physical indexes currently belong to the Stack?
+- Which index was written by the most recent push?
+- Which array and variable belong to the current expression phase?
 - Which waiting operator has equal or greater precedence?
+- Which popped value is the right operand?
 
 ## Vocabulary Rules
 
-**Words we can use:** Fixed arrays, indexes, size, capacity, active prefix,
-pointers, character constants, invariants, rejection preservation, and simple
-recursive calls.
+**Words we can use:** Fixed arrays, characters, integers, indexes, counts,
+active suffix, invariant, sentinel, and simple function calls.
 
-**Names introduced here:** Stack, last in first out (LIFO), top, push, peek,
-pop, underflow, call frame, operator, operand, precedence, and expression
-evaluation.
+**Names introduced here:** Stack, LIFO, top, push, peek, pop, underflow, infix,
+postfix, operand, operator, precedence, associativity, and null terminator.
 
-**Words deferred:** Allocation, release, ownership, geometric growth,
-amortized cost, tree traversal orders, and graph depth-first search.
+**Deferred or optional:** Allocation, ownership, geometric growth, checked
+parser design, arithmetic overflow guards, and the legacy caller-owned
+`int_stack_*`/`expression_evaluate` API.
+
+## Scope and Evidence
+
+Core input is nonempty, at most seven characters, with single digits
+alternating with `+ - * / %`; no spaces, parentheses, unary operators, or
+multi-digit numbers. Divisors must be nonzero and integer intermediates
+representable. The source assumes these conditions; missing checks are
+extension discussion, not behavior to claim in evidence.
+
+Run the current lab demo/tests, trace full/empty behavior and both expression
+phases, and preserve then revise the autopsy prediction. Standard and linear
+activities have the same targets; response mode and drawing quality do not
+change the reasoning required.
 
 ## Final Check
 
-> Why does the evaluator for `1+2*3` leave `+` waiting when `*` arrives?
+> When `+` arrives in `1-2*3+4`, why are `*` and `-` written to postfix
+> before the new `+` is pushed?
 
-**Minimum answer:** The incoming `*` has greater precedence than the `+` at
-the operator Stack's top, so `*` is pushed. At the end, `*` is popped and
-applied before `+`, producing 7.
+**Minimum answer:** Both waiting operators have precedence at least as high
+as incoming `+`. Multiplication is emitted first, then the earlier equal
+precedence subtraction. The final postfix text is `123*-4+`; evaluating it
+with the right operand popped first produces -1.

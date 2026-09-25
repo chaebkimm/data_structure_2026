@@ -447,7 +447,7 @@ Students choose among ArrayList, tree, and graph for three short scenarios. For 
 
 # Spiral 2 — LIFO and Deferred Work
 
-## Module 4 — Linear: Fixed-capacity Stack ADT
+## Module 4 — Linear: Character Stack and Postfix Evaluation
 
 Production materials: [Module 4 teaching package](module_04_stack/README.md)
 
@@ -455,13 +455,16 @@ Production materials: [Module 4 teaching package](module_04_stack/README.md)
 
 Students will:
 
-- specify the LIFO contract independently of its backend;
-- implement a checked fixed-capacity integer Stack over caller-owned storage;
-- trace mixed `push`, `pop`, and `peek` operations;
-- use separate fixed number and operator Stacks to evaluate expressions in
-  the chapter's small grammar with multiplication precedence;
-- preserve the complete Stack and checked outputs after rejected operations;
-- distinguish a Stack ADT from the C runtime call stack.
+- specify the LIFO access rule independently of its representation;
+- trace the global fixed character Stack in `student/lab.c` using A, B, C;
+- explain downward growth, `stack[top]`, active suffix `top..9`, and count
+  `10 - top`;
+- explain full push as a silent no-op and empty peek/pop as null-character
+  returns that preserve Stack state;
+- convert infix to postfix, then evaluate postfix with a separate integer
+  value Stack while preserving precedence, associativity, and operand order;
+- distinguish `top`, postfix length `size`, and numeric count `pos`; and
+- separate supported-input assumptions from validation actually implemented.
 
 ### Macro-Question
 
@@ -471,54 +474,61 @@ Students will:
 ### Micro-Questions
 
 - Which item may be removed next?
-- How should underflow be reported?
-- Why is the top at `stack[size - 1]` instead of `stack[size]`?
-- What must remain unchanged when a push is requested at fixed capacity?
-- Why does pop decrease size without shifting or erasing the inactive slot?
-- How do operator precedence and LIFO order interact in `1+2*3`?
-- How does recursion also depend on stack-like saved state?
+- Why is empty represented by `top == 10` and full by `top == 0`?
+- Why does push decrement before writing while peek reads `stack[top]`?
+- What remains unchanged after full push or empty peek/pop?
+- Why does pop increment `top` without erasing or shifting characters?
+- How does `1-2*3+4` become `123*-4+`, then -1?
+- Why must the right operand be popped before the left operand?
 
 ### C lab and cybersecurity context
 
-Implement checked integer Stack operations over a caller-owned fixed array.
-Then evaluate expressions made from alternating single digits and the
-operators `+` and `*`. The evaluator uses two fixed local Stacks, applies
-operators of equal or greater precedence before pushing the next operator,
-rejects malformed input and arithmetic overflow, and changes its output only
-on success.
+Read, trace, run, and test the current `module_04_stack/student/lab.c`.
+The global `char stack[10]` grows toward smaller indexes. Conversion uses it
+for waiting operators, appends tokens to `postfix[8]`, resets `size` at entry,
+and writes a terminator at the end. Evaluation then uses local
+`int values[10]` and upward count `pos` for operands and numeric results.
+The canonical transfer is `1-2*3+4 -> 123*-4+ -> -1`, with postfix `size` 7.
 
-The representation reuses Module 1's active-prefix and bounds rules. Valid
-metadata satisfies `0 <= size <= capacity`. Push, peek, and pop are constant
-work; none allocates, shifts, or releases storage. The isolated autopsy reads
-`stack[size]`, an allocated but inactive slot, to expose the difference
-between physical capacity and the logical top without causing an out-of-bounds
-access.
+Core input assumes nonempty text of at most seven characters, single digits
+alternating with `+`, `-`, `*`, `/`, or `%`, no spaces, parentheses, unary
+operators, or multi-digit operands, nonzero divisors, and representable
+integer intermediates. The source does not safely reject all invalid input
+or check arithmetic. Discuss these limitations accurately; a checked parser
+and the older caller-owned integer API are optional extensions.
 
-The module distinguishes a program-controlled Stack ADT from runtime call
-bookkeeping. Later tree and graph modules receive separately typed Stack
-scaffolds with the same LIFO behavior; their storage policy is specified in
-those later modules.
+The representation revisits physical bounds and logical membership using an
+active suffix. Valid state satisfies `0 <= top <= 10`; the count is
+`10 - top`. Constant-time push/peek/pop allocate, shift, and release no
+storage. The isolated autopsy contrasts a valid physical index with logical
+Stack membership, so a clean memory diagnostic is not proof of a correct top
+read. Students preserve their prediction before running it.
+
+The module distinguishes the explicit Stack from runtime call bookkeeping.
+Later tree and graph modules preserve LIFO while specifying their own item
+types, storage policies, and error contracts.
 
 ### Evidence of learning
 
-- stack-state trace;
-- API and implementation;
-- full/empty and invalid-metadata preservation tests;
-- expression precedence and malformed-input tests;
-- push/pop and expression-scan complexity;
-- ADT-versus-runtime-stack explanation.
+- character returns, `top`, count, and active-index trace;
+- full/empty state-preservation snapshots;
+- separate infix-to-postfix and postfix-evaluation tables;
+- valid precedence, operand-order, repeated-conversion, and shorter-input tests;
+- three justified additions to the current lab tests;
+- operation/phase costs, autopsy reasoning, and unsupported-input limits.
 
 ### Spiral links
 
-**Revisits:** Module 1's fixed contiguous storage, size/capacity distinction,
-active prefix, bounds checks, and unchanged state after rejection; simple
-character data and expression precedence from Module 2.
+**Revisits:** Module 1's fixed contiguous storage, physical bounds versus
+logical membership, and unchanged state at boundaries; character data and
+expression precedence from Module 2.
 
-**Introduces:** Stack encapsulation, LIFO access, top, push, peek, pop,
-underflow, operator precedence, and a two-Stack expression trace.
+**Introduces:** Stack, LIFO, downward top index, active suffix, push, peek,
+pop, underflow, postfix notation, two separate expression phases, and the
+right-before-left operand-pop convention.
 
-**Forward:** the LIFO behavior reused by tree and graph DFS. Later modules
-state their own item type and storage policy.
+**Forward:** tree and graph DFS reuse LIFO behavior with their own storage
+and reporting contracts.
 
 ---
 
@@ -617,8 +627,8 @@ Module 3's fixed-matrix idea, implement iterative DFS, report all vertices
 reachable from a selected source, and count connected components only for an
 undirected graph. The broader graph kind and whole-graph validation belong to
 Module 6 support, not the Module 3 implementation. The implementation uses
-an instructor-provided vertex-ID Stack that preserves Module 4's LIFO and
-output-preservation behavior while defining its own growable-storage policy.
+an instructor-provided vertex-ID Stack that preserves Module 4's LIFO
+behavior while defining its own error-reporting and growable-storage policy.
 Students trace the equivalent recursive control flow; implementing that
 second form is an extension. Test a cycle, an isolated vertex, a disconnected
 graph, and a single vertex. A separate faulty-input test verifies that the
@@ -1480,7 +1490,9 @@ representation-specific requirements when they are introduced: Chapter 1
 uses fixed-array bounds and plain integer counts. Module 2 introduces array-indexed
 nodes, loop-based construction, and recursive expression evaluation. Its
 small parser assumes valid inputs and representable integer results. Module 4 adds a
-top-only fixed-array contract and checked output preservation. Module 5 adds
+downward character-Stack representation and separate infix-to-postfix and
+postfix-evaluation phases, also under explicit valid-input assumptions. Its
+full/empty Stack guards do not constitute a checked parser. Module 5 adds
 allocated tree nodes and explicit release.
 Module 2's recursive functions assume valid trees: inspect malformed cycles
 with diagrams, not by running recursive operations on them.
@@ -1560,7 +1572,7 @@ Scope controls:
 | 1 | Keeping data together with a fixed-capacity ArrayList | Module 1; checked operations and bounds/invariant autopsy |
 | 2 | Recursion, binary-tree links, and expression trees | Module 2 bilingual textbooks and four-function construction/evaluation lab |
 | 3 | Graph fundamentals | Module 3; Spiral 1 synthesis and capstone skeleton |
-| 4 | Fixed-capacity Stack | Module 4; LIFO operations, top-index autopsy, and `1+2*3` evaluator |
+| 4 | Character Stack and postfix | Module 4; downward top, LIFO boundaries, top-index autopsy, and `1-2*3+4 -> 123*-4+ -> -1` |
 | 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
 | 7 | Queue | Module 7; circular-buffer incident analysis |

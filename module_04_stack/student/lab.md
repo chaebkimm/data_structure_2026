@@ -1,271 +1,198 @@
-# Lab — A Fixed Integer Stack and Checked Expression Evaluator
+# Lab — A Character Stack, Infix Conversion, and Postfix Evaluation
 
 ## Purpose
 
-Implement a Stack of generic integers in caller-owned fixed storage. Then use
-a number Stack and an operator Stack to evaluate the transfer expression
-`1+2*3` with checked input and arithmetic.
-
-The canonical Stack trace uses function IDs:
+Trace and verify the implementation in [lab.c](lab.c). It first uses a
+character Stack to convert infix to postfix, then uses a separate integer
+Stack to evaluate postfix:
 
 ```text
-push 100: return size 1; state 100
-push 200: return size 2; state 100, 200
-push 300: return size 3; state 100, 200, 300
-peek: return 1 and report 300; state unchanged
-pop: return size 2 and report 300; state becomes 100, 200
+1-2*3+4  →  123*-4+  →  -1
 ```
 
-Every state is listed from bottom to top.
+The source file is the core exercise. The older caller-owned integer Stack
+and checked evaluator in `code/starter`, `code/solution`, and `code/include`
+are optional legacy comparisons with different interfaces and guarantees.
+They are not required implementations for this lab.
 
-## Stack behavior and fixed representation
-
-The Stack abstract data type follows last in, first out (LIFO). `push` adds at
-the top. `peek` reports the top without removing it. `pop` removes and reports
-the top. Underflow is a `peek` or `pop` request on an empty Stack.
-
-This module represents a Stack with three separate pieces of caller state:
+## 1. Read the stored state
 
 ```c
-int stack[10];
-int size = 0;
+char stack[10];
 int capacity = 10;
+int top = 10;
+char infix[8] = "1-2*3+4";
+char postfix[8] = "";
+int size = 0;
 ```
 
-The operations accept any suitable caller-owned integer array. Function IDs
-are only the canonical example; the stored integers are generic data.
+These are global objects. The character Stack grows toward lower indexes.
+Its invariant is `0 <= top <= 10`; active cells occupy `top` through 9.
+Empty means `top == 10`, full means `top == 0`, and a nonempty top is
+`stack[top]`. The item count is `10 - top`.
 
-An invariant is a rule that is true in every valid completed state:
+`capacity` records the intended ten positions, but this implementation uses
+literal `10` in its boundaries. Changing `capacity` alone has no effect on
+the actual array or checks. The global `size` counts characters written to
+`postfix`, excluding the terminating `'\0'`; it is not a Stack item count.
+
+## 2. Trace the character Stack
+
+| Function | Actual behavior |
+|---|---|
+| `is_full()` | Reports whether `top == 0` |
+| `push(char data)` | If full, does nothing; otherwise decreases `top` and writes `stack[top]`; returns no value |
+| `is_empty()` | Reports whether `top == 10` |
+| `peek()` | If empty, returns `'\0'`; otherwise returns `stack[top]`; changes nothing |
+| `pop()` | If empty, returns `'\0'`; otherwise saves `stack[top]`, increases `top`, and returns the saved character |
+
+Begin with `top == 10` and trace:
 
 ```text
-0 <= size <= capacity
+push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-The caller must pass the actual prepared capacity. The functions cannot infer
-an array's physical length from an array parameter.
+Record each return, `top`, and logical state from bottom to top. Locate each
+character physically as well: the logical order is not increasing array
+index order. Show why pop can leave old characters in inactive cells.
 
-When `size > 0`, logical items occupy indexes 0 through `size - 1`, and the
-top is `stack[size - 1]`. If `size < capacity`, `stack[size]` is allocated but
-inactive. It is the next unused position, not the top.
+Use ordinary nonzero character labels. A stored `'\0'` would be
+indistinguishable from the empty return value using the return alone.
 
-## Public Stack operations
+## 3. Trace infix-to-postfix conversion
 
-An API is the public set of functions other code may call.
+`prec(op)` returns 1 for `+` or `-`, 2 for `*`, `/`, or `%`, and 0 otherwise.
+`infix_to_postfix()` performs these steps:
 
-```c
-int int_stack_push(
-    int stack[],
-    int size,
-    int capacity,
-    int value
-);
+1. Set `size = 0`; begin with the operator Stack already empty.
+2. Read `infix` until its `'\0'` terminator.
+3. Append each digit directly to `postfix`.
+4. For an operator, pop waiting operators of equal or greater precedence
+   into `postfix`, then push the incoming operator.
+5. Drain the remaining operators at end of input.
+6. Write `postfix[size] = '\0'` without counting that terminator.
 
-int int_stack_peek(
-    const int stack[],
-    int size,
-    int capacity,
-    int *out_value
-);
+For `1-2*3+4`, the completed output is `123*-4+`, `size` is 7, and `top` is
+10. The `>=` comparison makes equal-precedence operators left associative.
+This phase rearranges characters; it does not calculate the numeric answer.
 
-int int_stack_pop(
-    const int stack[],
-    int size,
-    int capacity,
-    int *out_value
-);
-```
+Conversion resets the output count but does not reset `top` at entry. A
+successful conversion drains the Stack, so another valid conversion starts
+empty if no intervening character operations leave items there. Stale output
+characters beyond the new terminator do not belong to the new result.
 
-### `int_stack_push`
+## 4. Trace postfix evaluation
 
-- Reject a missing array, invalid metadata, or a full Stack.
-- On rejection, return the original size and change no array item.
-- On success, write `value` at `stack[size]` and return `size + 1`.
-- The caller saves the returned size.
+`eval_postfix()` starts with a local `int values[10]` and `pos = 0`. This
+Stack uses an active prefix, indexes 0 through `pos - 1`.
 
-### `int_stack_peek`
+- `values[pos++] = c - '0'` pushes a numeric digit and increases the count.
+- `values[--pos]` decreases the count before reading a popped value.
+- At an operator, pop `num2` first, then `num1`.
+- Push `calc(num1, num2, c)` as the replacement value.
 
-- Reject a missing array, missing output, invalid metadata, or empty Stack.
-- The caller must provide output storage separate from the Stack array.
-- On rejection, return 0 and leave the output unchanged.
-- On success, copy `stack[size - 1]` to the output and return 1.
-- Never change the array or size.
+`calc` supports `+`, `-`, `*`, integer `/`, and remainder `%`. Operand order
+matters: the calculation is `num1 - num2` or `num1 / num2`, not its reverse.
+The postfix trace calculates `2*3 = 6`, `1-6 = -5`, then `-5+4 = -1`.
+The input operands are single digits, but intermediate values can be negative
+or larger than 9 because `values` stores integers.
 
-### `int_stack_pop`
+Evaluation processes exactly `size` tokens; it does not process the string
+terminator. With valid postfix, one value remains before the final
+`return values[--pos]`.
 
-- Reject a missing array, missing output, invalid metadata, or empty Stack.
-- The caller must provide output storage separate from the Stack array.
-- On rejection, return the original size and leave the output unchanged.
-- On success, copy `stack[size - 1]` to the output and return `size - 1`.
-- Do not erase the old top. The returned smaller size makes that position
-  inactive.
+## 5. Keep the input assumptions visible
 
-No Stack operation creates, resizes, or releases the caller's array.
+For this core exercise, use inputs with all these properties:
 
-## Checked expression contract
+- a nonempty alternating sequence of single digit, operator, single digit,
+  and so on;
+- only `+`, `-`, `*`, `/`, and `%` operators;
+- at most seven input characters, with space for `'\0'` in `infix[8]`;
+- no whitespace, parentheses, unary signs, or multi-digit operands;
+- nonzero divisors and arithmetic results representable as C `int`; and
+- an empty character operator Stack at conversion entry.
 
-```c
-int expression_evaluate(const char expression[], int *out_result);
-```
+The implementation does not validate this grammar, operand counts, zero
+divisors, output bounds, or arithmetic overflow. Do not describe these as
+checked rejections or claim that `calc`'s default return makes malformed
+expressions safe. Such cases are discussion topics and possible extensions.
+The full/empty guards apply to the character Stack only; the local `values`
+operations have no corresponding guards.
 
-The evaluator returns 1 on success and writes the answer. It returns 0 on any
-rejection and leaves the caller's result unchanged.
+## 6. Build and observe
 
-Accepted input follows all these rules:
+`lab.c` has no `main`. The supplied driver `code/lab_demo.c` provides the
+entry point and links the same source file. The supplied tests are in
+`code/tests/test_lab.c`; they also link `student/lab.c` directly.
 
-- the string is nonempty;
-- tokens alternate single digit, operator, single digit, and so on;
-- the only operators are `+` and `*`;
-- there are no spaces, parentheses, unary operators, or multi-digit numbers;
-- `*` has greater precedence than `+`;
-- equal precedence is processed from left to right;
-- every internal number/operator push fits its ten-position Stack; and
-- every addition and multiplication fits the C `int` range.
-
-The expression string may be longer than ten characters. The limit applies to
-simultaneous occupancy of each internal Stack, not directly to input length.
-
-For `1+2*3`, the evaluator waits with `+`, calculates `2*3`, and then
-calculates `1+6`. The result is 7.
-
-Keep a local candidate result. Commit it to `*out_result` only after parsing,
-Stack operations, final reduction, and overflow checks all succeed.
-
-## Files
-
-You receive public headers, starter files, tests, build tools, and an isolated
-autopsy.
-
-Edit only:
-
-- `code/starter/int_stack.c`;
-- `code/starter/expression_evaluator.c`; and
-- `code/tests/test_student.c`.
-
-Do not edit public headers, supplied core tests, autopsy files, or build files
-unless the instructor explicitly authorizes it.
-
-## Checkpoints
-
-### 1. Read before editing
-
-Read:
-
-- `code/include/int_stack.h`;
-- `code/include/expression_evaluator.h`;
-- all TODO comments in both starter files; and
-- the first failing public-test requirement.
-
-### 2. Implement `push`
-
-1. Check required pointers and `0 <= size <= capacity`.
-2. Reject when `size == capacity` before indexing the array.
-3. Write the new value at the old `size`.
-4. Return the new size.
-5. Confirm every rejection returns the original size without changing the
-   array.
-
-### 3. Implement `peek` and `pop`
-
-1. Check the array, output, and metadata.
-2. Reject underflow before calculating `size - 1`.
-3. Read only `stack[size - 1]`.
-4. Change the output only on success.
-5. Make `peek` return 1 without changing size.
-6. Make `pop` return the smaller size without erasing the array position.
-
-### 4. Implement checked expression evaluation
-
-1. Reject missing pointers and empty input.
-2. Alternate between expecting a digit and expecting an operator.
-3. Reject every character outside the exact grammar.
-4. Store digit values in the number Stack and operator character values in the
-   operator Stack.
-5. Before pushing an operator, apply waiting operators with equal or greater
-   precedence.
-6. Pop the right operand before the left operand.
-7. Check addition and multiplication before performing a C `int` operation
-   that would overflow.
-8. Apply all waiting operators at end of input.
-9. Accept only one final number and no remaining operator.
-10. Write the caller's result only after complete success.
-
-### 5. Run supplied tests
-
-From the `code` directory in PowerShell:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
-```
-
-The starter is intentionally incomplete, so tests fail at first. Work from
-the earliest failure. Do not edit a supplied test merely to make it pass.
-
-### 6. Design exactly three student tests
-
-Replace the three placeholder bodies in `code/tests/test_student.c`.
-
-1. Canonical LIFO test: push 100, 200, and 300; verify peek and pop order.
-2. Rejection test: check a full, empty, invalid-metadata, or missing-output
-   case and verify state or output preservation.
-3. Expression test: verify one valid precedence case and one rejected grammar
-   or arithmetic case, including the unchanged-output promise on rejection.
-
-Use cases that add evidence beyond the supplied tests. Explain each claim in
-a comment.
-
-### 7. Run student tests and the autopsy
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target starter -StudentTests
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target autopsy
-```
-
-Complete `student/stack_autopsy.md` after predicting the autopsy output.
-
-When the compiler supports sanitizers:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target starter -Sanitize
-```
-
-For GNU Make in Git Bash, MSYS2, WSL, Linux, or macOS:
+Run from the `module_04_stack/code` directory with GNU Make:
 
 ```sh
-make starter-core
-make starter-student-tests
+make lab-demo
+make lab-tests
 make autopsy
 ```
 
-## Cost targets
+The default `make` target runs the lab demo. For PowerShell:
 
-`push`, `peek`, and `pop` each inspect or change a fixed number of values, so
-each takes `O(1)` time. None shifts existing items.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target lab
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target lab-tests
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
+```
 
-For input length `n`, expression evaluation scans the input and processes each
-token a bounded number of times. It takes `O(n)` time. The evaluator uses one
-ten-position integer array and one ten-position character array, so its Stack
-storage is `O(1)` for this fixed contract.
+Predict the autopsy before running it. Use the build instructions in
+`code/README.md` for compiler setup or supported diagnostic options.
 
-## Safe scope
+Record the compiler and complete command with the output. The current
+no-parameter definitions use `()`; under C11, writing `(void)` explicitly
+states that a function takes no parameters and can resolve prototype
+warnings. Record actual diagnostics instead of assuming a quiet run.
 
-Use only instructor-provided or student-created expressions. The evaluator is
-not a complete calculator or programming-language parser. It intentionally
-rejects syntax outside its small stated grammar. Success proves only that the
-input satisfies this exercise's rules and that its checked result fits `int`.
+## 7. Add exactly three student tests
+
+Keep the supplied tests intact and add three justified cases to
+`code/tests/test_lab.c`. Use the existing harness style and make sure each
+new case is called. State what additional claim each tests.
+
+1. A character LIFO sequence with repeated values or interleaved push/pop.
+2. A full/empty boundary or inactive-cell case that checks both the returned
+   character, when applicable, and preserved `top` or array contents.
+3. A valid expression or a sequence of valid conversions that checks the
+   postfix text, `size`, terminator, final `top`, and integer result.
+
+Choose cases that add evidence beyond the baseline tests. Reset the global
+Stack deliberately between independent cases. Keep expression strings within
+seven characters plus their terminator. Do not treat unsupported input as
+though a safe rejection contract exists.
+
+Run `make lab-tests` or the PowerShell `lab-tests` target again and preserve
+the transcript. Then complete [stack_autopsy.md](stack_autopsy.md).
+
+## 8. Explain costs and limits
+
+Character `push`, `peek`, and `pop` each do a fixed amount of work: `O(1)`.
+None shifts existing items. For `n` valid tokens, each operator is pushed and
+popped at most once during conversion, giving `O(n)` total work. Evaluation
+also takes `O(n)`. The present arrays have fixed bounds, so storage is `O(1)`;
+the current input limit is seven tokens. If capacities were generalized to
+grow with input, storage would be `O(n)` in the worst case.
+
+Optional extensions include input validation, guarded operand operations,
+zero-divisor checks, checked arithmetic, a consistent capacity constant, or
+an explicit error status. Explain the new contract before claiming those
+features. They are not guarantees of the current source.
 
 ## Required submission
 
-1. Completed fixed-Stack and evaluator starter files.
-2. A passing supplied core-test transcript.
-3. Three passing student-authored tests with a rationale for each.
-4. Warning-enabled and approved diagnostic evidence.
-5. Completed evidence record.
-6. Stack-Top Autopsy.
-7. Corrected Cognitive Pause.
+1. The examined `student/lab.c`, including any instructor-assigned changes.
+2. The extended `code/tests/test_lab.c` with exactly three justified new cases.
+3. Reproducible demo and passing lab-test transcripts, including diagnostics.
+4. The completed evidence record and Stack-Top Autopsy.
+5. The preserved and corrected Cognitive Pause.
 
-Completion means the functions satisfy their contracts, student-controlled
-code has no compiler warnings, rejected operations preserve required state,
-and the explanation distinguishes a logical top from an inactive array slot.
+Completion means the traces and tests match the actual implementation,
+full/empty character operations preserve their stated boundaries, both
+expression phases are explained, and unsupported-input assumptions are
+clearly distinguished from implemented checks.

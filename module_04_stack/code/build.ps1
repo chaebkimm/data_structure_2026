@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "solution", "autopsy")]
-    [string]$Target = "starter",
+    [ValidateSet("lab", "lab-tests", "starter", "solution", "autopsy")]
+    [string]$Target = "lab",
 
     [switch]$Extensions,
 
@@ -42,7 +42,19 @@ PowerShell, then rerun this command.
 "@
 }
 
-if ($Target -eq "autopsy") {
+if ($Target -eq "lab" -or $Target -eq "lab-tests") {
+    if ($Extensions -or $StudentTests) {
+        throw "Lab targets cannot use the optional checked-API test switches. Extend tests/test_lab.c instead."
+    }
+    $labSource = Join-Path (Split-Path -Parent $codeRoot) "student\lab.c"
+    if ($Target -eq "lab-tests") {
+        $sources = @($labSource, (Join-Path $codeRoot "tests\test_lab.c"))
+        $outputName = "lab_tests"
+    } else {
+        $sources = @($labSource, (Join-Path $codeRoot "lab_demo.c"))
+        $outputName = "lab_demo"
+    }
+} elseif ($Target -eq "autopsy") {
     if ($Extensions -or $StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
     }

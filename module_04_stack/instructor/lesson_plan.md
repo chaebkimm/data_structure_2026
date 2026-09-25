@@ -1,285 +1,195 @@
-# Instructor Lesson Plan — Module 4: Fixed-Capacity Stack
+# Instructor Lesson Plan — Module 4: Character Stack and Postfix Evaluation
 
 ## Purpose and limits
 
-This module introduces a **Stack**, a collection whose operations use one end,
-the **top**. Students discover last-in, first-out behavior through function IDs
-100, 200, and 300, represent that behavior with a caller-owned integer array,
-and transfer it to the checked expression `1+2*3`.
+Students discover last-in, first-out behavior through an unfinished-function
+story, then study its concrete implementation in `student/lab.c`. The current
+Stack is a global ten-character array whose top moves toward smaller indexes
+on push. The expression work has two phases:
 
-The implementation deliberately stays small:
-
-```c
-int stack[10];
-int size = 0;
-int capacity = 10;
+```text
+1-2*3+4  ->  123*-4+  ->  -1
+ infix       postfix     result
 ```
 
-The operations request no storage, change no storage extent, and release no
-storage. The module includes no structure-owned buffer, generic `void *`
-container, linked backend, unrelated parser, or traversal application. Later
-modules may reuse the LIFO behavior while choosing a different element type
-or storage policy.
+The operator Stack stores characters. A separate local integer array stores
+numbers and intermediate results during evaluation. The old checked integer
+library remains an optional comparison; it is not the required source or API.
 
 By the end, students should be able to:
 
-1. state LIFO independently of the storage representation;
-2. trace `push`, `peek`, and `pop` from bottom to top;
-3. explain `0 <= size <= capacity` and `stack[size - 1]`;
-4. implement the three checked integer-Stack operations;
-5. prove that a rejection preserves the array, logical size, and required
-   caller output;
-6. distinguish logical removal from clearing physical bits;
-7. evaluate the stated single-digit `+`/`*` grammar with precedence and left
-   associativity;
-8. reject malformed input, live Stack-capacity failure, and `int` overflow
-   without changing the evaluator output; and
-9. distinguish the Stack ADT, its local array representation, and the runtime
-   call stack.
+1. state LIFO independently of its representation;
+2. trace `'A'`, `'B'`, and `'C'` through push, peek, and pop;
+3. explain `0 <= top <= 10`, active indexes `top..9`, and count `10 - top`;
+4. explain full push as a silent no-op and empty peek/pop as `'\0'` returns;
+5. distinguish logical removal from clearing stored characters;
+6. convert valid infix text to postfix using precedence and left associativity;
+7. evaluate postfix using integer values and right-before-left operand pops;
+8. distinguish `top`, postfix `size`, and integer `pos`; and
+9. describe input assumptions and missing validation accurately.
 
 ## Instructor setup
 
 Before Meeting A:
 
-- verify that Stage A contains only the two inquiry formats and its README;
-- choose the standard or linear format for each learner;
-- prepare cards labeled 100, 200, and 300 if a physical model is useful;
-- keep Stage B vocabulary closed until the timed response is preserved; and
-- build the solution and isolated autopsy using `code/README.md`.
+- verify that Stage A contains only its README and two inquiry formats;
+- choose the standard or linear format and prepare visible character cards;
+- preserve the abstract function-call story before revealing representation;
+- keep vocabulary closed until the timed response is preserved; and
+- run the current lab demo, lab tests, and isolated autopsy using `code/README.md`.
 
-Before Meeting B:
-
-- confirm that the reference core reports 8 passing tests;
-- confirm that the extension suite reports 5 passing tests;
-- run the autopsy and record the deterministic 20-versus-777 result;
-- confirm that student build files compile only starter sources; and
-- keep `code/solution/`, `code/tests/test_extension.c`, and this instructor
-  directory out of Stage E.
+Before Meeting B, confirm that `make lab-demo` and `make lab-tests` use
+`student/lab.c`. The equivalent PowerShell targets are `lab` and `lab-tests`.
+Record actual results; legacy test totals do not validate the current source.
+The demo should show infix `1-2*3+4`, postfix `123*-4+`, size 7, result -1.
+Keep instructor answers and optional legacy solution/extension files out of
+the student release.
 
 ## Beginner language sequence
 
-Introduce terms immediately before use. The student vocabulary has 40 terms;
-do not require memorized definitions.
+Introduce terms just before use; do not require memorized glossary wording.
 
-| Concept group | Plain-language entry point |
+| Concept | Plain-language entry point |
 |---|---|
-| state and data structure | Information the program remembers and a planned way to organize it |
-| Stack ADT and top | A collection whose allowed access occurs at one end |
-| LIFO | The newest remaining item is the first one removed |
-| push, peek, pop | Add; report without removal; remove and report |
-| empty, underflow, full | No logical item; empty inspection/removal; size equals capacity |
-| array, index, logical item, inactive slot | Physical positions versus the positions currently counted by size |
-| size and capacity | Current logical count versus prepared position count |
-| caller-owned storage | The caller creates the array; operations borrow it |
-| invariant and contract | A valid-state rule and each function's behavioral promise |
-| rejection and preservation | Refusal before mutation; required information stays unchanged |
-| expression terms | Digits, operands, operators, precedence, and left associativity |
-| integer overflow | A mathematical result outside the C `int` range |
-| regression test | A retained test that detects return of a repaired defect |
+| state and data structure | Information remembered and a way to organize it |
+| Stack, top, LIFO | One accessible end; newest remaining item leaves first |
+| push, peek, pop | Add; inspect; remove and report |
+| character and integer | A symbol such as `'3'` versus the number 3 |
+| active suffix | The occupied part from `top` through index 9 |
+| index versus count | Where the newest item lives versus how many items remain |
+| full/empty behavior | No room to add; no item to inspect or remove |
+| infix and postfix | An operator between operands versus after its operands |
+| precedence and associativity | Which operation goes first and how equal priorities are ordered |
+| terminator and length | `'\0'` ends a C string; it is excluded from token count |
+| assumption and validation | What a caller must provide versus what code actually checks |
 
-Use “full-Stack rejection” for this module's capacity result. If “stack
-overflow” arises, separate it from runtime call-space exhaustion and from an
-out-of-bounds buffer write.
+Avoid using “size” without naming the object. In this source global `size`
+means postfix output length. Use `10 - top` for character-Stack count and
+`pos` for integer-Stack count. `capacity` is declared as 10 but changing it
+alone does not alter the hardcoded array or empty check.
 
 ## Five release gates
 
-A **release gate** is a planned point at which the next materials become
-available. Preserve attempt before explanation.
+Preserve attempt before explanation. Standard and linear formats retain the
+same learning targets.
 
 | Gate | Release point | Give students | Keep back |
 |---|---|---|---|
-| A — Inquiry | Start of Meeting A | One inquiry format | Formal Stack/LIFO vocabulary, representation, code, answers |
-| B — Representation | After the initial return-order model is preserved | Representation reveal and three-target Cognitive Pause; vocabulary only after the response is preserved | Investigation answers, textbook, code |
-| C — Investigation | After the pause and brief calibration | One investigation format | Textbook, completed model, code |
-| D — Calibrated explanation | After Sections A–F are preserved | Textbook and equivalent Stack models | Autopsy answer, lab, solution, instructor files |
-| E — Lab and evidence | Meeting B after retrieval | Lab, evidence form, rubric, autopsy prompt, public headers, starter, public tests, student-test template, build files | Solution, extension tests, instructor files and answers |
+| A — Inquiry | Start of Meeting A | One inquiry format | Formal vocabulary, representation, code, answers |
+| B — Representation | After the initial return-order model is preserved | Representation reveal and three-target Cognitive Pause; vocabulary after the response is preserved | Investigation answers, textbook, code |
+| C — Investigation | After pause and calibration | One investigation format | Textbook, completed model, code |
+| D — Calibrated explanation | After investigation responses are preserved | Textbook and equivalent Stack models | Autopsy answer, lab, instructor files |
+| E — Lab and evidence | Meeting B after retrieval | Lab, source, driver, tests, evidence, rubric, autopsy prompt, build files | Instructor answers and optional legacy solution/extension material |
 
-An accommodation may change timing, response mode, or meeting location. It
-should preserve the sequence of attempt, preserve, compare, and revise. The
-standard and linear files have the same targets.
+An accommodation may change timing, response mode, or meeting location while
+preserving attempt, preserve, compare, and revise. Accept spoken, typed,
+handwritten, or diagrammed reasoning. Do not grade drawing skill or response
+speed.
 
----
+## Meeting A — Discover LIFO and index direction (90 minutes)
 
-# Meeting A — Discover LIFO and Fixed Stack State (90 minutes)
+Macro-Question:
 
-## Macro-Question
-
-> If the most recently started unfinished task must finish first, what access
-> rule should the program enforce?
+> If the newest unfinished task must finish first, what access rule should
+> the program enforce?
 
 | Minutes | Activity | Instructor move | Evidence |
 |---:|---|---|---|
-| 0–5 | Welcome and boundary | State that learners will name the access rule only after preserving an initial model. | Boundary restatement |
-| 5–18 | Gate A inquiry | Release one inquiry format. Ask students to follow Functions 100, 200, and 300. | Initial return-order model |
-| 18–27 | Compare models | Ask which unfinished function resumes after 300. Preserve corrections beside original work. | Justified answer: 200, then 100 |
-| 27–38 | Gate B representation | Define Stack, top, LIFO, push, peek, pop, underflow, and full. | Labeled behavior model |
-| 38–45 | Reveal fixed storage | Show `int stack[10]`, separate size/capacity, active indexes, and the top formula. | Physical/logical distinction |
-| 45–50 | Five-minute Cognitive Pause | Give exactly the three supplied targets. Repeat directions only. | Individual preserved response |
-| 50–59 | Correct and compare | Calibrate trace, boundary preservation, and expression transfer. Open vocabulary after preservation. | Labeled corrections |
-| 59–70 | Operation contracts | Trace successful and rejected calls. Ask what each return means. | Complete contract table |
-| 70–79 | Invariant cases | Classify empty, nonempty, full, negative metadata, and size beyond capacity. | Valid/invalid explanations |
-| 79–86 | `1+2*3` transfer | Use number and operator cards. Leave `+` waiting while `*` takes precedence. | Two-Stack trace and result 7 |
-| 86–90 | Exit and Gate C | Release one investigation format. Ask for the top formula and one preservation promise. | Two-sentence exit response |
+| 0–5 | Welcome | Explain that names and code follow the initial model | Boundary restatement |
+| 5–18 | Gate A inquiry | Follow abstract Functions 100, 200, 300 | Initial return-order model |
+| 18–27 | Compare | Preserve the first response beside its correction | 200 resumes, then 100 |
+| 27–38 | Gate B behavior | Introduce LIFO and push/peek/pop using A, B, C | Character trace |
+| 38–45 | Reveal storage | Label all ten indexes; push from 10 to 9 to 8 | Active suffix and count |
+| 45–50 | Cognitive Pause | Give exactly the three supplied targets; repeat directions only | Individual response |
+| 50–59 | Calibrate | Open vocabulary after preservation; compare trace and boundaries | Labeled corrections |
+| 59–70 | Operations | Contrast no-op full push, empty sentinel, and successful reads | Contract table |
+| 70–79 | State cases | Explain why empty marker 10 is not an array cell | Index/count explanations |
+| 79–86 | Expression transfer | Introduce the two phases and distinct storage roles | Infix/postfix/result distinction |
+| 86–90 | Exit and Gate C | Release one investigation format | Top formula and boundary behavior |
 
-## Stage B Cognitive Pause — exactly three targets
+### Exactly three Cognitive Pause targets
 
-Do not add hints or another target during the five minutes.
+1. Trace `push('A'), push('B'), push('C'), peek, pop, pop, pop`; record
+   character returns, `top`, count, and logical order.
+2. Diagnose independent full push, empty peek, and empty pop cases; state what
+   changes and what remains unchanged.
+3. Explain `1-2*3+4 -> 123*-4+ -> -1` and distinguish the character operator
+   Stack from the integer value Stack.
 
-1. Trace `push(100), push(200), push(300), peek, pop, pop, pop`; record every
-   return, output, size, and bottom-to-top state.
-2. Diagnose independent full-push, empty-peek, and empty-pop cases; preserve
-   the existing values and the output sentinel 999.
-3. Explain precedence and the result for `1+2*3`; reject `1++2` while
-   preserving a preexisting evaluator output.
+Do not add a fourth target or reveal a worked trace during the pause.
 
-## Meeting A checks
+### Meeting A checks and misconceptions
 
-Before leaving, verify that each student can state:
-
-- LIFO means the newest remaining item is removed first;
-- push, peek, and pop all use the top end;
-- logical items occupy indexes `0` through `size - 1`;
-- `stack[size - 1]` is legal as a top expression only when `size > 0`;
-- `stack[size]` is the next unused position when space remains;
-- valid metadata satisfies `0 <= size <= capacity`;
-- full push and empty peek/pop are rejected before mutation;
-- a rejected output-producing operation leaves the output unchanged; and
-- `*` takes precedence over `+` in `1+2*3`.
-
-## Likely Meeting A misconceptions
-
-| Misconception | Diagnostic question | Repair move |
+| Misconception | Neutral question | Calibration after attempt |
 |---|---|---|
-| 100 resumes before 200 | Which call began most recently and is still unfinished? | Remove the 300 card, then expose 200 |
-| Top means index `size` | Which indexes are counted when size is two? | Label indexes 0 and 1 active; index 2 inactive |
-| Pop must erase a cell | Which variable decides membership? | Keep old bits visible while reducing size |
-| Capacity equals size | Can an empty ten-position array be valid? | Separate prepared positions from logical count |
-| Full is invalid metadata | Does `size == capacity` satisfy the invariant? | Mark full as valid state but rejected push |
-| Ten slots means ten input characters | Can an applied operator free positions? | Trace reuse over time; capacity bounds occupancy |
+| `top` is the count | What are both values after one push? | `top = 9`, count 1 |
+| Top is `stack[top - 1]` | Which index holds the most recent pushed character? | Decrement happened before the write; read `stack[top]` |
+| Pop must erase | Which state change removes membership? | Incrementing `top` makes the old cell inactive |
+| Empty is `top == 0` | Where does the first push begin? | Empty 10; full 0 |
+| `size` describes the character Stack | Which assignment changes `size`? | Appending postfix text |
+| Both phases store the same kind of data | Where can the intermediate -5 be kept? | In `int values[10]` |
 
----
+## Meeting B — Read, run, and explain both phases (90 minutes)
 
-# Meeting B — Implement Checked Operations and Evaluator (90 minutes)
+Coding question:
 
-## Coding question
-
-> How can each operation either complete its contract or preserve everything
-> that the contract promises?
+> How do the stored state and the order of updates produce the promised
+> result for valid input?
 
 | Minutes | Activity | Instructor move | Evidence |
 |---:|---|---|---|
-| 0–8 | Retrieval | Without notes, trace 100, 200, 300 through peek and three pops. | Accurate trace |
-| 8–14 | Gate D calibration | Correct top, invariant, and rejection language using the textbook and models. | Annotated correction |
-| 14–20 | Gate E orientation | Release the lab. Define header, implementation, public test, starter, and reference solution. | Package map |
-| 20–32 | Implement `push` | Check pointers and metadata, check full, write at old size, return new size. | Passing push cases |
-| 32–44 | Implement `peek` and `pop` | Reject before index arithmetic; delay output writes until success. | Passing empty and preservation cases |
-| 44–50 | Logical removal | Show that pop receives a const array and need not erase the old top. | Inactive-slot explanation |
-| 50–61 | Evaluator grammar | Alternate expected digit/operator states. Reject all unstated syntax. | Grammar table |
-| 61–73 | Precedence reduction | Before pushing an operator, reduce waiting equal-or-greater precedence. Pop right before left. | `1+2*3` and left-associative traces |
-| 73–79 | Checked arithmetic and commit | Check `int` bounds before calculation; write caller result only after full success. | Unchanged-output overflow test |
-| 79–84 | Three student tests | Require one LIFO, one rejection/preservation, and one evaluator test with rationale. | Three nonduplicate tests |
-| 84–88 | Stack-Top Autopsy | Predict 20 versus 777 before running. Name the first broken logical rule. | Prediction and observation |
-| 88–90 | Submission check | Review evidence and boundaries. | Completion checklist |
+| 0–8 | Retrieval | Trace A, B, C without notes | Correct top and count |
+| 8–14 | Gate D calibration | Compare textbook and physical models | Annotated corrections |
+| 14–20 | Gate E orientation | Locate `student/lab.c`, driver, and current tests | Package map |
+| 20–31 | Stack operations | Trace guard, index change, read/write order | Boundary snapshots |
+| 31–43 | Conversion | Append digits; compare incoming and waiting precedence | Per-token table |
+| 43–51 | Finish and reuse | Drain operators; reset `size`; write terminator | Repeated/shorter conversion evidence |
+| 51–64 | Evaluation | Convert digits; pop right before left; store integer result | `123*-4+` evaluation table |
+| 64–71 | Assumptions | Identify unsupported syntax and missing checks by reading | Accurate limits statement |
+| 71–79 | Three added tests | Add LIFO, boundary, and valid-expression cases with rationale | Distinct evidence |
+| 79–86 | Stack-Top Autopsy | Preserve prediction, run, compare active/inactive indexes | First broken rule |
+| 86–90 | Submit | Check evidence, corrections, and complexity | Completion checklist |
 
-## Public API calibration
+## Core input boundary
 
-```c
-int int_stack_push(int stack[], int size, int capacity, int value);
+Use nonempty expressions of at most seven characters: single digits
+alternating with `+`, `-`, `*`, `/`, or `%`, without spaces, parentheses, unary
+operators, or multi-digit numbers. Divisors must be nonzero; integer
+intermediates must be representable. The initial operator Stack must be
+empty. The source assumes these conditions and does not safely reject every
+violation.
 
-int int_stack_peek(
-    const int stack[],
-    int size,
-    int capacity,
-    int *out_value
-);
+For conversion, `>=` sends equal-precedence operators to output from left to
+right. For evaluation, `num2` is the right operand popped first. Use `8-3-2`
+to test associativity and `8/2` to expose swapped operands. Explain C integer
+division before assigning division or remainder examples.
 
-int int_stack_pop(
-    const int stack[],
-    int size,
-    int capacity,
-    int *out_value
-);
+Keep unsafe malformed-input cases as paper diagnoses in core work. A
+checked parser, arithmetic guards, explicit status reporting, and arbitrary
+input lengths are extensions. Do not claim checked-output preservation for
+this source: it has neither an evaluator output parameter nor an error status.
 
-int expression_evaluate(const char expression[], int *out_result);
-```
+## Stack-Top Autopsy facilitation — instructor only
 
-Calibrate the unusual but intentional return contracts:
-
-- successful push returns `size + 1`; rejected push returns original `size`;
-- successful peek returns 1; rejected peek returns 0;
-- successful pop returns `size - 1`; rejected pop returns original `size`;
-- successful evaluation returns 1; rejected evaluation returns 0.
-
-Because a rejected pop from an empty Stack also returns zero, callers must
-decide acceptance from the preconditions or use the operation only after a
-successful nonempty check. This small API emphasizes size threading rather
-than a rich status enumeration.
-
-## Evaluator grammar and boundary
-
-The accepted grammar is:
-
-```text
-expression := digit (('+' | '*') digit)*
-digit      := '0' | '1' | ... | '9'
-```
-
-Reject empty input, missing pointers, missing or repeated tokens, spaces,
-parentheses, unary operators, multi-digit operands, other symbols, internal
-full-Stack conditions, and arithmetic outside `INT_MIN` through `INT_MAX`.
-Every rejection leaves `*out_result` unchanged.
-
-Each internal Stack has ten slots. Ten is not a total-token or total-string
-limit. Check each live push; earlier reductions can free slots for later
-tokens.
-
-## Test design requirements
-
-Students replace exactly three placeholder bodies:
-
-1. a canonical or extended LIFO trace involving 100, 200, and 300;
-2. a full, empty, invalid-metadata, or missing-output rejection that checks
-   preservation; and
-3. a valid precedence case or rejected grammar/arithmetic case, including
-   unchanged output on rejection.
-
-Do not accept three examples that restate the same claim. Require each test's
-comment to name the contract promise it supports.
-
-## Stack-Top Autopsy facilitation
-
-The fixture is deliberately memory-safe:
-
-```text
-stack = [10, 20, 777, 888]
-size = 2
-capacity = 4
-```
-
-Students predict before running. The correct top is 20 at index one. The
-faulty read uses `stack[size]`, reaches inactive index two, and reports 777.
-Do not lead with “no sanitizer finding.” Lead with the first broken contract:
-the top of a nonempty Stack is `stack[size - 1]`. Physical bounds are
-necessary but not sufficient for logical correctness.
+Use ten cells: eight `'?'` characters, `'*'` at index 8, `'+'` at index 9,
+and `top = 8`. Students predict before running. Correct `stack[top]` returns
+`'*'`; faulty `stack[top - 1]` returns inactive `'?'` at index 7. That faulty
+read is physically inside the array but logically outside the active suffix.
+A sanitizer need not report it. Explain the first broken rule, then choose
+a fresh top/inactive pair for a regression case. Keep this answer out of
+Stage D diagrams and all earlier releases.
 
 ## Assessment and feedback
 
-Use the 100-point student rubric. Prioritize:
+Use the current 100-point rubric. Prioritize correct LIFO/index reasoning,
+full/empty behavior, both expression phases, operand order, and evidence from
+three distinct added cases. Require an honest account of assumptions and
+missing validation. The current tests include canonical conversion, boundary
+behavior, associativity/operand order, reuse, and character-to-integer
+conversion; students extend `code/tests/test_lab.c`.
 
-1. logical top and invariant correctness;
-2. rejection before mutation and delayed output writes;
-3. exact grammar, precedence, left associativity, and checked arithmetic;
-4. evidence from nonduplicate tests; and
-5. explanation of the autopsy and costs.
-
-Do not penalize an incorrect first inquiry or pause response if it is
-preserved and meaningfully corrected. Drawing quality, response speed, and
-memorized wording are not grading targets.
-
-## Optional extension boundaries
-
-Appropriate discussion questions include how a richer status-returning API
-could remove ambiguity, how a different fixed capacity changes accepted live
-states, or how another element type could preserve the same LIFO contract.
-Do not require storage-management extensions, additional expression syntax,
-or traversal applications as part of the core submission.
+An incorrect first inquiry or pause answer is useful evidence when preserved
+and meaningfully corrected. Use neutral prompts before giving hints; after
+preservation, calibrate directly. Optional legacy API comparisons may follow
+the core, but do not displace the beginner tracing work or become a second
+required assignment.

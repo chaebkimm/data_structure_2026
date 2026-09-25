@@ -3,7 +3,8 @@
 Run `prepare_student_release.ps1` from this directory to create five ZIP
 archives in `../dist`. The script checks that every source exists, rejects a
 duplicate source or destination path within a stage, and refuses to overwrite
-an existing archive.
+an existing archive. It validates all stages before creating an archive and
+cleans up partial output if archive creation fails.
 
 ## Stage A — Initial Function-Return Inquiry
 
@@ -19,12 +20,15 @@ code, solution, or instructor material.
 
 Release after initial return-order models are preserved:
 
-- fixed integer-array representation reveal;
+- fixed character-array representation reveal;
 - exactly-three-target Cognitive Pause; and
 - vocabulary reference, opened only after the pause response is preserved.
 
-The pause targets the 100, 200, 300 trace, rejection preservation, and the
-`1+2*3` transfer. Approved timing or response accommodations retain those same
+The reveal connects the abstract function-return trace to characters
+`'A'`, `'B'`, and `'C'` in `lab.c`'s concrete `char stack[10]`. Its active range
+is `stack[top]` through `stack[9]`, with `0 <= top <= 10`. The pause preserves
+return-order reasoning, boundary decisions, and expression-precedence
+transfer. Approved timing or response accommodations retain those same
 targets.
 
 ## Stage C — Fixed Stack Investigation
@@ -34,51 +38,61 @@ Release after the pause and instructor calibration:
 - standard investigation worksheet;
 - linear accessible investigation worksheet.
 
-This stage asks about LIFO operations, `0 <= size <= capacity`, the logical
-top, rejection preservation, expression precedence, fixed storage, and the
-inactive-slot defect without supplying instructor answers.
+This stage asks about LIFO operations, downward-moving `top`, fixed storage,
+boundary behavior, operator precedence, postfix evaluation, and inactive
+slots without supplying instructor answers. The postfix token count `size`
+and the evaluator's next-free position `pos` are separate from `top`.
 
 ## Stage D — Textbook and Models
 
 Release after the student completes and preserves Sections A through F of the
 Stage C investigation:
 
-- beginner textbook chapter;
+- English beginner textbook chapter, `textbook.md`;
+- Korean edition of the same chapter, `textbook_korean.md`; and
 - diagrams with exact text equivalents.
 
-Stage D contains no autopsy answer, reference implementation, extension test,
-or instructor material.
+Choose either language edition; reading both is optional. Both editions
+follow the worked expression `1-2*3+4` → `123*-4+` → `-1`. Stage D contains
+no autopsy answer or private instructor material.
 
 ## Stage E — Lab and Evidence
 
 Release for Meeting B:
 
+- current `student/lab.c`;
 - lab, rubric, evidence template, and Stack-Top Autopsy prompt;
-- `int_stack.h` and `expression_evaluator.h`;
-- starter `int_stack.c` and `expression_evaluator.c`;
-- eight supplied core tests and three student-test placeholders;
-- student-only PowerShell and GNU Make build files; and
-- the solution-independent `faulty_top.c` autopsy program and its README.
+- `code/lab_demo.c`, which supplies the demonstration's `main`;
+- `code/tests/test_lab.c`, with six baseline groups and space for three
+  justified student tests;
+- student-only PowerShell and GNU Make build files plus the code README; and
+- isolated `code/autopsy/faulty_top.c` and its README.
+
+The lab source has no `main`. From the extracted `code` directory, the
+default build runs the demonstration; `make lab-tests` or
+`./build.ps1 -Target lab-tests` runs the supplied checks. The autopsy remains
+a separate target. Tests cover supported inputs and do not imply that the
+source validates malformed expressions, buffer limits, or zero divisors.
 
 Stage E excludes:
 
 - `instructor/` and all answer keys;
-- `code/solution/`;
-- `code/tests/test_extension.c`;
+- the older integer-stack headers, starter, and solution;
+- the older `test_core.c`, `test_student.c`, and `test_extension.c`;
 - earlier inquiry, pause, investigation, and textbook materials; and
-- any completed student test or generated build artifact.
+- generated build artifacts.
 
 ## Instructor verification
 
 Before release:
 
-1. build and run the reference core and extension suites using
-   `../code/README.md`;
-2. build and run the isolated Stack-Top Autopsy;
-3. confirm the starter is warning-clean and intentionally incomplete;
-4. inspect all five source/entry lists for unique, existing paths;
-5. verify Stage A has no formal vocabulary and Stage D has no autopsy answer;
-6. inspect Stage E archive contents for solution, instructor, and extension
-   leaks; and
-7. remove generated `build/`, partial archives, and test ZIPs after
+1. Run the lab demonstration and supplied lab tests using `../code/README.md`.
+2. Build and run the isolated Stack-Top Autopsy after recording its prediction.
+3. Review compiler output. The current `lab.c` uses old-style empty parameter
+   lists and may produce warnings; do not describe it as warning-clean.
+4. Inspect all five source/entry lists for unique, existing paths.
+5. Verify Stage A has no formal vocabulary and Stage D has no autopsy answer.
+6. Inspect Stage E contents for instructor files and older exercise files,
+   then build and run its demonstration, tests, and autopsy after extraction.
+7. Remove generated `build/`, partial archives, and test ZIPs after
    verification.

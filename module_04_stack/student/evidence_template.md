@@ -1,40 +1,35 @@
 # Module 4 Evidence Record
 
-Complete this record after the Stage D notes and Stage E lab. You may replace
-any table with a numbered list using the same headings.
+Complete this record after the Stage D notes and Stage E lab. Any table may
+be replaced with numbered responses using the same headings.
 
-Name: ____________________________  
-Compiler used: ____________________________
+Name: ____________________________
+
+Compiler and version: ____________________________
+
+Build command(s): ____________________________
 
 ## 1. Stack language
 
-A Stack:
+Explain Stack, LIFO, top, push, peek, pop, underflow, and a full Stack in your
+own words. Distinguish a physical array cell from a logical Stack item.
+
+Response:
 
 ____________________________________________________________________
 
-LIFO and top:
+## 2. Canonical character trace
 
-____________________________________________________________________
-
-Push, pop, and peek:
-
-____________________________________________________________________
-
-Underflow and full-Stack rejection:
-
-____________________________________________________________________
-
-## 2. Canonical operation trace
-
-Trace from bottom to top. Record every return and output.
+Start empty. Record the return, `top`, item count, and bottom-to-top logical
+state. A `void` push has no return value.
 
 ```text
-push(100), push(200), push(300), peek, pop, pop, pop
+push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-| Step | Function return | Output, if any | New size | Logical Stack |
-|---:|---:|---:|---:|---|
-| Start | none | none | 0 | empty |
+| Step | Return | `top` | Item count | Logical Stack |
+|---:|---|---:|---:|---|
+| Start | none | 10 | 0 | empty |
 | 1 | | | | |
 | 2 | | | | |
 | 3 | | | | |
@@ -43,54 +38,69 @@ push(100), push(200), push(300), peek, pop, pop, pop
 | 6 | | | | |
 | 7 | | | | |
 
+Where are `'A'`, `'B'`, and `'C'` physically after all three pushes?
+
+____________________________________________________________________
+
 ## 3. Representation invariant
 
-State the valid relationship among `size`, `capacity`, and the logical index
-range:
+State the valid range of `top`, the active index range, and the expressions
+for the nonempty top, the next push position, and current item count.
 
 ____________________________________________________________________
 
-Which expression identifies the top? Which expression identifies the next
-unused position?
+What can remain in a popped cell? Why is it no longer a logical item?
 
 ____________________________________________________________________
 
-Why must the caller pass the actual prepared capacity of its array?
+Why does changing the global `capacity` alone not change this implementation's
+array length or full/empty checks?
 
 ____________________________________________________________________
 
-Why must a `peek` or `pop` output be separate from the Stack array?
+Distinguish global `top`, global `size`, and local `pos`. Which two structures
+have opposite growth directions?
 
 ____________________________________________________________________
 
-What can remain in an array position after a successful pop, and why is that
-value no longer a logical item?
+## 4. Boundary behavior
+
+For each case, record the return, final `top`, and whether any array cell
+changes. Include evidence for preserved state.
+
+1. `push('K')` when all ten character positions are active.
+2. `peek()` when empty.
+3. `pop()` when empty.
+4. Successful pop followed by peek of the newly exposed character.
 
 ____________________________________________________________________
 
-## 4. Rejection behavior
-
-State the exact return and everything that remains unchanged after:
-
-- `push` on a full Stack;
-- `push` with invalid size/capacity metadata;
-- `peek` on an empty Stack when its output already contains 999; and
-- `pop` on an empty Stack when its output already contains 999.
+Why is returning `'\0'` not a separate success flag? What assumption about
+ordinary test characters avoids ambiguity?
 
 ____________________________________________________________________
 
 ## 5. Expression transfer
 
-Trace the number Stack and operator Stack for `1+2*3`:
+Trace conversion of `1-2*3+4`. At each token, record the character operator
+Stack, `top`, postfix prefix, and `size`. Explain the final terminator and
+why the operator Stack is empty afterward.
 
 ____________________________________________________________________
 
-State the complete accepted grammar:
+Trace evaluation of the completed postfix. At each token, record the integer
+`values` Stack, `pos`, and any calculation. Explain `c - '0'` and why `num2`
+is popped before `num1`.
 
 ____________________________________________________________________
 
-Why must `expression_evaluate` leave its output unchanged after malformed
-input, internal capacity failure, or checked integer overflow?
+State the permitted operators, seven-character bound, operand format,
+initial-Stack requirement, and arithmetic assumptions.
+
+____________________________________________________________________
+
+Name three unsupported inputs and the missing checks they expose. Describe
+them as limitations; do not claim they are safely rejected.
 
 ____________________________________________________________________
 
@@ -98,63 +108,77 @@ ____________________________________________________________________
 
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
-| Empty Stack | | | |
-| Canonical 100, 200, 300 LIFO trace | | | |
-| Peek preserves size and array | | | |
-| Pop exposes the previous item | | | |
-| Full push preserves size and logical items | | | |
-| Invalid metadata is rejected | | | |
-| Failed peek preserves output | | | |
-| Failed pop preserves output | | | |
-| `1+2*3` evaluates to 7 | | | |
-| Single digit succeeds | | | |
-| Malformed expression is rejected | | | |
-| Checked arithmetic overflow is rejected | | | |
+| Canonical A, B, C LIFO trace | | | |
+| Peek preserves `top` and array | | | |
+| Pop exposes previous character without erasing the old cell | | | |
+| Full push preserves all ten cells and `top` | | | |
+| Empty peek/pop return `'\0'` and preserve state | | | |
+| `1-2*3+4` converts to `123*-4+`, length 7 | | | |
+| Canonical postfix evaluates to `-1` | | | |
+| Equal-precedence operators remain left associative | | | |
+| Noncommutative operands have the correct order | | | |
+| A second, shorter valid conversion resets `size` and terminates output | | | |
+| Character digits become numeric values | | | |
 
-### Three student-authored tests
+### Three student-authored cases
 
-State the new claim checked by each test.
+Add exactly three justified new cases to `code/tests/test_lab.c` and retain
+the supplied cases. Record each case's new claim and expected state/result.
 
-1. Canonical or new LIFO sequence:
-
-   __________________________________________________________________
-
-2. Boundary and preservation case:
+1. A new LIFO sequence:
 
    __________________________________________________________________
 
-3. One expression success and one checked rejection:
+2. A boundary or inactive-cell case:
 
    __________________________________________________________________
+
+3. A valid expression or repeated-conversion case:
+
+   __________________________________________________________________
+
+Paste or attach the demo and complete passing lab-test transcripts:
+
+____________________________________________________________________
+
+Record compiler warnings or diagnostic results and what they mean. What do
+passing valid-input tests leave unproven?
+
+____________________________________________________________________
 
 ## 7. Costs
 
 | Work | Cost | Reason |
-|---|---:|---|
-| Push | | |
-| Peek | | |
-| Pop | | |
-| Evaluate input of length `n` | | |
-| Two fixed ten-position internal arrays | | |
+|---|---|---|
+| Character push | | |
+| Character peek | | |
+| Character pop | | |
+| Convert `n` valid infix tokens | | |
+| Evaluate `n` valid postfix tokens | | |
+| Storage with the present fixed arrays | | |
+
+Explain the current seven-token limit and how storage would change if the
+arrays grew with input length.
+
+____________________________________________________________________
 
 ## 8. Three uses of “stack”
 
-Distinguish:
-
-1. the Stack ADT;
-2. the runtime call stack; and
-3. the local `int stack[10]` buffer used as one Stack representation.
+Distinguish the Stack ADT, the runtime call stack, and this lab's global
+character array. Explain why the local integer `values` array is also a
+Stack representation even though its variable is not named `stack`.
 
 ____________________________________________________________________
 
 ## 9. Stack-Top Autopsy
 
-- first incorrect read:
-- logical rule broken:
-- why the read remains inside physical storage:
-- visible wrong value:
-- repair:
-- regression case:
+- Prediction preserved before running:
+- First incorrect read:
+- Logical rule broken:
+- Why the read is still inside physical storage in the fixture:
+- Observed character and consequence:
+- Repair:
+- Regression case:
 
 ## 10. Correction note
 

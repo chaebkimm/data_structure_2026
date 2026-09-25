@@ -1,105 +1,111 @@
 # Module 4 C Code
 
-## What this code contains
+## Current lab
 
-- checked operations for a caller-owned, fixed-capacity integer Stack;
-- `expression_evaluate`, a checked evaluator for single digits, `+`, and `*`;
-- starter implementations with marked TODOs;
-- an instructor reference solution;
-- eight public core tests and five instructor extension tests;
-- three student-test placeholders; and
-- a separate, solution-independent top-index autopsy.
+[../student/lab.c](../student/lab.c) defines a downward-growing global
+character Stack and two expression phases. `lab_demo.c` supplies `main`;
+`tests/test_lab.c` checks its documented behavior. Compile either harness
+with the lab source, not both harnesses together.
 
-The Stack operations accept an array together with its current `size` and
-fixed `capacity`. Valid metadata satisfies `0 <= size <= capacity`. Push
-returns the new size or the original size when rejected. Peek returns `1` or
-`0`. Pop returns the new size or the original size when rejected. Rejected
-operations preserve the array and caller output, and pop never erases the
-inactive slot.
+From this `code` directory:
 
-The evaluator accepts a nonempty null-terminated expression matching:
-
-```text
-digit (('+' | '*') digit)*
+```sh
+make                 # same as make lab-demo
+make lab-tests
+make autopsy
 ```
 
-It uses normal precedence and left associativity. Each internal Stack has ten
-slots, and every push is checked. Total input length is not capped: slots are
-reused as operators are applied. Malformed input, a live-capacity failure, or
-`int` arithmetic overflow returns `0` without changing the caller's result.
+For Clang use `make CC=clang lab-tests`. GNU Make and a C11 compiler are
+needed; the recipe works in suitable Windows shells, Linux, and macOS.
 
 ## PowerShell
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target starter -StudentTests
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target solution
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target solution -Extensions
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `
-  -Target autopsy
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target lab-tests
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
 ```
 
-Omitting `-Target` builds the starter core. Add `-Sanitize` when the installed
-compiler supports it. The script searches for Clang, GCC, and then MSVC. MSVC
-must run from a Visual Studio Developer PowerShell or Developer Command
-Prompt.
+The default target is `lab`. The script searches for Clang, GCC, then MSVC.
+MSVC requires a Visual Studio Developer PowerShell or Developer Command
+Prompt. Add `-Sanitize` when supported. The lab targets do not accept the
+older `-StudentTests` or `-Extensions` switches; extend `tests/test_lab.c`
+for student evidence.
 
-## GNU Make
-
-```sh
-make starter-core
-make starter-student-tests
-make solution-core
-make solution-extension
-make autopsy
-```
-
-The Makefile is intended for Git Bash, MSYS2, WSL, Linux, or macOS. It
-defaults to GCC. For Clang, use `make CC=clang solution-core`.
-
-## Manual GCC/Clang reference build
+## Manual build
 
 ```sh
 mkdir -p build
 cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g \
-  -Iinclude \
-  solution/int_stack.c solution/expression_evaluator.c tests/test_core.c \
-  -o build/solution_core
+  ../student/lab.c lab_demo.c -o build/lab_demo
+./build/lab_demo
 
-./build/solution_core
+cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g \
+  ../student/lab.c tests/test_lab.c -o build/lab_tests
+./build/lab_tests
 ```
 
-## Expected reference output
+The supplied lab still uses `()` for six parameterless definitions. Some
+compilers warn about these missing prototypes; use `(void)` when revising
+them. A successful build is not evidence that the expression parser checks
+invalid inputs.
 
-Core:
+## Demo output
 
 ```text
-PASS push adds at the top
-PASS peek reads without mutation
-PASS pop reports LIFO without erasing
-PASS full push preserves array
-PASS empty and zero capacity fail safely
-PASS invalid arguments preserve state
-PASS expression precedence and associativity
-PASS invalid expressions preserve result
-
-8 core test(s), 0 failure(s)
+infix: 1-2*3+4
+postfix: 123*-4+
+size: 7
+result: -1
 ```
 
-Extension:
+The tests cover six groups: character LIFO, full/empty boundaries,
+canonical conversion, precedence and operand order, repeated/shorter
+conversion, and character digits versus integer values. An unchanged
+baseline ends with `6 lab test(s), 0 failure(s)`. Add three justified cases
+to this file and record predictions as part of the lab evidence.
 
-```text
-PASS every capacity through ten
-PASS deterministic stack model
-PASS valid expression table and long input
-PASS invalid expression table
-PASS checked integer overflow
+## Input assumptions
 
-5 extension test(s), 0 failure(s)
+Use nonempty expressions of alternating single digits and binary
+`+`, `-`, `*`, `/`, `%`. The eight-character string arrays allow at most
+seven expression characters and their null terminator. The operator Stack
+starts empty. Exclude whitespace, parentheses, unary operators, multi-digit
+operands, zero divisors, and nonrepresentable arithmetic results.
+
+The current functions do not validate these assumptions or return failure
+status. Unsupported characters can overrun the postfix buffer; malformed
+operands can underflow the local integer Stack; division/remainder by zero
+and overflow are unchecked. The core tests stay within the supported
+domain. Discuss rejection checks as extensions before expecting invalid
+inputs to run safely.
+
+`top` indexes the top character, `size` counts postfix characters without
+the terminator, and `pos` counts integer values during evaluation. The
+descriptive `capacity` variable does not control the hardcoded limit of 10.
+
+## Isolated autopsy
+
+`make autopsy` builds an intentional wrong-index read using the current
+downward representation. Follow [autopsy/README.md](autopsy/README.md) and
+preserve predictions before running. Changing `lab.c` cannot change this
+separate program's result.
+
+## Optional earlier checked API
+
+The `include/`, `starter/`, and `solution/` directories and older test files
+belong to a different exercise: caller-owned integer arrays with a
+size-based active prefix and a checked `+`/`*` evaluator. They remain for
+comparison, with their original contracts and commands:
+
+```sh
+make starter-core              # intentionally incomplete
+make starter-student-tests     # earlier exercise's placeholders
+make solution-core
+make solution-extension
 ```
 
-The supplied starter is intentionally incomplete, so its tests should compile
-but fail until the TODOs are implemented.
+PowerShell supports `-Target starter` or `-Target solution`, with
+`-StudentTests` or `-Extensions` as applicable. These targets do not test
+`student/lab.c`; their passing results must not be used as current lab
+evidence. The Stage E student package excludes this optional track.

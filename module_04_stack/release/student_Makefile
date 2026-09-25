@@ -1,24 +1,24 @@
 # GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
 CC := gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
-CPPFLAGS ?= -Iinclude
+CPPFLAGS ?=
 BUILD_DIR := build
-STARTER_SOURCES := starter/int_stack.c starter/expression_evaluator.c
+LAB_SOURCE := ../student/lab.c
 
-.PHONY: all starter-core starter-student-tests autopsy clean
+.PHONY: all lab-demo lab-tests autopsy clean
 
-all: starter-core
+all: lab-demo
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-starter-core: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(STARTER_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core
-	$(BUILD_DIR)/starter_core
+lab-demo: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LAB_SOURCE) lab_demo.c -o $(BUILD_DIR)/lab_demo
+	$(BUILD_DIR)/lab_demo
 
-starter-student-tests: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(STARTER_SOURCES) tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
-	$(BUILD_DIR)/starter_student_tests
+lab-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LAB_SOURCE) tests/test_lab.c -o $(BUILD_DIR)/lab_tests
+	$(BUILD_DIR)/lab_tests
 
 autopsy: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) autopsy/faulty_top.c -o $(BUILD_DIR)/stack_top_autopsy

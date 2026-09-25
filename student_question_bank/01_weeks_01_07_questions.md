@@ -205,84 +205,84 @@
 - What new support must Module 6 add before it can operate on undirected graphs?
 - How do the ArrayList, tree, and graph representations differ in their central invariant?
 
-## Week 4 — Fixed-Capacity Stack and Expression Precedence
+## Week 4 — Character Stack and Postfix Evaluation
 
 ### Meaning and mental model
 
 - Why must the newest saved item leave before older items?
 - How do push, peek, and pop differ?
-- Why is only one end called the top?
-- How is the course Stack related to, but different from, runtime call bookkeeping?
+- Why can LIFO behavior stay the same when array indexes grow in a different direction?
+- How is the explicit character Stack different from runtime call bookkeeping?
 
 ### Representation and invariants
 
-- Which array indexes belong to a Stack with size 3 and capacity 10?
-- Why is the top at `stack[size - 1]` rather than `stack[size]`?
-- Why may an inactive slot still contain an old integer?
-- What goes wrong when size is negative or greater than capacity?
+- Which indexes are active when `top == 7`, and how many characters are stored?
+- Why does push decrement `top` before writing, while peek reads `stack[top]`?
+- Why may an inactive cell still contain a character after pop?
+- Why are `top == 10` and `top == 0` the empty and full states respectively?
 
 ### Operations and C API
 
-- What does push return when the Stack is full or metadata is invalid?
-- Why must peek leave size and every array slot unchanged?
-- Why can pop remove an item by decreasing size without erasing its cell?
-- Which failures must leave the caller's output value unchanged?
+- What does a full push do, and why does it return no value?
+- What do empty peek and pop return, and which state stays unchanged?
+- Why does a successful pop increment `top` without erasing its old cell?
+- Why does changing `capacity` alone not change the actual ten-position Stack?
 
 ### Tracing
 
-- What states result from pushing 100, 200, and 300 in that order?
-- What do peek and two pops report after those three pushes?
-- What remains active after the first pop, and what remains physically stored?
-- How can a snapshot prove that a rejected push changed nothing?
+- What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
+- What do peek and two pops return after those three pushes?
+- How do `top` and `10 - top` change in opposite directions?
+- How can an array snapshot prove that a full push changed nothing?
 
-### Expression evaluation
+### Expression conversion and evaluation
 
-- Why does `1+2*3` evaluate to 7 rather than 9?
-- What is stored in the number and operator Stacks after each character?
-- When must a waiting operator be applied before a new operator is pushed?
-- Why are spaces, parentheses, multi-digit numbers, and other operators rejected?
+- How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
+- Why does incoming `+` cause both waiting `*` and `-` to be emitted?
+- Why must evaluation pop right operand `num2` before left operand `num1`?
+- How do `top`, global `size`, and local `pos` describe different state?
 
 ### Tests and debugging
 
 - Which tests distinguish empty, one-item, and full Stack states?
-- How can a test prove that zero is ordinary Stack data?
-- Why does the faulty-top autopsy read an inactive slot without leaving the array?
-- Which malformed-expression tests exercise token order and unsupported characters?
+- How can `8-3-2` distinguish left associativity from right associativity?
+- Why can a faulty top read stay inside the physical array and still be wrong?
+- Why do repeated conversion and a shorter replacement expression test both reset and termination?
 
 ### Complexity
 
-- Why do checked push, peek, and pop each take `O(1)` time?
+- Why do push, peek, and pop each take `O(1)` time?
 - Why does pop require no shifting?
-- Why does evaluating an expression of length `n` take `O(n)` time?
-- Why does this evaluator use bounded additional space even for a longer valid input?
+- Why is conversion `O(n)` despite its inner operator-pop loop?
+- Why is evaluation `O(n)`, and how do the current fixed buffers bound storage?
 
 ### Safety and interpretation
 
-- Why must the caller's array contain at least capacity elements?
-- Why can a function validate metadata but not discover the array's physical length?
-- How does checked integer arithmetic prevent undefined signed overflow?
-- Why does a valid result establish only the supported arithmetic grammar and value?
+- Why do eight-character input and output arrays allow at most seven token characters?
+- Which syntax restrictions are assumptions rather than validated rejections in this source?
+- Why must divisors be nonzero and intermediate integer results be representable?
+- Why can an empty-read sentinel be ambiguous if a caller stores `'\0'` as data?
 
 ### Assignment and evidence
 
-- Which `int_stack.c` and `expression_evaluator.c` TODOs are required?
-- What three student-test categories provide nonduplicate evidence?
-- Which warning and sanitizer commands should be recorded?
-- What must the corrected autopsy explanation distinguish about size and capacity?
+- How do the lab driver and current tests use `student/lab.c`?
+- What LIFO, boundary, and valid-expression cases provide three distinct additions to `test_lab.c`?
+- Which warning and sanitizer outputs should accompany the trace evidence?
+- What must an autopsy explanation distinguish about physical bounds and the active suffix?
 
 ### Transfer and prerequisites
 
-- Which Chapter 1 active-prefix and rejection rules are reused?
-- How will later Stacks change the item type while preserving LIFO behavior?
-- How can LIFO storage remember unfinished choices in later traversal work?
-- Which pointer concepts should I review for checked output parameters?
+- How does this active suffix compare with Chapter 1's active prefix?
+- How can a later Stack use integer or pointer items while preserving LIFO?
+- How does delaying operators illustrate remembering unfinished work?
+- Why does `c - '0'` turn a digit character into a numeric operand?
 
 ### Extension questions — optional
 
-- How could a checked evaluator support subtraction while preserving operand order?
-- What additional rules would multi-digit operands require?
+- How could explicit error reporting safely reject unsupported characters and missing operands?
+- What additional parsing rules and buffers would multi-digit operands require?
 - How would parentheses change the operator-Stack algorithm?
-- How would a growable backend change the representation without changing LIFO behavior?
+- How does the optional legacy caller-owned integer API differ in layout and error reporting?
 
 ## Week 5 — Tree DFS with Recursive Core
 

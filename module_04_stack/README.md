@@ -1,150 +1,133 @@
 # Module 4 Teaching Package
 
-## Fixed-Capacity Stack and Expression Precedence
+## Character Stack, Infix-to-Postfix Conversion, and Evaluation
 
-This package is the Linear/supporting stage of the second
-Linear → Tree → Graph spiral in **Data Structures Course 2026**.
+This package is the Linear stage of the second Linear → Tree → Graph
+spiral in **Data Structures Course 2026**. Its current implementation is
+[student/lab.c](student/lab.c); the textbook in
+[English](student/textbook.md) or [Korean](student/textbook_korean.md),
+[lab guide](student/lab.md), and assessments follow that file.
 
 ## Beginner-first rule
 
-Students are not expected to know Stack vocabulary, abstract data types, or
-operator precedence before this module. Student materials begin with three
-unfinished function IDs, preserve initial reasoning, name the LIFO rule, and
-then reveal a caller-owned fixed-array representation. Assessment rewards
-accurate reasoning rather than memorized wording.
+Students begin by predicting the order of unfinished function calls before
+being given Stack vocabulary. The conceptual IDs 100, 200, and 300 are
+later represented by character labels `'A'`, `'B'`, and `'C'`. Keep the
+initial reasoning, then revise it with a concrete array trace. Neither
+these labels nor the character array is a real runtime call frame.
 
 ## Module question
 
-> If the most recently started unfinished task must finish first, what access
-> rule should the program enforce?
+> If the most recently started unfinished task must finish first, what
+> access rule should the program enforce?
 
 ## Authoritative model
 
-The module represents a Stack with a caller-owned integer array plus separate
-`size` and `capacity` values. Valid metadata satisfies:
+```c
+char stack[10];
+int capacity = 10;
+int top = 10;
+```
+
+The global character Stack grows toward smaller indexes. Its invariant is
+`0 <= top <= 10`; active items occupy indexes `top` through 9. Empty means
+`top == 10`, full means `top == 0`, and the active count is `10 - top`.
+Push decreases `top` before writing; peek and pop read `stack[top]` only
+when nonempty; pop then increases `top` without erasing the array cell.
+A full push does nothing. Empty peek/pop return `'\0'`. There is no
+separate status output, and changing the descriptive `capacity` variable
+does not change the hardcoded array/empty boundary.
+
+Expression processing has two phases:
 
 ```text
-0 <= size <= capacity
+infix_to_postfix():  1-2*3+4 → 123*-4+
+eval_postfix():      123*-4+ → -1
 ```
 
-Logical items occupy indexes `0` through `size - 1`. When `size > 0`, the top
-is `stack[size - 1]`; when `size < capacity`, `stack[size]` is the next
-inactive position. The Stack functions borrow the caller's fixed storage;
-they do not change its extent or erase it.
+Conversion uses the global character Stack for operators. `size` counts
+postfix characters, excluding the terminating null. It is reset before
+each conversion. Evaluation uses its own `int values[10]`, with `pos`
+counting active integers. The first value popped is the right operand.
 
-The canonical trace pushes function IDs 100, 200, and 300. The transfer task
-uses two internal ten-position Stacks to evaluate `1+2*3`. The evaluator
-accepts only alternating single digits and `+` or `*`, applies normal
-precedence and left associativity, checks every internal push and every `int`
-calculation, and preserves its output after rejection.
+The input assumption is one digit followed by zero or more operator/digit
+pairs. Operators are `+`, `-`, `*`, `/`, `%`; multiplication, division,
+and remainder have higher precedence. Equal precedence is left associative.
+Both strings have eight positions, so an input must fit in seven characters
+plus `'\0'`. There are no spaces, parentheses, unary operators, or multi-digit
+operands. Divisors must be nonzero and intermediate results representable as
+`int`. Conversion starts with an empty operator Stack.
 
-The public surface is:
-
-```c
-int int_stack_push(int stack[], int size, int capacity, int value);
-int int_stack_peek(
-    const int stack[], int size, int capacity, int *out_value
-);
-int int_stack_pop(
-    const int stack[], int size, int capacity, int *out_value
-);
-int expression_evaluate(const char expression[], int *out_result);
-```
+The expression functions do **not** enforce all these assumptions. Invalid
+characters can cause an unbounded pop loop, malformed operands can underflow
+the value Stack, and zero divisors/overflow are unchecked. These limitations
+are discussion and extension work; safe rejection is not a core guarantee.
 
 ## Core learning targets
 
 Students will be able to:
 
-1. explain the Stack ADT and last-in, first-out access rule;
-2. trace `push`, `peek`, and `pop` from bottom to top;
-3. locate the top at `stack[size - 1]` only when the Stack is nonempty;
-4. state and apply `0 <= size <= capacity`;
-5. implement checked fixed-array operations for generic integers;
-6. preserve array state and caller outputs after rejected operations;
-7. distinguish logical removal from erasing an inactive array cell;
-8. evaluate the stated single-digit `+`/`*` grammar with two fixed Stacks;
-9. explain precedence, left associativity, capacity rejection, and checked
-   integer overflow; and
-10. distinguish a Stack ADT, a local Stack-representation array, and the
-    runtime call stack.
+1. explain LIFO and distinguish push, peek, and pop;
+2. trace `'A'`, `'B'`, `'C'` through indexes 9, 8, and 7;
+3. distinguish the top index, active item count, and inactive slots;
+4. state the actual full/empty behavior of the character functions;
+5. convert infix to postfix using precedence and left associativity;
+6. evaluate postfix with correct left/right operand order;
+7. distinguish character digits from integer intermediate results;
+8. explain `top`, `size`, `pos`, and the null terminator;
+9. justify constant-time Stack operations and linear expression processing;
+10. identify assumptions that would need checks in a more general evaluator.
 
-## Package map
+## Teaching and build materials
 
-```text
-module_04_stack/
-├── README.md
-├── diagrams/stack_models.md
-├── instructor/
-│   ├── answer_key.md
-│   ├── lesson_plan.md
-│   └── technical_notes.md
-├── student/
-│   ├── cognitive_pause.md
-│   ├── evidence_template.md
-│   ├── inquiry_prompt.md
-│   ├── inquiry_prompt_linear.md
-│   ├── investigation_worksheet.md
-│   ├── investigation_worksheet_linear.md
-│   ├── lab.md
-│   ├── representation_reveal.md
-│   ├── rubric.md
-│   ├── stack_autopsy.md
-│   ├── textbook.md
-│   └── vocabulary.md
-├── release/
-│   ├── prepare_student_release.ps1
-│   ├── release_manifest.md
-│   ├── stage_a_README.md … stage_e_README.md
-│   ├── student_build.ps1
-│   ├── student_code_README.md
-│   └── student_Makefile
-└── code/
-    ├── include/int_stack.h
-    ├── include/expression_evaluator.h
-    ├── starter/int_stack.c
-    ├── starter/expression_evaluator.c
-    ├── solution/int_stack.c
-    ├── solution/expression_evaluator.c
-    ├── tests/test_core.c
-    ├── tests/test_extension.c
-    ├── tests/test_student.c
-    └── autopsy/faulty_top.c
-```
+| Location | Role |
+|---|---|
+| `student/lab.c` | Current instructional implementation, without `main` |
+| `student/*.md` | Inquiry, reveal, pause, worksheets, textbook, lab, rubric, evidence |
+| `diagrams/stack_models.md` | Visual models with text equivalents |
+| `instructor/` | Lesson plan, answer key, and technical notes |
+| `code/lab_demo.c` | Entry point for the supplied expression |
+| `code/tests/test_lab.c` | Six core test groups; students add three justified cases |
+| `code/autopsy/` | Isolated, intentional `top - 1` defect |
+| `release/` | Five-stage manifest and student build/package templates |
 
-## Recommended release order
+From `code`, run `make lab-demo`, `make lab-tests`, or `make autopsy`.
+See [code/README.md](code/README.md) for PowerShell and manual commands.
 
-1. Release Stage A before Meeting A. It contains no formal Stack vocabulary,
-   representation, code, or answer.
-2. Release Stage B after each student preserves the initial function-return
-   model. Open the vocabulary only after the three-target pause is preserved.
-3. Release Stage C after the pause and brief instructor calibration.
-4. Release Stage D after the student preserves the Stage C core. It contains
-   the textbook and equivalent Stack models, but no autopsy answer.
-5. Release Stage E for Meeting B. Keep `instructor/`, `code/solution/`, and
-   `code/tests/test_extension.c` private through the assessed revision.
+## Release order
 
-`release/prepare_student_release.ps1` creates five archives only after it
-confirms that every source exists and that every destination path is unique
-within its stage. It refuses to overwrite an existing archive.
+1. Stage A: preserve initial return-order reasoning before naming LIFO.
+2. Stage B: reveal the character representation, preserve the three-target
+   Cognitive Pause, then open the vocabulary.
+3. Stage C: complete the investigation after instructor calibration.
+4. Stage D: read the textbook and diagrams after preserving the required
+   investigation sections. No autopsy answer is released here.
+5. Stage E: run the lab demo, tests, and isolated autopsy; submit evidence.
+
+[The release manifest](release/release_manifest.md) defines the exact
+student files. Packaging verifies source existence and unique paths and
+refuses to overwrite archives. Instructor answers and optional reference
+solutions are excluded.
 
 ## Core submission
 
-Students submit:
+Submit `student/lab.c`, `code/tests/test_lab.c` with three additional
+justified cases, predictions and observed test/build output, the completed
+evidence and autopsy records, and the preserved/revised Cognitive Pause.
+Existing `()` declarations can produce prototype warnings; record them
+honestly and use `(void)` when revising parameterless definitions.
 
-- completed `code/starter/int_stack.c`;
-- completed `code/starter/expression_evaluator.c`;
-- three justified tests in `code/tests/test_student.c`;
-- passing public-test and warning-enabled build evidence;
-- the completed evidence record and Stack-Top Autopsy; and
-- the preserved and corrected Cognitive Pause.
+## Optional earlier checked implementation
 
-## Relationship to the course spiral
+`code/include/`, `code/starter/`, `code/solution/`, and the older
+`test_core.c`, `test_extension.c`, and `test_student.c` retain the earlier
+caller-owned integer Stack and checked `+`/`*` evaluator. Their `size`-based
+representation and status/output contracts differ from `lab.c`. They are
+an optional comparison and are not the current submission or Stage E lab.
 
-- **Revisits:** caller-owned fixed arrays, separate logical size and physical
-  capacity, bounds checks, invariants, and failure preservation.
-- **Introduces:** Stack ADT, LIFO, top, push, peek, pop, underflow, operator
-  precedence, and a checked two-Stack evaluator.
-- **Forwards:** the LIFO behavior contract. Later tree and graph modules
-  choose their own element types and storage policies.
-- **Defers:** storage-growth and ownership policies. Those are not part of
-  this module's Stack implementation.
+## Spiral links
+
+The module revisits fixed arrays, indexes, character arithmetic, and saved
+work. It introduces LIFO, a downward-growing active suffix, postfix,
+precedence, and operand order. Later tree and graph modules reuse LIFO
+behavior with their own item types and storage policies.

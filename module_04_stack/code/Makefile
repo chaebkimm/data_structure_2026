@@ -1,19 +1,30 @@
 # GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
-# Override the compiler when needed: make CC=clang solution-core
+# Override the compiler when needed: make CC=clang lab-tests
 CC := gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 CPPFLAGS ?= -Iinclude
 BUILD_DIR := build
 STARTER_SOURCES := starter/int_stack.c starter/expression_evaluator.c
 SOLUTION_SOURCES := solution/int_stack.c solution/expression_evaluator.c
+LAB_SOURCE := ../student/lab.c
 
-.PHONY: all starter-core starter-extension starter-student-tests \
+.PHONY: all lab-demo lab-tests starter-core starter-extension starter-student-tests \
 	solution-core solution-extension solution-student-tests autopsy clean
 
-all: starter-core
+all: lab-demo
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+lab-demo: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(LAB_SOURCE) lab_demo.c -o $(BUILD_DIR)/lab_demo
+	$(BUILD_DIR)/lab_demo
+
+lab-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(LAB_SOURCE) tests/test_lab.c -o $(BUILD_DIR)/lab_tests
+	$(BUILD_DIR)/lab_tests
+
+# Optional earlier checked-API comparison, not the current core lab.
 
 starter-core: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(STARTER_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core

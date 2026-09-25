@@ -1,52 +1,52 @@
 # Module 4 Lab Rubric — 100 Points
 
-A rubric is a scoring guide. Functional correctness means required code
-produces required results. Reproducible evidence gives enough detail for
-another person to repeat a check.
+A rubric is a scoring guide. Reproducible evidence gives enough detail for
+another person to repeat a check against `student/lab.c`.
 
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
-| Stack model and canonical trace | 20 | LIFO, top, push, peek, pop, and underflow are explained; 100, 200, and 300 are traced exactly |
-| Stack operation correctness | 25 | The three fixed-array functions satisfy their success and rejection contracts for generic integers |
-| Invariant and preservation | 20 | `0 <= size <= capacity`, logical indexes, caller capacity, inactive slots, unchanged arrays, and unchanged outputs are handled accurately |
-| Checked expression evaluator | 15 | The exact single-digit `+`/`*` grammar, precedence, left associativity, ten-slot checks, and integer-overflow rejection are correct |
-| Tests and tool evidence | 10 | Three nonduplicate student-authored tests have reasons and reproducible warning-enabled compiler or CI results |
-| Autopsy and cost reasoning | 10 | The inactive-slot peek defect and fixed-Stack/expression costs are explained without confusing physical safety with logical correctness |
+| Stack model and canonical trace | 20 | LIFO and `'A'`, `'B'`, `'C'` trace are correct; returns, physical indexes, and bottom-to-top logical states agree |
+| Character Stack operations | 25 | `top` decreases on push and increases on pop; full push is a no-op; empty peek/pop return `'\0'`; unchanged state is demonstrated |
+| Representation and limits | 20 | `0 <= top <= 10`, active suffix, inactive cells, literal boundaries, and the distinct meanings of `top`, `size`, and `pos` are explained |
+| Two expression phases | 15 | `1-2*3+4` becomes `123*-4+` with `size == 7`, then evaluates to `-1`; precedence, left associativity, operand order, termination, and input assumptions are accurate |
+| Tests and tool evidence | 10 | Three justified new cases extend `test_lab.c`; demo, passing lab tests, commands, and actual compiler diagnostics are recorded |
+| Autopsy and cost reasoning | 10 | The inactive-cell read is distinguished from the correct top; physical bounds and logical correctness are separated; operation and expression costs are explained |
 | **Total** | **100** | |
 
 ## Performance levels
 
 ### Exceeds expectations
 
-The student explains an unfamiliar valid or rejected state from the contract,
-tests a preservation boundary deliberately, and transfers LIFO reasoning to a
-new checked expression.
+The student predicts unfamiliar valid states, tests preservation deliberately,
+and explains how character conversion and integer evaluation use different
+representations of the same LIFO rule.
 
 ### Meets expectations
 
-The required functions work, Stack and expression traces are accurate, and
-supplied plus student-authored tests support the claims.
+The required traces are accurate, supplied and student-authored tests support
+the claims, and unchecked input assumptions are identified honestly.
 
 ### Developing
 
-The common successful case works, but underflow, a full Stack, invalid
-metadata, output preservation, expression rejection, or testing still needs
-guidance.
+Common cases work, but boundary preservation, index direction, `size` versus
+`pos`, operand order, or reproducible evidence still needs guidance.
 
 ### Beginning
 
-The code reads the wrong top, writes outside the stated capacity, changes
-observable state after rejection, or cannot explain the fixed-array Stack
-contract.
+The student reads an inactive cell as the top, confuses Stack item count with
+postfix length, reverses operands, or attributes validation to code that does
+not implement it.
 
 ## Scoring notes
 
-- Every professional term may be explained in ordinary language; memorized
-  wording is not required.
+- Ordinary-language explanations earn full credit; memorized wording is not
+  required.
 - Drawing quality, handwriting, typing speed, and spoken fluency are not
   grading criteria.
-- An approved verbal, tactile, linear-text, or instructor-CI equivalent earns
+- Approved verbal, tactile, linear-text, or instructor-CI equivalents earn
   the same credit. CI means another computer runs the submitted tests.
-- Optional work never replaces core safety, correctness, or evidence.
 - An incorrect initial Cognitive Pause is not penalized when it is preserved
   and meaningfully corrected.
+- Optional defensive checks or legacy checked-API work do not replace core
+  evidence. Malformed-input rejection and overflow handling are not required
+  guarantees of the current lab implementation.

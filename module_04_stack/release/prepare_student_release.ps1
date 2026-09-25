@@ -40,6 +40,7 @@ $stages = @(
         Entries = @(
             @{ Source = "release\stage_d_README.md"; Entry = "README.md" },
             @{ Source = "student\textbook.md"; Entry = "textbook.md" },
+            @{ Source = "student\textbook_korean.md"; Entry = "textbook_korean.md" },
             @{ Source = "diagrams\stack_models.md"; Entry = "diagrams/stack_models.md" }
         )
     },
@@ -47,6 +48,7 @@ $stages = @(
         Name = "module_04_stage_e_lab.zip"
         Entries = @(
             @{ Source = "release\stage_e_README.md"; Entry = "README.md" },
+            @{ Source = "student\lab.c"; Entry = "student/lab.c" },
             @{ Source = "student\lab.md"; Entry = "student/lab.md" },
             @{ Source = "student\evidence_template.md"; Entry = "student/evidence_template.md" },
             @{ Source = "student\rubric.md"; Entry = "student/rubric.md" },
@@ -54,12 +56,8 @@ $stages = @(
             @{ Source = "release\student_code_README.md"; Entry = "code/README.md" },
             @{ Source = "release\student_build.ps1"; Entry = "code/build.ps1" },
             @{ Source = "release\student_Makefile"; Entry = "code/Makefile" },
-            @{ Source = "code\include\int_stack.h"; Entry = "code/include/int_stack.h" },
-            @{ Source = "code\include\expression_evaluator.h"; Entry = "code/include/expression_evaluator.h" },
-            @{ Source = "code\starter\int_stack.c"; Entry = "code/starter/int_stack.c" },
-            @{ Source = "code\starter\expression_evaluator.c"; Entry = "code/starter/expression_evaluator.c" },
-            @{ Source = "code\tests\test_core.c"; Entry = "code/tests/test_core.c" },
-            @{ Source = "code\tests\test_student.c"; Entry = "code/tests/test_student.c" },
+            @{ Source = "code\lab_demo.c"; Entry = "code/lab_demo.c" },
+            @{ Source = "code\tests\test_lab.c"; Entry = "code/tests/test_lab.c" },
             @{ Source = "code\autopsy\README.md"; Entry = "code/autopsy/README.md" },
             @{ Source = "code\autopsy\faulty_top.c"; Entry = "code/autopsy/faulty_top.c" }
         )

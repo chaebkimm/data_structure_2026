@@ -1,124 +1,135 @@
-# Stack-Top Autopsy — The Next Inactive Slot Is Not the Top
+# Stack-Top Autopsy — An Inactive Cell Is Not the Top
 
 ## Case
 
-An autopsy is a careful study of a supplied defect. The isolated program uses
-a caller-owned four-position integer array:
-
-```text
-stack:   [ 10 ][ 20 ][ 777 ][ 888 ]
-index:      0      1      2       3
-size: 2
-capacity: 4
-```
-
-Indexes 0 and 1 are logical Stack items. Indexes 2 and 3 are allocated but
-inactive. The sentinel values 777 and 888 make an incorrect read visible and
-repeatable. A sentinel is a chosen marker used for observation.
-
-The faulty operation reads:
+An autopsy is a careful study of a supplied defect. This isolated program
+uses the same direction of growth as `student/lab.c`. Its fixture is:
 
 ```c
-return stack[size];
+char stack[10] = {'?', '?', '?', '?', '?', '?', '?', '?', '*', '+'};
+int top = 8;
 ```
 
-Because `size < capacity`, this exact read stays inside the array. The autopsy
-is memory-safe, but its Stack logic is intentionally wrong.
+Linear description: indexes 0 through 7 contain `'?'`; index 8 contains
+`'*'`; index 9 contains `'+'`; `top` is 8. A chosen marker such as `'?'`
+makes an incorrect read repeatable and visible.
+
+The intentionally faulty operation reads:
+
+```c
+return stack[top - 1];
+```
 
 ## 1. Predict before running
 
-What value should a correct `peek` report?
+Preserve these responses before viewing the autopsy output.
+
+1. Which indexes are currently logical Stack items?
+2. Which character should correct peek report?
+3. Which index does the faulty expression select, and what character will
+   it report?
+4. Does either peek change `top`?
+5. If a push were allowed, which physical index would receive its character?
+
+Prediction:
 
 ____________________________________________________________________
-
-What value will the faulty `peek` report?
-
-____________________________________________________________________
-
-Will either peek change `size`? _____________________________________
-
-Which position is the next unused position? _________________________
 
 ## 2. Record the observation
 
-Copy the important output lines:
+Run from `module_04_stack/code`:
+
+```sh
+make autopsy
+```
+
+Or use PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target autopsy
+```
+
+Record the initial `top`, the correct top character, the faulty character,
+and the two indexes. Copy the important output lines:
 
 ```text
-size:
+top:
 capacity:
-correct top stack[size - 1]:
-faulty top stack[size]:
+correct top stack[top]:
+faulty top stack[top - 1]:
 faulty read selected the next inactive slot:
 ```
 
-Did the observation match your prediction?
+Did the observation match your prediction? Preserve any disagreement before
+writing the correction.
 
 ____________________________________________________________________
 
 ## 3. Find the first broken rule
 
-Do not begin with a later wrong decision. State the earliest Stack rule the
-program violates.
+State the earliest representation rule that the faulty read violates. Do
+not begin with a later incorrect calculation.
 
 ____________________________________________________________________
 
-Complete the indexes:
+Complete the expressions:
 
 ```text
-top index = size - ___
-next unused index = size
+nonempty top index = __________
+next push index, when room remains = __________
+active indexes = __________ through __________
 ```
 
 ## 4. Separate physical safety from logical correctness
 
-Why does `stack[size]` stay within the physical array in this fixture?
+1. Why is the faulty read inside the ten-position array for this fixture?
+2. Why does being within the array not prove that the selected cell belongs
+   to the logical Stack?
+3. Would a memory sanitizer necessarily report this fixture's read? Explain.
+4. Would the same faulty expression stay in bounds when `top == 0`?
+
+Response:
 
 ____________________________________________________________________
 
-Why does “within capacity” not mean “currently in the logical Stack”?
+## 5. Explain the visible consequence
+
+Suppose this array holds waiting expression operators. Which operator should
+be used first? How could using the observed inactive marker instead lead to
+a wrong conversion or calculation?
 
 ____________________________________________________________________
 
-Would this defect necessarily be caught by a memory sanitizer in this
-fixture? Explain.
-
-____________________________________________________________________
-
-## 5. Explain the caller-visible consequence
-
-Suppose 10 and 20 are IDs for paused functions. Which ID should resume next?
-
-____________________________________________________________________
-
-What false conclusion could a caller make after receiving 777?
-
-____________________________________________________________________
-
-Why is leaving `size == 2` not enough to make the result correct?
+Why is leaving `top` unchanged insufficient to make peek correct?
 
 ____________________________________________________________________
 
 ## 6. Repair and prevent recurrence
 
-Write the corrected one-line read:
+Write the corrected read for a nonempty Stack:
 
 ```c
 return ________________________________________________;
 ```
 
-Describe one regression case that would fail if `stack[size]` returned. This
-may become one of your three required student tests; it is not a fourth test.
+What guard is still needed before that read when the Stack is empty?
+
+____________________________________________________________________
+
+Describe one regression case that distinguishes the active top from an
+inactive marker and verifies unchanged state after peek. This can be one of
+your three student tests; it is not a required fourth test.
 
 ____________________________________________________________________
 
 ## 7. Separate related meanings
 
-Which objects appear in this autopsy?
+Explain which part of this case concerns each idea:
 
-- [ ] the Stack ADT access rule;
-- [ ] a caller-owned fixed integer array; and
-- [ ] the runtime call stack used for active C function calls.
+1. The Stack ADT access rule.
+2. A fixed character array representing waiting operators.
+3. The runtime call stack used for active C calls.
 
-More than one box may apply. Explain each choice in one sentence.
+Are the operator characters real call frames? Explain.
 
 ____________________________________________________________________

@@ -74,8 +74,8 @@ What should happen to the ten existing IDs and the current count?
 
 ____________________________________________________________________
 
-Suppose a failed inspection was asked to write its answer into a variable
-that already contains 999. What should remain in that variable?
+If an inspection normally reports one label, what special result could
+tell the caller that no label is available?
 
 ____________________________________________________________________
 
@@ -96,10 +96,11 @@ ____________________________________________________________________
 
 Do not write C instructions yet.
 
-The expression `1+2*3` cannot be evaluated strictly from left to right because
-multiplication has higher priority than addition.
+The expression `1-2*3+4` cannot be evaluated strictly from left to right
+because multiplication has higher priority than subtraction and addition.
 
-What information must wait while `2*3` is calculated?
+What information must wait while `2*3` is calculated? How could a new
+ordering of the symbols record which calculation happens first?
 
 ____________________________________________________________________
 

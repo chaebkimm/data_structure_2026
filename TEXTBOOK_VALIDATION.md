@@ -2,6 +2,171 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 4 Bilingual Webpage — September 24, 2026
+
+The existing student textbook site now includes Chapter 4 at `/chapter-4`
+in Korean and `/en/chapter-4` in English, with `/ko/chapter-4` as a Korean
+alias. Chapter navigation, language switching, metadata, and the previous
+chapter pager include the new chapter. The homepage remains Chapter 3.
+
+Both web manuscripts and downloadable editions match their textbook files
+exactly. The page preserves the opening paragraph, seven main sections,
+36 subsections, twelve tables, and nine C blocks. The new syntax section
+and all eleven full-code explanation subsections are included. Downloadable
+`lab.c` and `lab_demo.c` match the module sources.
+
+Three bilingual activities demonstrate the character stack, conversion,
+and evaluation. They retain inactive cells, distinguish downward `top`
+from upward `pos`, expose both precedence pops for incoming `+`, and pop
+the right operand before the left. Repeated conversions preserve old
+operator and output cells while resetting the output count and terminator.
+The evaluator shows uninitialized local cells and the final return with
+`pos == 0`; expired operand locals are cleared. Input guards are identified
+as webpage behavior, separate from the C source's assumptions.
+
+The sixteen existing webpage tests and six new stack/manuscript tests pass.
+The six new tests also pass after review corrections. TypeScript checking,
+the production build, and whitespace checks pass. Browser checks cover
+Korean/English switching with preserved anchors, full and empty stack
+operations, canonical conversion, shorter repeat conversion, zero-divisor
+rejection, and integer evaluation. Mobile and desktop layouts have no page
+width overflow. Final browser log checks report no errors or warnings.
+The development server recorded an early dependency-optimization hook
+error followed by a reload, and context warnings during hot replacement;
+these are distinguished from the successful final interactive checks.
+A separate local check served the built production worker and confirmed
+stack insertion, canonical postfix conversion, and integer evaluation
+(`7/2 == 3`). Browser error/warning logs were empty, and the production
+server recorded no React errors. The existing missing favicon returned
+404; the chapter and all requested application assets returned 200.
+
+Sites version 136, source commit `48e5a37f086c55acf901c1db25ae13fe9d7e5bdc`,
+published successfully with the existing public audience. The Korean page
+is available at `https://data-structures.chaebinkim.chatgpt.site/chapter-4`.
+Publication was confirmed by the deployment result. This is technical and
+editorial validation, not a new human beginner-reading pilot.
+
+## Chapter 4 Korean Edition — September 24, 2026
+
+`module_04_stack/student/textbook_korean.md` now translates the complete
+current English chapter, including New C Syntax Explained and all eleven
+Full C Code Explanation subsections. Both editions have seven main
+sections, matching levels across all 46 headings, and matching dimensions
+across all twelve tables. Korean review checked completeness, terminology,
+state changes, caller assumptions, and operand order.
+
+All nine C blocks, shell commands, input grammar, and expected output match
+the English edition byte for byte. The six blocks in the Korean C Code
+section reproduce the lab and driver after normalizing blank lines and
+trailing whitespace. Their concatenation compiles with direct Command Line
+Tools Clang, C11, the existing warning flags, AddressSanitizer, and
+UndefinedBehaviorSanitizer. It prints the expected infix, postfix, size 7,
+and result -1 with no sanitizer findings. The six existing prototype
+warnings remain. English manuscript and C sources are unchanged by this
+translation.
+
+The module README links both editions. Stage D's manifest, README, and
+packaging source list now include the Korean chapter. Static checks find
+unique source and destination paths and all sources present. Stage counts
+are A: 3, B: 4, C: 3, D: 4, E: 13. The release gates remain unchanged.
+PowerShell archive creation was not executed. This is translation and
+technical validation, not a new human beginner-reading pilot.
+
+## Chapter 4 C Syntax and Full Explanation — September 24, 2026
+
+The English Chapter 4 textbook now includes `New C Syntax Explained`
+between Coding Plan and C Code, followed by `Full C Code Explanation`
+after the code. These additions follow the reference format in Chapters
+1–3. The five existing core sections remain in order; the two additions
+bring the chapter to seven main sections.
+
+The syntax section covers characters and strings, logical conditions,
+index updates, switch cases, integer arithmetic, external declarations,
+function prototypes, and printing. The full explanation follows every
+declaration and function in the six implementation/driver blocks. Worked
+traces distinguish downward character `top`, postfix `size`, and local
+integer `pos`, including operand order, repeated conversion, and the
+documented input assumptions. Review found no actionable discrepancies
+with the supplied source.
+
+All prior textbook content and all nine existing C blocks are preserved.
+The five implementation blocks still match `student/lab.c` after ignoring
+blank lines and trailing whitespace; the sixth C Code block matches
+`code/lab_demo.c`. The earlier three storage illustrations are excerpts,
+not additional definitions to concatenate into the program.
+
+The six-block extracted program compiles as C11 and exactly matches the
+documented output: infix `1-2*3+4`, postfix `123*-4+`, size 7, and result -1.
+Independent builds of the existing driver and lab tests pass all six test
+groups. Builds use direct Command Line Tools Clang with an explicit SDK,
+`-Wall -Wextra -Wpedantic -Wconversion -Wshadow`, AddressSanitizer,
+UndefinedBehaviorSanitizer, and `-fno-sanitize-recover=all`. There are no
+sanitizer findings. Each build reports the six existing empty-parameter-list
+prototype warnings. Chapter section order, balanced fences, and whitespace
+checks pass. This is an explanation-only update; the C source is unchanged.
+
+## Module 4 Character-Stack Alignment — September 23, 2026
+
+The current Module 4 teaching model follows
+`module_04_stack/student/lab.c`: global `char stack[10]`, empty `top == 10`,
+full `top == 0`, active suffix `top..9`, and character count `10 - top`.
+Push decrements before writing; peek reads `stack[top]`; pop reads then
+increments. Full push is a silent no-op. Empty peek and pop return the null
+character while preserving the array and `top`. The canonical character
+trace uses A, B, C; abstract function IDs remain only in the initial story.
+
+Expression work now separates conversion from evaluation:
+`1-2*3+4 -> 123*-4+ -> -1`. Global `size` is postfix length seven, excluding
+the terminator; local `pos` counts integers in `values[10]`. The right
+operand is popped into `num2` before the left into `num1`. Conversion resets
+`size` and writes a fresh terminator for repeated and shorter inputs.
+
+The teaching boundary assumes nonempty text of at most seven characters,
+single digits alternating with `+ - * / %`, no spaces, parentheses, unary
+operators, or multi-digit operands, nonzero divisors, and representable
+integer intermediates. The source lacks general grammar, output-bound, and
+arithmetic validation. Those checks are described as extensions, not as
+existing safe-rejection behavior. The older checked caller-owned integer API
+remains optional legacy material.
+
+Instructor guidance, the Stage D diagram models, Week 4 question references,
+and active curriculum/calendar descriptions use this model. The five release
+gates, exactly three Cognitive Pause targets, standard/linear alternatives,
+and preserve-before-calibrate sequence remain. The Week 4 page has 44
+vocabulary placements, 40 core prompts, and four optional prompts; its
+consolidated question section matches. The diagram release omits the autopsy
+fixture and its answer. The current isolated autopsy instead uses a
+character active suffix to distinguish physical bounds from logical top.
+
+Fresh verification compiled the current source through `make lab-demo`,
+`make lab-tests`, and the isolated autopsy with the direct Command Line Tools
+Clang compiler, C11, `-Wall -Wextra -Wpedantic -Wconversion -Wshadow`,
+AddressSanitizer, UndefinedBehaviorSanitizer, and
+`-fno-sanitize-recover=all`. The demo printed infix `1-2*3+4`, postfix
+`123*-4+`, size 7, and result -1. All six current lab test groups passed;
+the autopsy reported correct `'*'` and faulty `'?'` without sanitizer
+findings. The six existing empty-parameter-list prototype warnings remain;
+`student/lab.c` was not edited during alignment.
+
+The textbook retains the five-section course flow. Its five implementation
+blocks match `lab.c` after ignoring blank lines and trailing whitespace;
+the sixth C block matches the separate demonstration driver. Concatenating
+these six blocks also compiled and produced the documented output under
+AddressSanitizer and UndefinedBehaviorSanitizer. Chapter 4's vocabulary row
+in the style guide now matches the same character/postfix model.
+
+An exact temporary Stage E extraction also built and passed all six lab test
+groups. The current release manifest has 3, 4, 3, 3, and 13 files across
+Stages A–E. PowerShell was unavailable, so its build/packaging scripts were
+inspected rather than executed. These results concern the current lab and
+release, not the optional legacy checked evaluator.
+
+This dated entry supersedes the August 29 Module 4 model for active teaching.
+The older entry and pilot observations below remain historical records;
+their checked-library test counts and rejection guarantees do not validate
+this source. This is a technical/editorial alignment, not evidence of a new
+human beginner-reading pilot.
+
 ## Chapter 3 Class Lecture and Web Alignment — September 20, 2026
 
 Reviewed the updated lecture source `module_03_graph/student/ppt_day_c_code.md`

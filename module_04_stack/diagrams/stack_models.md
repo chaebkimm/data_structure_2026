@@ -1,186 +1,169 @@
 # Module 4 Stack Models
 
-Each model includes a text equivalent. State rows are written from bottom to
-top unless a physical array is shown with explicit indexes.
+These models accompany the current `student/lab.c`. Each diagram has a text
+equivalent. Logical states are bottom to top; physical arrays show explicit
+indexes. These Stage D models do not include the later autopsy fixture or
+its answer.
 
-## 1. The one accessible end
-
-```text
-                 top
-                  |
-                  v
-bottom   [ 100 ][ 200 ][ 300 ]
-                              ^
-                       push, peek, pop
-```
-
-Text equivalent: the Stack contains 100, 200, and 300 in that order from
-bottom to top. Only the right end is accessible. A successful `peek` reports
-300 without changing the Stack. A successful `pop` reports 300 and makes 200
-the new top. A successful `push(400)` would place 400 after 300.
-
-## 2. Canonical function-return trace
+## 1. One accessible end
 
 ```text
-request       returned/output       logical Stack       size
-start         none                  empty                 0
-push(100)     1                     100                   1
-push(200)     2                     100, 200              2
-push(300)     3                     100, 200, 300         3
-peek          return 1, output 300  100, 200, 300         3
-pop           return 2, output 300  100, 200              2
-pop           return 1, output 200  100                   1
-pop           return 0, output 100  empty                 0
+logical order:  bottom [ A ][ B ][ C ] top
+                                     ^
+                               push, peek, pop
 ```
 
-Text equivalent: starts add function IDs in the order 100, 200, 300. Finishes
-remove them in reverse order: 300, 200, 100. This is last in, first out.
-`peek` reports the same ID a following pop would report, but does not remove
-it.
+Text equivalent: A was pushed before B, then C. Peek reports C without
+removing it. Pop reports C and exposes B. A later push D makes D the top.
+This is last in, first out, regardless of how the cells are arranged.
 
-## 3. Physical slots and logical membership
+## 2. Canonical character trace
 
 ```text
-index:       0       1       2       3       4
-array:    [ 100 ][ 200 ][  30 ][  40 ][  50 ]
-             |_______|       |________________|
-             logical            inactive
-
-size = 2
-capacity = 5
-top index = size - 1 = 1
-next unused index = size = 2
+request       returned character    logical Stack    top    count
+start         none                  empty             10      0
+push('A')     none                  A                  9      1
+push('B')     none                  A, B               8      2
+push('C')     none                  A, B, C            7      3
+peek()        C                     A, B, C            7      3
+pop()         C                     A, B               8      2
+pop()         B                     A                  9      1
+pop()         A                     empty             10      0
 ```
 
-Text equivalent: the physical array has five prepared positions, but only
-indexes 0 and 1 belong to the logical Stack because size is two. The top is
-the value 200 at index one. Indexes two through four are allocated but
-inactive; their stored bits do not make them Stack items. The next successful
-push writes at index two.
+Text equivalent: pushes move `top` down; pops move it up. The count is
+`10 - top`. Push has return type `void`; peek and pop return characters.
 
-## 4. The metadata invariant
+## 3. Physical cells and the active suffix
 
 ```text
-valid:      0 <= size <= capacity
+index:       0    1    2    3    4    5    6    7    8    9
+stack:     [ . ][ . ][ . ][ . ][ . ][ . ][ . ][ C ][ B ][ A ]
+            <---------- inactive ----------> <--- active --->
+                                                ^         ^
+                                             top = 7    bottom
 
-size = 0, capacity = 10     valid empty Stack; no top
-size = 3, capacity = 10     valid; top is stack[2]
-size = 10, capacity = 10    valid full Stack; push is rejected
-size = -1, capacity = 10    invalid metadata
-size = 11, capacity = 10    invalid metadata
-size = 0, capacity = -1     invalid metadata
+active indexes: 7 through 9
+count: 10 - 7 = 3
+next push writes index 6, after decrementing top
 ```
 
-Text equivalent: a valid size cannot be negative and cannot exceed capacity;
-capacity cannot be negative. Empty and full are both valid states. Empty
-`peek` and `pop` are rejected because no logical top exists. Full `push` is
-rejected before an array position is written.
+Text equivalent: dots mean inactive positions, not required stored values.
+The most recent character C is at `stack[7]`; bottom A is at index 9. Logical
+bottom-to-top order moves opposite to increasing physical indexes. The top
+read is `stack[top]`.
 
-## 5. Successful and rejected push
+## 4. Empty, full, and the invariant
 
 ```text
-before: size 2, capacity 3, [ 100 ][ 200 ][ inactive ]
-push 300
-after:  size 3, capacity 3, [ 100 ][ 200 ][ 300 ]
-return: 3
-
-before: size 3, capacity 3, [ 100 ][ 200 ][ 300 ]
-push 400
-after:  size 3, capacity 3, [ 100 ][ 200 ][ 300 ]
-return: 3
+valid state:    0 <= top <= 10
+empty:         top == 10, count 0, no top item
+nonempty:      top == 7,  count 3, top item at stack[7]
+full:          top == 0,  count 10, push makes no change
 ```
 
-Text equivalent: when space remains, push writes at the old size and returns
-the increased size. When size equals capacity, push returns the original size
-and preserves every array position. The prepared capacity never changes.
+Text equivalent: the empty marker 10 is not an array cell. Peek and pop test
+empty before reading and return `'\0'` when empty. A full push stops before
+decrementing zero. The invariant describes valid state; the source does not
+repair arbitrary invalid `top` values. Although `capacity` is declared as 10,
+the actual array and empty check use the literal 10.
 
-## 6. Peek and pop share a read, not an effect
+## 5. Peek and pop
 
 ```text
-before: size 3, [ 100 ][ 200 ][ 300 ]
+before: top = 7; stack[7] = 'C', stack[8] = 'B', stack[9] = 'A'
 
-peek: read stack[size - 1] -> 300
-      output = 300, return = 1, size remains 3
+peek: read stack[7] -> 'C'; top remains 7
 
-pop:  read stack[size - 1] -> 300
-      output = 300, return = 2, array still contains 300 at index 2
+pop:  save stack[7] -> 'C'; top becomes 8; return saved 'C'
+      stack[7] can still contain 'C', but that cell is now inactive
 ```
 
-Text equivalent: both operations read index `size - 1` after proving size is
-positive. Peek reports success as one and leaves the logical Stack unchanged.
-Pop reports the former top and returns the smaller logical size. The old bits
-may remain in the now-inactive array cell.
+Text equivalent: both operations inspect the current top after checking
+nonempty. Only pop changes logical membership. It need not erase or shift
+characters. At empty both return `'\0'` and leave the array and `top`
+unchanged. A full push also leaves state unchanged but returns no value.
 
-## 7. Rejection preserves a caller output
+## 6. Two expression phases
 
 ```text
-before empty peek:
-    size = 0
-    output = 999
+infix text         conversion           postfix text        evaluation
+1-2*3+4       ----------------->        123*-4+        -----------------> -1
+                 char stack[10]                            int values[10]
+                 downward top                              upward count pos
 
-request rejected:
-    return = 0
-    size = 0
-    output = 999
+postfix size = 7
+postfix[7] = '\0'     (terminator, not an eighth token)
 ```
 
-Text equivalent: the function checks the array pointer, output pointer,
-metadata, and nonempty condition before writing the output. Because the empty
-request fails, 999 remains observable. Empty pop follows the same output rule
-and returns the original size, zero.
+Text equivalent: conversion rearranges character tokens using waiting
+operators. Evaluation later processes postfix tokens, converting each digit
+to a number and storing intermediate integer results. Global `size` counts
+postfix tokens; it is not the character Stack count. Local `pos` counts
+active integer values.
 
-## 8. Two-Stack trace for `1+2*3`
+## 7. Converting `1-2*3+4`
 
 ```text
-event             number Stack     operator Stack     calculation
-start             empty            empty              none
-read 1            1                empty              none
-read +            1                +                  none
-read 2            1, 2             +                  none
-read *            1, 2             +, *               none
-read 3            1, 2, 3          +, *               none
-end: apply *      1, 6             +                  2 * 3 = 6
-end: apply +      7                empty              1 + 6 = 7
+read/work     postfix so far     waiting operators, bottom to top
+start         empty              empty
+1             1                  empty
+-             1                  -
+2             12                 -
+*             12                 -, *
+3             123                -, *
++             123*-              +
+4             123*-4             +
+drain         123*-4+            empty
 ```
 
-Text equivalent: `*` has greater precedence than `+`, so the waiting
-multiplication is applied first at end of input. Each operator pops the right
-operand before the left operand. The evaluator accepts only when exactly one
-number remains and the operator Stack is empty; it then writes 7 to the
-caller output.
+Text equivalent: digits go straight to the output. When `+` arrives, `*`
+has greater precedence and `-` has equal precedence, so both are popped to
+output before `+` is pushed. The `>=` comparison enforces left associativity.
+After the scan, drain the final operator and write the terminator. Reset
+`size` at the next conversion and write a fresh terminator for shorter text.
 
-## 9. Capacity limits occupancy, not expression length
+## 8. Evaluating `123*-4+`
 
 ```text
-input scan ----> tokens arrive over time
-                  |          |
-                  v          v
-             [number Stack] [operator Stack]
-                10 slots        10 slots
-                  ^          ^
-                  |__________|
-                slots are reused
+token    integer values, bottom to top    pos    calculation
+1        1                                1     digit -> integer
+2        1, 2                             2     digit -> integer
+3        1, 2, 3                          3     digit -> integer
+*        1, 6                             2     2 * 3 = 6
+-        -5                               1     1 - 6 = -5
+4        -5, 4                            2     digit -> integer
++        -1                               1     -5 + 4 = -1
 ```
 
-Text equivalent: each internal Stack has ten simultaneous positions. Before
-each push, the evaluator checks the current size against ten. Applying an
-operator removes operands and reuses positions, so the input string is not
-rejected merely because its total length exceeds ten characters.
+Text equivalent: the value array grows upward, with its top at
+`values[pos - 1]`. Each operator pops `num2`, the right operand, before
+`num1`, the left operand. Negative results such as -5 are integers in
+`values`, not characters in the operator Stack.
+
+## 9. Current input boundary
+
+```text
+infix[8]:    at most 7 token characters + '\0'
+postfix[8]:  the same tokens reordered  + '\0'
+operators:   + -       precedence 1
+             * / %     precedence 2
+```
+
+Text equivalent: core examples assume a nonempty alternating sequence of
+single digits and these operators, with no spaces, parentheses, unary
+operators, or multi-digit numbers. Divisors must be nonzero and intermediates
+must fit C `int`. These conditions are assumed, not fully checked by the
+source. Do not infer safe rejection from a successful valid example.
 
 ## 10. Three related meanings
 
 ```text
-Stack ADT
-    behavior: LIFO through push, peek, and pop
-
-caller-owned int array
-    one representation: physical storage plus size and capacity
-
-runtime call stack
-    implementation bookkeeping for active C function calls
+Stack ADT          LIFO behavior through push, peek, pop
+explicit storage   char stack[10] and its downward top index
+runtime call stack bookkeeping for actual active function calls
 ```
 
-Text equivalent: storing integer 100 in the course Stack does not create a C
-call frame. Naming an array `stack` does not enforce LIFO; the operation
-contracts do. The runtime may use its own call stack while these C functions
-run, but the module does not inspect or control it.
+Text equivalent: a character label does not create a C call frame. The name
+`stack` does not enforce LIFO; the operation bodies do. Later modules may use
+a different item type or index direction while retaining the same behavior.
