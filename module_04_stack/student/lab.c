@@ -27,7 +27,7 @@ void infix_to_postfix() {
     int pos = 0;
     size = 0;
     push('\0');
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; eq[i] != '\0'; i++) {
         char c = eq[i];
 
         if (c >= '0' && c <= '9') {
@@ -61,7 +61,7 @@ int calc(int num1, int num2, int op) {
 int eval_postfix() {
     size = 0;
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; eq_re[i] != '\0'; i++) {
         char c = eq_re[i];
         if (c >= '0' && c <= '9') {
             push(c - '0');
@@ -74,4 +74,41 @@ int eval_postfix() {
     }
 
     return pop();
+}
+
+char eq_paren[8] = "1+(2+3)";
+
+void infix_to_postfix_parentheses() {
+    int pos = 0;
+    size = 0;
+    push('\0');
+    for (int i = 0; eq_paren[i] != '\0'; i++) {
+        char c = eq_paren[i];
+
+        if (c >= '0' && c <= '9') {
+            eq_re[pos++] = c;
+        }
+        else if (c == '(') {
+            push(c);
+        }
+        else if (c == ')') {
+            char op = peek();
+            while (op != '(') {
+                eq_re[pos++] = pop();
+                op = peek();
+            }
+            pop();
+        }
+        else {
+            char op = peek();
+            while (prec(op) >= prec(c)) {
+                eq_re[pos++] = pop();
+                op = peek();
+            }
+            push(c);
+        }
+    }
+    while (!is_empty()) {
+        eq_re[pos++] = pop();
+    }
 }
