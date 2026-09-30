@@ -1,14 +1,14 @@
 int stack[10];
 int capacity = 10;
-int size = 0;
+int top = -1;
 
-void push(int data) {stack[size++] = data;}
+void push(int data) {stack[++top] = data;}
 
-int peek() {return stack[size - 1];}
-int pop() {return stack[--size];}
+int peek() {return stack[top];}
+int pop() {return stack[top--];}
 
-int is_full() {return size == capacity;}
-int is_empty() {return size == 0;}
+int is_full() {return top + 1 == capacity;}
+int is_empty() {return top == -1;}
 
 int prec(char op) {
     if (op == '+' || op == '-') {
@@ -25,7 +25,7 @@ char eq_re[8] = "";
 
 void infix_to_postfix() {
     int pos = 0;
-    size = 0;
+    top = -1;
     push('\0');
     for (int i = 0; eq[i] != '\0'; i++) {
         char c = eq[i];
@@ -59,7 +59,7 @@ int calc(int num1, int num2, int op) {
 }
 
 int eval_postfix() {
-    size = 0;
+    top = -1;
 
     for (int i = 0; eq_re[i] != '\0'; i++) {
         char c = eq_re[i];
@@ -80,7 +80,7 @@ char eq_paren[8] = "1+(2+3)";
 
 void infix_to_postfix_parentheses() {
     int pos = 0;
-    size = 0;
+    top = -1;
     push('\0');
     for (int i = 0; eq_paren[i] != '\0'; i++) {
         char c = eq_paren[i];
