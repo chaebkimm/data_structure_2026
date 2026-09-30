@@ -270,7 +270,7 @@ For each run below, record the A-to-E path, add/remove call counts, priority
 comparison count or `not applicable`, and API operation names:
 
 1. BFS ignoring weights;
-2. Dijkstra with the Module 10 linear Priority Queue; and
+2. Dijkstra with the Module 11 baseline linear Priority Queue; and
 3. Dijkstra with the Heap Priority Queue.
 
 Response: ___________________________________________________________

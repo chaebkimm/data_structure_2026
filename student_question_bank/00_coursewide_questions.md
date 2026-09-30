@@ -4,13 +4,13 @@
 
 ## Course Structure and the 14-Week Map
 
-- Why are there 16 numbered teaching packages but only 14 instructional weeks?
+- Why are there 15 numbered teaching packages but only 14 instructional weeks?
 - Does a module number always match the week in which we use it?
 - Which document controls if a package README and the 14-week delivery guide appear to disagree?
 - Where can I find the definitive list of required work for the current week?
 - Why are Modules 8 and 9 combined into one BFS week?
-- Why are Modules 10 and 11 combined into one Priority Queue and Heap week?
-- Why is Hash Table numbered Module 13 instead of appearing inside one of the five spirals?
+- Why does Module 11 combine the Priority Queue contract and Binary Heap implementation?
+- Why does Module 10 Hash Table bridge the BFS and priority/weighted-exploration spirals?
 - What does the Linear-to-Tree-to-Graph spiral organization mean for how I should study?
 - Are concepts introduced as previews expected knowledge when they return later?
 - Do I need to complete the packages strictly in numerical order?
@@ -43,8 +43,8 @@
 
 - Is there ever more than one required programming submission in a teaching week?
 - What belongs in the single combined Week 8 BFS submission?
-- What belongs in the single combined Week 9 Priority Queue and Heap submission?
-- Why is there no separate ordinary lab submission in Weeks 6 and 10?
+- What belongs in the single combined Week 10 Priority Queue and Heap submission?
+- Why is there no separate ordinary lab submission in Weeks 6 and 11?
 - How is the Week 14 MST, synthesis, and capstone-integration work folded into one artifact?
 - Does each capstone milestone require a second weekly submission?
 - What files and evidence must be included in an ordinary weekly lab artifact?

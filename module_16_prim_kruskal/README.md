@@ -85,7 +85,7 @@ By the end, students can:
 - Prim and Kruskal must agree on total weight, but equal-weight alternatives
   can make their selected edge IDs differ.
 
-At the capstone boundary, the Module 13 hash index may translate sparse
+At the capstone boundary, the Module 10 hash index may translate sparse
 external asset names into these dense internal vertex IDs. Prim and Kruskal
 receive the validated dense-ID graph; they do not hash external names inside
 their core loops.

@@ -266,7 +266,7 @@ here doubling it.
 
 | Structure or work | Insert | Minimum report | Minimum removal | Arbitrary ID search |
 |---|---:|---:|---:|---:|
-| Module 10 unsorted array | amortized `O(1)` | `O(n)` | `O(n)` | `O(n)` |
+| Module 11 baseline unsorted array | amortized `O(1)` | `O(n)` | `O(n)` | `O(n)` |
 | Module 11 min-Heap, no growth | `O(log n)` | `O(1)` | `O(log n)` | `O(n)` |
 | one Heap growth insertion | `O(n)` copying may occur | not applicable | not applicable | not applicable |
 | Heap insertion sequence | amortized `O(log n)` | not applicable | not applicable | not applicable |

@@ -19,7 +19,7 @@ index is below `size`. No child may come before its parent.
 **Dijkstra's algorithm** is a later graph method that selects pending work
 by smallest known path cost.
 
-## Canonical Module 10 arrivals
+## Canonical Module 11 baseline arrivals
 
 Insert these exact records in order:
 
@@ -201,13 +201,13 @@ Why does a checker after every mutation make the complete debug cycle
 
 Response: ___________________________________________________________
 
-### D3. Compare Module 10
+### D3. Compare Module 11 baseline
 
 State:
 
-1. Module 10 unsorted insertion comparisons;
+1. Module 11 baseline unsorted insertion comparisons;
 2. Module 11 Heap insertion comparisons;
-3. Module 10 unsorted drain comparisons; and
+3. Module 11 baseline unsorted drain comparisons; and
 4. Module 11 Heap drain comparisons.
 
 Which workload moved comparison work into insertion, and what removal
@@ -231,7 +231,7 @@ minimum removal costs.
 
 Response: ___________________________________________________________
 
-### E3. Heap versus Module 10 unsorted array
+### E3. Heap versus Module 11 baseline unsorted array
 
 Which public behavior remains identical? Which physical rule and operation
 costs change?

@@ -12,7 +12,7 @@ Breadth-first search counts the number of edges. If each edge has a different co
 
 We take out the vertex with the smallest cost found so far. If there is a cheaper candidate path going through that vertex, we update the record. This checking step is called "relaxation." The records waiting to be processed are called the "frontier." This overall flow is called "Dijkstra's Algorithm."
 
-In the week 10 practice, we only complete the core parts of relaxation and the frontier within the provided framework of a weighted graph, heap, and path reconstruction. We will not add a separate full practice project.
+In the week 11 practice, we only complete the core parts of relaxation and the frontier within the provided framework of a weighted graph, heap, and path reconstruction. We will not add a separate full practice project.
 
 ## Board Walkthrough
 

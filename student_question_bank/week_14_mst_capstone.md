@@ -146,13 +146,13 @@ Extension questions below are enrichment only and do not enlarge the required We
 ### Transfer
 
 - How does Week 12 DSU make Kruskal's cycle test efficient?
-- How do Week 9 Heap behavior and Week 10 lazy frontier reasoning transfer to Prim?
+- How do Week 10 Heap behavior and Week 11 lazy frontier reasoning transfer to Prim?
 - Why might an edge-list representation favor Kruskal while adjacency access favors Prim?
 - How do AVL local balance, Dijkstra path relaxation, and MST global edge selection enforce different invariants?
 
 ### Capstone integration
 
-- Where does the Week 11 hash table translate sparse external asset identifiers into validated dense internal vertex IDs?
+- Where does the Week 9 hash table translate sparse external asset identifiers into validated dense internal vertex IDs?
 - Which API boundary guarantees that Prim and Kruskal never hash or trust external names inside their core loops?
 - How do graph ownership, edge-list construction, Heap frontier storage, DSU arrays, selected-edge results, and cleanup responsibilities connect?
 - Which invariant checker should run at each boundary before one module's output becomes another module's input?

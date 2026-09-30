@@ -25,7 +25,7 @@ requires that no child come before its parent.
 **Dijkstra's algorithm** is a later graph method that selects pending work
 by smallest known path cost.
 
-## Canonical Module 10 arrivals
+## Canonical Module 11 baseline arrivals
 
 Insert the same records in the same order. The Queue assigns each sequence.
 
@@ -224,14 +224,14 @@ debug cycle `O(n)` even though one repair is `O(log n)`?
 
 ____________________________________________________________________
 
-### D3. Compare Module 10
+### D3. Compare Module 11 baseline
 
 For the same canonical build and drain, compare:
 
 ```text
-Module 10 unsorted insertion comparisons:
+Module 11 baseline unsorted insertion comparisons:
 Module 11 Heap insertion comparisons:
-Module 10 unsorted drain comparisons:
+Module 11 baseline unsorted drain comparisons:
 Module 11 Heap drain comparisons:
 ```
 
@@ -256,7 +256,7 @@ minimum removal costs.
 
 ____________________________________________________________________
 
-### E3. Heap versus Module 10 unsorted array
+### E3. Heap versus Module 11 baseline unsorted array
 
 Which public behavior remains identical? Which physical rule and operation
 costs change?

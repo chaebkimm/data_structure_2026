@@ -36,31 +36,33 @@ model before supplying formal vocabulary or code.
 
 States below are logical bottom to top. `push` has no return value.
 
-| Request | Returned integer code | State | `size` | Item count |
+| Request | Returned integer code | State | `top` | Item count |
 |---|---|---|---:|---:|
-| start | none | empty | 0 | 0 |
-| `push('A')` | none | A | 1 | 1 |
-| `push('B')` | none | A, B | 2 | 2 |
-| `push('C')` | none | A, B, C | 3 | 3 |
-| `peek()` | C | A, B, C | 3 | 3 |
-| `pop()` | C | A, B | 2 | 2 |
-| `pop()` | B | A | 1 | 1 |
-| `pop()` | A | empty | 0 | 0 |
+| start | none | empty | -1 | 0 |
+| `push('A')` | none | A | 0 | 1 |
+| `push('B')` | none | A, B | 1 | 2 |
+| `push('C')` | none | A, B, C | 2 | 3 |
+| `peek()` | C | A, B, C | 2 | 3 |
+| `pop()` | C | A, B | 1 | 2 |
+| `pop()` | B | A | 0 | 1 |
+| `pop()` | A | empty | -1 | 0 |
 
 ### Target 2: boundaries
 
-At `size == 10`, `is_full()` is true; an invalid push would write index 10.
-At `size == 0`, `is_empty()` is true; invalid peek reads index -1, and invalid
-pop decrements toward -1 before its out-of-bounds read. These calls have
+At `top == 9`, `is_full()` is true; an invalid push would write index 10.
+At `top == -1`, `is_empty()` is true; invalid peek reads index -1, and invalid
+pop reads index -1 before decrementing `top`. An invalid full push increments
+`top` to 10 before writing outside storage. These calls have
 undefined behavior, with no promised return or final state. Predicates report
 boundaries; callers must prevent invalid operations. Diagnose them on paper.
 
 ### Target 3: expression transfer
 
-Conversion produces `123*-4+` from `1-2*3+4`. It resets `size`, sets local
-`pos = 0`, and pushes a real `'\0'` sentinel. The final drain writes that
-sentinel to `eq_re[7]`, leaving `size == 0` and `pos == 8`. Seven tokens precede
-the terminator. Evaluation resets `size` again and reuses `int stack[10]`
+Conversion produces `123*-4+` from `1-2*3+4`. It resets `top`, sets local
+`pos = 0`, and starts with an empty Stack. The final drain emits the last
+operator, leaving `top == -1` and `pos == 7`. The explicit assignment
+`postfix[pos++] = '\0'` then writes the terminator at `postfix[7]` and
+advances `pos` to 8. Seven tokens precede the terminator. Evaluation resets `top` again and reuses `int stack[10]`
 for integers: `2*3 = 6`, `1-6 = -5`, then `-5+4 = -1`. The final pop returns
 -1 and empties the Stack.
 
@@ -71,7 +73,7 @@ corresponding explanations below, accepting equivalent plain language.
 
 ### A. Canonical characters
 
-Use the Stage B trace. After three pushes, `size == 3`, the count is three,
+Use the Stage B trace. After three pushes, `top == 2`, the count is three,
 and `'C'` is at index 2. Bottom `'A'` remains at index 0. Peek leaves all
 state unchanged. Pop order is C, B, A.
 
@@ -79,124 +81,155 @@ state unchanged. Pop order is C, B, A.
 
 | Operation | When allowed | Action | If precondition fails |
 |---|---|---|---|
-| `push(int data)` | room remains, `size < 10` | write `stack[size++]` | at full, index 10 is outside storage |
-| `peek()` | `size > 0` | return integer `stack[size - 1]` | at empty, index -1 is outside storage |
-| `pop()` | `size > 0` | decrement `size`, return integer `stack[size]` | at empty, index -1 is outside storage |
+| `push(int data)` | room remains, `top + 1 < 10` | write `stack[++top]` | at full, index 10 is outside storage |
+| `peek()` | `top >= 0` | return integer `stack[top]` | at empty, index -1 is outside storage |
+| `pop()` | `top >= 0` | read `stack[top]`, decrement `top`, and return the integer | at empty, index -1 is outside storage |
 
-With `capacity == 10`, maintain `0 <= size <= capacity`. The count is `size`,
-and active indexes form the prefix 0 through `size - 1`. The next push writes
-at the old count; pop decrements before reading. No old bits are erased.
-A stored `'\0'` is an active item like any other integer value, not an
+With `capacity == 10`, maintain `-1 <= top < capacity`. The count is `top + 1`,
+and active indexes form the prefix 0 through `top`. The next push increases `top` before writing;
+pop reads the current top before decrementing. No old bits are erased.
+A stored integer `0` is an active item like any other integer value, not an
 empty-read signal. Local conversion cursor `pos` counts output writes,
-including the sentinel, rather than Stack items.
+including the explicit terminator, rather than Stack items.
 
 ### C. Empty/full boundaries and fixed capacity
 
 For an empty Stack, `is_empty()` is true and push is allowed; peek and pop
 are invalid. For a full Stack, `is_full()` is true and peek/pop are allowed;
 push is invalid. The predicates preserve state but do not guard operations.
-A valid pop from A, B returns B and leaves `size == 1`, with the former B
+A valid pop from A, B returns B and leaves `top == 0`, with the former B
 cell unchanged and inactive.
 
-If `capacity` is 3 and `size` is 3, `is_full()` is true. Push nevertheless
-writes index 3 and increments `size`, because it never calls the predicate.
+If `capacity` is 3 and `top` is 2, `is_full()` is true. Push nevertheless
+increments `top` to 3 and writes index 3, because it never calls the predicate.
 The ten-cell allocation is unchanged. Equality predicates cannot validate
-all corrupted counts; callers maintain the invariant.
+all corrupted top indexes; callers maintain the invariant.
 
 ### D. Two expression phases
 
-Conversion resets `size`, initializes local `pos = 0`, and pushes `'\0'`.
-Digits go directly to `eq_re`. Incoming `+` emits waiting `*` and `-` because
-their precedence is greater or equal, then stops at the precedence-0 sentinel.
+Conversion resets `top = -1` and initializes local `pos = 0`. Digits go
+directly to `postfix`. Before peeking, the operator loop checks
+`!is_empty()`. It breaks if the waiting operator has lower precedence;
+otherwise it emits that operator. Incoming `+` emits waiting `*` and `-`,
+then the empty check stops the loop before `+` is pushed.
 
-| Read/work | Visible postfix | Stack, bottom to top | `size` | `pos` |
+| Read/work | Visible postfix | Stack, bottom to top | `top` | `pos` |
 |---|---|---|---:|---:|
-| reset and push sentinel | empty | `'\0'` | 1 | 0 |
-| `1` | `1` | `'\0'` | 1 | 1 |
-| `-` | `1` | `'\0'`, `-` | 2 | 1 |
-| `2` | `12` | `'\0'`, `-` | 2 | 2 |
-| `*` | `12` | `'\0'`, `-`, `*` | 3 | 2 |
-| `3` | `123` | `'\0'`, `-`, `*` | 3 | 3 |
-| `+` | `123*-` | `'\0'`, `+` | 2 | 5 |
-| `4` | `123*-4` | `'\0'`, `+` | 2 | 6 |
-| drain `+` | `123*-4+` | `'\0'` | 1 | 7 |
-| drain sentinel | `123*-4+` terminated | empty | 0 | 8 |
+| reset to empty | empty | empty | -1 | 0 |
+| `1` | `1` | empty | -1 | 1 |
+| `-` | `1` | `-` | 0 | 1 |
+| `2` | `12` | `-` | 0 | 2 |
+| `*` | `12` | `-`, `*` | 1 | 2 |
+| `3` | `123` | `-`, `*` | 1 | 3 |
+| `+` | `123*-` | `+` | 0 | 5 |
+| `4` | `123*-4` | `+` | 0 | 6 |
+| drain `+` | `123*-4+` | empty | -1 | 7 |
+| write terminator | `123*-4+` terminated | empty | -1 | 8 |
 
-The final sentinel write terminates `eq_re` at index 7 and increments `pos`
+The explicit final write terminates `postfix` at index 7 and increments `pos`
 to 8. The token length is 7. A later supported conversion resets both
-`size` and local `pos`, even if earlier work left active Stack items.
+`top` and local `pos`, even if earlier work left active Stack items.
 
-Evaluation resets `size = 0` and reuses the same integer array, without
-pushing a sentinel. It scans exactly seven postfix tokens:
+Evaluation resets `top = -1` and reuses the same integer array. It scans until `postfix[i] == '\0'`; this example has seven tokens:
 
-| Token | Active `stack`, bottom to top | `size` | Work |
+| Token | Active `stack`, bottom to top | `top` | Work |
 |---|---|---:|---|
-| `1` | 1 | 1 | `push(c - '0')` converts a character to an integer |
-| `2` | 1, 2 | 2 | push number |
-| `3` | 1, 2, 3 | 3 | push number |
-| `*` | 1, 6 | 2 | right `num2 = 3`, left `num1 = 2` |
-| `-` | -5 | 1 | right `num2 = 6`, left `num1 = 1` |
-| `4` | -5, 4 | 2 | push number |
-| `+` | -1 | 1 | right `num2 = 4`, left `num1 = -5` |
-| final pop | empty | 0 | return -1 |
+| `1` | 1 | 0 | `push(c - '0')` converts a character to an integer |
+| `2` | 1, 2 | 1 | push number |
+| `3` | 1, 2, 3 | 2 | push number |
+| `*` | 1, 6 | 1 | right `num2 = 3`, left `num1 = 2` |
+| `-` | -5 | 0 | right `num2 = 6`, left `num1 = 1` |
+| `4` | -5, 4 | 1 | push number |
+| `+` | -1 | 0 | right `num2 = 4`, left `num1 = -5` |
+| final pop | empty | -1 | return -1 |
 
-The nonempty top remains `stack[size - 1]`. Pop order is observable for
+The nonempty top remains `stack[top]`. Pop order is observable for
 `-`, `/`, and `%`. Equal-precedence reduction is left to right; for example,
 `8-3-2+1` produces `83-2-1+` and result 4.
 
-The D3 classifications are:
+For the grouped-expression trace in D3, `infix_to_postfix_parentheses()`
+reads `eq_paren = "1+(2+3)"`:
+
+| Event | Operator Stack, bottom to top | `top` | Postfix prefix | `pos` |
+|---|---|---:|---|---:|
+| reset to empty | empty | -1 | empty | 0 |
+| `1` | empty | -1 | `1` | 1 |
+| outer `+` | `+` | 0 | `1` | 1 |
+| `(` | `+`, `(` | 1 | `1` | 1 |
+| `2` | `+`, `(` | 1 | `12` | 2 |
+| inner `+` | `+`, `(`, `+` | 2 | `12` | 2 |
+| `3` | `+`, `(`, `+` | 2 | `123` | 3 |
+| `)` emits inner `+`, discards `(` | `+` | 0 | `123+` | 4 |
+| drain outer `+` | empty | -1 | `123++` | 5 |
+| write terminator | empty | -1 | `123++` terminated | 6 |
+
+`(` has precedence 0, so the inner `+` triggers `break` and leaves it
+stored. At `)`, the loop checks nonempty, then pops into `op`. An operator
+is emitted; a popped `(` triggers `break` without being written. The final
+drain empties the Stack before a separate assignment writes the terminator. The output has five tokens and a terminator at `postfix[5]`.
+Evaluation calculates `2+3 = 5`, then `1+5 = 6`, and its final pop leaves
+`top == -1`. Matching groups are assumed, not checked.
+
+The D4 classifications are:
 
 | Input | Within assumptions? | Result if valid | Reason |
 |---|---|---:|---|
-| `"7"` | no | — | shorter than the fixed seven-token scan |
+| `"7"` | yes | 7 | plain converter stops at the terminator |
 | `"1-2*3+4"` | yes | -1 | precedence and operand order |
 | `"8/2/2+1"` | yes | 3 | division is left associative |
 | `"7%4+1*2"` | yes | 5 | remainder and multiplication precede addition |
-| `""` | no | — | shorter than seven tokens |
-| `"1+"` | no | — | too short and missing an operand |
-| `"12+3"` | no | — | too short and multi-digit operands unsupported |
-| `"1 +2"` | no | — | too short and spaces unsupported |
-| `"(1+2)"` | no | — | too short and parentheses unsupported |
+| `""` | no | — | no operand; evaluation would pop an empty Stack |
+| `"1+"` | no | — | missing an operand |
+| `"12+3"` | no | — | multi-digit operands unsupported |
+| `"1 +2"` | no | — | spaces unsupported |
+| `"(1+2)"` | yes with the dedicated converter | 3 | balanced group in `eq_paren`; unsupported by the plain converter |
+| `"(1+2"` | no | — | opening parenthesis has no matching close |
 | `"1/0+2*3"` | no | — | zero divisor |
 | more than seven characters | no | — | exceeds fixed expression buffers |
 
-Core input has exactly seven characters: four single digits alternating with
-three `+ - * / %` operators, plus the terminator in `eq[7]`. No spaces,
-parentheses, unary operators, or multi-digit operands are supported. Divisors
+Core input is a nonempty valid expression of at most seven characters plus
+a terminator within the eight-cell input buffer. All expression scans stop
+at `'\0'`, so shorter valid expressions work. Use single-digit operands and
+binary `+ - * / %` operators. The plain converter reads `eq` without
+parentheses; the dedicated converter reads balanced groups from `eq_paren`.
+No spaces, unary operators, or multi-digit operands are supported. Divisors
 are nonzero and intermediates fit `int`. The source does not validate these
-conditions: an early terminator or unsupported character has precedence 0
-and can pop the sentinel, leading to an empty peek. These are limitations,
-not promised safe rejections. General parsing and checked arithmetic are
-extensions.
+conditions. The conversion loops check nonempty before reading the Stack,
+but this does not validate grammar. Unsupported characters can enter the
+output, an unmatched `)` can be silently consumed, and an unmatched `(`
+can be drained to output. The resulting postfix can underflow evaluation.
+These are limitations, not promised safe rejections.
+General parsing and checked arithmetic are extensions.
 
 ### E. Physical slot versus logical item — instructor answer
 
 For the autopsy fixture, index 0 contains `'+'`, index 1 contains `'*'`,
-and indexes 2 through 9 contain `'?'`; `size == 2`.
+and indexes 2 through 9 contain `'?'`; `top == 1`.
 
 1. Active indexes are 0 and 1; logical bottom-to-top order is `+`, `*`.
-2. Correct `stack[size - 1]` reports `'*'`.
-3. Faulty `stack[size]` reports `'?'` from inactive index 2.
+2. Correct `stack[top]` reports `'*'`.
+3. Faulty `stack[top + 1]` reports `'?'` from inactive index 2.
 4. Index 2 is physically allocated but is outside the active prefix.
-5. The repaired top expression is `stack[size - 1]`, after checking nonempty.
+5. The repaired top expression is `stack[top]`, after checking nonempty.
 
 At full capacity, the same faulty expression selects `stack[10]`, which is
 out of bounds. In the fixture, the first broken rule is the top selection,
-even if no address diagnostic appears and `size` is left unchanged. Use a different inactive/top character
+even if no address diagnostic appears and `top` is left unchanged. Use a different inactive/top character
 pair for a regression test. Preserve predictions before showing these
 answers; they do not belong in the Stage D diagram release.
 
 ### F. Costs
 
 Push, peek, and pop are `O(1)` and shift no elements. Conversion is `O(n)`:
-each token is scanned once and each operator is pushed/popped at most once.
+each input character is scanned once, and each operator or opening
+parenthesis is pushed/popped at most once.
 Evaluation is `O(n)` with fixed work per token. Current reserved buffers are
 fixed, so extra space is `O(1)` under the seven-character limit. A generalized
 postfix buffer for arbitrary length would require `O(n)` output storage.
 
 ### G. Three meanings of stack
 
-The Stack ADT is LIFO behavior. `int stack[10]` plus shared `size` is one
+The Stack ADT is LIFO behavior. `int stack[10]` plus shared top index `top` is one
 explicit representation, reused across the two expression phases. Runtime
 call-stack bookkeeping supports actual C calls. A character such as `'A'`
 is a teaching label; storing it does not create a call frame. The variable
@@ -204,11 +237,12 @@ name does not enforce LIFO; `push`, `peek`, and `pop` implement that rule.
 
 ### H. Exit ticket
 
-A complete response identifies the nonempty top as `stack[size - 1]`, the
-count as `size`, and the unchecked boundary preconditions. It distinguishes
-shared Stack count `size`, local output cursor `pos`, and seven-token length;
-explains the stored sentinel and shared-array resets; states
-`1-2*3+4 -> 123*-4+ -> -1`; and identifies at least one missing check.
+A complete response identifies the nonempty top as `stack[top]`, the
+count as `top + 1`, and the unchecked boundary preconditions. It distinguishes
+shared top index `top`, item count `top + 1`, local output cursor `pos`, and
+actual token length; explains guarded operator loops, the explicit terminator, and shared-array resets; states
+`1-2*3+4 -> 123*-4+ -> -1` and the dedicated
+`1+(2+3) -> 123++ -> 6` conversion; and identifies at least one missing check.
 Questions can be sorted into behavior, indexes, representation, expression
 phases, C notation, or evidence needs.
 
@@ -220,21 +254,28 @@ The demo should report:
 infix: 1-2*3+4
 postfix: 123*-4+
 result: -1
+infix with parentheses: 1+(2+3)
+postfix: 123++
+result: 6
 ```
 
+The parentheses example produces `123++` and 6. Its terminator
+is at index 5, and conversion and evaluation both finish with `top == -1`.
+
 The current `code/tests/test_lab.c` exercises integer LIFO, full/empty
-boundaries, canonical conversion, precedence and operand order, repeated seven-character
-conversions with shared-state resets, and the distinction between character digits and numeric
+boundaries, canonical conversion, precedence and operand order, repeated
+conversions with shared-state resets, shorter null-terminated inputs, balanced
+parentheses, and the distinction between character digits and numeric
 results. Use `make lab-demo` and `make lab-tests` from `code`, or
 `build.ps1 -Target lab` and `build.ps1 -Target lab-tests` on PowerShell.
 
 Students add exactly three justified cases to the current lab test file:
 
 1. a LIFO sequence, such as pop then push a different visible character;
-2. a boundary-predicate or valid-operation case comparing `size` and all
+2. a boundary-predicate or valid-operation case comparing `top` and all
    ten stored integers, without invoking undefined behavior;
-3. a seven-character expression case checking `eq_re`, its terminator, final
-   `size`, and numeric result.
+3. a valid expression case checking `postfix`, its actual terminator, final
+   `top`, and numeric result.
 
 Require rationale beyond repeating a supplied assertion. Suitable evidence
 includes a return/state trace, array snapshot, both expression-phase tables,

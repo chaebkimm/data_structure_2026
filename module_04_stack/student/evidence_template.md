@@ -20,16 +20,16 @@ ____________________________________________________________________
 
 ## 2. Canonical character trace
 
-Start empty. Record the return, `size`, item count, and bottom-to-top logical
+Start empty. Record the return, `top`, item count, and bottom-to-top logical
 state. A `void` push has no return value.
 
 ```text
 push('A'), push('B'), push('C'), peek(), pop(), pop(), pop()
 ```
 
-| Step | Return | `size` | Item count | Logical Stack |
+| Step | Return | `top` | Item count | Logical Stack |
 |---:|---|---:|---:|---|
-| Start | none | 0 | 0 | empty |
+| Start | none | -1 | 0 | empty |
 | 1 | | | | |
 | 2 | | | | |
 | 3 | | | | |
@@ -44,7 +44,7 @@ ____________________________________________________________________
 
 ## 3. Representation invariant
 
-State the valid range of `size`, the active index range, and the expressions
+State the valid range of `top`, the active index range, and the expressions
 for the nonempty top, the next push position, and current item count.
 
 ____________________________________________________________________
@@ -58,46 +58,51 @@ not resize the ten-cell array?
 
 ____________________________________________________________________
 
-Distinguish global `size`, local conversion cursor `pos`, and postfix token
-length. How do the two phases reuse the same array and count?
+Distinguish global `top`, local conversion cursor `pos`, and postfix token
+length. How do the two phases reuse the same array and top index?
 
 ____________________________________________________________________
 
 ## 4. Boundary behavior
 
-For valid operations, record the return, final `size`, and array contents.
+For valid operations, record the return, final `top`, and array contents.
 For invalid calls, identify the out-of-bounds index on paper; do not execute
 them or promise a deterministic return or preserved final state.
 
 1. Observe `is_full()` after ten valid pushes; explain why an eleventh push is invalid.
-2. Observe `is_empty()` when `size == 0`; explain why peek is invalid.
-3. Explain the decrement and invalid index of empty pop.
+2. Observe `is_empty()` when `top == -1`; explain why peek is invalid.
+3. Explain which invalid index empty pop reads before decrementing `top`.
 4. Execute a valid pop followed by peek of the newly exposed item.
 
 ____________________________________________________________________
 
-Why is the conversion sentinel a stored item rather than an empty-read result?
-Which caller checks prevent invalid primitive calls?
+Why does conversion check `!is_empty()` before inspecting or popping?
+Which caller checks prevent invalid primitive calls elsewhere?
 
 ____________________________________________________________________
 
 ## 5. Expression transfer
 
 Trace conversion of `1-2*3+4`. At each token, record the character operator
-Stack (including the sentinel), `size`, postfix prefix, and local `pos`.
-Explain why draining the sentinel writes the final terminator, advances `pos`
-to 8, and leaves the operator Stack empty afterward.
+Stack, `top`, postfix prefix, and local `pos`. Explain how the operator
+loop uses `break`. Separate draining the last operator (`pos == 7`) from
+writing the terminator (`pos == 8`). Why is `top == -1` at both points?
 
 ____________________________________________________________________
 
 Trace evaluation of the completed postfix. At each token, record the integer
-`stack` values, global `size`, and any calculation. Explain `c - '0'` and why `num2`
+`stack` values, global `top`, and any calculation. Explain `c - '0'` and why `num2`
 is popped before `num1`.
 
 ____________________________________________________________________
 
-State the permitted operators, exactly-seven-character requirement, operand
-format, phase-entry resets, and arithmetic assumptions.
+Trace `eq_paren = "1+(2+3)"` through `infix_to_postfix_parentheses()`.
+Explain which `+` is emitted at `)`, why parentheses are absent from `123++`,
+where the output terminator is written, and why evaluation returns 6.
+
+State the permitted operators, eight-cell buffer limit, operand format,
+balanced-parentheses rule, phase-entry resets, and arithmetic assumptions.
+Explain why shorter valid expressions stop at their terminators.
 
 ____________________________________________________________________
 
@@ -111,7 +116,7 @@ ____________________________________________________________________
 | Case | Expected result | Actual result | Pass? |
 |---|---|---|---|
 | Canonical A, B, C LIFO trace | | | |
-| Peek preserves `size` and array | | | |
+| Peek preserves `top` and array | | | |
 | Pop exposes previous character without erasing the old cell | | | |
 | Full predicate reports true after ten valid pushes; no eleventh push is called | | | |
 | Empty predicate reports true after draining; no empty read is called | | | |
@@ -119,9 +124,11 @@ ____________________________________________________________________
 | Canonical postfix evaluates to `-1` | | | |
 | Equal-precedence operators remain left associative | | | |
 | Noncommutative operands have the correct order | | | |
-| Repeated seven-character conversion resets `size` and local `pos`; sentinel terminates output | | | |
-| Evaluation discards prior active items by resetting shared `size` | | | |
+| Repeated conversion, including a shorter result, resets `top` and local `pos`; explicit final write terminates output | | | |
+| Evaluation discards prior active items by resetting shared `top` | | | |
 | Character digits become numeric values | | | |
+| `1+(2+3)` converts to `123++`, terminates at index 5, and evaluates to 6 | | | |
+| Shorter valid expressions stop at the null terminator | | | |
 
 ### Three student-authored cases
 
@@ -156,12 +163,12 @@ ____________________________________________________________________
 | Valid integer push | | |
 | Valid integer peek | | |
 | Valid integer pop | | |
-| Convert `n` valid infix tokens | | |
+| Convert `n` valid infix characters, including parentheses | | |
 | Evaluate `n` valid postfix tokens | | |
 | Storage with the present fixed arrays | | |
 
-Explain the current exactly-seven-token requirement and how storage would change if the
-arrays grew with input length.
+Explain the current limit of seven input characters and how storage would
+change if the arrays grew with input length.
 
 ____________________________________________________________________
 
@@ -169,7 +176,7 @@ ____________________________________________________________________
 
 Distinguish the Stack ADT, the runtime call stack, and this lab's global
 integer array. Explain how its active values change from operator codes
-and a sentinel to numeric operands and results across the two phases.
+to numeric operands and results across the two phases.
 
 ____________________________________________________________________
 

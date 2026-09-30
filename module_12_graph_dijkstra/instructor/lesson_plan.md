@@ -1,10 +1,10 @@
 # Instructor Lesson Plan - Module 12 Dijkstra
 
-## 14-week delivery override - Week 10 Practical 2 (180 minutes)
+## 14-week delivery override - Week 11 Practical 2 (180 minutes)
 
 This is the authoritative required sequence for the 14-week course; see the
 [delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Practical 2 is the sole Week 10 submission. Prepare a bounded release in
+Practical 2 is the sole Week 11 submission. Prepare a bounded release in
 which the weight parser, weighted-graph setup/cleanup and integration frame,
 Heap frontier, and their boundary tests are supplied. Do not assign the
 untouched Stage E package, its autopsy, or its extra tests as separate work.
@@ -254,7 +254,7 @@ that carries out those operations.
 Using the same canonical graph and source A:
 
 1. run full BFS while ignoring weights;
-2. run Dijkstra with Module 10's unsorted linear Priority Queue;
+2. run Dijkstra with Module 11 baseline's unsorted linear Priority Queue;
 3. run Dijkstra with the Heap Frontier;
 4. compare paths, add/remove calls, record comparisons, and API calls; and
 5. label shared ADT behavior versus implementation-specific details.

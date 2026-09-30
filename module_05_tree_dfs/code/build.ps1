@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "solution", "autopsy")]
+    [ValidateSet("starter", "solution", "lecture", "autopsy")]
     [string]$Target = "starter",
 
     [switch]$Extensions,
@@ -44,7 +44,16 @@ PowerShell, then rerun this command.
 
 $testingBuild = $false
 
-if ($Target -eq "autopsy") {
+if ($Target -eq "lecture") {
+    if ($Extensions -or $StudentTests) {
+        throw "Lecture cannot be combined with a normal test switch."
+    }
+
+    $sources = @(
+        (Join-Path $codeRoot "lecture\lab_demo.c")
+    )
+    $outputName = "lab_demo"
+} elseif ($Target -eq "autopsy") {
     if ($Extensions -or $StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
     }

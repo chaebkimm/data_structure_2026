@@ -5,17 +5,17 @@ Open this file only after preserving the Stage A inquiry.
 ## 1. Preserve the public promise
 
 An **abstract data type (ADT)** states public behavior without requiring one
-storage method. Module 10 built a stable minimum **Priority Queue ADT**.
+storage method. The opening baseline introduced a stable minimum **Priority Queue ADT**.
 
 A **record** groups named values called **fields**. Write an alert record as
 `ID/P/S`: alert ID, priority, and arrival sequence. A smaller priority comes
 first. When priorities tie, the smaller sequence comes first. A
 **comparator** is that exact two-record rule. Alert ID never ranks a record.
 
-A **backend** is one storage method used to provide the ADT. Module 10 used
+A **backend** is one storage method used to provide the ADT. The supplied baseline uses
 an unsorted-array backend and scanned every live record to find the minimum.
-**Live** means currently stored in the Queue. Module 11 preserves the same
-public answer but changes the backend.
+**Live** means currently stored in the Queue. The Heap preserves the same
+public answer with a different backend.
 
 ## 2. Make one compact tree shape
 

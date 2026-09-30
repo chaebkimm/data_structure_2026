@@ -1,11 +1,16 @@
 # Module 4 — Stage E: Lab and Evidence
 
 Start with `student/lab.md`, then study and trace `student/lab.c`. This is the
-program used throughout the module: a fixed integer stack counted by `size`,
-infix-to-postfix conversion with a stored sentinel, and postfix evaluation
+program used throughout the module: a fixed integer stack whose last active index is `top`,
+infix-to-postfix conversion with empty-stack guards and explicit termination, and postfix evaluation
 that resets and reuses the same Stack.
 The initial expression is `1-2*3+4`; its postfix form is `123*-4+` and its
-result is `-1`.
+result is `-1`. The parentheses converter handles `1+(2+3)`, producing
+`123++` and result `6`.
+
+The included [lab lecture source](student/ppt_lab_material.md) follows the
+array Stack, precedence and `switch`, `while` and `&&`, conversion, and
+evaluation sequence. Use the lab guide for the parentheses extension.
 
 Paths beginning with `student/` or `code/` in the lab materials are relative
 to this package's root. Keep those two folders together after extraction.
@@ -16,7 +21,8 @@ supplied checks with `make lab-tests`. PowerShell users can run
 `code/README.md` for compiler setup and sanitizer options. `lab.c` has no
 `main`; the demonstration and tests supply separate entry points.
 
-Use exactly-seven-character expressions within the lab's documented limits,
+Use valid, null-terminated expressions of at most seven characters within the
+lab's documented limits (balanced parentheses use the dedicated converter),
 and respect the unchecked push/peek/pop preconditions. The source does
 not yet validate malformed input, buffer limits, or zero divisors; identifying
 those limits is part of the lab. Extend `code/tests/test_lab.c` with three
@@ -25,5 +31,5 @@ is a separate intentionally faulty program. Record a prediction before
 running it.
 
 Submit the source and evidence listed in the lab. This package includes the
-current lab source, demonstration, supplied tests, and autopsy. Instructor
+current lab source, lecture source, demonstration, supplied tests, and autopsy. Instructor
 materials and the older caller-owned integer-stack exercise are excluded.

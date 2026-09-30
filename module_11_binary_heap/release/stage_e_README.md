@@ -8,7 +8,7 @@ Start with `student/lab.md`, then edit only:
 
 `TODO` marks an unfinished section that the student must complete.
 
-The Module 10 public record, Queue fields, statuses, service operations,
+The Module 11 baseline public record, Queue fields, statuses, service operations,
 error precedence, and failure promises are preserved. The only public API
 addition is `alert_priority_queue_is_min_heap`.
 
@@ -29,3 +29,18 @@ within checked fixed-array bounds.
 
 Submit the files and evidence listed in the lab, then complete
 `student/evidence_template.md`.
+
+## Supplied scan comparison
+
+The opening block introduced the Priority Queue ADT and stable tie rule.
+Use the completed scan baseline to compare service order and work with the
+Heap. The Stage E archive includes `code/baseline/` and its public tests.
+Run `make baseline-core` from `code/`, or in the released package use
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target baseline`.
+The repository's canonical baseline is in `priority_queue_baseline/code/`;
+its own instructor build can run `solution-core`.
+
+Build the two backends separately with their corresponding headers. Record
+zero baseline insertion comparisons and 21 baseline drain comparisons for
+the canonical seven-record input, then compare Heap normal-operation
+counts without checker calls. Submit one combined Module 11 result.

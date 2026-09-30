@@ -82,163 +82,7 @@
 - How could a full BFS forest cover all disconnected graph components after the source component finishes?
 - What additional proof obligations arise if outgoing neighbors are not stored in deterministic order?
 
-## Week 9: Priority Queue Contract to Binary Heap Backend (Modules 10-11)
-
-### Meaning and mental model
-
-- How is a Priority Queue different from the FIFO Queue used for BFS?
-- What does "minimum" mean under the course's alert-priority convention?
-- What makes the Priority Queue stable when two priorities are equal?
-- Why can two storage backends implement the same Priority Queue ADT?
-- What does a binary Heap promise that a globally sorted array does not?
-
-### Representation and invariants
-
-- Which public record fields and service rules must remain identical across the supplied unsorted backend and the Heap backend?
-- What makes the array representation a complete binary tree?
-- How are a nonroot node's parent and its possible child indexes calculated?
-- What exact parent-child relationship defines the stable minimum-Heap invariant?
-- Why can a valid minimum Heap contain an array that is not globally sorted?
-- Which Queue fields describe owned storage, logical size, capacity, arrival sequence, and diagnostic comparison work?
-
-### Operations, C API, and ownership
-
-- Why is the Module 10 unsorted-array implementation supplied rather than student-written in Week 9?
-- What happens to a complete Heap and caller output if growth allocation fails during insertion?
-- Why can Heap `peek_min` return the root without performing record comparisons?
-- What steps must extraction perform before and during sift-down?
-- Why must output storage for a returned record not point inside the Queue's allocation?
-- What does `alert_priority_queue_destroy` own, release, and reset?
-
-### Tracing
-
-- How does the supplied unsorted baseline insert, inspect the minimum, and remove the minimum?
-- Given an insertion sequence, where is each new Heap record appended and which comparisons cause it to sift upward?
-- Given a root extraction, which record moves to index 0 and how is the smaller child chosen during sift-down?
-- How should sift-down behave when a node has a left child but no right child?
-- How do equal priorities and arrival sequences determine swaps during a Heap trace?
-- Which fields may change during extraction even though the public service behavior remains unchanged?
-
-### Testing and debugging
-
-- Which focused tests isolate sift-up, sift-down, stable ties, and the one-child case?
-- How can `alert_priority_queue_is_min_heap` expose a local order violation after a mutation?
-- Why must checker comparisons be measured separately from normal-operation comparisons?
-- How can randomized differential testing compare the Heap against the supplied unsorted reference without assuming identical internal arrays?
-- What bug would occur if sift-down compared only priorities and ignored arrival sequence?
-
-### Complexity
-
-- What are the insertion, minimum-inspection, and minimum-removal costs of the supplied unsorted-array baseline?
-- Why are Heap insertion and extraction `O(log n)` while Heap minimum inspection is `O(1)`?
-- Why is a Heap's height logarithmic in its number of records?
-- Which workload would make the unsorted baseline competitive, and which workload would favor the Heap?
-
-### Security and interpretation
-
-- How can an incorrect priority calibration cause unfairness or starvation even when the data structure is correct?
-- Why is stable tie handling a policy guarantee rather than a security authorization decision?
-- How could unchecked index arithmetic or a missing-child read corrupt Heap behavior or memory?
-
-### Assignment and evidence
-
-- What belongs in the single combined Week 9 submission?
-- Why is there no separate student implementation or submission for Module 10 in the 14-week path?
-- Which traces and tests demonstrate the complete-tree indexes, stable comparator, sift behavior, and Heap invariant?
-- What comparison evidence fairly distinguishes the supplied baseline's costs from the Heap backend's costs?
-
-### Transfer
-
-- Why can Dijkstra use the Priority Queue contract without depending on whether its backend is an unsorted array or Heap?
-- How does Heap order differ from the strict ordering rule of a BST or AVL tree?
-- How do comparison counts provide evidence about backend choice without proving wall-clock performance on every machine?
-- What failure-preservation ideas transfer from dynamic arrays to both Priority Queue backends?
-
-### Extension questions
-
-- How would you implement the unsorted-array Priority Queue while preserving the same public contract?
-- How could bottom-up heap construction differ from repeated insertion?
-- What interface changes would a decrease-key Heap require?
-- How would a maximum-oriented Heap change the comparator and invariant while retaining the same array geometry?
-
-## Week 10: Dijkstra and Practical 2 (Module 12)
-
-### Meaning and mental model
-
-- Why can BFS return the wrong route when edge costs are unequal?
-- What does a tentative distance mean before a vertex is finalized?
-- What does relaxation ask about one outgoing arc?
-- Why does Dijkstra remove the smallest tentative snapshot next?
-- What is a stale frontier entry in the lazy-duplicate strategy?
-
-### Representation and invariants
-
-- What do `distance`, `predecessor`, `finalized`, and `finalized_order` represent?
-- Why is `SIZE_MAX` reserved as `DIJKSTRA_INF` rather than permitted as a reachable cost?
-- What relationship must hold between a nonstale popped snapshot and the current distance array?
-- Why does strict relaxation leave an existing predecessor unchanged on an equal-cost route?
-- Why is the dedicated frontier limit `arc_count + 1` rather than the Module 11 teaching cap of 64?
-
-### Operations, C API, and ownership
-
-- Which parser, weighted-graph, Heap-frontier, setup, cleanup, and validation parts are supplied in Practical 2?
-- Which bounded Dijkstra run-loop and path-reconstruction decisions must students complete?
-- What must `dijkstra_shortest_paths` preserve if validation, allocation, capacity, or arithmetic fails?
-- What must `dijkstra_reconstruct_path` return for a reachable source-only path and preserve for an unreachable destination?
-- Which object owns the graph arcs, frontier entries, result arrays, and reconstructed path at each stage?
-
-### Tracing
-
-- How do distances, predecessors, frontier entries, and finalized state change during the canonical A-through-F trace?
-- Which canonical frontier pops are stale, and why must their outgoing arcs be skipped?
-- How does a zero-cost arc participate in strict relaxation?
-- How is the path `A, C, D, E` reconstructed from predecessor state?
-- What state shows that F is unreachable from A?
-- How would a nonstrict relaxation change the predecessor trace when two equal-cost routes exist?
-
-### Testing and debugging
-
-- What single focused regression test should isolate a core error in the student's bounded implementation?
-- Which supplied tests establish negative-input rejection, stale-pop skipping, unreachable handling, and cost-range protection?
-- What failure would appear if a stale snapshot were finalized or expanded?
-- How can the reconstructed path cost be checked independently of the algorithm's reported distance?
-- How can a same-graph comparison distinguish BFS, linear-Priority-Queue Dijkstra, and Heap-Dijkstra results?
-
-### Complexity
-
-- Why does lazy-duplicate Dijkstra use `O(V + E log(E + 1))` time with this frontier strategy?
-- Why can the lazy frontier require `O(E)` entries?
-- Under what simple-graph assumption can the bound be written as `O(V + E log V)`?
-- Why must the analysis describe the implemented lazy strategy rather than assume decrease-key?
-
-### Security and interpretation
-
-- Why must a negative textual weight be rejected before conversion to `size_t`?
-- How does the subtraction guard prevent overflow or collision with the reserved infinity value?
-- Why does a least-cost path not prove authorization, trust, availability, or low security risk?
-
-### Assignment and evidence
-
-- Why is Practical 2 the sole Week 10 programming artifact?
-- What code, canonical trace, regression test, boundary evidence, and comparison belong in the integrated Practical 2 submission?
-- Why must the full standalone Module 12 Stage E lab not be added as homework?
-- How should the submission distinguish the Priority Queue ADT from its linear and Heap implementations?
-
-### Transfer
-
-- Which Week 8 predecessor-path ideas transfer directly from BFS to Dijkstra?
-- Which Week 9 Heap and stable-frontier ideas does Dijkstra reuse?
-- How is Dijkstra's objective different from the objective of Prim or Kruskal?
-- When would BFS be simpler and sufficient despite the availability of Dijkstra?
-
-### Extension questions
-
-- How would an eager decrease-key frontier change the implementation and complexity argument?
-- Which algorithmic family would be needed if negative edges were permitted?
-- How could the full parser be tested against signs, whitespace, malformed text, and range boundaries?
-- What additional evidence would be needed to run Dijkstra safely on a larger, dynamically sized graph?
-
-## Week 11: Hash Table (Module 13)
+## Week 9: Hash Table (Module 10)
 
 ### Meaning and mental model
 
@@ -298,17 +142,17 @@
 
 ### Assignment and evidence
 
-- Which probing, lookup, insertion/update, removal, and scaffold checkpoints belong in the single Week 11 submission?
-- What three student-authored test categories are required in the bounded Week 11 artifact?
+- Which probing, lookup, insertion/update, removal, and scaffold checkpoints belong in the single Week 9 submission?
+- What three student-authored test categories are required in the bounded Week 9 artifact?
 - Which maximum-capacity, long-churn, deep-validator, and additional allocation-failure work is supplied or optional rather than a second assignment?
 - What traces and tool output demonstrate collision, wraparound, tombstone, growth, compaction, and failure preservation?
 
 ### Transfer
 
-- When is a hash table preferable to an AVL tree for exact lookup?
-- When do ordered iteration, range queries, or worst-case lookup requirements favor an AVL tree instead?
+- In the supplied comparison preview, when is a hash table preferable to an AVL tree for exact lookup?
+- In that preview, when do ordered iteration, range queries, or worst-case lookup requirements favor an AVL tree instead?
 - How can the hash table bridge sparse external identifiers to dense internal graph IDs?
-- How do transactional rehashing and ArrayList growth share a commit-after-success principle?
+- How can transactional rehashing prepare you to preserve state when the later Heap backend grows?
 
 ### Extension questions
 
@@ -316,6 +160,162 @@
 - What capacity policy could shrink a table without causing resize thrashing?
 - How could a keyed production hash reduce predictable collision attacks?
 - What proof or test strategy could strengthen confidence in long mixed-operation churn?
+
+## Week 10: Priority Queue Contract to Binary Heap Backend (Module 11)
+
+### Meaning and mental model
+
+- How is a Priority Queue different from the FIFO Queue used for BFS?
+- What does "minimum" mean under the course's alert-priority convention?
+- What makes the Priority Queue stable when two priorities are equal?
+- Why can two storage backends implement the same Priority Queue ADT?
+- What does a binary Heap promise that a globally sorted array does not?
+
+### Representation and invariants
+
+- Which public record fields and service rules must remain identical across the supplied unsorted backend and the Heap backend?
+- What makes the array representation a complete binary tree?
+- How are a nonroot node's parent and its possible child indexes calculated?
+- What exact parent-child relationship defines the stable minimum-Heap invariant?
+- Why can a valid minimum Heap contain an array that is not globally sorted?
+- Which Queue fields describe owned storage, logical size, capacity, arrival sequence, and diagnostic comparison work?
+
+### Operations, C API, and ownership
+
+- Why is Module 11's unsorted-array baseline supplied rather than student-written in Week 10?
+- What happens to a complete Heap and caller output if growth allocation fails during insertion?
+- Why can Heap `peek_min` return the root without performing record comparisons?
+- What steps must extraction perform before and during sift-down?
+- Why must output storage for a returned record not point inside the Queue's allocation?
+- What does `alert_priority_queue_destroy` own, release, and reset?
+
+### Tracing
+
+- How does the supplied unsorted baseline insert, inspect the minimum, and remove the minimum?
+- Given an insertion sequence, where is each new Heap record appended and which comparisons cause it to sift upward?
+- Given a root extraction, which record moves to index 0 and how is the smaller child chosen during sift-down?
+- How should sift-down behave when a node has a left child but no right child?
+- How do equal priorities and arrival sequences determine swaps during a Heap trace?
+- Which fields may change during extraction even though the public service behavior remains unchanged?
+
+### Testing and debugging
+
+- Which focused tests isolate sift-up, sift-down, stable ties, and the one-child case?
+- How can `alert_priority_queue_is_min_heap` expose a local order violation after a mutation?
+- Why must checker comparisons be measured separately from normal-operation comparisons?
+- How can randomized differential testing compare the Heap against the supplied unsorted reference without assuming identical internal arrays?
+- What bug would occur if sift-down compared only priorities and ignored arrival sequence?
+
+### Complexity
+
+- What are the insertion, minimum-inspection, and minimum-removal costs of the supplied unsorted-array baseline?
+- Why are Heap insertion and extraction `O(log n)` while Heap minimum inspection is `O(1)`?
+- Why is a Heap's height logarithmic in its number of records?
+- Which workload would make the unsorted baseline competitive, and which workload would favor the Heap?
+
+### Security and interpretation
+
+- How can an incorrect priority calibration cause unfairness or starvation even when the data structure is correct?
+- Why is stable tie handling a policy guarantee rather than a security authorization decision?
+- How could unchecked index arithmetic or a missing-child read corrupt Heap behavior or memory?
+
+### Assignment and evidence
+
+- What belongs in the single combined Week 10 submission?
+- Why is there no separate student implementation or submission for the unsorted baseline in Module 11?
+- Which traces and tests demonstrate the complete-tree indexes, stable comparator, sift behavior, and Heap invariant?
+- What comparison evidence fairly distinguishes the supplied baseline's costs from the Heap backend's costs?
+
+### Transfer
+
+- Why can Dijkstra use the Priority Queue contract without depending on whether its backend is an unsorted array or Heap?
+- How does Heap order differ from the strict ordering rule of a BST or AVL tree?
+- How do comparison counts provide evidence about backend choice without proving wall-clock performance on every machine?
+- What failure-preservation ideas transfer from dynamic arrays to both Priority Queue backends?
+
+### Extension questions
+
+- How would you implement the unsorted-array Priority Queue while preserving the same public contract?
+- How could bottom-up heap construction differ from repeated insertion?
+- What interface changes would a decrease-key Heap require?
+- How would a maximum-oriented Heap change the comparator and invariant while retaining the same array geometry?
+
+## Week 11: Dijkstra and Practical 2 (Module 12)
+
+### Meaning and mental model
+
+- Why can BFS return the wrong route when edge costs are unequal?
+- What does a tentative distance mean before a vertex is finalized?
+- What does relaxation ask about one outgoing arc?
+- Why does Dijkstra remove the smallest tentative snapshot next?
+- What is a stale frontier entry in the lazy-duplicate strategy?
+
+### Representation and invariants
+
+- What do `distance`, `predecessor`, `finalized`, and `finalized_order` represent?
+- Why is `SIZE_MAX` reserved as `DIJKSTRA_INF` rather than permitted as a reachable cost?
+- What relationship must hold between a nonstale popped snapshot and the current distance array?
+- Why does strict relaxation leave an existing predecessor unchanged on an equal-cost route?
+- Why is the dedicated frontier limit `arc_count + 1` rather than the Module 11 teaching cap of 64?
+
+### Operations, C API, and ownership
+
+- Which parser, weighted-graph, Heap-frontier, setup, cleanup, and validation parts are supplied in Practical 2?
+- Which bounded Dijkstra run-loop and path-reconstruction decisions must students complete?
+- What must `dijkstra_shortest_paths` preserve if validation, allocation, capacity, or arithmetic fails?
+- What must `dijkstra_reconstruct_path` return for a reachable source-only path and preserve for an unreachable destination?
+- Which object owns the graph arcs, frontier entries, result arrays, and reconstructed path at each stage?
+
+### Tracing
+
+- How do distances, predecessors, frontier entries, and finalized state change during the canonical A-through-F trace?
+- Which canonical frontier pops are stale, and why must their outgoing arcs be skipped?
+- How does a zero-cost arc participate in strict relaxation?
+- How is the path `A, C, D, E` reconstructed from predecessor state?
+- What state shows that F is unreachable from A?
+- How would a nonstrict relaxation change the predecessor trace when two equal-cost routes exist?
+
+### Testing and debugging
+
+- What single focused regression test should isolate a core error in the student's bounded implementation?
+- Which supplied tests establish negative-input rejection, stale-pop skipping, unreachable handling, and cost-range protection?
+- What failure would appear if a stale snapshot were finalized or expanded?
+- How can the reconstructed path cost be checked independently of the algorithm's reported distance?
+- How can a same-graph comparison distinguish BFS, linear-Priority-Queue Dijkstra, and Heap-Dijkstra results?
+
+### Complexity
+
+- Why does lazy-duplicate Dijkstra use `O(V + E log(E + 1))` time with this frontier strategy?
+- Why can the lazy frontier require `O(E)` entries?
+- Under what simple-graph assumption can the bound be written as `O(V + E log V)`?
+- Why must the analysis describe the implemented lazy strategy rather than assume decrease-key?
+
+### Security and interpretation
+
+- Why must a negative textual weight be rejected before conversion to `size_t`?
+- How does the subtraction guard prevent overflow or collision with the reserved infinity value?
+- Why does a least-cost path not prove authorization, trust, availability, or low security risk?
+
+### Assignment and evidence
+
+- Why is Practical 2 the sole Week 11 programming artifact?
+- What code, canonical trace, regression test, boundary evidence, and comparison belong in the integrated Practical 2 submission?
+- Why must the full standalone Module 12 Stage E lab not be added as homework?
+- How should the submission distinguish the Priority Queue ADT from its linear and Heap implementations?
+
+### Transfer
+
+- Which Week 8 predecessor-path ideas transfer directly from BFS to Dijkstra?
+- Which Week 10 Heap and stable-frontier ideas does Dijkstra reuse?
+- How is Dijkstra's objective different from the objective of Prim or Kruskal?
+- When would BFS be simpler and sufficient despite the availability of Dijkstra?
+
+### Extension questions
+
+- How would an eager decrease-key frontier change the implementation and complexity argument?
+- Which algorithmic family would be needed if negative edges were permitted?
+- How could the full parser be tested against signs, whitespace, malformed text, and range boundaries?
+- What additional evidence would be needed to run Dijkstra safely on a larger, dynamically sized graph?
 
 ## Week 12: Linked-List Ownership Clinic and Union-Find (Module 14)
 
@@ -464,7 +464,7 @@
 
 ### Transfer
 
-- When would an AVL index be a better capstone choice than the Week 11 hash index?
+- When would an AVL index be a better capstone choice than the Week 9 hash index?
 - How does inorder DFS provide sorted evidence for the BST invariant?
 - How do local AVL rotations differ from the global edge-selection decisions used by MST algorithms?
 - Which failure-preservation and ownership rules carry over from linked lists and hash tables to AVL insertion?
@@ -545,13 +545,13 @@
 ### Transfer
 
 - How does Week 12 DSU make Kruskal's cycle test efficient?
-- How do Week 9 Heap behavior and Week 10 lazy frontier reasoning transfer to Prim?
+- How do Week 10 Heap behavior and Week 11 lazy frontier reasoning transfer to Prim?
 - Why might an edge-list representation favor Kruskal while adjacency access favors Prim?
 - How do AVL local balance, Dijkstra path relaxation, and MST global edge selection enforce different invariants?
 
 ### Capstone integration
 
-- Where does the Week 11 hash table translate sparse external asset identifiers into validated dense internal vertex IDs?
+- Where does the Week 9 hash table translate sparse external asset identifiers into validated dense internal vertex IDs?
 - Which API boundary guarantees that Prim and Kruskal never hash or trust external names inside their core loops?
 - How do graph ownership, edge-list construction, Heap frontier storage, DSU arrays, selected-edge results, and cleanup responsibilities connect?
 - Which invariant checker should run at each boundary before one module's output becomes another module's input?

@@ -131,7 +131,7 @@ Extension questions below are enrichment only and do not enlarge the required We
 
 ### Transfer
 
-- When would an AVL index be a better capstone choice than the Week 11 hash index?
+- When would an AVL index be a better capstone choice than the Week 9 hash index?
 - How does inorder DFS provide sorted evidence for the BST invariant?
 - How do local AVL rotations differ from the global edge-selection decisions used by MST algorithms?
 - Which failure-preservation and ownership rules carry over from linked lists and hash tables to AVL insertion?

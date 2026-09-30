@@ -297,7 +297,7 @@ performs those operations.
 | Run | A-to-E path | Add/remove calls | Record comparisons | API calls |
 |---|---|---:|---:|---|
 | BFS, weights ignored | A,E | 5 enqueue, 5 dequeue | not applicable | `vertex_queue_enqueue`, `vertex_queue_dequeue` |
-| Dijkstra, Module 10 linear Queue | A,C,D,E | 8 insert, 8 extract-min | 14 | `alert_priority_queue_insert`, `alert_priority_queue_extract_min` |
+| Dijkstra, Module 11 baseline linear Queue | A,C,D,E | 8 insert, 8 extract-min | 14 | `alert_priority_queue_insert`, `alert_priority_queue_extract_min` |
 | Dijkstra, Heap Frontier | A,C,D,E | 8 push, 8 pop | 17 | `dijkstra_frontier_push`, `dijkstra_frontier_pop` |
 
 The linear Queue's sizes before its removals are:
@@ -314,7 +314,7 @@ Because insert makes zero record comparisons, its extraction total is:
 
 The shared Priority Queue ADT behavior is to add a record and remove the
 stable minimum: equal distances leave in insertion order. API call roles map
-linear `insert`/`extract-min` to Heap `push`/`pop`. The Module 10 alert
+linear `insert`/`extract-min` to Heap `push`/`pop`. The Module 11 baseline alert
 record is adapted by treating its ID as the vertex and its priority as the
 distance; this is a comparison activity, not a new Module 12 coding task.
 

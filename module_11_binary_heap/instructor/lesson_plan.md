@@ -1,30 +1,41 @@
 # Instructor Lesson Plan - Module 11 Binary Heap
 
-## 14-week delivery override - Week 9 main lab (140 of 180 minutes)
+## 14-week delivery - Week 10 combined unit (180 minutes)
 
-Run this block after the 40-minute Module 10 contract/baseline block. Module
-11 provides the combined week's only submission. The longer two-meeting plan
-below remains an optional resource. See the
+Teach the Priority Queue contract and supplied scan baseline in the first
+40 minutes. Continue with the Heap implementation for 140 minutes. This is
+one Module 11 unit with one submission. The longer two-meeting plan below
+is optional. See the
 [14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 
-| Combined-week minutes | Required live work |
+| Minutes | Required live work |
 |---:|---|
+| 0-8 | Contrast FIFO arrival order with the alert-priority scenario. |
+| 8-18 | Define the ADT, priority-then-arrival comparator, and stable ties. |
+| 18-30 | Trace insert, inspect-minimum, and extract-minimum in the supplied scan baseline. |
+| 30-38 | Count baseline work for insert-heavy and removal-heavy use. |
+| 38-40 | Preserve the comparison table before changing representation. |
 | 40-52 | Map the complete tree to an array and derive parent/child indexes. |
 | 52-65 | Distinguish Heap order from sorted/BST order and trace sift-up/down. |
 | 65-75 | Run the exactly-three-target pause and calibrate both traces. |
-| 75-85 | Reuse the Module 10 contract and introduce the Heap checker. |
+| 75-85 | Reuse the baseline contract and introduce the Heap checker. |
 | 85-105 | Implement and test the invariant checker. |
 | 105-125 | Implement and test insertion with sift-up. |
 | 125-147 | Implement and test extraction with sift-down, including a left-only child. |
-| 147-160 | Run three test categories, including stable ties, against the supplied reference baseline. |
-| 160-170 | Compare measured Heap work with the Module 10 scan baseline. |
-| 170-177 | Correct one sift trace and the combined evidence without erasing first work. |
-| 177-180 | Verify one combined checklist and submit once for Week 9. |
+| 147-160 | Run three test categories, including stable ties, against the supplied baseline. |
+| 160-170 | Compare measured Heap work with the scan baseline. |
+| 170-177 | Correct one sift trace and combined evidence without erasing first work. |
+| 177-180 | Verify one checklist and submit once for Week 10. |
+
+Supply the completed baseline; do not assign its starter. Use selected
+baseline inquiry/reveal materials during the first block. The primary release
+includes the baseline implementation, public core tests, and build
+commands for independent comparison runs.
 
 The required submission contains Heap code, three focused tests, sift traces,
 and the backend comparison. Treat the extended randomized differential run,
-the bounded autopsy, and the rest of the full-package evidence as optional
-after the core passes; do not create a separate Module 10 assignment.
+the bounded autopsy, and the remaining full-package evidence as optional
+after the core passes. The nested baseline package has no separate submission.
 
 ## Module question
 
@@ -193,7 +204,7 @@ measurement
 
 ### 8. Gate C canonical build - 25 minutes
 
-Release one worksheet. Students reuse Module 10 arrivals:
+Release one worksheet. Students reuse Module 11 baseline arrivals:
 
 ```text
 71/3/0,88/1/1,42/2/2,17/1/3,26/4/4,9/2/5,63/1/6
@@ -246,7 +257,7 @@ Retrieve without code:
 5. checker delta at size `n`; and
 6. why the Heap is neither BST nor sorted.
 
-Then open the 1,100-1,250-word textbook and exact-equivalent models.
+Then open the combined textbook and exact-equivalent models.
 
 Gate D closes when each student can trace one upward and one downward step
 and label normal versus checker work.
@@ -288,7 +299,7 @@ Ask students to state why valid shape plus false order is `OK`, not
 
 ### 4. TODO 2 insertion - 28 minutes
 
-Students preserve Module 10 error and growth logic, then:
+Students preserve Module 11 baseline error and growth logic, then:
 
 1. create local candidate;
 2. begin hole at size;

@@ -123,7 +123,7 @@ Heap versus sorted sequence:
 
 ____________________________________________________________________
 
-Heap versus Module 10 unsorted backend:
+Heap versus Module 11 baseline unsorted backend:
 
 ____________________________________________________________________
 

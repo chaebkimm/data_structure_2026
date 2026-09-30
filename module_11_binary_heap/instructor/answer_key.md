@@ -357,12 +357,12 @@ combined 27
 
 Checker after every mutation makes the combined debug cycle `O(n)`.
 
-#### D3. Module 10 comparison
+#### D3. Module 11 baseline comparison
 
 ```text
-Module 10 insertion: 0
+Module 11 baseline insertion: 0
 Module 11 insertion: 8
-Module 10 drain: 21
+Module 11 baseline drain: 21
 Module 11 drain: 12
 ```
 
@@ -384,7 +384,7 @@ linear insertion and constant minimum removal. Heap sift-up and extraction
 are logarithmic; one growth insertion may be linear, while a geometric
 insertion sequence is amortized logarithmic.
 
-#### E3. Heap versus Module 10
+#### E3. Heap versus Module 11 baseline
 
 Public comparator, outputs, fields, statuses, growth, and ownership remain.
 Physical invariant and costs change from scan-at-service to path repair.

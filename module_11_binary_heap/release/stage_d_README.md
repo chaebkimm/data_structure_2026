@@ -2,7 +2,7 @@
 
 Open these materials after completing and preserving the Stage C core.
 
-- `textbook.md` is an ultra-concise, example-first explanation that defines
+- `textbook.md` is a combined, example-first explanation that defines
   each new technical term and symbol when first needed.
 - `diagrams/binary_heap_models.md` supplies exact array/tree translations,
   parent/child formulas, Heap-order, sift-up, sift-down, missing-right-child,

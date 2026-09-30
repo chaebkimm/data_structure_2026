@@ -1,459 +1,520 @@
-# Chapter 5. Traversing a Tree with a Stack
+# Chapter 5. Depth-First Traversal and Expression Trees
+
+We will visit a tree in three orders, build an expression tree from postfix
+notation, and write its infix form while preserving its grouping. The code
+for this chapter is [`lab.c`](lab.c).
 
 ## Thinking Logically
 
-### How do we return to an unfinished branch without recursion?
+### How do we follow a tree stored in an array?
 
-Chapter 2 built an expression tree using loops and evaluated it recursively. Each
-unfinished call remembered where to continue after a child returned. Chapter
-4 introduced a stack that stores values and takes the newest value out first.
-We can now store the unfinished tree work in that stack ourselves.
+Chapter 2 connected nodes through array indices. This lab uses the same
+idea: each `struct TreeNode` contains a character and two integer child
+indices. An absent child is `-1`. A root is also an index; following child
+links from it determines which nodes belong to that tree.
 
-Use `3+5*2` as another example of Chapter 2's expression-tree idea. Its tree has five nodes.
+`alphabet_init()` prepares ten nodes, `A` through `J`, with no children.
+`tree_connect()` connects seven of them and returns index `5`, the node
+containing `F`.
 
 ```text
-        +
-       / \
-      3   *
-         / \
-        5   2
+          F [5]
+         /     \
+      A [0]   G [6]
+      /   \
+   B [1] C [2]
+   /   \
+D [3] E [4]
 ```
 
-After reaching `3`, we still need to reach `*` and its children. A variable
-that only holds `3` cannot recover the root because the nodes have no parent
-links. We must save an address before leaving an unfinished branch.
+The brackets show array indices. The nodes stay in their original slots;
+assigning a child link does not move a node. `H`, `I`, and `J` remain
+unconnected. Although `size` is 10 after initialization, a traversal from
+root `5` reaches only seven nodes.
 
-Following one branch before returning to the remaining branches is
-**depth-first search (DFS)**. Chapter 2's evaluator followed this pattern. Processing
-every node in a chosen order is a **traversal**. This chapter implements three
-DFS traversal orders using loops and an explicit stack. None of the three
-traversal functions calls itself.
+### How do we return after finishing a branch?
 
-In this chapter, to **visit** a node means to print its stored symbol once.
-Reading a node address or placing it on the stack does not yet visit it.
-That distinction matters when we postpone printing a parent.
+A recursive call processes one subtree. While it runs, the caller waits
+with its own node index and the place where execution will resume. When the
+child call returns, the parent continues with its remaining work.
 
-### What changes when we print the parent first, between, or last?
+This follows the last-in, first-out rule from Chapter 4. The runtime's call
+stack remembers the unfinished calls. Following one branch before returning
+to another is **depth-first search (DFS)**. Processing the nodes in a chosen
+order is a **traversal**.
 
-The expression tree has a current node, a left subtree, and a right subtree.
-We keep the left subtree before the right subtree. We choose when to print
-the current node relative to those two subtrees.
+`tree_traversal(i)` first handles the current node, recursively visits its
+left child if one exists, handles the current node again, recursively visits
+its right child if one exists, and handles the current node a third time.
+These three positions let us observe three different traversal orders in
+one function.
 
-| Order | Position of the current node | Symbols for `3+5*2` |
+### What changes when we visit the parent first, between, or last?
+
+A **visit** is the action we choose to perform on the current node. In this
+lab, each visit assigns its character to one of three global variables.
+The position of that assignment determines the order.
+
+| Order | Assignment position | Assignment sequence for the alphabet tree |
 | --- | --- | --- |
-| Preorder | Current, left subtree, right subtree | `+ 3 * 5 2` |
-| Inorder | Left subtree, current, right subtree | `3 + 5 * 2` |
-| Postorder | Left subtree, right subtree, current | `3 5 2 * +` |
+| Preorder | `pre_data`, before either child | `F A B D E C G` |
+| Inorder | `in_data`, after the left child and before the right | `D B E A C F G` |
+| Postorder | `post_data`, after both children | `D E B C A G F` |
 
-The node's first arrival and its printing time need not be the same moment.
-For example, postorder reaches `+` first but prints `+` last.
+For example, the call on `B` first assigns `B` to `pre_data`. It completes
+the call on `D`, assigns `B` to `in_data`, completes the call on `E`, and
+finally assigns `B` to `post_data`. Each leaf performs its three assignments
+without making another call.
 
-### How do we print the current node before its children?
+These variables hold only the most recently assigned character. The
+function does not print or save an entire sequence. After
+`tree_traversal(5)` finishes, `pre_data` and `in_data` contain `'G'`, while
+`post_data` contains `'F'`. To observe the full sequences, trace the
+assignments or set breakpoints at the three visit positions.
 
-We can print a node as soon as we take its address from the stack. Its
-children become future work. To process the left child next, push the right
-child first and the left child second. The left child is then on top.
+### How can a stack build a tree from postfix notation?
 
-This is **preorder traversal**. Start by pushing the root. Repeatedly pop,
-print, and push the existing children. Do not push `NULL`.
+Chapter 4 used a stack to evaluate postfix expressions. A digit pushed a
+number; an operator popped two values and pushed the calculated result.
+Here, we push **node indices** instead. An operator connects two subtree
+roots and pushes the new parent index. Construction records the expression
+without calculating it.
 
-In every stack below, the bottom is on the left and the **top is on the
-right**. Each table row shows the state after the listed action.
+The lab's input is `post_eq = "123*+"`. It means `1 + (2 * 3)`:
 
-| Action | Stack, bottom → top | Symbols printed so far |
+```text
+        + [4]
+       /     \
+    1 [0]   * [3]
+            /   \
+         2 [1] 3 [2]
+```
+
+`eq_tree()` reads left to right. Each input character becomes a node at the
+same array index as its position in `post_eq`. A digit becomes a leaf. An
+operator takes two existing roots: the first pop supplies its **right**
+child, and the second supplies its **left** child. The new root is then
+pushed.
+
+The stack below contains indices, with its top on the right.
+
+| Input index and token | Action | Stack, bottom → top |
 | --- | --- | --- |
-| Push root `+` | `[+]` | Empty |
-| Pop and print `+`; push `*`, then `3` | `[*, 3]` | `+` |
-| Pop and print `3`; it has no children | `[*]` | `+ 3` |
-| Pop and print `*`; push `2`, then `5` | `[2, 5]` | `+ 3 *` |
-| Pop and print `5` | `[2]` | `+ 3 * 5` |
-| Pop and print `2` | `[]` | `+ 3 * 5 2` |
+| `0`: `'1'` | Make leaf 0; push 0 | `[0]` |
+| `1`: `'2'` | Make leaf 1; push 1 | `[0, 1]` |
+| `2`: `'3'` | Make leaf 2; push 2 | `[0, 1, 2]` |
+| `3`: `'*'` | Pop right 2, then left 1; connect and push 3 | `[0, 3]` |
+| `4`: `'+'` | Pop right 3, then left 0; connect and push 4 | `[4]` |
 
-The stack holds roots of subtrees that have not started. Each popped root is
-printed before its children. Pushing right before left places the entire
-left subtree's work above the waiting right subtree. Reversing the two
-pushes would produce `+ * 2 5 3` on this tree.
+The returned root is `4`, `size` is 5, and the local stack's `top` is 0.
+`size` counts constructed nodes; `top + 1` counts roots currently waiting
+on the stack. These are different quantities.
 
-### How do we delay printing a parent until its left subtree is finished?
+Pop order matters. For postfix `12-`, the node must represent `1-2`.
+Making the first popped root the left child would reverse the operands.
 
-Preorder prints `+` too early for the usual expression order. We need to
-reach the left subtree while keeping the unprinted parent available.
+### Why is writing the symbols in inorder not always enough?
 
-Keep a `current` pointer. While `current` is not `NULL`, push its address and
-move left. When the left path ends, pop one saved node and print it. Set
-`current` to that node's right child. Repeat the same steps.
+For the default tree, inorder produces `1+2*3`, which already has the
+correct grouping because multiplication has higher precedence than
+addition. But postfix `12+3*` builds a different tree whose root is `*`
+and whose left subtree is `1+2`. Its infix form must be `(1+2)*3`.
 
-This is **inorder traversal**. The stack holds nodes whose own symbols have
-not been printed. Printing a popped node is safe because its left subtree
-has just finished. Its right subtree still needs work.
+Both trees have the same unparenthesized inorder symbols. Parentheses tell
+the reader which operations belong together.
 
-| Action | `current` | Stack, bottom → top | Symbols printed so far |
-| --- | --- | --- | --- |
-| Start at root | `+` | `[]` | Empty |
-| Push `+`; move left | `3` | `[+]` | Empty |
-| Push `3`; move left | `NULL` | `[+, 3]` | Empty |
-| Pop and print `3`; move right | `NULL` | `[+]` | `3` |
-| Pop and print `+`; move right | `*` | `[]` | `3 +` |
-| Push `*`; move left | `5` | `[*]` | `3 +` |
-| Push `5`; move left | `NULL` | `[*, 5]` | `3 +` |
-| Pop and print `5`; move right | `NULL` | `[*]` | `3 + 5` |
-| Pop and print `*`; move right | `2` | `[]` | `3 + 5 *` |
-| Push `2`; move left | `NULL` | `[2]` | `3 + 5 *` |
-| Pop and print `2`; move right | `NULL` | `[]` | `3 + 5 * 2` |
+`write_infix(i)` writes a digit immediately. For an operator, it writes the
+left expression, the operator, and the right expression. Before and after
+each child expression, it adds parentheses when the child's grouping needs
+them.
 
-An empty stack alone does not end this algorithm. After printing `+`, the
-stack is empty but `current` still points to `*`. Stop only when `current`
-is `NULL` **and** the stack is empty.
+### How do precedence and the child's side determine parentheses?
 
-### How do we know whether a parent's right subtree has finished?
+`prec()` assigns the following comparison values:
 
-Printing a parent after its left subtree is still too early for evaluation.
-The parent operator also needs the right subtree's result. We must keep the
-parent on the stack until both sides have finished.
+| Token | Value returned by `prec` |
+| --- | --- |
+| `+`, `-` | 1 |
+| `*`, `/`, `%` | 2 |
+| Digit `0` through `9` | 3 |
+| Anything else | 0 |
 
-Again, push nodes while moving left. At the end of a left path, inspect the
-top node without removing it. If its right subtree still needs work, move
-right and keep the parent waiting. Otherwise, pop and print the parent.
+The value for a digit keeps an operand from being parenthesized. The value
+0 is a fallback; it does not make an unsupported character valid input.
 
-This is **postorder traversal**. We need one more pointer,
-`last_visited`, to remember the last node printed. Completing a subtree in
-postorder prints that subtree's root last. Therefore, when inspecting a
-waiting parent, `last_visited == parent->right` tells us that its right
-subtree has finished.
+For a **left child**, add parentheses when the parent's precedence is
+strictly greater than the child's. For a **right child**, add parentheses
+when the parent's precedence is greater than or equal to the child's.
 
-If the right child is `NULL`, there is no right subtree to process. If the
-right child exists and differs from `last_visited`, enter it. In both cases,
-the left subtree has already finished when we reach this decision.
+| Child position | Condition in the lab | Example |
+| --- | --- | --- |
+| Left | `prec(c) > prec(l_data)` | `(1+2)*3` |
+| Right | `prec(c) >= prec(r_data)` | `1-(2-3)` |
 
-| Action | `current` | Stack, bottom → top | `last_visited` | Symbols printed so far |
-| --- | --- | --- | --- | --- |
-| Start at root | `+` | `[]` | `NULL` | Empty |
-| Push `+`, then `3`, moving left each time | `NULL` | `[+, 3]` | `NULL` | Empty |
-| `3` has no right child: pop and print it | `NULL` | `[+]` | `3` | `3` |
-| Inspect `+`: its right child `*` is unfinished | `*` | `[+]` | `3` | `3` |
-| Push `*`, then `5`, moving left each time | `NULL` | `[+, *, 5]` | `3` | `3` |
-| `5` has no right child: pop and print it | `NULL` | `[+, *]` | `5` | `3 5` |
-| Inspect `*`: its right child `2` is unfinished | `2` | `[+, *]` | `5` | `3 5` |
-| Push `2`; move left | `NULL` | `[+, *, 2]` | `5` | `3 5` |
-| `2` has no right child: pop and print it | `NULL` | `[+, *]` | `2` | `3 5 2` |
-| Inspect `*`: `last_visited` is its right child; pop and print | `NULL` | `[+]` | `*` | `3 5 2 *` |
-| Inspect `+`: `last_visited` is its right child; pop and print | `NULL` | `[]` | `+` | `3 5 2 * +` |
+Why are the comparisons different? The supported binary operators group
+left to right at equal precedence. `(1-2)-3` can be written as `1-2-3`, but
+`1-(2-3)` cannot. Likewise, the tree for `1/(2/3)` needs its right-side
+parentheses.
 
-Compare node **addresses**, not stored symbols. Two different nodes can both
-store `'*'`. Equal symbols do not show which subtree has finished.
+The rule preserves the tree's grouping even when an arithmetic identity
+could permit fewer parentheses. For example, postfix `123++` is written as
+`1+(2+3)`. The formatter does not simplify expressions.
 
-### Why does each node appear exactly once?
+### How do we start and finish the output string?
 
-The input must be a valid tree. It has no cycles and no child shared by two
-parents. Every non-root node therefore has exactly one incoming child link.
-The traversal must keep those links and node lifetimes unchanged.
+Use `start_write_infix(root)` to format a complete expression. It resets
+`pos` to 0, calls the recursive writer, and appends the terminating null
+character `'\0'`. Each `infix[pos++] = ...` writes one character and advances
+the next output position.
 
-Preorder schedules each child once when its parent is popped. Inorder
-removes a parent before entering its right subtree, so that parent cannot
-schedule the same right subtree again. Postorder keeps a parent until the
-right child is `NULL` or that right subtree's root was last printed. This
-check prevents reentering a completed right subtree.
+Resetting only the position would leave old trailing characters when the
+new expression is shorter. The terminator marks the new end. For example,
+formatting `123++` and then `12+` produces `1+(2+3)` and then `1+2`, without
+retaining the old suffix. The wrapper also permits repeated formatting of
+the same tree.
 
-These are the rules that must remain true during each loop, or its
-**invariants**. They let each algorithm account for the waiting work without
-adding a visited marker to every tree node.
-
-An empty tree prints nothing. A single node is pushed and popped once. Do
-not call `pop` or `peek` on an empty stack. In inorder and postorder, entering
-the branch for `current == NULL` while the outer loop still runs guarantees
-that a saved node exists.
-
-### How do these orders connect to expression trees?
-
-Preorder puts an operator before its operands. It can guide a copy operation
-that creates each parent before connecting its copied children. Saving an
-arbitrary binary tree also needs enough information to recover missing
-children; a bare list of symbols does not always preserve the shape.
-
-Inorder places an operator between its operands. Printing symbols alone does
-not always preserve grouping. A tree for `(3+5)*2` also has the inorder
-sequence `3 + 5 * 2`, although its value is `16` rather than `13`. A formatter
-must add parentheses where the tree's grouping requires them.
-
-Postorder gives `3 5 2 * +` for the running tree. Both operands precede each
-operator. An evaluator can read this sequence with a stack of numbers: push
-`3`, `5`, and `2`; apply `*` to `5` and `2` and push `10`; then apply `+` to
-`3` and `10` to get `13`. Pop the right operand before the left operand.
-Their positions matter for subtraction and division.
-
-The node stack chooses the order in which nodes are visited. A value stack
-would hold intermediate arithmetic results. The C example below prints the
-three orders; loop-based construction and recursive evaluation were the main work of
-Chapter 2.
+The recursive helper must not reset `pos`: all child calls contribute to
+one output string. Because the wrapper uses `pos++` when writing `'\0'`,
+its final `pos` counts that terminator as well. For `1+2*3`, `pos` ends at 6.
 
 ## Calculating Efficiency
 
-### How many stack operations does each traversal perform?
+### How much work does construction or traversal require?
 
-The running tree has five nodes. Each traversal pushes five node addresses,
-pops five addresses, and prints five symbols. Postorder also inspects a
-waiting parent before deciding whether to enter its right subtree or print
-it. Each right subtree is entered only once, so those inspections add a
-bounded amount of work per node.
+Let `n` be the number of postfix tokens and `r` the number of nodes
+reachable from the supplied root.
 
-For a tree with `n` nodes, each traversal performs work proportional to `n`.
-Its running time is `O(n)`. This count treats printing one stored character
-as one fixed-size action.
-
-### How many addresses must be remembered at the same time?
-
-The three algorithms need different kinds of waiting work, even on the same
-tree. Count the largest number of addresses present in each trace.
-
-| Traversal | Largest stack in the running example | Maximum used entries |
+| Operation | Work performed | Time |
 | --- | --- | --- |
-| Preorder | `[*, 3]` or `[2, 5]` | 2 |
-| Inorder | `[+, 3]` or `[*, 5]` | 2 |
-| Postorder | `[+, *, 5]` or `[+, *, 2]` | 3 |
+| `alphabet_init()` | Initialize each of the `capacity` slots | `O(capacity)` |
+| `tree_connect()` | Make the fixed example's six child links | `O(1)` |
+| `eq_tree()` | Create and push one node per token; pop twice per operator | `O(n)` |
+| `tree_traversal(root)` | Perform three visit assignments per reachable node | `O(r)` |
+| `start_write_infix(root)` | Write each reachable token and any parentheses | `O(r)` |
 
-The tree's height is two edges. A root-to-leaf path can therefore contain
-three nodes. More generally, a tree of height `h` has at most `h + 1` nodes
-on such a path. Inorder saves unfinished ancestors. Postorder saves the
-unfinished path. Preorder saves at most one waiting sibling per level plus
-the next node to process.
+Every child subtree is traversed once. Adding parentheses performs a
+constant amount of extra work per child link, so it does not change the
+formatter's linear running time.
 
-Thus these algorithms use at most `O(h + 1)` stack entries. For nontrivial
-trees this is commonly written `O(h)`. A chain can require `n` entries in
-inorder or postorder, depending on its direction. Preorder needs only one
-entry on a chain because no sibling branch is waiting. Height gives an upper
-bound; it does not force every traversal to fill that many entries.
+### How much temporary storage is needed?
 
-The sample reserves an array of 100 pointers because
-`TREE_DFS_POOL_CAPACITY` is 100. That array occupies room for all 100 pointers
-even when only two are in use. Distinguish the fixed reserved storage from
-the number of used entries. For a configurable capacity `C`, reserved stack
-storage is `O(C)`. The two extra pointers in postorder take constant space.
+For a tree of height `h` edges, recursion can keep `h + 1` node calls active
+at once. Both `tree_traversal()` and `write_infix()` therefore use
+`O(h + 1)` call-stack space. This can grow to `O(r)` for a very unbalanced
+tree; the recursion does not allocate one frame for every array slot in
+advance.
 
-### What happens when the fixed stack fills?
+The explicit stack in `eq_tree()` stores roots of completed subexpressions.
+For `123*+`, its maximum used depth is three, immediately after reading the
+three digits. A general postfix builder can require `O(n)` stack entries.
+The lab reserves exactly ten integer entries regardless of how many it
+uses. The node array also reserves ten slots, and the output reserves ten
+characters.
 
-Check capacity before storing the next address. A rejected `push` changes
-neither the stored addresses nor `size`. The traversal then returns `false`.
-Its tree remains unchanged, but symbols printed before the failure remain
-on the screen. The example does not roll back console output.
+### Why does the current output buffer fit?
 
-A valid tree with at most 100 nodes fits this sample's stack. A larger tree
-may also fit if its waiting work stays small, but that is not guaranteed.
-Removing recursion does not remove the need to store unfinished work.
+`post_eq[6]` has room for at most five tokens and one terminator. A valid
+binary expression of that length has at most two operators. At most one
+operator can be a child of another, so the formatter adds at most one pair
+of parentheses: five tokens plus two parentheses plus `'\0'` fit in eight
+characters. Thus `infix[10]` is sufficient for the current input limit.
+
+The code does not check capacity while writing. If the input array is
+expanded or the writer receives a larger manually constructed expression
+tree, its output capacity must be reconsidered; the ten-character buffer
+is not a general bound for every tree that fits `nodes[10]`.
 
 ## Glossary
 
-The names below refer to the actions already traced in this chapter.
-
-| Term | Meaning |
+| Term | Meaning in this chapter |
 | --- | --- |
-| Traversal | Processing every node in a chosen order. |
-| Visit | Performing the selected action on a node; here, printing its symbol. |
-| Depth-first search | Finishing one branch before returning to remaining branches. |
-| Iterative traversal | A traversal implemented with loops instead of recursive traversal calls. |
-| Explicit stack | A stack whose storage, pushes, and pops appear in our code. |
+| Node index | An integer selecting one entry in `nodes`. |
+| Root | The starting node index for a tree or subtree. |
+| Leaf | A node whose two child indices are `-1`. |
+| Traversal | Processing nodes in a chosen order. |
+| Visit | The selected action at a node; in `tree_traversal`, assigning its character. |
+| Depth-first search | Finishing a branch before returning to remaining branches. |
 | Preorder | Current node, left subtree, right subtree. |
 | Inorder | Left subtree, current node, right subtree. |
 | Postorder | Left subtree, right subtree, current node. |
-| `current` | The root of the next subtree to enter. |
-| `last_visited` | In postorder, the address of the last node printed. |
-| Loop invariant | A rule about stored state and unfinished work that remains true as the loop runs. |
+| Call stack | Runtime storage for unfinished function calls. |
+| Postfix | Notation that places an operator after its operands. |
+| Infix | Notation that places an operator between its operands. |
+| Precedence | The priority that determines grouping between different operator levels. |
+| Left associativity | Grouping equal-precedence operators from left to right. |
+| Null terminator | The character `'\0'` marking the end of a C string. |
+
+## Invariant
+
+### What must remain true about the tree?
+
+A present child is a valid initialized index in `nodes`; an absent child is
+`-1`. A tree has no cycles, and each non-root node has exactly one parent.
+The recursive functions receive a valid root index. They do not accept
+`-1` as an empty-tree argument or check for cycles.
+
+`write_infix()` additionally requires an expression tree: digit leaves and
+supported binary operators with two children. The alphabet tree is suitable
+for `tree_traversal()`, but not for the infix writer.
+
+Initialize the alphabet nodes before connecting them. When switching to
+an expression, `eq_tree()` resets `size` and reuses the same node array.
+The earlier alphabet tree is no longer available through its old links.
+
+### What does the postfix stack represent?
+
+After each processed token, every stack entry is the root of a complete
+subexpression from the processed prefix. A digit contributes a new leaf.
+An operator replaces the two most recent roots with their new parent.
+Earlier roots remain below them.
+
+The lab explicitly assumes a well-formed, nonempty postfix expression
+using single-digit operands and binary `+`, `-`, `*`, `/`, or `%`. Every
+operator must have two available roots, and exactly one root must remain
+at the end. The input has no spaces, unary operators, or multidigit
+operands and must fit in `post_eq` with its terminator. The builder relies
+on these conditions rather than validating them.
+
+### What does the output position represent?
+
+While `write_infix()` runs, `infix[0]` through `infix[pos - 1]` contain the
+characters written so far, and `pos` is the next free position. Child calls
+continue at that position. The wrapper resets it before traversal and
+terminates the completed string afterward.
 
 ## Coding Plan
 
-The code follows the same five-node tree and the same stack orientation as
-the hand traces.
-
-1. Store `const Node *` addresses in a fixed array. Track the used entries
-   with `size`. Make `push` reject a full array before changing it. Call
-   `pop` and `peek` only when the stack is nonempty.
-2. Implement preorder by pushing the root, then popping and printing one
-   node at a time. Push an existing right child before an existing left
-   child.
-3. Implement inorder with `current`. Save nodes while moving left. Pop and
-   print a node only after the left path ends. Continue at its right child.
-4. Implement postorder with `current` and `last_visited`. Inspect the top
-   before popping it. Keep the parent waiting while its right subtree runs.
-5. Build `3+5*2` with local nodes and run all three traversals. Compare the
-   output and maximum stack sizes with the hand traces. Check an empty tree,
-   a single node, and a tree with only one child at each level.
+1. Store ten `struct TreeNode` entries, using `-1` for absent children.
+2. Initialize the alphabet nodes and connect the tree rooted at `F`.
+3. Place the preorder, inorder, and postorder assignments around the two
+   recursive child calls. Trace each assignment sequence separately.
+4. Read `post_eq` from left to right. Create a node for every token and
+   use a local stack of indices to connect operators to completed subtrees.
+5. Define `prec()` for the supported operators and digit leaves.
+6. Write the left subtree, current operator, and right subtree, using `>`
+   on the left and `>=` on the right to decide parentheses.
+7. Wrap the writer with a position reset and a final null terminator.
+8. Compare the default, left-parenthesized, and right-parenthesized cases;
+   then format a shorter expression to check that no old suffix remains.
 
 ## C Code
 
-### How does the stack store node addresses?
+The following functions are the implementation in [`lab.c`](lab.c). Its
+child links and temporary stack entries are integers, and its traversal
+and formatting functions call themselves recursively.
 
-The complete program is
-[`code/lecture/iterative_traversals.c`](../code/lecture/iterative_traversals.c).
-It includes the existing `tree_dfs.h`, whose `Node` contains `char data`,
-`left`, and `right`. This module stores a digit as a character token such as
-`'3'`, as Chapter 2 does. This module's child links are pointers, while
-Chapter 2's child links are array indices. The lecture sample builds its own nodes
-and does not pass one module's node type to another module's functions.
-
-A `const Node *` lets the traversal read a node without changing that node
-through the pointer. The stack holds copies of addresses; it does not copy
-the nodes.
+### How are nodes initialized and connected?
 
 ```c
-#include "tree_dfs.h"
+struct TreeNode {
+    char data;
+    int left;
+    int right;
+};
 
-#include <stdbool.h>
-#include <stdio.h>
+struct TreeNode nodes[10];
+int capacity = 10;
+int size = 0;
 
-typedef struct {
-    const Node *items[TREE_DFS_POOL_CAPACITY];
-    size_t size;
-} NodeStack;
-
-static bool push(NodeStack *stack, const Node *node)
-{
-    if (stack->size == TREE_DFS_POOL_CAPACITY) return false;
-    stack->items[stack->size++] = node;
-    return true;
-}
-
-/* Call pop and peek only when size is greater than zero. */
-static const Node *pop(NodeStack *stack)
-{
-    return stack->items[--stack->size];
-}
-
-static const Node *peek(const NodeStack *stack)
-{
-    return stack->items[stack->size - 1U];
-}
-```
-
-The Boolean result of `push` reports whether the address was stored. Every
-traversal checks it. `NodeStack stack = {0}` initializes an empty stack.
-
-### How does preorder make the left child next?
-
-The two child pushes are in the reverse of their processing order. That
-places the left child on top of the waiting right child.
-
-```c
-static bool preorder(const Node *root)
-{
-    NodeStack stack = {0};
-
-    if (root == NULL) return true;
-    if (!push(&stack, root)) return false;
-
-    while (stack.size > 0U) {
-        const Node *node = pop(&stack);
-        printf("%c ", node->data);
-
-        if (node->right != NULL && !push(&stack, node->right)) return false;
-        if (node->left != NULL && !push(&stack, node->left)) return false;
+void alphabet_init() {
+    size = capacity;
+    for (int i = 0; i < capacity; i++) {
+        nodes[i].data = 'A' + i;
+        nodes[i].left = nodes[i].right = -1;
     }
-    return true;
+}
+
+int tree_connect() {
+    int root = 0;
+    nodes[root].left = 1;
+    nodes[root].right = 2;
+    nodes[1].left = 3;
+    nodes[1].right = 4;
+    nodes[5].left = root;
+    root = 5;
+    nodes[5].right = 6;
+    return root;
 }
 ```
 
-### How does inorder return to an unprinted parent?
-
-The inner loop saves the left path. The outer loop continues as long as
-there is either a subtree to enter or a saved node to resume.
+### Where are the three visit positions?
 
 ```c
-static bool inorder(const Node *root)
-{
-    NodeStack stack = {0};
-    const Node *current = root;
+int pre_data, in_data, post_data;
 
-    while (current != NULL || stack.size > 0U) {
-        while (current != NULL) {
-            if (!push(&stack, current)) return false;
-            current = current->left;
-        }
-
-        current = pop(&stack);
-        printf("%c ", current->data);
-        current = current->right;
+void tree_traversal(int i) {
+    pre_data = nodes[i].data;
+    if (nodes[i].left != -1) {
+        tree_traversal(nodes[i].left);
     }
-    return true;
+    in_data = nodes[i].data;
+    if (nodes[i].right != -1) {
+        tree_traversal(nodes[i].right);
+    }
+    post_data = nodes[i].data;
 }
 ```
 
-### How does postorder keep the parent until both sides finish?
+The globals have type `int`, but these assignments store character codes.
+Using `%c` in the demonstration below displays the corresponding symbols.
 
-Looking at the top with `peek` preserves the parent while its right subtree
-runs. Only the branch that prints the node removes it from the stack and
-updates `last_visited`.
+### How does postfix construction connect the children?
 
 ```c
-static bool postorder(const Node *root)
-{
-    NodeStack stack = {0};
-    const Node *current = root;
-    const Node *last_visited = NULL;
+char post_eq[6] = "123*+"; /* assume no malformed post_eq */
 
-    while (current != NULL || stack.size > 0U) {
-        if (current != NULL) {
-            if (!push(&stack, current)) return false;
-            current = current->left;
+int eq_tree() {
+    int stack[10];
+    int top = -1;
+    size = 0;
+    for (int i = 0; post_eq[i] != '\0'; i++) {
+        char c = post_eq[i];
+        nodes[i].data = c;
+        if (c >= '0' && c <= '9') {
+            nodes[i].left = nodes[i].right = -1;
         } else {
-            const Node *node = peek(&stack);
-
-            if (node->right != NULL && last_visited != node->right) {
-                current = node->right;
-            } else {
-                printf("%c ", node->data);
-                last_visited = pop(&stack);
-            }
+            nodes[i].right = stack[top--];
+            nodes[i].left = stack[top--];
         }
+        stack[++top] = i;
+        size++;
     }
-    return true;
+    return stack[top];
 }
 ```
 
-### How do we run the same tree through all three loops?
+`top = -1` marks an empty stack. `stack[++top]` increments the index before
+selecting the new slot. `stack[top--]` reads the current top slot and then
+decrements the index. The two pop statements execute in order, so the
+right child is taken before the left child.
 
-The following local nodes stay alive throughout `main`. Traversal changes
-only its local stack and pointers. A stack-capacity failure stops the program
-with a nonzero exit status.
+Digits remain characters such as `'2'`; construction does not convert
+them with `c - '0'`. There is no expression evaluator in this lab.
+
+### How are precedence and parentheses written?
 
 ```c
-int main(void)
-{
-    Node three = {'3', NULL, NULL};
-    Node five = {'5', NULL, NULL};
-    Node two = {'2', NULL, NULL};
-    Node times = {'*', &five, &two};
-    Node plus = {'+', &three, &times};
+int prec(char op) {
+    if (op == '+' || op == '-') {
+        return 1;
+    }
+    else if (op == '*' || op == '/' || op == '%') {
+        return 2;
+    }
+    else if (op >= '0' && op <= '9') {
+        return 3;
+    }
+    return 0;
+}
 
-    printf("preorder: ");
-    if (!preorder(&plus)) return 1;
-    printf("\ninorder: ");
-    if (!inorder(&plus)) return 1;
-    printf("\npostorder: ");
-    if (!postorder(&plus)) return 1;
-    putchar('\n');
+char infix[10] = "";
+int pos = 0;
+
+void write_infix(int i) {
+    char c = nodes[i].data;
+    if (c >= '0' && c <= '9') {
+        infix[pos++] = c;
+        return;
+    }
+
+    int l = nodes[i].left;
+    char l_data = nodes[l].data;
+    if (prec(c) > prec(l_data)) {
+        infix[pos++] = '(';
+    }
+    write_infix(nodes[i].left);
+    if (prec(c) > prec(l_data)) {
+        infix[pos++] = ')';
+    }
+
+    infix[pos++] = c;
+
+    int r = nodes[i].right;
+    char r_data = nodes[r].data;
+    if (prec(c) >= prec(r_data)) {
+        infix[pos++] = '(';
+    }
+    write_infix(r);
+    if (prec(c) >= prec(r_data)) {
+        infix[pos++] = ')';
+    }
+}
+
+void start_write_infix(int root) {
+    pos = 0;
+    write_infix(root);
+    infix[pos++] = '\0';
+}
+```
+
+`l` and `r` hold integer indices; `l_data` and `r_data` hold the characters
+stored at those indices. The same condition appears before and after each
+child call so that every opening parenthesis has a matching closing one.
+
+### How do we run the lab and compare results?
+
+`lab.c` defines the operations but has no `main`. A supplied version of the
+driver is in [`code/lecture/lab_demo.c`](../code/lecture/lab_demo.c); run
+`make lecture` from `module_05_tree_dfs/code` to build and execute it.
+
+To try the example beside the lab instead, save the following as `demo.c`.
+This small driver includes the lab once; do not also pass `lab.c` as a
+separate source file when compiling this driver.
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include "lab.c"
+
+int main(void) {
+    alphabet_init();
+    int root = tree_connect();
+    tree_traversal(root);
+    printf("Last visits: %c %c %c\n", pre_data, in_data, post_data);
+
+    root = eq_tree();
+    start_write_infix(root);
+    printf("%s -> %s\n", post_eq, infix);
+
+    strcpy(post_eq, "12+3*");
+    root = eq_tree();
+    start_write_infix(root);
+    printf("%s -> %s\n", post_eq, infix);
+
+    strcpy(post_eq, "123--");
+    root = eq_tree();
+    start_write_infix(root);
+    printf("%s -> %s\n", post_eq, infix);
+
+    strcpy(post_eq, "12+");
+    root = eq_tree();
+    start_write_infix(root);
+    printf("%s -> %s\n", post_eq, infix);
     return 0;
 }
 ```
 
-From `module_05_tree_dfs/code`, compile and run the standalone program:
+`strcpy` is declared in `<string.h>` and copies the source string including
+its terminator. Each string above fits `post_eq[6]`. Rebuilding the tree
+after each change replaces the previous expression's nodes.
+
+From `module_05_tree_dfs/student`, compile and run:
 
 ```sh
-cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow \
-    -Iinclude lecture/iterative_traversals.c -o /tmp/tree_dfs_lecture
-/tmp/tree_dfs_lecture
+cc -std=c11 -Wall -Wextra demo.c -o /tmp/tree_dfs_lab
+/tmp/tree_dfs_lab
 ```
 
 The output is:
 
 ```text
-preorder: + 3 * 5 2
-inorder: 3 + 5 * 2
-postorder: 3 5 2 * +
+Last visits: G G F
+123*+ -> 1+2*3
+12+3* -> (1+2)*3
+123-- -> 1-(2-3)
+12+ -> 1+2
 ```
 
-Each printed line also has a trailing space after the last symbol. The three
-orders agree with the hand traces.
-
-The separate existing lab package uses `tree_copy_preorder`,
-`tree_print_inorder`, and `tree_evaluate_postorder` for expression-tree
-applications. Its current reference implements those operations recursively
-and accepts digit leaves with `+` and `*`. The standalone program above is
-the implementation for this textbook's stack-based traversal lesson.
+The first line reports the final contents of the three visit variables,
+not three complete traversals. The remaining lines show precedence,
+parentheses on both sides, and replacement by a shorter output string.

@@ -5,37 +5,47 @@ required tracing, experiments, and submission evidence. The source implements
 the stack and expression functions; it has no `main` function.
 
 - `lab_demo.c` supplies a small `main` for the expression demonstration.
-- `tests/test_lab.c` supplies six baseline test groups. Add three justified
+- `tests/test_lab.c` supplies eight baseline test groups. Add three justified
   student cases to this file, preserving the supplied checks.
 - `autopsy/faulty_top.c` is an isolated program with a deliberate logical
   defect. Predict its output before running it.
 
 The baseline groups cover integer LIFO order, full/empty predicates and valid boundary operations,
-canonical conversion, precedence and operand order, repeated seven-character
-conversion with shared-state resets, and character digits versus integer values. Record the original
+canonical conversion, precedence and operand order, repeated
+conversion with shared-state resets, character digits versus integer values,
+shorter null-terminated inputs, and balanced parentheses. Record the original
 behavior before making source changes or adding tests.
 
 ## Representation and input limits
 
-`int stack[10]` stores operator codes and a bottom `'\0'` sentinel during
-conversion, then numeric operands/results during evaluation. `size` is the
-shared item count and next insertion index. Push writes `stack[size++]`;
-pop returns `stack[--size]`; peek returns `stack[size - 1]`. The predicates
+`int stack[10]` stores waiting operator codes and any opening parentheses
+during conversion, then numeric operands/results during evaluation. `top` is the
+shared last active index; it is -1 when empty. The item count and next
+insertion index are `top + 1`. Push writes `stack[++top]`;
+pop returns `stack[top--]`; peek returns `stack[top]`. The predicates
 `is_full()` and `is_empty()` report boundaries but do not guard operations.
 Callers must avoid full push and empty reads, which have undefined behavior.
 
-Both phases reset `size`. Conversion also initializes local `pos = 0` and
-pushes the sentinel. Its final drain writes that sentinel to `eq_re[7]`,
-advancing `pos` to 8; visible token length is 7. Evaluation reuses the same
-integer array without a sentinel, then returns the final pop and leaves
-`size == 0`.
+Both phases reset `top = -1`. Each converter also initializes local
+`pos = 0`. There is no sentinel. Conversion checks `!is_empty()` before
+reading or popping a waiting item. Lower precedence stops the operator loop
+with `break`; equal or higher precedence causes another output write.
+After the final operator drain, `postfix[pos++] = '\0'` writes the
+terminator explicitly. For `1-2*3+4`, it goes to `postfix[7]`, advancing
+`pos` to 8; visible token length is 7. For `1+(2+3)`, parentheses are
+discarded and the terminator goes to `postfix[5]`, leaving `pos == 6`.
+Evaluation scans to the terminator, reuses the same integer array, then
+returns the final pop and leaves `top == -1`.
 
 The default pipeline is `1-2*3+4` → `123*-4+` → `-1`. Supported expressions
-have exactly seven characters: four single digits alternating with three
-binary `+ - * / %` operators. `eq[7]` holds the terminator. Shorter expressions
-are unsupported because both loops run seven times. Exclude spaces,
-parentheses, unary signs, multi-digit operands, zero divisors, and arithmetic
-outside C `int`. The source assumes these conditions without validating them.
+have at most seven characters plus a null terminator, with single-digit
+operands and binary `+ - * / %` operators. `convert_to_postfix()` scans
+`eq` without parentheses. `infix_to_postfix_parentheses()` scans `eq_paren`
+and accepts balanced parentheses; `1+(2+3)` becomes `123++` and evaluates
+to 6. Shorter valid expressions work because loops stop at the terminator.
+Exclude empty input, spaces, unary signs, multi-digit operands, zero
+divisors, and arithmetic outside C `int`. The source assumes these conditions without validating them. Empty-stack
+guards in conversion do not check matching parentheses or operand counts.
 
 ## PowerShell
 

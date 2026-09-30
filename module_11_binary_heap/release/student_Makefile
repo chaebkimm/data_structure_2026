@@ -5,13 +5,18 @@ CPPFLAGS ?= -Iinclude
 TEST_CPPFLAGS := $(CPPFLAGS) -DALERT_PRIORITY_QUEUE_TESTING
 BUILD_DIR := build
 STARTER_SOURCE := starter/alert_priority_queue.c
+BASELINE_DIR := baseline
 
-.PHONY: all starter-core starter-student-tests autopsy clean
+.PHONY: all baseline-core starter-core starter-student-tests autopsy clean
 
 all: starter-core
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+baseline-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(BASELINE_DIR)/include -DALERT_PRIORITY_QUEUE_TESTING $(BASELINE_DIR)/solution/alert_priority_queue.c $(BASELINE_DIR)/tests/test_core.c -o $(BUILD_DIR)/baseline_core
+	$(BUILD_DIR)/baseline_core
 
 starter-core: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCE) tests/test_core.c -o $(BUILD_DIR)/starter_core

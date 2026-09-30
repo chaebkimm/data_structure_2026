@@ -50,6 +50,7 @@ $stages = @(
             @{ Source = "release\stage_e_README.md"; Entry = "README.md" },
             @{ Source = "student\lab.c"; Entry = "student/lab.c" },
             @{ Source = "student\lab.md"; Entry = "student/lab.md" },
+            @{ Source = "student\ppt_lab_material.md"; Entry = "student/ppt_lab_material.md" },
             @{ Source = "student\evidence_template.md"; Entry = "student/evidence_template.md" },
             @{ Source = "student\rubric.md"; Entry = "student/rubric.md" },
             @{ Source = "student\stack_autopsy.md"; Entry = "student/stack_autopsy.md" },

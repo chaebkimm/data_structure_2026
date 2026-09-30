@@ -15,7 +15,7 @@ means that positions fill level by level from left to right. A **minimum
 Heap** keeps each parent no later than either child under the complete record
 comparison rule.
 
-This package preserves Module 10 ordering:
+This package preserves Module 11 baseline ordering:
 
 1. smaller `priority` first;
 2. for equal priorities, smaller `arrival_sequence` first; and
@@ -32,7 +32,7 @@ right child:         2 * i + 2
 Never read a child position unless it is smaller than `size`. In particular,
 a final parent can have a left child without a right child.
 
-The unsorted Module 10 backend is replaced by Heap order while the capacity
+The unsorted Module 11 baseline backend is replaced by Heap order while the capacity
 sequence remains:
 
 ```text
@@ -82,3 +82,18 @@ make autopsy
 The starter is intentionally incomplete. A failed first test run is
 expected. Fix the earliest failed requirement without changing the public
 header or supplied core tests.
+
+## Supplied scan comparison
+
+The opening block introduced the Priority Queue ADT and stable tie rule.
+Use the completed scan baseline to compare service order and work with the
+Heap. The Stage E archive includes `code/baseline/` and its public tests.
+Run `make baseline-core` from `code/`, or in the released package use
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target baseline`.
+The repository's canonical baseline is in `priority_queue_baseline/code/`;
+its own instructor build can run `solution-core`.
+
+Build the two backends separately with their corresponding headers. Record
+zero baseline insertion comparisons and 21 baseline drain comparisons for
+the canonical seven-record input, then compare Heap normal-operation
+counts without checker calls. Submit one combined Module 11 result.

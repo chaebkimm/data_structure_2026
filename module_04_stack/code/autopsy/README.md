@@ -1,12 +1,12 @@
 # Stack-Top Autopsy
 
 An **autopsy** examines a supplied defect. This standalone program uses the
-same forward-growing character representation as `student/lab.c`, but its
+same forward-growing, top-index convention as `student/lab.c`, but its
 intentional defect is isolated from the lab functions.
 
-The array has ten allocated positions. With `size == 2`, only indexes 0 and
-1 are active. The correct read uses `stack[size - 1]`; the faulty function reads
-`stack[size]`. In this fixture that wrong index stays inside the array,
+The array has ten allocated positions. With `top == 1`, only indexes 0 and
+1 are active. The correct read uses `stack[top]`; the faulty function reads
+`stack[top + 1]`. In this fixture that wrong index stays inside the array,
 so the experiment is deterministic and memory-safe even though it reads an
 inactive cell.
 
@@ -15,8 +15,8 @@ Before running, inspect `faulty_top.c` and record:
 1. The active indexes and logical order from bottom to top.
 2. The correct and faulty indexes and their predicted characters.
 3. Why an allocated array position can still be outside the logical Stack.
-4. Why the next insertion position `size` differs from the top index
-   `size - 1`, and how both lab phases reuse the same global `size` and
+4. Why the next insertion position `top + 1` differs from the top index
+   `top`, and how the lab phases reuse the same global `top` and
    integer Stack. This separate fixture stores characters to make the wrong
    index visible.
 

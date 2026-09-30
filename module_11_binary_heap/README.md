@@ -7,14 +7,18 @@ Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
 ## 14-week delivery role
 
-This is the implementation lab for the combined **Week 9 Priority Queue →
-Binary Heap** unit. Students preserve the supplied Module 10 service
-contract, implement the Heap backend, and compare it with the supplied
-unsorted-array reference. Module 11 supplies the unit's **single combined
-submission**; there is no separate Module 10 submission. The complete
-package remains available for a longer treatment.
+This module combines Priority Queue behavior, an unsorted-array baseline,
+and a binary Heap in one **Week 10, 180-minute unit**. The first 40 minutes
+establish priority, stable ties, and the supplied baseline. The remaining
+140 minutes implement and test the Heap under the same public contract.
+Students make one combined submission.
 
-Use the scoped release and 140-minute sequence in the
+The main [textbook](student/textbook.md) teaches both representations in one
+chapter. The complete [baseline package](priority_queue_baseline/README.md)
+is retained for optional practice and instructor reference. Its starter and
+full five-stage sequence are not a second required assignment.
+
+Use the scoped release and full 180-minute sequence in the
 [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 Where the full-package release order or submission list below is broader,
 the guide and this delivery-role note control the required path.
@@ -37,10 +41,11 @@ or drawing quality.
 
 Students will be able to:
 
-1. map a complete binary tree onto an array;
+1. specify priority-then-arrival behavior, trace the supplied scan baseline,
+   and map a complete binary tree onto an array;
 2. derive parent, left-child, and right-child index formulas;
 3. distinguish Heap order, BST order, and globally sorted order;
-4. preserve the Module 10 stable minimum Priority Queue service rule;
+4. preserve the Module 11 baseline stable minimum Priority Queue service rule;
 5. trace insertion followed by sift-up;
 6. trace root extraction followed by sift-down;
 7. handle a node that has a left child but no right child;
@@ -54,11 +59,11 @@ Students will be able to:
 A **binary Heap** is a complete binary tree stored compactly in an array.
 **Complete** means every level is full except possibly the last, and the last
 level fills from left to right. This package uses a **minimum Heap**: no child
-record may come before its parent under the stable Module 10 comparator.
+record may come before its parent under the stable Module 11 baseline comparator.
 Therefore the minimum record is at array index 0, but the complete array is
 not globally sorted.
 
-The Module 10 public Priority Queue contract remains in force. The only
+The Module 11 baseline public Priority Queue contract remains in force. The only
 public API extension is `alert_priority_queue_is_min_heap`, which reports
 whether Heap order holds. For any Queue with a valid visible shape, the
 checker examines every non-root live record and adds exactly `size - 1`
@@ -71,6 +76,7 @@ Students measure checker/debug deltas separately from normal-operation deltas.
 ```text
 module_11_binary_heap/
 ├── README.md
+├── priority_queue_baseline/  # Optional full scan-baseline package
 ├── diagrams/
 │   └── binary_heap_models.md
 ├── instructor/
@@ -98,6 +104,7 @@ module_11_binary_heap/
 │   ├── student_code_README.md
 │   └── student_Makefile
 ├── dist/
+│   ├── module_11_opening_baseline.zip
 │   └── module_11_stage_a_*.zip … module_11_stage_e_*.zip
 └── code/
     ├── README.md
@@ -115,14 +122,17 @@ module_11_binary_heap/
         └── faulty_sift_down.c
 ```
 
-The source package contains 38 files before the five generated archives are
-created.
+The nested `priority_queue_baseline/` retains the full baseline teaching
+package. Its optional archives use `module_11_baseline_stage_*` names.
+The main release includes a runnable completed scan baseline alongside
+the Heap starter, with separate include paths and build targets.
 
 ## Recommended release order
 
 1. Run `release/prepare_student_release.ps1` only after all materials and
    tests pass.
-2. Release Stage A before Meeting A. It withholds formal structure names,
+2. Release the opening-baseline archive for the first 40-minute block, then
+   Stage A for the Heap inquiry. It withholds formal structure names,
    storage details, index formulas, operation names, complexity, code, and
    exact answers.
 3. Release Stage B after each student preserves the initial compact-order
@@ -153,7 +163,7 @@ Students submit:
 ## Fixed course conventions
 
 - The public record, Queue fields, statuses, service operations, error
-  precedence, and failure promises from Module 10 are preserved.
+  precedence, and failure promises from Module 11 baseline are preserved.
 - `alert_priority_queue_is_min_heap` is the only public API addition.
 - A smaller `size_t` priority value is selected before a larger value.
 - Equal priorities are selected by earlier `size_t` arrival sequence.
@@ -180,11 +190,12 @@ Students submit:
 
 ## Relationship to the course spiral
 
-- **Revisits:** ArrayList growth, complete trees, height, invariants,
-  ownership, checked failure, and the Module 10 Priority Queue contract.
+- **Revisits:** ArrayList growth, binary trees, height, invariants,
+  ownership, and checked failure.
 - **Contrasts:** An unsorted-array backend scans for every minimum; a binary
   Heap keeps only parent-to-child order and does not globally sort records.
-- **Introduces:** array/tree index translation, sift-up, sift-down, a
+- **Introduces:** Priority Queue behavior, stable ties, the scan baseline,
+  array/tree index translation, sift-up, sift-down, a
   Heap-order checker, and instrumented-versus-uninstrumented evidence.
 - **Forwards:** Dijkstra and Prim use a minimum Heap; Module 15 contrasts Heap
   partial order with AVL search order.

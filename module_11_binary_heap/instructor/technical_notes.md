@@ -3,7 +3,7 @@
 ## Source of truth
 
 The public header is authoritative for names, field order, statuses,
-parameters, and limits. Module 11 preserves the Module 10 API and adds one
+parameters, and limits. Module 11 preserves the Module 11 baseline API and adds one
 checker.
 
 ```c
@@ -35,7 +35,7 @@ AlertPriorityQueueStatus alert_priority_queue_is_min_heap(
 
 All other functions, statuses, readable status strings, capacity rules,
 ownership rules, sequence behavior, and failure precedence remain as in
-Module 10.
+Module 11 baseline.
 
 ## Exact preserved statuses
 
@@ -109,7 +109,7 @@ representable by `size_t`. Code still checks `left >= new_size` before
 reading a child. It derives `right = left + 1` only after the bounded left
 calculation and checks `right < new_size` before reading.
 
-## Shape rules preserved from Module 10
+## Shape rules preserved from Module 11 baseline
 
 The constant-time validator requires:
 
@@ -199,7 +199,7 @@ work.
 
 ## Insertion and sift-up
 
-Insertion preserves Module 10 precedence:
+Insertion preserves Module 11 baseline precedence:
 
 ```text
 validate
@@ -391,7 +391,7 @@ normal comparisons 3
 
 Checker calls are deliberately absent from Targets 2 and 3.
 
-## Canonical Module 10 fixture
+## Canonical Module 11 baseline fixture
 
 Insert:
 
@@ -444,13 +444,13 @@ Normal drain total: 12. Checkers after current sizes
 
 Combined instrumented drain count: 27.
 
-The stable public output matches Module 10:
+The stable public output matches Module 11 baseline:
 
 ```text
 88,17,63,42,9,71,26
 ```
 
-Module 10's unsorted drain used 21 comparisons.
+Module 11 baseline's unsorted drain used 21 comparisons.
 
 ## Complexity boundary
 
@@ -493,11 +493,11 @@ balanced like a BST.
 - One growth insertion may be `O(n)`; geometric insertion is amortized
   `O(log n)`.
 
-### Heap versus Module 10 unsorted array
+### Heap versus Module 11 baseline unsorted array
 
 - Same ADT, comparator, types, capacity ladder, statuses, ownership, and
   stable output.
-- Module 10 insert uses zero record comparisons and removal scans `O(n)`.
+- Module 11 baseline insert uses zero record comparisons and removal scans `O(n)`.
 - Module 11 maintains path order with `O(log n)` sift-up and removes in
   `O(log n)`; a growth insertion may copy `O(n)` records.
 
@@ -509,7 +509,7 @@ Heap's array may be allocated there, but it is not the same concept.
 
 ## Failure preservation
 
-Preserve Module 10 precedence and atomicity:
+Preserve Module 11 baseline precedence and atomicity:
 
 - NULL output precedes Queue validation for checker, peek, and extraction;
 - invalid shape precedes empty/full;
@@ -630,7 +630,7 @@ Silently dropping pending graph work invalidates shortest-path correctness.
 2. **Gate B:** release reveal, then preserve exactly three pause targets
    before vocabulary and Stage C.
 3. **Gate C:** preserve worksheet Sections A through F before Stage D.
-4. **Gate D:** release 1,100-1,250-word textbook and exact-equivalent models;
+4. **Gate D:** release the combined textbook and exact-equivalent models;
    require labeled corrections before code.
 5. **Gate E:** release student lab; require three TODOs, exactly three tests,
    traces, normal/checker deltas, autopsy, contrasts, and scope statement.

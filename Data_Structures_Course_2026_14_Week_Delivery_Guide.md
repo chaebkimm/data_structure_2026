@@ -3,8 +3,9 @@
 ## Purpose and authority
 
 This is the operational delivery path for a course with **14 instructional
-weeks**. The repository's 16 numbered teaching packages remain intact as an
-instructor resource library; package number and teaching week are no longer
+weeks**. The repository's 15 numbered teaching packages form an instructor resource
+library; Priority Queue is integrated into Module 11, and Hash Table is
+Module 10. Package number and teaching week are no longer
 the same after Week 7. A package README describes the complete deep-dive
 version of that topic. When this guide narrows or combines a package, this
 guide controls what is required in the 14-week offering.
@@ -21,9 +22,9 @@ teaching weeks and is used for the capstone defense or its approved equivalent.
 
 ## Assessment load at a glance
 
-- **Twelve weekly lab artifacts:** Weeks 1–5, 7–9, and 11–14, including the combined Weeks 8–9 artifacts and the folded Week 14 checkpoint.
+- **Twelve weekly lab artifacts:** Weeks 1–5, 7–10, and 12–14, including the combined Week 8 artifact and the folded Week 14 checkpoint.
 - **Practical 1:** Week 6; it replaces the ordinary Graph DFS lab.
-- **Practical 2:** Week 10; it replaces the ordinary Dijkstra lab.
+- **Practical 2:** Week 11; it replaces the ordinary Dijkstra lab.
 - **Five spiral synthesis checks:** embedded in the Week 3 lab, Practical 1,
   Week 8 combined lab, Practical 2, and folded Week 14 artifact; they are not
   separate submissions.
@@ -31,8 +32,9 @@ teaching weeks and is used for the capstone defense or its approved equivalent.
   the scheduled final-assessment period.
 
 There is at most one required programming submission in any teaching week.
-The Week 8 and Week 9 submissions each use evidence from two packages but are
-graded as one combined lab, with one due date and one rubric. Week 14's
+The Week 8 submission combines evidence from two packages. Week 10 combines
+the Priority Queue contract and Heap implementation inside Module 11. Each
+has one submission, one due date, and one rubric. Week 14's
 capstone integration checkpoint is folded into that week's work rather than
 issued as a second weekly programming submission.
 
@@ -43,14 +45,14 @@ issued as a second weekly programming submission.
 | 1 | Fixed-capacity ArrayList — [Module 1](module_01_arraylist/README.md) core | Ordinary lab 1: access, search, append, insert, and remove | Additional boundary and operation-sequence tests | [Week 1 page](student_question_bank/week_01_arraylist.md) |
 | 2 | Array-indexed expression trees and recursive evaluation — [Module 2](module_02_binary_tree/README.md), with English and Korean textbooks | Ordinary lab 2: `new_node`, `term`, `terms`, and `eval_tree` | Additional valid expressions and construction/evaluation traces | [Week 2 page](student_question_bank/week_02_binary_tree.md) |
 | 3 | Directed integer adjacency matrices — [Module 3](module_03_graph/README.md) core | Ordinary lab 3: initialize, add, remove, and count outgoing edges | Additional valid directed fixtures and traces | [Week 3 page](student_question_bank/week_03_graph_representations.md) |
-| 4 | Integer Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: forward-growing integer Stack and `1-2*3+4 -> 123*-4+ -> -1` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
+| 4 | Integer Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: top-index integer Stack, `1-2*3+4 -> 123*-4+ -> -1`, and `1+(2+3) -> 123++ -> 6` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
 | 5 | Preorder, inorder, and postorder using explicit stacks without recursion — [Module 5 textbook](module_05_tree_dfs/student/textbook.md) | Ordinary lab 5; existing package exercise remains separate from the textbook examples | Additional tree shapes and stack traces | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer — [Module 7](module_07_queue/README.md) core | Ordinary lab 6 | Package extensions | [Week 7 page](student_question_bank/week_07_queue.md) |
 | 8 | BFS from trees to graphs — [Module 8](module_08_tree_bfs/README.md) is the short tree bridge; [Module 9](module_09_graph_bfs/README.md) supplies the main graph lab | **Combined lab 7: one submission** based on Graph BFS | Tree BFS implementation, shallowest search, and other Module 8 deep-dive work | [Week 8 page](student_question_bank/week_08_bfs.md) |
-| 9 | Priority Queue contract to Binary Heap backend — [Module 10](module_10_priority_queue/README.md) supplies the contract and instructor-provided unsorted baseline; [Module 11](module_11_binary_heap/README.md) supplies the main Heap lab | **Combined lab 8: one submission** based on the Heap implementation and backend comparison | Student implementation of the Module 10 unsorted backend and other package extensions | [Week 9 page](student_question_bank/week_09_priority_queue_heap.md) |
-| 10 | Dijkstra — [Module 12](module_12_graph_dijkstra/README.md): bounded relaxation/frontier core inside the supplied Practical scaffold | **Practical 2 only**; no ordinary Module 12 lab | Full standalone Stage E lab | [Week 10 page](student_question_bank/week_10_dijkstra.md) |
-| 11 | Hash Table — [Module 13](module_13_hash_table/README.md): probing/mutations core plus supplied transactional-rebuild scaffold | Ordinary lab 9 | Additional capacity-policy and adversarial work | [Week 11 page](student_question_bank/week_11_hash_table.md) |
+| 9 | Hash Table — [Module 10](module_10_hash_table/README.md): probing/mutations core plus supplied transactional-rebuild scaffold | Ordinary lab 8 | Additional capacity-policy and adversarial work | [Week 9 page](student_question_bank/week_09_hash_table.md) |
+| 10 | Priority Queue contract to Binary Heap backend — [Module 11](module_11_binary_heap/README.md) contains the contract, supplied unsorted baseline, and Heap lab | **Lab 9: one submission** based on the Heap implementation and backend comparison | Student implementation of the supplied unsorted backend and other package extensions | [Week 10 page](student_question_bank/week_10_priority_queue_heap.md) |
+| 11 | Dijkstra — [Module 12](module_12_graph_dijkstra/README.md): bounded relaxation/frontier core inside the supplied Practical scaffold | **Practical 2 only**; no ordinary Module 12 lab | Full standalone Stage E lab | [Week 11 page](student_question_bank/week_11_dijkstra.md) |
 | 12 | Linked-list clinic and Union-Find — [Module 14](module_14_linked_list_dsu/README.md): one ownership repair plus DSU | Ordinary lab 10 | Remaining list operations and linked-backend work | [Week 12 page](student_question_bank/week_12_linked_list_dsu.md) |
 | 13 | BST-to-AVL — [Module 15](module_15_bst_avl/README.md): height/balance, rotations, AVL insertion, and validation | Ordinary lab 11 | AVL deletion and package extensions | [Week 13 page](student_question_bank/week_13_avl.md) |
 | 14 | Prim, Kruskal, and capstone integration — [Module 16](module_16_prim_kruskal/README.md): complete Kruskal core plus bounded decision checkpoints in supplied Prim | Lab artifact 12 folds in the individual synthesis and capstone-integration checkpoint | Full Prim implementation and package extensions | [Week 14 page](student_question_bank/week_14_mst_capstone.md) |
@@ -60,31 +62,41 @@ issued as a second weekly programming submission.
 ### Week 4 — Current integer-Stack lab
 
 The required source is [Module 4 `student/lab.c`](module_04_stack/student/lab.c).
-Trace A, B, C as character codes in `int stack[10]`, with empty `size == 0`,
-full `size == capacity`, active indexes `0..size - 1`, and item count and next
-insertion index `size`. Push writes with `stack[size++]`; peek reads
-`stack[size - 1]`; pop decrements before reading with `stack[--size]`.
+Trace A, B, C as character codes in `int stack[10]`, with empty `top == -1`,
+full `top + 1 == capacity`, active indexes `0..top`, and item count and next
+insertion index `top + 1`. Push increments before writing `stack[++top]`;
+peek reads `stack[top]`; pop reads before decrementing with `stack[top--]`.
 The full/empty predicates only report state. Callers must avoid a full push
 or an empty peek/pop; those operations are unchecked.
 
 First use the PPT’s direct two-Stack calculation of `1-2*3+4` to explain
 waiting operators and values. The lab then separates conversion and evaluation
-while reusing the same global integer Stack. Conversion resets `size`, pushes
-`'\0'` at the bottom, and writes to `eq_re` using local output position `pos`.
-Draining the sentinel writes `eq_re[7] = '\0'` and leaves `pos == 8` and
-`size == 0`. Evaluation resets `size` again, processes the seven postfix
-tokens, and returns the final pop. The canonical expression becomes
-`123*-4+` and evaluates to -1.
+while reusing the same global integer Stack. `convert_to_postfix()` resets
+`top = -1` and writes to `postfix` using local output position `pos`. It
+scans `eq` until its terminator. `while (!is_empty())` guards each operator
+read; `break` stops when the waiting operator has lower precedence. No
+sentinel is stored. After draining operators, the explicit statement
+`postfix[pos++] = '\0'` writes index 7 for the canonical expression, leaving
+`pos == 8` and `top == -1`. Evaluation resets `top = -1`, scans postfix to
+its terminator, and returns the final pop. The expression becomes `123*-4+`
+and evaluates to -1.
 
-Core examples assume exactly seven characters in `eq[8]`: four single digits
-alternating with three operators from `+ - * / %`. Both loops run seven times.
-Shorter strings, spaces, parentheses, unary signs, and multi-digit operands
-are unsupported. Divisors must be nonzero and integer intermediates
-representable. These assumptions are not checked rejections.
-Use the current lab demo/tests and three justified added LIFO, boundary-predicate,
-and valid-expression cases. The checked caller-owned integer library remains an
-optional extension. Preserve the five release gates, three-target pause,
-and standard/linear response alternatives.
+Then trace `infix_to_postfix_parentheses()` with `eq_paren = "1+(2+3)"`.
+An opening parenthesis is a barrier. On a closing parenthesis, pop while
+nonempty; if the popped item is `(`, break without writing it. Otherwise,
+write that operator and continue. The output is `123++`, explicitly terminated at
+index 5, and evaluates to 6. Both converters leave `top == -1` after draining.
+
+Core examples are nonempty valid expressions of at most seven characters
+plus a terminator in an eight-character buffer. Operands are single digits
+and binary operators are `+ - * / %`; only the dedicated converter accepts
+balanced parentheses. Shorter valid strings work. Spaces, unary signs, and
+multi-digit operands are unsupported. Divisors must be nonzero and integer
+intermediates representable. These assumptions are not checked rejections.
+Use the current lab demo, eight baseline test groups, and three justified
+added LIFO, boundary-predicate, and valid-expression cases. The checked
+caller-owned integer library remains an optional extension. Preserve the
+five release gates, three-target pause, and standard/linear alternatives.
 
 ### Week 5 — Tree DFS
 
@@ -138,15 +150,33 @@ A workable 180-minute contact budget is:
 | Evidence, correction, and exit synthesis | 20 |
 | **Total** | **180** |
 
-### Week 9 — Priority Queue contract to Heap backend
+### Week 9 — Hash Table within 180 minutes
 
-[Module 10](module_10_priority_queue/README.md) contributes the stable-minimum
+Required work from [Module 10](module_10_hash_table/README.md) is bounded
+probing, exact lookup, insert/update, deletion, tombstone reuse, and the
+associated collision/wraparound traces. Students complete and test selected
+decision/commit points in a supplied transactional grow/compact scaffold;
+they do not build every rebuild mechanism from scratch. Follow the package’s
+[Week 9 delivery override](module_10_hash_table/instructor/lesson_plan.md).
+
+Students author the three categories already named in the package test
+template: collision/wraparound with exact probes; tombstone-safe update,
+reuse, and duplicate prevention; and scaffolded growth/compaction with one
+forced maintenance-allocation failure and state preservation. They run an
+instructor-supplied suite for missing/key-zero behavior, additional allocation
+failures, maximum capacity, invalid state, validation, destruction, and long
+churn. Additional adversarial and capacity-policy work is extension.
+
+### Week 10 — Priority Queue contract to Heap backend
+
+[Module 11](module_11_binary_heap/README.md) contains the stable-minimum
 Priority Queue contract, comparator/tie rule, an unsorted-array trace, and the
-cost baseline. The instructor supplies a verified unsorted-array
-implementation as readable baseline code; students do not complete the
-Module 10 starter or submit a separate Module 10 project.
+cost baseline alongside the Heap implementation. Its
+[supplied baseline](module_11_binary_heap/priority_queue_baseline/README.md)
+provides verified unsorted-array code for inspection and comparison. Students
+use it as a reference, with no separate baseline implementation or submission.
 
-[Module 11](module_11_binary_heap/README.md) is the main lab. Students
+In the same Module 11 lab, students
 implement the Heap-backed version, test sift-up/sift-down and stable ties,
 check the Heap invariant, and compare measured or counted work with the
 supplied unsorted baseline. The implementation and comparison form **one
@@ -162,7 +192,7 @@ A workable 180-minute contact budget is:
 | Evidence, correction, and exit synthesis | 20 |
 | **Total** | **180** |
 
-### Week 10 — Dijkstra and Practical 2
+### Week 11 — Dijkstra and Practical 2
 
 [Module 12](module_12_graph_dijkstra/README.md) supplies the Dijkstra model,
 but Practical 2 is the week’s only submission. Students complete the bounded
@@ -170,24 +200,7 @@ relaxation/frontier core and required tests inside a supplied weighted-graph,
 Heap, and path-reconstruction scaffold. The linear-Priority-Queue comparison
 uses an instructor-supplied reference. Do not assign the full Stage E lab or
 the Spiral 4 comparison as additional work; both are represented inside the
-practical. Follow the package’s [Week 10 delivery override](module_12_graph_dijkstra/instructor/lesson_plan.md).
-
-### Week 11 — Hash Table within 180 minutes
-
-Required work from [Module 13](module_13_hash_table/README.md) is bounded
-probing, exact lookup, insert/update, deletion, tombstone reuse, and the
-associated collision/wraparound traces. Students complete and test selected
-decision/commit points in a supplied transactional grow/compact scaffold;
-they do not build every rebuild mechanism from scratch. Follow the package’s
-[Week 11 delivery override](module_13_hash_table/instructor/lesson_plan.md).
-
-Students author the three categories already named in the package test
-template: collision/wraparound with exact probes; tombstone-safe update,
-reuse, and duplicate prevention; and scaffolded growth/compaction with one
-forced maintenance-allocation failure and state preservation. They run an
-instructor-supplied suite for missing/key-zero behavior, additional allocation
-failures, maximum capacity, invalid state, validation, destruction, and long
-churn. Additional adversarial and capacity-policy work is extension.
+practical. Follow the package’s [Week 11 delivery override](module_12_graph_dijkstra/instructor/lesson_plan.md).
 
 ### Week 12 — Ownership clinic and DSU within 180 minutes
 
@@ -218,7 +231,7 @@ is not scored twice for the same criterion. Follow the package’s
 
 ## Release rules for the compressed path
 
-1. Keep all 16 complete packages, staged archives, solutions, tests, and
+1. Keep all 15 complete packages, staged archives, solutions, tests, and
    instructor notes available to faculty. Compression changes assignment
    scope, not the resource library.
 2. For an ordinary week, use the week-specific bounded scope in this guide
@@ -232,17 +245,16 @@ is not scored twice for the same criterion. Follow the package’s
    level-order portions of its investigation and diagram) and use Module 9
    Stage E for the programming lab. Do **not** assign both Module 8 Stage E and
    Module 9 Stage E. The omitted Module 8 lab remains optional enrichment.
-5. In Week 9, use selected Module 10 inquiry/contract/cost materials and give
-   students the verified unsorted-array implementation as a supplied
-   baseline. Use Module 11 Stage E for the programming lab. Do **not** assign
-   both Module 10 Stage E and Module 11 Stage E.
-6. In Week 10, release only the Module 12 preparation and support needed for
+5. In Week 9, use a faculty-curated Module 10 Hash Table starter that supplies
+   the non-core rebuild mechanics and exposes only the bounded decision/commit
+   work described above.
+6. In Week 10, use Module 11 inquiry/contract/cost materials and its verified
+   unsorted-array baseline, then use Module 11 Stage E for the Heap lab. The
+   baseline is supplied; its optional implementation is not a second project.
+7. In Week 11, release only the Module 12 preparation and support needed for
    Practical 2. Do not add the complete Module 12 Stage E as a second graded
-   project.
-7. In Week 11, use a faculty-curated Module 13 starter that supplies the
-   non-core rebuild mechanics and exposes only the bounded decision/commit
-   work described above. In Week 12, release one selected ownership repair
-   plus the DSU work, not the complete list-operation menu.
+   project. In Week 12, release one selected ownership repair plus the DSU
+   work, not the complete list-operation menu.
 8. In Week 14, use one checklist for the folded MST/synthesis/integration
    artifact. Do not issue a separate individual-check or capstone-programming
    submission during the same teaching week.
@@ -258,7 +270,7 @@ Package lesson plans are resource-rich menus, not permission to exceed the
 schedule. Before each week, the instructor selects activities whose displayed
 times total no more than 180 minutes. If a required activity runs long, remove
 an extension or shorten a second example; do not move the displaced package
-lab into mandatory homework. The combined Week 8 and Week 9 budgets above are
+lab into mandatory homework. The Week 8 and Week 10 budgets above are
 the default cuts unless local evidence supports a smaller core.
 
 The final-assessment capstone defense is not counted inside Week 14's 180

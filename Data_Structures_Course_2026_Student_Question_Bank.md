@@ -41,9 +41,9 @@ before requesting help.
 | 6 | Iterative Graph DFS and Practical 1 | 41 | 5 | 40 | [Week 6](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Queue and circular buffer | 49 | 6 | 40 | [Week 7](student_question_bank/week_07_queue.md) |
 | 8 | Tree-BFS bridge to Graph BFS | 46 | 5 | 46 | [Week 8](student_question_bank/week_08_bfs.md) |
-| 9 | Priority Queue contract to Binary Heap | 59 | 5 | 47 | [Week 9](student_question_bank/week_09_priority_queue_heap.md) |
-| 10 | Dijkstra and Practical 2 | 53 | 5 | 45 | [Week 10](student_question_bank/week_10_dijkstra.md) |
-| 11 | Hash Table | 47 | 4 | 47 | [Week 11](student_question_bank/week_11_hash_table.md) |
+| 9 | Hash Table | 47 | 4 | 47 | [Week 9](student_question_bank/week_09_hash_table.md) |
+| 10 | Priority Queue contract to Binary Heap | 59 | 5 | 47 | [Week 10](student_question_bank/week_10_priority_queue_heap.md) |
+| 11 | Dijkstra and Practical 2 | 53 | 5 | 45 | [Week 11](student_question_bank/week_11_dijkstra.md) |
 | 12 | Linked-list ownership repair and DSU | 56 | 4 | 48 | [Week 12](student_question_bank/week_12_linked_list_dsu.md) |
 | 13 | BST-to-AVL | 45 | 3 | 47 | [Week 13](student_question_bank/week_13_avl.md) |
 | 14 | Kruskal, supplied Prim checkpoints, and capstone integration | 57 | 4 | 55 | [Week 14](student_question_bank/week_14_mst_capstone.md) |

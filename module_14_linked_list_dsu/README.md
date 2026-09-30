@@ -335,9 +335,9 @@ also cannot remove an old relationship or reconstruct the relationship path.
 
 - **Revisits:** Module 1 contiguous storage and bounds checks, Module 2
   linked nodes, Module 5 allocation contracts, graph components, implicit
-  trees, and Module 13's open-addressed table slots.
+  trees, and Module 10's open-addressed table slots.
 - **Contrasts:** an ArrayList owns one contiguous block; a linked list owns
-  separate nodes. Module 13 resolves collisions by probing array slots; this
+  separate nodes. Module 10 resolves collisions by probing array slots; this
   module follows explicit links between separately owned nodes. A DSU answers
   membership, not traversal or path questions.
 - **Introduces:** safe linked deletion, iterative path compression, union by

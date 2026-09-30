@@ -9,7 +9,24 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $moduleRoot = Split-Path -Parent $PSScriptRoot
 $distDirectory = Join-Path $moduleRoot "dist"
 
+$baselineEntries = @(
+    @{ Source = "release\baseline_code_README.md"; Entry = "code/baseline/README.md" },
+    @{ Source = "priority_queue_baseline\code\include\alert_priority_queue.h"; Entry = "code/baseline/include/alert_priority_queue.h" },
+    @{ Source = "priority_queue_baseline\code\solution\alert_priority_queue.c"; Entry = "code/baseline/solution/alert_priority_queue.c" },
+    @{ Source = "priority_queue_baseline\code\tests\test_core.c"; Entry = "code/baseline/tests/test_core.c" }
+)
+
 $stages = @(
+    @{
+        Name = "module_11_opening_baseline.zip"
+        Entries = @(
+            @{ Source = "release\opening_baseline_README.md"; Entry = "README.md" },
+            @{ Source = "priority_queue_baseline\student\representation_reveal.md"; Entry = "student/baseline_representation.md" },
+            @{ Source = "priority_queue_baseline\student\vocabulary.md"; Entry = "student/baseline_vocabulary.md" },
+            @{ Source = "release\student_build.ps1"; Entry = "code/build.ps1" },
+            @{ Source = "release\student_Makefile"; Entry = "code/Makefile" }
+        ) + $baselineEntries
+    },
     @{
         Name = "module_11_stage_a_initial_inquiry.zip"
         Entries = @(
@@ -60,7 +77,7 @@ $stages = @(
             @{ Source = "code\tests\test_student.c"; Entry = "code/tests/test_student.c" },
             @{ Source = "code\autopsy\README.md"; Entry = "code/autopsy/README.md" },
             @{ Source = "code\autopsy\faulty_sift_down.c"; Entry = "code/autopsy/faulty_sift_down.c" }
-        )
+        ) + $baselineEntries
     }
 )
 

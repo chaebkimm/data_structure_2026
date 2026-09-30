@@ -26,14 +26,14 @@ these labels nor the integer array is a real runtime call frame.
 ```c
 int stack[10];
 int capacity = 10;
-int size = 0;
+int top = -1;
 ```
 
 The global integer Stack grows toward larger indexes. With `capacity == 10`,
-callers maintain `0 <= size <= capacity`; active items occupy 0 through
-`size - 1`. The count and next insertion index are `size`, and the nonempty
-top is `stack[size - 1]`. Push writes `stack[size++]`; pop reads
-`stack[--size]`. Neither erases or shifts earlier cells.
+callers maintain `-1 <= top < capacity`; active items occupy 0 through
+`top`. The count and next insertion index are `top + 1`, and the nonempty
+top item is `stack[top]`. Push writes `stack[++top]`; pop reads
+`stack[top--]`. Neither erases or shifts earlier cells.
 
 `is_full()` and `is_empty()` report boundaries but do not guard push, peek,
 or pop. A full push or an empty read has undefined behavior. `capacity`
@@ -42,8 +42,8 @@ controls the full predicate only, and changing it does not resize the array.
 Expression processing has two phases:
 
 ```text
-infix_to_postfix():  1-2*3+4 → 123*-4+
-eval_postfix():      123*-4+ → -1
+convert_to_postfix():           1-2*3+4 → 123*-4+ → eval_postfix() → -1
+infix_to_postfix_parentheses(): 1+(2+3) → 123++   → eval_postfix() → 6
 ```
 
 The PPT first calculates directly with conceptual operator and value Stacks:
@@ -51,24 +51,35 @@ an incoming `+` causes `2*3` to become 6, then `1-6` to become -5. Writing
 operators at their calculation times produces `123*-4+`. The C lab separates
 this ordering work from arithmetic and reuses the same global integer array.
 
-Conversion initializes local `pos = 0`, resets `size = 0`, and pushes a
-`'\0'` sentinel. It scans exactly seven `eq` characters and writes postfix
-tokens to `eq_re`. The final drain writes the sentinel to `eq_re[7]`: `pos`
-ends at 8, visible token length is 7, and `size` is 0. Evaluation resets
-`size` again, scans exactly seven tokens, and reuses `stack` for integer
+Each converter initializes local `pos = 0` and resets `top = -1`. It scans
+until the input terminator and writes tokens to `postfix`. Waiting operators
+are inspected only inside `while (!is_empty())`. A lower-precedence waiting
+operator causes `break`; otherwise it is popped into the output. Equal
+precedence therefore reduces from left to right. No sentinel is stored.
+After draining the operators, `postfix[pos++] = '\0'` explicitly terminates
+the output. For `1-2*3+4`, the terminator is at `postfix[7]`, `pos` ends at
+8, and `top` is -1.
+The parentheses converter pushes `(` as a barrier. At `)`, it pops one
+item at a time, breaks when the popped item is `(`, and writes other popped
+operators. For `1+(2+3)`, `postfix[5]` is the explicit terminator and `pos`
+ends at 6. Evaluation resets
+`top` again, scans until `postfix[i] == '\0'`, and reuses `stack` for integer
 operands/results. It pops the right operand first; the final pop returns
--1 and leaves `size == 0`.
+the result and leaves `top == -1`.
 
-Supported input is exactly seven characters: four single digits alternating
-with three binary operators from `+ - * / %`, then a terminator in `eq[7]`.
-Multiplication, division, and remainder have higher precedence; equal
-precedence is left associative. Exclude spaces, parentheses, unary operators,
-and multi-digit operands. Divisors must be nonzero and intermediates must fit
-C `int`. Shorter strings are unsupported because both loops run seven times.
+Supported input is a nonempty valid expression of at most seven characters
+plus a null terminator in `eq[8]` or `eq_paren[8]`. Operands are single
+digits, with binary operators from `+ - * / %`. Only
+`infix_to_postfix_parentheses()` accepts balanced parentheses. Multiplication,
+division, and remainder have higher precedence; equal precedence is left
+associative. Exclude spaces, unary operators, and multi-digit operands.
+Divisors must be nonzero and intermediates must fit C `int`. Shorter valid
+expressions work because scans stop at the terminator.
 
 The functions assume this grammar and arithmetic domain. Invalid characters,
-early terminators, and missing operands can lead to out-of-bounds accesses;
-zero divisors and overflow are unchecked. Safe rejection is an extension,
+unbalanced parentheses, and missing operands are not rejected. The guarded
+conversion loops prevent empty reads there, but malformed postfix can still
+cause operand underflow during evaluation; zero divisors and overflow are unchecked. Safe rejection is an extension,
 not a guarantee of the current source.
 
 ## Core learning targets
@@ -82,9 +93,10 @@ Students will be able to:
 5. convert infix to postfix using precedence and left associativity;
 6. evaluate postfix with correct left/right operand order;
 7. distinguish character digits from integer intermediate results;
-8. explain shared `size`, local `pos`, the stored sentinel, and the null terminator;
+8. explain shared `top`, local `pos`, empty-stack guards, and the explicit null terminator;
 9. justify constant-time Stack operations and linear expression processing;
-10. identify assumptions that would need checks in a more general evaluator.
+10. trace parentheses as temporary barriers and identify assumptions that
+    would need checks in a more general evaluator.
 
 ## Teaching and build materials
 
@@ -95,8 +107,8 @@ Students will be able to:
 | `diagrams/stack_models.md` | Visual models with text equivalents |
 | `instructor/` | Lesson plan, answer key, and technical notes |
 | `code/lab_demo.c` | Entry point for the supplied expression |
-| `code/tests/test_lab.c` | Six core test groups; students add three justified cases |
-| `code/autopsy/` | Isolated, intentional `stack[size]` top-read defect |
+| `code/tests/test_lab.c` | Eight core test groups; students add three justified cases |
+| `code/autopsy/` | Isolated, intentional `stack[top + 1]` top-read defect |
 | `release/` | Five-stage manifest and student build/package templates |
 
 From `code`, run `make lab-demo`, `make lab-tests`, or `make autopsy`.

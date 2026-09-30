@@ -1,6 +1,6 @@
 # Module 11 C Package
 
-This package replaces Module 10's unsorted-array backend with a binary
+This package replaces Module 11 baseline's unsorted-array backend with a binary
 minimum Heap while preserving the public Priority Queue record, object,
 statuses, and operation signatures.
 
@@ -30,7 +30,7 @@ whole array to be sorted.
 
 ## Representation and compatibility
 
-`AlertRecord`, `AlertPriorityQueue`, all Module 10 statuses, the capacity
+`AlertRecord`, `AlertPriorityQueue`, all Module 11 baseline statuses, the capacity
 ladder `0, 4, 8, 16, 32, 64`, and all existing function signatures are
 unchanged. Module 11 adds:
 
@@ -69,7 +69,7 @@ Draining retains allocation/capacity and resets `next_sequence` to zero.
 
 ## Failures
 
-Module 10 precedence and preservation remain:
+Module 11 baseline precedence and preservation remain:
 
 1. reject a null output before Queue validation;
 2. reject invalid field shape before empty or full;
@@ -153,3 +153,18 @@ make autopsy
 ```
 
 The Makefile is intended for Git Bash, MSYS2, WSL, Linux, or macOS.
+
+## Supplied scan comparison
+
+The opening block introduced the Priority Queue ADT and stable tie rule.
+Use the completed scan baseline to compare service order and work with the
+Heap. The Stage E archive includes `code/baseline/` and its public tests.
+Run `make baseline-core` from `code/`, or in the released package use
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target baseline`.
+The repository's canonical baseline is in `priority_queue_baseline/code/`;
+its own instructor build can run `solution-core`.
+
+Build the two backends separately with their corresponding headers. Record
+zero baseline insertion comparisons and 21 baseline drain comparisons for
+the canonical seven-record input, then compare Heap normal-operation
+counts without checker calls. Submit one combined Module 11 result.

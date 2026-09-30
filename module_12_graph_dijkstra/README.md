@@ -2,9 +2,9 @@
 
 ## Dijkstra with a Lazy-Duplicate Minimum Frontier
 
-## 14-week delivery role - Week 10 Practical 2
+## 14-week delivery role - Week 11 Practical 2
 
-This package supplies the **sole Week 10 submission** in the 14-week course.
+This package supplies the **sole Week 11 submission** in the 14-week course.
 Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 The required contact block is capped at 180 minutes and is one integrated
 Practical 2 artifact, not a Dijkstra lab followed by a second practical.
@@ -183,7 +183,7 @@ created.
 7. Keep `instructor/`, `code/solution/`, and
    `code/tests/test_extension.c` instructor-only until revisions close.
 
-## Week 10 Practical 2 submission
+## Week 11 Practical 2 submission
 
 Students submit one integrated artifact containing:
 
@@ -200,7 +200,7 @@ Students submit one integrated artifact containing:
 - corrected Cognitive Pause.
 
 The parser, Heap frontier, weighted-graph ownership, integration setup, and
-their boundary tests are supplied in the Week 10 scaffold. The full autopsy
+their boundary tests are supplied in the Week 11 scaffold. The full autopsy
 and additional Stage E tests are optional resources after the practical.
 
 ## Full-package TODO inventory
@@ -214,7 +214,7 @@ Weighted-graph ownership and the typed frontier are supplied.
 
 For the 14-week path, TODO 1 is supplied complete, and setup/cleanup around
 TODOs 2 and 3 is scaffolded. Students implement only the bounded algorithm
-core and reconstruction described in the Week 10 submission above.
+core and reconstruction described in the Week 11 submission above.
 
 ## Fixed course conventions
 

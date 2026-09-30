@@ -290,7 +290,7 @@ ignore weights and complete the full reachable-vertex run; do not stop at E.
 | Run | Path A to E | Add/remove call counts | Priority comparisons | API operation names |
 |---|---|---|---:|---|
 | BFS ignoring weights | | | not applicable | |
-| Dijkstra with Module 10 linear Priority Queue | | | | |
+| Dijkstra with Module 11 baseline linear Priority Queue | | | | |
 | Dijkstra with Heap Priority Queue | | | | |
 
 For the linear run, record each Priority Queue size just before removal and

@@ -3,7 +3,8 @@
 Open `representation_reveal.md` only when the instructor tells you. It names
 the last-in, first-out rule and connects Functions 100, 200, and 300 to
 character tokens `'A'`, `'B'`, and `'C'` in `lab.c`'s fixed `int stack[10]`.
-Its item count `size` starts at 0 and increases toward 10 as characters are pushed.
+Its top index `top` starts at -1 and increases toward 9 as characters are
+pushed. The item count is `top + 1`.
 
 Then complete exactly the three targets in `cognitive_pause.md` before
 calibration. Preserve the A, B, C character trace, boundary decisions, output

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Replace Module 10's unsorted backend with a minimum binary Heap while
+Replace Module 11 baseline's unsorted backend with a minimum binary Heap while
 preserving the Priority Queue service rule and public operations. The lab
 has exactly three implementation TODO concepts: checker, upward repair, and
 downward repair.
@@ -31,7 +31,7 @@ typedef struct {
 } AlertPriorityQueue;
 ```
 
-The status order and existing Module 10 functions remain unchanged. Module
+The status order and existing Module 11 baseline functions remain unchanged. Module
 11 adds:
 
 ```c
@@ -277,3 +277,18 @@ Submit:
 - Heap/BST/sorted/C-memory contrast;
 - 64-record boundary explanation; and
 - corrected Cognitive Pause.
+
+## Supplied scan comparison
+
+The opening block introduced the Priority Queue ADT and stable tie rule.
+Use the completed scan baseline to compare service order and work with the
+Heap. The Stage E archive includes `code/baseline/` and its public tests.
+Run `make baseline-core` from `code/`, or in the released package use
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target baseline`.
+The repository's canonical baseline is in `priority_queue_baseline/code/`;
+its own instructor build can run `solution-core`.
+
+Build the two backends separately with their corresponding headers. Record
+zero baseline insertion comparisons and 21 baseline drain comparisons for
+the canonical seven-record input, then compare Heap normal-operation
+counts without checker calls. Submit one combined Module 11 result.

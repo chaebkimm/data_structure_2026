@@ -1,3 +1,4 @@
+/* Optional pointer-based extension. The current lab lecture uses lab_demo.c. */
 #include "tree_dfs.h"
 
 #include <stdbool.h>

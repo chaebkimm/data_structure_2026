@@ -9,7 +9,8 @@ Open these materials only after completing and preserving the Stage C core.
 
 Choose either textbook language; reading both is optional. Both editions
 develop the top-only rule, forward-growing integer Stack with unchecked boundary preconditions, and the
-`1-2*3+4` → `123*-4+` → `-1` expression pipeline in `lab.c`.
+`1-2*3+4` → `123*-4+` → `-1` expression pipeline in `lab.c`. They also
+trace `1+(2+3)` → `123++` → `6` through the parentheses converter.
 
 The runnable source, driver, and build files mentioned in the textbook arrive
 in Stage E. Paths beginning with `student/` or `code/` refer to that lab

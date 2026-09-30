@@ -9,7 +9,7 @@ formats are equivalent.
 
 - 5: maps complete tree positions and applies all three index formulas;
 - 5: states stable min-Heap order without claiming global sorting; and
-- 5: distinguishes Heap, BST, sorted sequence, Module 10 backend, and C
+- 5: distinguishes Heap, BST, sorted sequence, Module 11 baseline backend, and C
   dynamic-memory heap.
 
 ## 2. TODO 1: full checker - 15 points

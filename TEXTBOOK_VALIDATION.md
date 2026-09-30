@@ -2,6 +2,133 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 4 Updated PPT Lab and Explicit Termination — September 30, 2026
+
+The current `module_04_stack/student/lab.c` and `ppt_lab_material.md` were
+checked and preserved. The English/Korean textbooks, lecture/support
+materials, course summaries, and webpage now use `postfix`, conversion loops
+guarded by `!is_empty()`, `switch` precedence, and explicit
+`postfix[pos++] = '\0'` writes. There is no stack sentinel. Explanations
+distinguish `return` from `break`, and the parentheses trace pops before
+testing for `(`. Conversion guards do not validate expression grammar or
+make the raw stack helpers safe for invalid calls.
+
+The lecture implementation sequence follows the updated PPT lab: array
+stack, precedence and `switch`, `while` and `&&`, conversion, then evaluation.
+The parentheses converter remains a subsequent extension. Both worked
+examples retain their results: `1-2*3+4 -> 123*-4+ -> -1` and
+`1+(2+3) -> 123++ -> 6`. Their conversion peaks are two and three active stack
+cells. Explicit termination leaves `top == -1` and advances `pos` to 8 and 6.
+
+Validation completed:
+
+- All eight C baseline groups passed, including AddressSanitizer and
+  UndefinedBehaviorSanitizer checks. GNU Make lab-demo and lab-tests passed.
+  Strict compilation reports seven empty-parameter-list warnings and seven
+  int-to-char conversion warnings in the preserved source.
+- Each textbook's six C blocks matches `lab.c` modulo whitespace. Both
+  reconstructed sources compiled and produced the two expected demo results.
+- Lecture review checked 24 count rows and 31 operator-stack rows. Module 4
+  Markdown fences and changed-file whitespace checks passed. The webpage's
+  `lab.c` download preserves the source's two existing trailing-space lines.
+- All 26 web tests, TypeScript validation, and the production build passed.
+  The affected mirror test also passed after adding the PPT lab download.
+  Eight content/download mirrors match their sources; all six Chapter 4
+  downloads match the production build bytes.
+- All five release stage mappings contain unique, existing source/entry
+  paths: A=3, B=4, C=3, D=4, E=14. Stage E now includes the unchanged PPT lab
+  source so the lab guide's link resolves. Inquiry gates remain intact.
+  PowerShell ZIP generation was not run on this host.
+- The local preview returned HTTP 200. Visual browser QA could not run:
+  the browser security policy blocked reloading the existing preview tab.
+  No visual-verification claim is made for this revision.
+
+Sites version 154 was published successfully at
+[the Chapter 4 webpage](https://data-structures.chaebinkim.chatgpt.site/chapter-4)
+from web source commit `6745ce77e37916b91e5a0d6c9f378dcdcdaa774f`.
+This entry supersedes the earlier Chapter 4 sentinel and `eq_post` claims
+below, which remain as historical records.
+
+## Chapter 4 Top Index, Null-Terminated Scans, and Parentheses — September 29, 2026
+
+The current `module_04_stack/student/lab.c` is the authority and was left
+unchanged. The English/Korean textbooks, lecture notes, worksheets, diagrams,
+instructor guides, assessment materials, release documentation, and Chapter 4
+course summaries now use `top == -1` for empty, `stack[++top]` for push,
+`stack[top]` for peek, and `stack[top--]` for pop. The item count is `top + 1`.
+Full/empty predicates report state; the operations remain unchecked.
+
+`convert_to_postfix()` reads `eq` and writes `eq_post`; both conversion and
+evaluation scan to the null terminator. Shorter valid expressions now work
+within the eight-character buffers. The dedicated
+`infix_to_postfix_parentheses()` reads balanced groups from `eq_paren`.
+The worked examples are `1-2*3+4 -> 123*-4+ -> -1` and
+`1+(2+3) -> 123++ -> 6`. The sentinel becomes the output terminator at
+index 7 or 5, leaving local `pos` at 8 or 6 and `top == -1`.
+
+Both editions use the five required main sections. Their six C blocks
+reproduce the current lab modulo whitespace. Combining each edition's blocks
+with the updated demo driver compiled and produced both expected results.
+The separate autopsy now contrasts correct `stack[top]` with faulty
+`stack[top + 1]` at `top == 1`.
+
+Validation completed:
+
+- All eight C baseline test groups passed with Clang 21; the same groups
+  passed with AddressSanitizer and UndefinedBehaviorSanitizer.
+- The GNU Make lab-demo, lab-tests, and autopsy targets passed using the
+  installed compiler and SDK directly. Strict compilation reported the
+  source's existing seven empty-parameter-list and eleven int-to-char
+  conversion warnings. No claim of warning-clean source is made.
+- All five release stages contain existing, unique source/entry paths.
+  PowerShell archive generation was not run in this macOS session.
+- Chapter 4 Markdown structure, top/count trace rows, and whitespace checks
+  passed. Inquiry release gates and the three-target Cognitive Pause remain.
+- All 25 web tests, TypeScript validation, and the production build passed.
+  The web model and activities cover shorter expressions, parentheses,
+  sentinel writes, phase resets, operand order, and both demo outputs.
+- All seven website content/download mirrors match the authoritative files.
+  Local browser checks confirmed English and Korean rendering, `123++ -> 6`,
+  `7/2 -> 3`, and safe webpage feedback for `1/(2-2)` while retaining the
+  previous trace. The page explicitly distinguishes its validation from the
+  unchecked C lab.
+
+Sites version 153 was published successfully at
+[the Chapter 4 webpage](https://data-structures.chaebinkim.chatgpt.site/chapter-4)
+from web source commit `883328426a9a4817c8ca4c08c01e1fd105dc2492`.
+This entry supersedes earlier Chapter 4 representation and fixed-length
+claims below; those entries remain as historical records.
+
+## Hash Table / Priority Queue / Binary Heap Reorganization — September 29, 2026
+
+Module 10 now contains the former Hash Table package. Module 11 teaches the
+Priority Queue contract, supplied unsorted-array baseline, and Binary Heap
+in one chapter and one submission. The full baseline reference is preserved
+inside `module_11_binary_heap/priority_queue_baseline`. Module 13 is retired;
+Modules 14–16 retain their existing numbers, giving 15 teaching packages.
+
+The teaching order is Week 9 Hash Table, Week 10 Priority Queue/Binary Heap,
+and Week 11 Dijkstra with Practical 2. The manuscript indexes, vocabulary
+progression, instructor guides, delivery calendar, question banks, and active
+pilot materials follow that order. Historical validation and simulated
+participant records below and in `textbook_pilot/simulation/` retain the
+chapter numbers of the versions they assessed.
+
+The Hash Table solution core and extension suites pass after the move.
+The Heap's 9 core and 4 extension groups and the baseline's 10 core and 5
+extension groups pass with warning flags, AddressSanitizer, and
+UndefinedBehaviorSanitizer. The new textbook caller also runs successfully
+against both backends with sanitizers. The student-test templates remain
+incomplete until students fill their TODOs.
+
+The Heap opening-baseline archive and five stage archives map to
+9 / 3 / 4 / 3 / 3 / 18 entries. The opening and Stage E layouts were recreated
+in temporary directories from those mappings, and each passed the supplied
+baseline's 10 core tests. No Heap solution, private tests, or instructor files
+are mapped into student releases. All 202 checked local Markdown file targets
+resolve; 164 course-document links and anchors also pass. PowerShell is not
+available on this host, so the packaging scripts themselves were not run.
+
 ## Chapter 4 Shared Integer Stack and Sentinel — September 25, 2026
 
 The authoritative `module_04_stack/student/lab.c` now uses global

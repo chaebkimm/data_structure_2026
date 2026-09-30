@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "autopsy")]
+    [ValidateSet("starter", "baseline", "autopsy")]
     [string]$Target = "starter",
 
     [switch]$StudentTests,
@@ -42,7 +42,18 @@ PowerShell, then rerun this command.
 
 $testingBuild = $false
 
-if ($Target -eq "autopsy") {
+if ($Target -eq "baseline") {
+    if ($StudentTests) {
+        throw "Baseline is supplied; -StudentTests applies only to the Heap starter."
+    }
+    $includeDirectory = Join-Path $codeRoot "baseline\include"
+    $sources = @(
+        (Join-Path $codeRoot "baseline\solution\alert_priority_queue.c"),
+        (Join-Path $codeRoot "baseline\tests\test_core.c")
+    )
+    $outputName = "baseline_core"
+    $testingBuild = $true
+} elseif ($Target -eq "autopsy") {
     if ($StudentTests) {
         throw "Autopsy cannot be combined with -StudentTests."
     }

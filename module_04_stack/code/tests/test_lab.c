@@ -2,23 +2,25 @@
  * Core checks for student/lab.c under its documented input assumptions.
  * Add three justified cases and record their predictions in the evidence file.
  * Stack operations are unchecked: test boundary predicates without performing
- * a full push or an empty read. Expressions must contain exactly seven tokens.
+ * a full push or an empty read. Expressions must fit their eight-character, null-terminated buffers.
  */
 #include <stdio.h>
 #include <string.h>
 
 extern int stack[10];
 extern int capacity;
-extern int size;
+extern int top;
 extern char eq[8];
-extern char eq_re[8];
+extern char postfix[8];
+extern char eq_paren[8];
 
 int is_full(void);
 int is_empty(void);
 void push(int data);
 int peek(void);
 int pop(void);
-void infix_to_postfix(void);
+void convert_to_postfix(void);
+void infix_to_postfix_parentheses(void);
 int eval_postfix(void);
 
 #define CHECK(condition) do { \
@@ -30,18 +32,18 @@ int eval_postfix(void);
 
 static int integer_lifo(void)
 {
-    size = 0;
+    top = -1;
     push('A');
     push('B');
     push('C');
-    CHECK(size == 3);
+    CHECK(top == 2);
     CHECK(stack[0] == 'A' && stack[1] == 'B' && stack[2] == 'C');
-    CHECK(peek() == 'C' && size == 3);
-    CHECK(pop() == 'C' && size == 2);
+    CHECK(peek() == 'C' && top == 2);
+    CHECK(pop() == 'C' && top == 1);
     CHECK(stack[2] == 'C'); /* Logical removal does not erase the cell. */
     push(300);
-    CHECK(size == 3 && stack[2] == 300);
-    CHECK(pop() == 300 && size == 2);
+    CHECK(top == 2 && stack[2] == 300);
+    CHECK(pop() == 300 && top == 1);
     CHECK(pop() == 'B');
     CHECK(pop() == 'A');
     CHECK(is_empty());
@@ -51,41 +53,58 @@ static int integer_lifo(void)
 static int full_empty_predicates(void)
 {
     int saved[10];
-    size = 0;
+    top = -1;
     CHECK(capacity == 10 && is_empty() && !is_full());
     for (int i = 0; i < capacity; ++i) {
         push(i - 5);
     }
-    CHECK(size == 10 && is_full() && !is_empty());
+    CHECK(top == 9 && is_full() && !is_empty());
     (void)memcpy(saved, stack, sizeof saved);
-    CHECK(is_full() && size == 10);
+    CHECK(is_full() && top == 9);
     CHECK(memcmp(saved, stack, sizeof saved) == 0);
     for (int i = capacity - 1; i >= 0; --i) {
-        CHECK(peek() == i - 5 && size == i + 1);
+        CHECK(peek() == i - 5 && top == i);
         CHECK(pop() == i - 5);
     }
-    CHECK(is_empty() && size == 0);
+    CHECK(is_empty() && top == -1);
     /* Do not call peek/pop here, or push while full: lab.c has no guards. */
+    return 1;
+}
+
+static int conversion_case(const char *input, const char *output, int result,
+                           int with_parentheses)
+{
+    CHECK(strlen(input) > 0 && strlen(input) < sizeof eq);
+    CHECK(strlen(output) > 0 && strlen(output) < sizeof postfix);
+    (void)strcpy(with_parentheses ? eq_paren : eq, input);
+    (void)memset(postfix, '?', sizeof postfix);
+    if (with_parentheses) {
+        infix_to_postfix_parentheses();
+    } else {
+        convert_to_postfix();
+    }
+    CHECK(postfix[strlen(output)] == '\0'); /* Conversion explicitly terminates the output after draining operators. */
+    CHECK(strcmp(postfix, output) == 0);
+    CHECK(top == -1);
+    CHECK(eval_postfix() == result);
+    CHECK(top == -1 && stack[0] == result); /* Final pop leaves its cell. */
     return 1;
 }
 
 static int expression_case(const char *input, const char *output, int result)
 {
-    CHECK(strlen(input) == 7 && strlen(output) == 7);
-    (void)strcpy(eq, input);
-    (void)memset(eq_re, '?', sizeof eq_re);
-    infix_to_postfix();
-    CHECK(eq_re[7] == '\0'); /* The drained sentinel supplies the terminator. */
-    CHECK(strcmp(eq_re, output) == 0);
-    CHECK(size == 0 && stack[0] == '\0');
-    CHECK(eval_postfix() == result);
-    CHECK(size == 0 && stack[0] == result); /* Final pop leaves its cell. */
-    return 1;
+    return conversion_case(input, output, result, 0);
 }
 
 static int canonical_conversion(void)
 {
-    CHECK(expression_case("1-2*3+4", "123*-4+", -1));
+    (void)strcpy(eq, "1-2*3+4");
+    convert_to_postfix();
+    CHECK(strcmp(postfix, "123*-4+") == 0 && postfix[7] == '\0');
+    CHECK(top == -1);
+    /* No bottom marker was stored: popped operator codes remain inactive. */
+    CHECK(stack[0] == '+' && stack[1] == '*');
+    CHECK(eval_postfix() == -1 && top == -1);
     return 1;
 }
 
@@ -113,14 +132,14 @@ static int precedence_and_operand_order(void)
 
 static int repeated_calls_reset_shared_stack(void)
 {
-    size = 0;
+    top = -1;
     push(99);
     push(100);
     CHECK(expression_case("1-2*3+4", "123*-4+", -1));
     CHECK(expression_case("8-3-2-1", "83-2-1-", 2));
     push(777);
-    CHECK(eval_postfix() == 2); /* Evaluation resets size independently. */
-    CHECK(size == 0 && stack[0] == 2);
+    CHECK(eval_postfix() == 2); /* Evaluation resets top independently. */
+    CHECK(top == -1 && stack[0] == 2);
     CHECK(expression_case("1-2*3+4", "123*-4+", -1));
     return 1;
 }
@@ -130,6 +149,40 @@ static int character_digits_and_integer_values(void)
     CHECK(expression_case("0+0+0+0", "00+0+0+", 0));
     CHECK(expression_case("9+0+0+0", "90+0+0+", 9));
     CHECK(expression_case("9*9*9*9", "99*9*9*", 6561));
+    return 1;
+}
+
+static int shorter_null_terminated_inputs(void)
+{
+    CHECK(expression_case("1-2*3+4", "123*-4+", -1));
+    CHECK(expression_case("2+3", "23+", 5));
+    CHECK(expression_case("7", "7", 7));
+    CHECK(expression_case("8-3-2", "83-2-", 3));
+    /* A new terminator must stop evaluation before stale buffer characters. */
+    (void)strcpy(eq, "9");
+    (void)memcpy(postfix, "123*-4+", sizeof postfix);
+    stack[0] = 777;
+    convert_to_postfix();
+    CHECK(postfix[0] == '9' && postfix[1] == '\0');
+    CHECK(top == -1 && stack[0] == 777); /* A digit-only conversion stores no stack item. */
+    CHECK(eval_postfix() == 9 && top == -1);
+    return 1;
+}
+
+static int balanced_parentheses(void)
+{
+    CHECK(conversion_case("1+(2+3)", "123++", 6, 1));
+    CHECK(conversion_case("(1+2)*3", "12+3*", 9, 1));
+    CHECK(conversion_case("8/(3-1)", "831-/", 4, 1));
+    CHECK(conversion_case("((7))", "7", 7, 1));
+    CHECK(conversion_case("(8-3)-2", "83-2-", 3, 1));
+    CHECK(conversion_case("8-(3-2)", "832--", 7, 1));
+    CHECK(conversion_case("1", "1", 1, 1));
+    /* Both converters reset and reuse the same stack and output buffer. */
+    top = -1;
+    push(999);
+    CHECK(conversion_case("1+(2+3)", "123++", 6, 1));
+    CHECK(expression_case("1-2*3+4", "123*-4+", -1));
     return 1;
 }
 
@@ -144,7 +197,9 @@ int main(void)
         { "canonical infix and postfix", canonical_conversion },
         { "precedence and operand order", precedence_and_operand_order },
         { "repeated calls reset shared stack", repeated_calls_reset_shared_stack },
-        { "character digits and integer values", character_digits_and_integer_values }
+        { "character digits and integer values", character_digits_and_integer_values },
+        { "shorter null-terminated inputs", shorter_null_terminated_inputs },
+        { "balanced parentheses", balanced_parentheses }
     };
     int failures = 0;
     for (size_t i = 0; i < sizeof tests / sizeof tests[0]; ++i) {

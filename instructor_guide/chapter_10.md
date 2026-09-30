@@ -1,74 +1,77 @@
-# Chapter 10. Choosing by Priority and Arrival Order
+# Chapter 10. Finding Large Numbers in a Small Table
 
 ## Starting Question
 
-> "To process urgent alerts first, but for alerts with the same urgency, take out the one that came first, what rule do we need?"
+> "If the possible numbers are very large but we only have a few actual records, how can we find the number we want in a small array?"
 
-**Expected Answer:** If students say we must compare the priority first and then the arrival order if they are the same, write it down. Make it clear that picking the smaller number first is just our rule for this chapter.
+**Expected Answer:** Students should say that we must calculate a starting slot using the number, and if the spot is already taken, we must look at the next slots using a set rule until we reach the end of the search.
 
 ## Why We Need This
 
-A normal queue only takes out the first arrived value first. It cannot put urgent alerts at the front. If we only compare priority, the processing order for things with the same priority is not decided.
+If we use the number we want to find directly as the array position, we might waste almost all the slots. We call this number a "key." When we gather them in a small array, different keys might start at the exact same slot. We call this a "collision." We need rules for calculating the starting slot, moving to the next slot after a collision, and finding things after a deletion all together.
 
-We need a behavioral rule (a promise) for how to put in, look at, and take out values. When comparing two values, we look at priority first, and only if they are the same do we look at the successful insertion order (arrival order). Even if the storage array is not sorted, we can still follow this rule.
+This chapter follows graph BFS. Retrieve dense vertex indexing and circular-array remainder calculations. Introduce array allocation, growth, and the distinction between expected and amortized cost here; priority queues and heaps come next.
+
+In week 9, we will directly handle checking slots one by one, finding, putting in, changing existing values, and deleting. For "rebuilding" (rehashing), we only complete the decision points and final changes within the provided framework. We do not build the entire rebuild process from scratch.
 
 ## Board Walkthrough
 
-Use the unsorted array provided by the teacher exactly as it is. `p` is priority and `s` is arrival order.
+The basic slot we look at first is called `home`. The capacity is 8, and `home = key % 8` (the remainder when dividing the key by 8). The structure that calculates the basic slot using a key and stores it in an array is called a "hash table." The rule of looking at the next slots one by one after a collision is called "linear probing."
 
 ```text
-71/p3/s0, 88/p1/s1, 42/p2/s2, 17/p1/s3, 
-26/p4/s4, 9/p2/s5, 63/p1/s6
+10: Look at 2 and store it in 2.
+18: Look at 2, 3 and store it in 3.
+26: Look at 2, 3, 4 and store it in 4.
+
+Position   0  1  2   3   4   5  6  7
+Key              10  18  26
 
 ```
 
-Scan the array from the left and underline the top candidate.
+After deleting 18, we leave slot 3 as a "deleted mark" (tombstone).
 
-* Prediction 1: Among the seven alerts, which one will be announced first?
-* Prediction 2: After taking out 88 and moving 63 to its empty spot, what is the next alert?
-* Prediction 3: When taking out all seven values, how many new comparisons will we make in total?
+| Position | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| State | Empty | Empty | In Use | Deleted Mark | In Use | Empty | Empty | Empty |
+| Key |  |  | 10 |  | 26 |  |  |  |
 
-| State Looked At | Top Candidate |
-| --- | --- |
-| Start | `71/p3/s0` |
-| After comparing with 88 | `88/p1/s1` |
-| After comparing with 42, 17, 26, 9, 63 | `88/p1/s1` |
-
-The first check makes 6 comparisons. After taking out 88, the physical array is `71, 63, 42, 17, 26, 9`. Even so, the next alert is 17. This is because their priorities are the same, but arrival order 3 is smaller than 6.
-
-After resetting the comparison count to 0, taking out seven times adds 21 new comparisons. If we add the 6 comparisons from the very first check, it makes 27 times in total.
+`put(key, value)` is a request to put in a new key or change the value of an existing key. Let's follow two requests starting from this exact same state.
 
 ```text
-6 + 5 + 4 + 3 + 2 + 1 + 0 = 21
+put(26, 999): Look at 2, 3, 4 and change the value in 4.
+put(34, 340): Look at 2, 3, 4, 5 and then reuse the remembered slot 3.
 
 ```
 
-Students do not write the code for this storage method. They just read the provided code and check the public rules and the number of comparisons.
+Ask these questions before showing each result:
+
+* After deleting 18, which slot do we have to check up to when finding 26?
+* If `put(26, 999)` stops at the deleted mark in slot 3, what check do we miss?
+* If the capacity changes from 8 to 16, how do we calculate the starting slot for key 18?
 
 ## Common First Thoughts
 
-* "Smaller priority numbers are always more urgent." But the direction of the numbers is just a rule decided by the program.
-* "If priorities are the same, we can just pick the value on the left side of the array." But we compare the arrival order, not the physical position in the array.
-* "Since the array is not sorted, the take-out rule is broken." But when we take something out, we scan the whole array to pick the value that is first according to the rule.
-* "Taking out one item only takes one comparison." But if there are `n` records, we must compare the current candidate with the `n - 1` other items.
+* "We should use the key value directly as the array position."
+* "We can mark a deleted slot exactly the same as an empty slot that was never used."
+* "When inserting a new key, we should write the record down immediately when we meet the first deleted mark."
+* "The expected `O(1)` fast time is guaranteed for all keys and in all states."
 
 ## Neutral Questions
 
-* When deciding the order to process two alerts, which values do we look at and in what order?
-* What decisions are made based on the array positions and arrival orders of 63 and 17?
-* If the number of records changes, how does the number of comparisons for one check change?
-* Depending on whether there are more putting-in or taking-out tasks, what should we count?
+* In this request, what state allows us to stop looking (probing)?
+* How did we separately record the position of the first deleted mark we saw and the position of the exact same key?
+* What request results must remain exactly the same before and after rebuilding the table?
 
 ## Vocabulary Rules
 
-**Words we can use:** Array-based list, size and capacity, array expansion, keeping the state after a failure, arrival order of a queue, and average cost divided over a long task.
+**Words we can use:** Array position, remainder calculation (modulo), empty slot, keeping the state after a failure, and capacity.
 
-**Names we will introduce in this chapter:** Priority queue behavioral rule, priority, arrival order, stable tie-breaking, comparison rule, minimum priority queue, `insert`, `peek-min`, `extract-min`, and unsorted array baseline.
+**Names we will introduce in this chapter:** Key and value, map, hash function, hash table, collision, linear probing, deleted mark, array allocation and growth, rebuilding to reduce deleted marks, rehashing, expected cost, and amortized cost.
 
-**Words we won't use yet:** We save the internal shape and rearranging steps of storage methods different from the provided array for the next chapter. We also won't explain applying this structure to finding paths in later chapters yet.
+**Words we won't use yet:** Names of other collision handling methods, the full implementation of rebuilding from scratch, or attack defense designs for real-world services.
 
 ## Final Check
 
-> "Can you explain the processing order of 88, 17, and 63, and also why there are 21 comparisons when taking out all seven values?"
+> "Why must we leave slot 3 as a 'deleted mark' after deleting 18, and why must we keep looking even when putting in a new key?"
 
-**Minimum Expected Answer:** Students should mention that priority 1 comes first, tie-breakers follow arrival orders 1, 3, and 6, and that we compare `6+5+4+3+2+1+0` times depending on the number of remaining records.
+**Minimum Expected Answer:** Students should mention both the flow of finding 26 (which is stored further down) and the flow of checking to make sure we don't put the exact same key in twice.

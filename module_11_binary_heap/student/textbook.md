@@ -1,365 +1,543 @@
-# Chapter 11. Taking Out the First Data Without Scanning Everything
+# Chapter 11. Choosing Urgent Work with Priority Queues and Binary Heaps
 
 ## Thinking Logically
 
-### Why do we need a different storage method?
+### Should the first arrival always leave first?
 
-In Chapter 10, our storage dropped new packages into a messy, unsorted array. Dropping a new notification in was super fast, but we were forced to check absolutely every single spot in the array every time we wanted to pull out the most important notification.
+An ordinary Queue processes the first arrival first. Urgent alerts need a
+different rule. A recent urgent alert may need attention before an older
+routine alert. Attach a number to each alert and select the smallest number
+first. This number is the alert's **priority**. Smaller means more urgent in
+this course.
 
-This chapter uses the exact same rules for deciding who goes first: a smaller urgency number wins, and if they tie, the earlier arrival ticket wins. What changes here is *how* we organize the packages inside the array so we can find the winner instantly.
+We need three operations: add an alert, inspect the next alert, and remove
+the next alert. A **Priority Queue** provides these operations under a
+stated priority rule. Selecting the smallest value makes it a **minimum
+Priority Queue**. The behavior does not require a particular storage method.
+A description of public behavior independent of storage is an **abstract
+data type (ADT)**. We will provide this one ADT using two representations.
 
-### How do we create shortcuts inside an array?
+### What happens when priorities tie?
 
-Imagine turning the flat array into a downward-branching family tree. We fill the tree from top to bottom, strictly moving from left to right on every single level. Every level must be completely packed full before anyone moves to the next level down.
+Two equally urgent alerts need a predictable order. Select the earlier
+arrival first. Each successful insertion receives an increasing number,
+starting at 0. This **arrival sequence** records insertion order even when
+records move in memory. Keeping arrival order among equal priorities is
+**stable tie-breaking**.
 
-Because this perfectly packed shape is so predictable, if a package is sitting at slot `i` in the array, we can use simple math to instantly find the exact positions of its parent or its children:
+Each alert record contains `alert_id`, `priority`, and `arrival_sequence`.
+The ID identifies the alert. It does not rank the alert. The rule comparing
+two records is the **comparator**: compare priorities first, then arrival
+sequences if priorities tie. Array positions never settle a tie.
 
-```text
-Left child  = 2 * i + 1
-Right child = 2 * i + 2
-Parent      = (i - 1) / 2    (only if it is not the top item, slot 0)
-
-```
-
-A child slot only actually has a package in it if the math result is smaller than our total `size`. If we just drop a brand-new package into the very next empty spot (`data[size]`), this perfectly packed shape is naturally maintained!
-
-### How do we gather the most important package at the very top?
-
-We organize the packages using one strict, golden rule: **A parent package must always be more important than its children.**
-
-If a perfectly packed tree strictly follows this rule, it creates a powerful structure. Every single item connects back up to the top spot (position 0) through its parents. Because a child can never, ever beat its parent, the absolute grand champion is naturally trapped right at the top!
-
-### Where does the golden rule break when we put in a new package?
-
-If we drop a new package into the very next empty spot at the end of the array, the perfectly packed shape stays perfect. The relationships between all the old packages also stay perfect. The *only* place the golden rule might break is between the brand-new package and its immediate parent!
-
-If the new package is actually more important than its parent, we simply pull the parent down one step to make room, and we look at the parent's old spot. We keep comparing the new package against the next parent up, climbing higher and higher until we find a parent that is finally more important, or until we reach the very top. This climbing action perfectly fixes the tree!
+Use these seven arrivals throughout the chapter. `p` denotes priority and
+`s` denotes arrival sequence.
 
 ```text
-Set the new package as a candidate at the very last spot.
-If the candidate is more important than its parent, pull the parent down.
-Keep climbing up until the candidate finds its proper place.
-Drop the candidate safely into that final empty spot.
-
+71(p3,s0), 88(p1,s1), 42(p2,s2), 17(p1,s3),
+26(p4,s4), 9(p2,s5), 63(p1,s6)
 ```
 
-### Why is finding the most important package so simple now?
-
-Because our golden rule is never broken, the absolute most important package is *always* sitting exactly at `data[0]`. If you want to look at it, you just copy it. You don't need to scan the array or compare any packages at all!
-
-### How do we fix the tree after pulling out the top package?
-
-When we pull out the grand champion at the top, position 0 suddenly becomes a gaping hole. To fix this, we grab the very last package sitting at the bottom of the array to act as our candidate to plug the hole, and we decrease our total `size` count by 1.
-
-But if we just drop it in at the top, it might break the golden rule with its new children! So, we look at the hole's two children and pick the one that is *more important*. If this selected child is more important than our candidate, we pull the child up to fill the hole, and the candidate drops down a level. We keep doing this until the candidate safely finds a spot where it is more important than the children below it.
-
-```text
-Set the last package as the candidate to plug the top hole.
-If there are children below, pick the child that is more important.
-If that child is more important than the candidate, pull the child up.
-Keep dropping the candidate down until it finds its proper place.
-
-```
-
-*(Note: You must always check if a right child actually exists before comparing the two children. If there is only a left child, you just compare the candidate directly against the left child).*
-
-### Why must we always pick the more important child?
-
-If we mistakenly pulled the "less important" child up into the parent spot, the other child sitting below it would actually be *more* important than its new parent! This would instantly break the golden rule. By always pulling the most important child up, we guarantee the new parent-child relationship stays perfect.
-
-### What order will the same seven notifications come out?
-
-Let's insert the exact same seven notifications from Chapter 10:
-
-```text
-71(p3, s0), 88(p1, s1), 42(p2, s2), 17(p1, s3),
-26(p4, s4), 9(p2, s5), 63(p1, s6)
-
-```
-
-After putting them all in, they shift around to follow the golden rule. The ID numbers sitting in the array look scrambled like this:
-
-```text
-[88, 17, 63, 71, 26, 9, 42]
-
-```
-
-But if we pull them all out from the top one by one, the final processing order is exactly the same as in Chapter 10:
+Among priority-1 records, sequences 1, 3, and 6 put IDs 88, 17, and 63 first.
+ID 42 precedes ID 9 because their priorities tie and sequence 2 precedes 5.
+The full service order is:
 
 ```text
 88, 17, 63, 42, 9, 71, 26
-
 ```
 
-However, if we count the work, the messy array in Chapter 10 made 21 comparisons to pull them all out. Our clever tree structure here only needs to make 12 comparisons!
+Stable ties do not guarantee that every alert is eventually served. If
+higher-priority alerts keep arriving, a lower-priority alert can remain
+waiting indefinitely. This is **starvation**. Changing that behavior
+requires an additional scheduling policy.
 
-### Is this tree just a perfectly sorted array?
+### What can an unsorted array do?
 
-No! Only the vertical parent-child relationship matters. The order between siblings sitting next to each other doesn't matter at all, and the entire left side of the tree doesn't have to be more important than the entire right side.
+We already know how to append to an array. Store each arrival at `data[size]`
+and increase `size`. No comparisons between records are needed. The seven
+IDs occupy these positions:
 
-Because of this, finding the *most important* package is lightning fast, but if you wanted to find a specific ID number, you would still be forced to check the whole array. This structure is perfectly designed for pulling out the top winner instantly, not for general searching!
+```text
+[71, 88, 42, 17, 26, 9, 63]
+```
 
-### How do we double-check that the golden rule is perfect?
+To find the next alert, start with index 0 as the candidate. Compare every
+remaining record with the candidate. Replace the candidate index whenever a
+record precedes it. Six comparisons select ID 88 from seven records.
 
-Our safety tool checks every single package (starting from index 1) against its parent. If it finds even one single child that is more important than its parent, it immediately reports that the rule is broken.
+Inspection copies the selected record without removing it. Extraction also
+fills the selected slot with the final live record and reduces `size`.
+After extracting 88, the array is:
 
-If there are `n` packages, this check makes `n - 1` comparisons. This full check takes an amount of work proportional to the items, $O(n)$, so we keep its workload separate from our normal fast operations.
+```text
+[71, 63, 42, 17, 26, 9]
+```
 
-### What if expanding space or an action fails?
+ID 17 still precedes 63. The arrival sequence survives the move. Repeated
+extractions produce the required service order, with
+`6 + 5 + 4 + 3 + 2 + 1 + 0 = 21` comparisons.
 
-Our array grows exactly like before: `0, 4, 8, 16, 32, 64`. If the computer refuses to give more memory, or if the array hits the strict 64 limit, the existing tree stays perfectly safe. Trying to look at or pull from an empty tree also changes nothing.
+This completed scan implementation is the supplied **baseline**: a simple
+reference for checking answers and comparing work. You trace it before
+implementing the Heap. Both belong to this module.
 
-When the very last package is pulled out, making the tree completely empty again, we safely reset the arrival ticket machine back to 0. If our comparison counter hits its maximum limit, it safely freezes. Our manual reset tool only resets the comparison counter; it never touches the packages or the shape of the tree.
+### How can we avoid scanning for every minimum?
 
----
+An unsorted array repeats a full scan at every inspection and extraction.
+A sorted array can keep the minimum at one end, but inserting a record may
+require moving many records. We need enough order to find the minimum while
+repairing only a small part of the stored data after a change.
+
+Arrange the array positions as a binary tree. Fill levels from top to
+bottom and fill each level from left to right. Every level except possibly
+the last is full. This shape is a **complete binary tree**.
+
+For seven positions, index 0 has children 1 and 2. Index 1 has children 3 and
+4. Index 2 has children 5 and 6. Reading positions by level gives the array
+order. A live position `i` has these related positions:
+
+```text
+parent:      (i - 1) / 2, only when i > 0
+left child:  2 * i + 1
+right child: 2 * i + 2
+```
+
+Division discards the remainder. A calculated child exists only when its
+index is smaller than `size`. Appending at index `size` preserves the
+complete shape without storing pointers between nodes.
+
+### What order must parents and children satisfy?
+
+The minimum must be reachable without a scan. Require that no child precede
+its parent under the same priority-then-sequence comparator. Every record
+has a path through parents to the root. Following that path never leads to
+a later-ranked record, so the root is the minimum.
+
+A complete binary tree with this rule is a **minimum binary Heap**. The rule
+is its **Heap-order invariant**: a condition that operations must preserve.
+The root occupies `data[0]`, so inspection only copies that record.
+
+This is not a globally sorted array. Siblings need not be ordered. The whole
+left subtree need not precede the whole right subtree. A binary search tree
+uses a different rule for locating arbitrary keys; a Heap is organized to
+select the next record.
+
+### Where can insertion break the order?
+
+Appending preserves the complete shape. Only the new record's relationship
+to its parent may violate Heap order. Keep the new record as a candidate.
+If it precedes its parent, move the parent down into the open position.
+Continue at the parent's old position. Stop at the root or at a parent that
+the candidate does not precede. Place the candidate there. This repair is
+**sift-up**.
+
+For our example, the first three arrivals form `[88, 71, 42]`. ID 17 arrives
+at index 3. It precedes parent 71 at index 1, so 71 moves to index 3. It does
+not precede root 88: both have priority 1, but 88 arrived earlier. Place 17
+at index 1. The resulting array is `[88, 17, 42, 71]`.
+
+After all seven insertions, the IDs are:
+
+```text
+[88, 17, 63, 71, 26, 9, 42]
+```
+
+The records move as complete units. Separating a priority from its ID or
+arrival sequence would change which alert the record describes.
+
+### How do we repair the root after extraction?
+
+Save the root for the caller. Keep the final live record as the replacement
+candidate and reduce the live range by one. Removing the final position
+preserves the complete shape. The candidate may need to move down from the
+root to restore order.
+
+Choose the earlier-ranked existing child. If that child precedes the
+candidate, move the child upward and continue from its old position. Stop
+when there is no child or the candidate precedes both children. Place the
+candidate in the open position. This repair is **sift-down**.
+
+Extracting 88 from our seven-record Heap uses 42 as the candidate. Of root
+children 17 and 63, 17 comes first. Move 17 to the root. Its former children
+71 and 26 both follow 42, so place 42 at index 1:
+
+```text
+[17, 42, 63, 71, 26, 9]
+```
+
+Choosing the later child would leave the remaining child preceding its
+new parent and break Heap order. Check whether the right child exists before
+reading it. A parent with only a left child needs one child/candidate
+comparison and no sibling comparison.
+
+Repeated extraction gives the same service order as the baseline. For this
+fixture, Heap insertion makes 8 comparisons and draining makes 12.
+
+### How do we check the whole Heap?
+
+A repair visits one path. To verify all parent relationships, compare each
+record from index 1 through `size - 1` with its parent. The checker records
+whether any child precedes its parent. It finishes the entire scan even
+after finding a violation.
+
+`alert_priority_queue_is_min_heap` returns a status and writes a Boolean
+result. For a valid Queue shape, broken Heap order produces status `OK`
+and result `false`. A Boolean stores either `true` or `false`. A failed
+argument or shape check preserves the output.
+
+An empty Heap needs zero record comparisons. A nonempty Heap with `n`
+records needs exactly `n - 1`. Record checker work separately from normal
+insertion and extraction work.
+
+### What happens when storage cannot grow?
+
+Both implementations allocate space only when needed. The capacity sequence
+is `0, 4, 8, 16, 32, 64`. A Queue owns its allocation: destroy it once, and
+do not copy the Queue structure as if the copy owned independent storage.
+
+Insertion validates the state, rejects 64 live records, rejects an exhausted
+arrival sequence, and then attempts growth. Save the allocation result in a
+temporary pointer. A failed allocation leaves the old pointer and records
+available. Every rejected operation preserves Queue fields and allocated
+slots. Failed inspection or extraction also preserves the caller's output.
+Outputs must use separate caller-owned storage outside the Queue allocation.
+
+`SIZE_MAX` is the largest value of the unsigned size type `size_t`. An
+insertion is rejected when `next_sequence` reaches this limit. Draining the
+Queue resets `next_sequence` to 0 and retains the allocation. The comparison
+counter stops increasing at `SIZE_MAX`; it never wraps to 0. Resetting the
+counter changes only that counter.
 
 ## Calculating Efficiency
 
-### Efficiency of peeking at the most important record?
+### What work does the scan baseline repeat?
 
-Because it simply grabs the package sitting at index 0, it is instantly fast, $O(1)$.
+Appending without growth writes one record and updates two counts. Finding
+a minimum among `n` records makes `n - 1` comparisons. Extraction adds one
+record move after that scan. Therefore baseline insertion without growth is
+`O(1)`, while inspection and extraction are `O(n)`.
 
-### Efficiency of putting a record in?
+For our seven arrivals, baseline build comparisons total 0 and drain
+comparisons total 21. A full sorted array reverses the tradeoff: insertion
+may shift `n` records, while inspection and removal at the minimum end take
+constant work.
 
-Our climbing action only follows one single path up through the parents. Because the tree is packed perfectly, the number of items has to double just to add one more level of climbing. This makes it incredibly fast, taking $O(\log n)$ work.
+### How many levels can one repair visit?
 
-If the array is full, moving all the old items takes $O(n)$. But because we double the size every time, this heavy moving is rare. Averaged out, inserting is still a super-fast $O(\log n)$.
+A complete tree with three full levels contains `1 + 2 + 4 = 7` records. Four
+full levels contain 15. Each extra full level roughly doubles the number of
+records. The number of levels therefore grows logarithmically with the
+record count, written `O(log n)` for nontrivial sizes.
 
-### Efficiency of pulling out the most important record?
+Sift-up makes at most one comparison per visited parent. Sift-down makes at
+most two comparisons per visited level: sibling selection and the selected
+child against the candidate. Both follow one path. Heap inspection takes
+`O(1)` work; repair after insertion or extraction takes `O(log n)` work.
 
-Our dropping action also only follows one single path down from the top to the bottom. Just like inserting, this takes very little work, $O(\log n)$.
+### Does array growth change insertion cost?
 
-### Efficiency of double-checking the rules or searching?
+Growth may copy all `n` existing records, so one insertion can take `O(n)`
+work in either implementation. Doubling capacity limits the total copying
+over a long insertion sequence to an amount proportional to the insertions.
+Spreading that total across the sequence is **amortized analysis**. The
+baseline's amortized insertion cost is `O(1)`; the Heap's is `O(log n)`.
 
-Checking the golden rule forces you to look at every single parent-child pair, taking $O(n)$ work. Trying to find a specific ID number might also force you to look at every single package, taking $O(n)$ work.
+Our comparison counter measures record comparisons. It does not count copied
+bytes, allocation work, or index arithmetic. A small comparison count alone
+does not prove a small elapsed time.
 
-### How much memory does it use?
+### What does checking add?
 
-The array uses memory proportional to the packages, $O(n)$. It doesn't waste any extra memory storing confusing connection addresses because the math does it for us. Our specific practice code caps this at exactly 64 items.
+A complete check examines every parent relationship, so its cost is `O(n)`.
+For the seven insertions, checker calls after each insertion add
+`0 + 1 + 2 + 3 + 4 + 5 + 6 = 21` comparisons. Checking after each extraction
+adds `5 + 4 + 3 + 2 + 1 + 0 + 0 = 15`.
 
----
+The instrumented Heap totals are 29 for building and 27 for draining. Normal
+operation totals remain 8 and 12. Calling the checker after every mutation
+makes the measured operation-plus-check cycle linear.
+
+### How much storage is needed?
+
+Both representations retain their allocation after extraction. Storage is
+`O(capacity)`, proportional to the largest live record count reached under
+geometric growth. It need not be proportional to the current size after a
+drain. The Heap derives relationships from indexes instead of allocating
+tree links. The course implementation has a 64-record cap; asymptotic
+comparisons describe the representation as that limit is increased. Searching
+for an arbitrary alert ID can still inspect every record.
 
 ## Glossary
 
-### Complete Binary Tree
+The behavior and representation terms describe different parts of the same
+Queue. Use these names for the ideas developed above.
 
-A binary tree where all levels except the last are completely filled, and the last level is filled continuously from the left.
+| Term | Meaning |
+|---|---|
+| Abstract data type (추상 자료형) | Public operations and behavior independent of storage. |
+| Priority Queue (우선순위 큐) | Selects a record according to a priority rule. |
+| Comparator (비교 규칙) | Decides which of two records precedes the other. |
+| Stable tie-breaking (안정적 동률 처리) | Preserves arrival order among equal priorities. |
+| Baseline (기준 구현) | Simple reference used to compare results and work. |
+| Complete binary tree (완전 이진 트리) | Full levels except possibly the last, filled from the left. |
+| Minimum binary Heap (최소 이진 힙) | Complete binary tree with no child preceding its parent. |
+| Sift-up (위로 이동하며 복구) | Repairs the path from an appended record toward the root. |
+| Sift-down (아래로 이동하며 복구) | Repairs downward through the earlier existing child. |
+| Amortized cost (분할상환 비용) | Total work spread across a sequence of operations. |
 
-### Binary Heap
-
-A data structure that maintains both the complete binary tree shape and the parent-child order rule.
-
-### Minimum Heap (Min-Heap)
-
-A binary heap where every parent comes before its children, meaning the absolute minimum value sits at the root.
-
-### Heap-Order Invariant
-
-The strict condition that no child can ever come before its parent.
-
-### Root
-
-The top node that has no parent. In an array-based heap, this is the record at index 0.
-
-### Sift-Up
-
-The action of fixing the heap rule by comparing a newly added record with its parent and moving it upwards toward the root.
-
-### Sift-Down
-
-The action of fixing the heap rule by taking a candidate at the root and moving it downwards by comparing it with its earlier child.
-
----
+The binary Heap is a data structure. The C dynamic-memory heap is an
+allocation area. Sharing a name does not make them the same concept.
 
 ## Coding Plan
 
-### Calculating Array Positions
+The supplied baseline establishes the behavior. Complete the Heap's three
+TODO sections while keeping that behavior and its failure guarantees.
 
-* **Parent calculation:** If the current index `i` is greater than 0, use the math `(i - 1) / 2`.
-* **Left child calculation:** Use the math `2 * i + 1`.
-* **Right child calculation:** Simply add 1 to the left child's position.
-* **Check range:** Only try to read from the array if the math result is strictly smaller than the current `size`.
-
-### Inserting a Record
-
-* **Check conditions:** Verify the 64-item limit, the ticket machine limits, and if the computer can give more memory.
-* **Make candidate:** Bundle the new ID, urgency, and ticket into one candidate package.
-* **Start at the end:** Pretend the candidate is sitting at the very next empty spot (`size`).
-* **Bubble up (Sift-up):** If the candidate beats its parent, pull the parent down one slot.
-* **Count comparisons:** Increase your counter every single time you compare the candidate against a parent.
-* **Save candidate:** Drop the candidate into the final empty spot it found, then increase `size` and the ticket machine.
-
-### Peeking the Front-Most Record
-
-* **Check empty heap:** If `size == 0`, return an empty state error.
-* **Copy root:** Instantly copy `data[0]` straight into the user's output variable.
-
-### Extracting the Front-Most Record
-
-* **Keep result:** Safely copy the grand champion at `data[0]` into a temporary variable.
-* **Set candidate:** Grab the very last package in the array to act as the candidate to drop down, and calculate the new size.
-* **Pick child:** Look at the hole's children and pick the one that is more important.
-* **Bubble down (Sift-down):** If the selected child beats the candidate, pull the child up to fill the hole.
-* **Count comparisons:** Count both the comparison to pick the best child, *and* the comparison against the candidate.
-* **Confirm state:** Drop the candidate into its final hole, decrease `size`, and give the saved champion to the user.
-
-### Checking the Golden Rule
-
-* **Loop children:** Check every single index from 1 all the way to `size - 1`.
-* **Calculate parent:** Find the parent position for each child using the math.
-* **Compare order:** Check if the child mistakenly beats the parent.
-* **Count comparisons:** Even if you find a broken rule, do not stop; check exactly once for every child to get a perfect count.
-* **Save result:** After checking everything, tell the user if it was true or false.
-
----
+1. **Read the comparator and baseline.** Follow priority, then arrival
+   sequence. Trace the full scan and final-record replacement.
+2. **Check Heap order.** Validate the output and Queue shape. Compare every
+   non-root record with its parent. Count every comparison and publish the
+   Boolean result after the scan.
+3. **Insert with sift-up.** Validate and check limits before growth. Build a
+   complete candidate. Move parents down along one path. Place the candidate
+   before updating `size` and `next_sequence`.
+4. **Inspect the root.** Reject an empty Queue and copy `data[0]` on success.
+   The supplied implementation needs no record comparisons.
+5. **Extract with sift-down.** Save the root and final candidate. Use the new
+   size for child boundaries. Select the earlier existing child before
+   comparing it with the candidate. Publish the saved output last.
+6. **Compare results and work.** Run the supplied baseline and completed Heap
+   separately. Use the seven arrivals above. Snapshot the counter before
+   each operation and again before its checker call.
 
 ## C Code
 
-### Comparing the Order of Records
+### How is the ordering rule written?
+
+The supplied implementations use the same helper. It compares complete
+records and ignores the alert ID.
+
+```c
+static bool alert_record_precedes(
+    const AlertRecord *left,
+    const AlertRecord *right
+)
+{
+    if (left->priority != right->priority) {
+        return left->priority < right->priority;
+    }
+    return left->arrival_sequence < right->arrival_sequence;
+}
+```
+
+### How does the reference find its minimum?
+
+The baseline calls this helper only after confirming that the Queue is
+valid and nonempty. `count_record_comparison` increments the counter unless
+it has reached `SIZE_MAX`.
+
+```c
+static size_t find_minimum_index(AlertPriorityQueue *queue)
+{
+    size_t minimum_index = 0U;
+    size_t index;
+
+    for (index = 1U; index < queue->size; ++index) {
+        count_record_comparison(queue);
+        if (alert_record_precedes(
+                &queue->data[index],
+                &queue->data[minimum_index]
+            )) {
+            minimum_index = index;
+        }
+    }
+    return minimum_index;
+}
+```
+
+The Heap replaces this repeated search with root inspection and path repair.
+Implement the three numbered TODOs in `code/starter/alert_priority_queue.c`
+using the plan and traces above. The supplied scan implementation is in the
+opening package and in Stage E's `code/baseline/` directory.
+
+### How does the checker visit every parent relationship?
+
+After validating `out_is_min_heap` and the Queue shape, the implementation
+starts with `bool result = true` and a `size_t child`. It scans every child
+even after detecting a violation. The excerpt returns a result only after
+finishing the scan.
+
+```c
+for (child = 1U; child < queue->size; ++child) {
+        size_t parent = (child - 1U) / 2U;
+
+        count_record_comparison(queue);
+        if (alert_record_precedes(
+                &queue->data[child],
+                &queue->data[parent]
+            )) {
+            result = false;
+        }
+    }
+
+    *out_is_min_heap = result;
+    return ALERT_PRIORITY_QUEUE_OK;
+```
+
+### How does insertion repair one upward path?
+
+This excerpt follows successful validation, limit checks, and any required
+growth in `alert_priority_queue_insert`. Those checks return before changing
+records when an insertion fails. `candidate` is an `AlertRecord` and `index`
+is a `size_t`. Every parent comparison includes the stopping comparison.
+
+```c
+candidate.alert_id = alert_id;
+    candidate.priority = priority;
+    candidate.arrival_sequence = queue->next_sequence;
+    index = queue->size;
+
+    while (index > 0U) {
+        size_t parent = (index - 1U) / 2U;
+
+        count_record_comparison(queue);
+        if (!alert_record_precedes(
+                &candidate,
+                &queue->data[parent]
+            )) {
+            break;
+        }
+
+        queue->data[index] = queue->data[parent];
+        index = parent;
+    }
+
+    queue->data[index] = candidate;
+    queue->size += 1U;
+    queue->next_sequence += 1U;
+    return ALERT_PRIORITY_QUEUE_OK;
+```
+
+### How does inspection avoid comparisons?
+
+After checking the output address, Queue shape, and nonempty state,
+`alert_priority_queue_peek_min` copies the root. `result` is an `AlertRecord`.
+The output changes only on success.
+
+```c
+result = queue->data[0];
+*out_record = result;
+return ALERT_PRIORITY_QUEUE_OK;
+```
+
+### How does extraction choose an existing child?
+
+This excerpt follows successful validation and the nonempty check in
+`alert_priority_queue_extract_min`. `result` and `candidate` are
+`AlertRecord` variables. `new_size` and `hole` are `size_t` variables, with
+`hole` initially 0. Child positions use the reduced size. The right child is
+compared only when it exists.
+
+```c
+result = queue->data[0];
+    new_size = queue->size - 1U;
+
+    if (new_size > 0U) {
+        candidate = queue->data[new_size];
+
+        for (;;) {
+            size_t left = hole * 2U + 1U;
+            size_t selected;
+            size_t right;
+
+            if (left >= new_size) {
+                break;
+            }
+
+            selected = left;
+            right = left + 1U;
+            if (right < new_size) {
+                count_record_comparison(queue);
+                if (alert_record_precedes(
+                        &queue->data[right],
+                        &queue->data[left]
+                    )) {
+                    selected = right;
+                }
+            }
+
+            count_record_comparison(queue);
+            if (!alert_record_precedes(
+                    &queue->data[selected],
+                    &candidate
+                )) {
+                break;
+            }
+
+            queue->data[hole] = queue->data[selected];
+            hole = selected;
+        }
+
+        queue->data[hole] = candidate;
+    }
+
+    queue->size = new_size;
+    if (new_size == 0U) {
+        queue->next_sequence = 0U;
+    }
+    *out_record = result;
+    return ALERT_PRIORITY_QUEUE_OK;
+```
+
+### How can the same caller check both backends?
+
+The public service operations are shared. Build the following caller
+separately against each backend's header and implementation. It checks every
+status and uses the same seven arrivals.
 
 ```c
 #include "alert_priority_queue.h"
 
-static bool record_precedes(
-        const AlertRecord *left,
-        const AlertRecord *right)
+int main(void)
 {
-        if (left->priority != right->priority) {
-                return left->priority < right->priority;
-        }
+    const int ids[] = {71, 88, 42, 17, 26, 9, 63};
+    const size_t priorities[] = {3U, 1U, 2U, 1U, 4U, 2U, 1U};
+    const int expected[] = {88, 17, 63, 42, 9, 71, 26};
+    AlertPriorityQueue queue = {0};
+    AlertRecord next = {0};
+    int result = 1;
+    size_t i;
 
-        return left->arrival_sequence < right->arrival_sequence;
-}
-
-```
-
-### Calculating Parent and Child Positions
-
-```c
-#include <stddef.h>
-
-static size_t parent_index(size_t child)
-{
-        return (child - 1U) / 2U;
-}
-
-static size_t left_child_index(size_t parent)
-{
-        return parent * 2U + 1U;
-}
-
-```
-
-`parent_index` should strictly only be used when `child > 0`.
-
-### Sifting Up a New Record
-
-```c
-static void place_by_sifting_up(
-        AlertPriorityQueue *queue,
-        AlertRecord candidate)
-{
-        size_t index = queue->size;
-
-        while (index > 0U) {
-                size_t parent = parent_index(index);
-
-                if (!record_precedes(
-                        &candidate,
-                        &queue->data[parent])) {
-                        break;
-                }
-
-                queue->data[index] = queue->data[parent];
-                index = parent;
-        }
-
-        queue->data[index] = candidate;
-        queue->size = queue->size + 1U;
-        queue->next_sequence = queue->next_sequence + 1U;
-}
-
-```
-
-The real `insert` function tracks every comparison carefully and only triggers this climbing action after successfully ensuring there is enough memory space.
-
-### Sifting Down the Last Record
-
-```c
-static AlertRecord remove_root(AlertPriorityQueue *queue)
-{
-        AlertRecord result = queue->data[0];
-        size_t new_size = queue->size - 1U;
-
-        if (new_size > 0U) {
-                AlertRecord candidate = queue->data[new_size];
-                size_t hole = 0U;
-
-                while (left_child_index(hole) < new_size) {
-                        size_t left = left_child_index(hole);
-                        size_t right = left + 1U;
-                        size_t selected = left;
-
-                        if (right < new_size &&
-                            record_precedes(
-                                &queue->data[right],
-                                &queue->data[left])) {
-                                selected = right;
-                        }
-
-                        if (!record_precedes(
-                                &queue->data[selected],
-                                &candidate)) {
-                                break;
-                        }
-
-                        queue->data[hole] = queue->data[selected];
-                        hole = selected;
-                }
-
-                queue->data[hole] = candidate;
-        }
-
-        queue->size = new_size;
-        if (new_size == 0U) {
-                queue->next_sequence = 0U;
-        }
-
+    if (alert_priority_queue_init(&queue) != ALERT_PRIORITY_QUEUE_OK) {
         return result;
-}
+    }
+    for (i = 0U; i < 7U; ++i) {
+        if (alert_priority_queue_insert(&queue, ids[i], priorities[i]) !=
+            ALERT_PRIORITY_QUEUE_OK) {
+            goto cleanup;
+        }
+    }
+    if (alert_priority_queue_peek_min(&queue, &next) !=
+        ALERT_PRIORITY_QUEUE_OK || next.alert_id != 88) {
+        goto cleanup;
+    }
+    for (i = 0U; i < 7U; ++i) {
+        if (alert_priority_queue_extract_min(&queue, &next) !=
+            ALERT_PRIORITY_QUEUE_OK || next.alert_id != expected[i]) {
+            goto cleanup;
+        }
+    }
+    result = 0;
 
+cleanup:
+    alert_priority_queue_destroy(&queue);
+    return result;
+}
 ```
 
-This example safely assumes the tree is not empty. The right child is strictly only checked when `right < new_size` guarantees it exists. The real `extract-min` function immediately rejects an empty tree and carefully adds all child and candidate comparisons to the total count.
-
-### Using the Priority Queue
-
-```c
-#include "alert_priority_queue.h"
-
-AlertPriorityQueue queue = {0};
-AlertRecord next = {0};
-bool is_heap = false;
-
-if (alert_priority_queue_init(&queue) ==
-    ALERT_PRIORITY_QUEUE_OK) {
-        alert_priority_queue_insert(&queue, 71, 3U);
-        alert_priority_queue_insert(&queue, 88, 1U);
-        alert_priority_queue_insert(&queue, 42, 2U);
-        alert_priority_queue_insert(&queue, 17, 1U);
-
-        alert_priority_queue_peek_min(&queue, &next);
-        /* next.alert_id is 88. */
-
-        alert_priority_queue_extract_min(&queue, &next);
-        /* next.alert_id is 88 and the next champion is 17. */
-
-        alert_priority_queue_is_min_heap(&queue, &is_heap);
-        /* After a normal action, is_heap perfectly proves the golden rule is true. */
-
-        alert_priority_queue_destroy(&queue);
-}
-
-```
-
-`bool` is a true/false type provided by `<stdbool.h>`, which is conveniently included in the public header. Notice that the public function names here are exactly the same as in Chapter 10, but Chapter 11's internal code smartly, automatically maintains the array using our fast tree rules!
+`goto cleanup` transfers control to the labeled cleanup block. Every path
+after initialization releases the owned allocation. Failed operations leave
+the Queue available for that cleanup. The Heap also supplies
+`alert_priority_queue_is_min_heap`; call it separately when collecting
+checker evidence. Submit one Heap implementation and the comparison record
+for this combined module.

@@ -11,10 +11,10 @@ enum {
     TRAINING_CAPACITY = 10
 };
 
-/* Intentional defect: this representation reads stack[size - 1], not size. */
-static char faulty_top(const char stack[], int size)
+/* Intentional defect: this representation reads stack[top], not top + 1. */
+static char faulty_top(const char stack[], int top)
 {
-    return stack[size];
+    return stack[top + 1];
 }
 
 int main(void)
@@ -22,15 +22,16 @@ int main(void)
     char stack[TRAINING_CAPACITY] = {
         '+', '*', '?', '?', '?', '?', '?', '?', '?', '?'
     };
-    int size = 2;
+    int top = 1;
 
-    (void)printf("size: %d\n", size);
+    (void)printf("top: %d\n", top);
+    (void)printf("item count: %d\n", top + 1);
     (void)printf("capacity: %d\n", TRAINING_CAPACITY);
-    (void)printf("correct top stack[size - 1]: %c\n", stack[size - 1]);
-    (void)printf("faulty top stack[size]: %c\n", faulty_top(stack, size));
+    (void)printf("correct top stack[top]: %c\n", stack[top]);
+    (void)printf("faulty top stack[top + 1]: %c\n", faulty_top(stack, top));
     (void)printf(
         "faulty read selected the next inactive slot: %s\n",
-        faulty_top(stack, size) == '?' ? "yes" : "no"
+        faulty_top(stack, top) == '?' ? "yes" : "no"
     );
     return 0;
 }

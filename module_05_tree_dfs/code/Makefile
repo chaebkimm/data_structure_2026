@@ -10,12 +10,16 @@ STARTER_SOURCES := $(SUPPORT_SOURCES) starter/tree_dfs.c
 SOLUTION_SOURCES := $(SUPPORT_SOURCES) solution/tree_dfs.c
 
 .PHONY: all starter-core starter-extension starter-student-tests \
-	solution-core solution-extension solution-student-tests autopsy clean
+	solution-core solution-extension solution-student-tests lecture autopsy clean
 
 all: starter-core
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+lecture: lecture/lab_demo.c ../student/lab.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
+	$(BUILD_DIR)/lab_demo
 
 starter-core: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core

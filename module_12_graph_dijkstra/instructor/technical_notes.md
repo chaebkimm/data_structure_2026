@@ -355,7 +355,7 @@ linear lazy backend   O(V + E^2)
 ```
 
 The linear bound describes the same lazy duplicate strategy over the
-Module 10 unsorted backend. Standard direct-array Dijkstra would be a
+Module 11 baseline unsorted backend. Standard direct-array Dijkstra would be a
 different implementation. No decrease-key occurs, so do not quote a
 decrease-key bound.
 

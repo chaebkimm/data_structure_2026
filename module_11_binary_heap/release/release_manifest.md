@@ -1,7 +1,21 @@
 # Module 11 Staged Release Manifest
 
-Run `prepare_student_release.ps1` from this directory to create five ZIP
+Run `prepare_student_release.ps1` from this directory to create six ZIP
 archives in `../dist`. The script refuses to overwrite an existing archive.
+
+## Opening baseline — first 40 minutes
+
+Release `module_11_opening_baseline.zip` for the contract and scan block:
+
+- baseline representation and vocabulary;
+- completed scan implementation, its own header, and public core tests;
+- instructions and student build files with Make target `baseline-core` and PowerShell
+  `-Target baseline`.
+
+Open representation/vocabulary after the initial service-rule inquiry.
+The archive contains nine entries. Its build files expose the later Heap
+commands, but this opening package supplies only the baseline target.
+The remaining five archives retain the Heap inquiry gates.
 
 ## Stage A — Compact Urgent-Work Inquiry
 
@@ -42,7 +56,7 @@ answer key.
 
 Release after the student completes and preserves the Stage C core:
 
-- ultra-concise, example-first textbook;
+- combined, example-first Priority Queue and Heap textbook;
 - diagrams with exact indexed, tree, and linear text equivalents.
 
 ## Stage E — Lab and Evidence
@@ -50,10 +64,11 @@ Release after the student completes and preserves the Stage C core:
 Release after retrieval and Stage D calibration in Meeting B:
 
 - lab, rubric, evidence template, and Binary Heap Autopsy;
-- the Module 10 stable minimum Priority Queue interface plus the one public
+- the shared stable minimum Priority Queue interface plus the one public
   `alert_priority_queue_is_min_heap` extension;
 - Heap-backed starter implementation with the 64-record course limit;
 - visible core tests and student-test template;
+- completed scan baseline, its separate header, public tests, and build target;
 - student-only PowerShell and GNU Make build files;
 - separately reported checker/debug and normal-operation comparison deltas;
   and
@@ -62,12 +77,11 @@ Release after retrieval and Stage D calibration in Meeting B:
 Stage E excludes:
 
 - `instructor/`;
-- `code/solution/`;
+- the Heap `code/solution/` (the supplied scan baseline is included);
 - `code/tests/test_extension.c`;
 - instructor build files, solution targets, and extension targets;
 - answer keys and completed TODOs;
 - Stages A through D;
-- the Module 10 unsorted-array solution;
 - bottom-up heapify, decrease-key, arbitrary deletion, Dijkstra, and Prim
   implementations; and
 - real alert records, live input, generated binaries, build directories,
@@ -82,12 +96,12 @@ supports them.
 
 Verify all of the following:
 
-- the public API matches Module 10 except for
+- the public API matches Module 11 baseline except for
   `alert_priority_queue_is_min_heap`;
 - a valid-shape checker call adds zero comparisons when empty and otherwise
   exactly `size - 1`;
 - normal-operation measurements exclude separately measured checker calls;
-- the five archives contain exactly 3, 4, 3, 3, and 14 entries;
+- the opening archive and Stages A–E contain exactly 9, 3, 4, 3, 3, and 18 entries;
 - every ZIP entry exactly matches its listed source file;
 - Stage E contains none of its excluded materials; and
 - a second packaging attempt is rejected without changing any archive.

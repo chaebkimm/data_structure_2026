@@ -6,9 +6,9 @@ another person to repeat a check against `student/lab.c`.
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
 | Stack model and canonical trace | 20 | LIFO and `'A'`, `'B'`, `'C'` trace are correct; returns, physical indexes, and bottom-to-top logical states agree |
-| Integer Stack operations | 25 | `push` writes before incrementing; `pop` decrements before reading; full/empty predicates and caller preconditions are accurate; invalid calls are not treated as safe |
-| Representation and limits | 20 | `0 <= size <= capacity`, active prefix, inactive cells, capacity and empty boundaries, and the distinct meanings of shared global `size`, local `pos`, and seven-token length are explained |
-| Two expression phases | 15 | `1-2*3+4` becomes `123*-4+` with seven tokens, a sentinel terminator at `eq_re[7]`, and final `pos == 8`, then evaluates to `-1`; precedence, left associativity, operand order, termination, and input assumptions are accurate |
+| Integer Stack operations | 25 | `push` increments before writing; `pop` reads before decrementing; full/empty predicates and caller preconditions are accurate; invalid calls are not treated as safe |
+| Representation and limits | 20 | `-1 <= top < capacity`, active prefix, inactive cells, capacity and empty boundaries, and the distinct meanings of shared global `top`, local `pos`, item count `top + 1`, and output length are explained |
+| Two expression phases | 15 | `1-2*3+4` becomes `123*-4+` with seven tokens, an explicitly written terminator at `postfix[7]`, and final `pos == 8`, then evaluates to `-1`; `1+(2+3)` uses the dedicated converter to produce `123++` and 6; guarded operator loops, precedence, operand order, parentheses, null-terminated scans, and input assumptions are accurate |
 | Tests and tool evidence | 10 | Three justified new cases extend `test_lab.c`; demo, passing lab tests, commands, and actual compiler diagnostics are recorded |
 | Autopsy and cost reasoning | 10 | The inactive-cell read is distinguished from the correct top; physical bounds and logical correctness are separated; operation and expression costs are explained |
 | **Total** | **100** | |
@@ -29,7 +29,7 @@ the claims, and unchecked input assumptions are identified honestly.
 ### Developing
 
 Common cases work, but caller preconditions, index direction, `pos` versus
-`size`, operand order, or reproducible evidence still needs guidance.
+`top`, operand order, or reproducible evidence still needs guidance.
 
 ### Beginning
 

@@ -11,26 +11,26 @@ callers can resume. Preserve the initial reasoning before naming LIFO.
 
 The Stack rule restricts access to the newest remaining item. The motivating
 function IDs are abstract labels. The current `module_04_stack/student/lab.c`
-stores integers and character codes in global `int stack[10]` and uses `size = 0` for empty.
+stores integers and character codes in global `int stack[10]` and uses `top = -1` for empty.
 Its runtime call-stack bookkeeping is a separate object.
 
 ## Board Walkthrough
 
 Use characters A, B, C. Write logical states from bottom to top.
 
-| Request | Return | Logical state | `size` | Count |
+| Request | Return | Logical state | `top` | Count |
 |---|---|---|---:|---:|
-| start | none | empty | 0 | 0 |
-| `push('A')` | none | A | 1 | 1 |
-| `push('B')` | none | A, B | 2 | 2 |
-| `push('C')` | none | A, B, C | 3 | 3 |
-| `peek()` | C | A, B, C | 3 | 3 |
-| `pop()` | C | A, B | 2 | 2 |
-| `pop()` | B | A | 1 | 1 |
+| start | none | empty | -1 | 0 |
+| `push('A')` | none | A | 0 | 1 |
+| `push('B')` | none | A, B | 1 | 2 |
+| `push('C')` | none | A, B, C | 2 | 3 |
+| `peek()` | C | A, B, C | 2 | 3 |
+| `pop()` | C | A, B | 1 | 2 |
+| `pop()` | B | A | 0 | 1 |
 
-The active prefix is 0 through `size - 1`. Push writes `stack[size]` and
-then increments `size`; peek reads `stack[size - 1]`; pop returns
-`stack[--size]`, decrementing before reading. These operations are unchecked.
+The active prefix is 0 through `top`. Push increments `top` and
+then writes `stack[top]`; peek reads `stack[top]`; pop returns
+`stack[top--]`, reading before decrementing. These operations are unchecked.
 Callers must avoid full push and empty peek/pop; such calls have undefined
 behavior. The predicates report state only. `capacity` controls the full
 predicate but does not resize the array or stop push.
@@ -48,31 +48,40 @@ lab’s two separate phases:
 1-2*3+4 -> 123*-4+ -> -1
 ```
 
-Conversion resets global `size`, sets local `pos = 0`, and pushes a real
-`'\0'` sentinel. It scans seven `eq` characters, then drains the sentinel to
-`eq_re[7]`; `pos` ends at 8 while token length is 7 and `size` is 0. The
-sentinel's precedence 0 stops reductions before an empty peek.
+Conversion resets global `top = -1` and sets local `pos = 0`.
+`convert_to_postfix()` scans `eq` until its terminator. Before peeking,
+its operator loop checks `!is_empty()`. It breaks if the waiting operator
+has lower precedence and otherwise emits it. The final drain writes the
+last `+`, leaving `pos == 7` and `top == -1`. A separate assignment writes
+`postfix[7] = '\0'` and advances `pos` to 8. No sentinel is stored.
 
-Evaluation resets `size` and reuses the same `int stack[10]` for numbers.
-It scans exactly seven postfix tokens, excluding the terminator. Pop the
+Evaluation resets `top` and reuses the same `int stack[10]` for numbers.
+It scans `postfix` until its terminator, excluding that character. Pop the
 right operand into `num2` before the left into `num1`. Intermediate results
-are 6, -5, and -1; final `pop()` returns -1 and leaves `size == 0`. Shorter
-inputs are unsupported because both loops run seven iterations.
+are 6, -5, and -1; final `pop()` returns -1 and leaves `top == -1`. Shorter
+valid expressions work because both loops stop at the null terminator.
+
+Next trace `infix_to_postfix_parentheses()` with `eq_paren = "1+(2+3)"`.
+It pushes `(` as a boundary. At `)`, its guarded loop pops and emits the
+inner `+`, then pops `(` and breaks without writing it. Draining the outer
+`+` produces `123++`; the explicit terminator write at index 5 leaves
+`pos == 6` and `top == -1`. Evaluation
+returns 6 and again leaves `top == -1`.
 
 ## Common First Thoughts
 
-- “`size` is the index of the current top character.”
-- “The newest item is at `stack[size]`.”
-- “Empty means `size == 10`.”
+- “`top` is the item count.”
+- “The newest item is at `stack[top + 1]`.”
+- “Empty means `top == 9`.”
 - “Pop must erase the old cell.”
-- “The sentinel is returned by an empty peek.”
+- “The null terminator is popped from the Stack.”
 - “Local output cursor `pos` is always equal to token length.”
 - “Character `'3'` and integer 3 are interchangeable.”
 - “A valid example proves that malformed input is safely rejected.”
 
 ## Neutral Questions
 
-- How does the item count `size` change after this request?
+- How do the top index `top` and item count `top + 1` change after this request?
 - Which physical indexes currently belong to the Stack?
 - Which index was written by the most recent push?
 - Which array and variable belong to the current expression phase?
@@ -82,10 +91,11 @@ inputs are unsupported because both loops run seven iterations.
 ## Vocabulary Rules
 
 **Words we can use:** Fixed arrays, characters, integers, indexes, counts,
-active prefix, invariant, sentinel, and simple function calls.
+active prefix, invariant, and simple function calls.
 
 **Names introduced here:** Stack, LIFO, top, push, peek, pop, underflow, infix,
 postfix, operand, operator, precedence, associativity, and null terminator.
+Explain `switch` in `prec` and how `break` exits the nearest loop.
 
 **Deferred or optional:** Allocation, ownership, geometric growth, checked
 parser design, arithmetic overflow guards, and the legacy caller-owned
@@ -93,10 +103,11 @@ parser design, arithmetic overflow guards, and the legacy caller-owned
 
 ## Scope and Evidence
 
-Core input is exactly seven characters, with four single digits
-alternating with `+ - * / %`; no spaces, parentheses, unary operators, or
-multi-digit numbers. Divisors must be nonzero and integer intermediates
-representable. The source assumes these conditions; missing checks are
+Core input is a nonempty valid expression of at most seven characters plus
+its terminator in the eight-cell buffer. Use single-digit operands and binary
+`+ - * / %` operators. The dedicated converter accepts balanced parentheses;
+the plain converter does not. Exclude spaces, unary operators, and multi-digit
+numbers. Divisors must be nonzero and integer intermediates representable. The source assumes these conditions; missing checks are
 extension discussion, not behavior to claim in evidence.
 
 Run the current lab demo/tests, trace full/empty preconditions and both expression

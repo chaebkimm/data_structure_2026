@@ -3,10 +3,12 @@
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
 Required scope: trace the current `student/lab.c` integer Stack, its
-forward growth with item count `size` and full/empty preconditions. First use the PPT’s direct
+forward growth with top index `top`, item count `top + 1`, and full/empty
+preconditions. First use the PPT’s direct
 calculation of `1-2*3+4` to explain why a number Stack remembers values while
 an operator Stack remembers waiting operations. Then convert `1-2*3+4` to
 `123*-4+` and evaluate it as -1 in the lab’s two separate phases. Describe
+the dedicated conversion `1+(2+3) -> 123++ -> 6`, shorter inputs, and
 the supported-input assumptions and missing validation accurately. The older
 checked integer API is optional legacy material.
 
@@ -20,24 +22,25 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 |---|---|
 | Stack | A collection whose accessible end is the top. |
 | last in, first out (LIFO) | The newest remaining item is the first item removed. |
-| top | The accessible end; its nonempty index is `size - 1` in this source. |
-| `push` | Write integer data at `size`, then increment `size`; caller ensures room. |
+| top | The accessible end; its nonempty index is `top` in this source. |
+| `push` | Increment `top`, then write integer data at that index; caller ensures room. |
 | `peek` | Return the top integer without removal; caller ensures nonempty. |
-| `pop` | Decrement `size`, then return integer `stack[size]`; caller ensures nonempty. |
-| empty Stack | No active items; `size == 0`. |
+| `pop` | Read integer `stack[top]`, decrement `top`, and return the value; caller ensures nonempty. |
+| empty Stack | No active items; `top == -1`. |
 | underflow | An inspection/removal request made while empty. |
-| full Stack | Ten active items; `size == 10`. |
+| full Stack | Ten active items; `top == 9`. |
 | fixed capacity | A number of available positions that does not grow. |
-| item count | `size` for the integer Stack. |
+| item count | `top + 1` for the integer Stack. |
 | capacity | Ten positions here; the variable controls the full check but does not resize the array. |
-| active prefix | Shared Stack indexes 0 through `size - 1`. |
+| active prefix | Shared Stack indexes 0 through `top`. |
 | inactive slot | A physical array cell outside the active prefix. |
-| invariant | A rule true in every valid completed state, here `0 <= size <= capacity`. |
+| invariant | A rule true in every valid completed state, here `-1 <= top < capacity`. |
 | representation | The physical storage and variables implementing the access rule. |
 | contract | Input assumptions, effects, returns, and preserved state. |
 | global state | Shared variables declared outside the functions. |
 | state preservation | Leaving state unchanged, as with a predicate or a valid peek. |
-| sentinel | A real bottom `'\0'` item in conversion, later drained as the output terminator. |
+| `switch` | Select a branch by a value; `prec` groups operators by priority. |
+| `break` | Exit the nearest loop or switch; conversion uses it to stop popping. |
 | function label | An abstract name used to model unfinished work. |
 | runtime call stack | Runtime bookkeeping for actual active function calls. |
 | operand | A number used by an operator. |
@@ -50,15 +53,15 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 | conversion | Rearranging infix tokens into postfix order. |
 | expression evaluator | Code that computes a number from expression tokens. |
 | number Stack | Shared `int stack[10]` reused for numeric operands and results during evaluation. |
-| operator Stack | The same global integer Stack holding operator codes and the bottom sentinel during conversion. |
+| operator Stack | The same global integer Stack holding operator codes and opening parentheses during conversion. |
 | single-digit operand | One character from `'0'` through `'9'` converted to a number. |
-| token | One operand or operator character. |
+| token | A meaningful input character: a digit, operator, or parenthesis; postfix omits parentheses. |
 | grammar | The allowed order and kinds of tokens. |
 | input assumption | A condition the current code expects without necessarily checking. |
 | null terminator | The `'\0'` character marking the end of a C string. |
-| postfix length | Seven token characters, excluding the terminator at `eq_re[7]`. |
-| `size` | Shared global item count and next insertion index, reset at each expression phase. |
-| `pos` | Local conversion cursor, ending at 8 after seven tokens and the sentinel are written. |
+| postfix length | Number of output tokens before the terminator; seven for `123*-4+`, five for `123++`. |
+| `top` | Shared global top index, reset to -1 at each expression phase. |
+| `pos` | Local conversion cursor, ending one beyond the output terminator. |
 | intermediate result | A numeric result used by a later operation, such as -5. |
 | time complexity | How the amount of work changes with input length. |
 | `O(1)` | A fixed amount of work or reserved storage in this program. |
@@ -75,23 +78,23 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 ### Representation and invariants
 
-- Which indexes are active when `size == 3`, and how many items are stored?
-- Why does push write `stack[size]` before incrementing, while peek reads `stack[size - 1]`?
+- Which indexes are active when `top == 2`, and how many items are stored?
+- Why does push increment `top` before writing, while peek reads `stack[top]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `size == 0` and `size == 10` the empty and full states respectively?
+- Why are `top == -1` and `top == 9` the empty and full states respectively?
 
 ### Operations and C API
 
 - Why must callers avoid full push even though `is_full()` exists?
 - Which out-of-bounds index would empty peek/pop select, and why is no return value promised?
-- Why does `pop()` decrement `size` before reading `stack[size]`, without erasing the old cell?
+- Why does `pop()` read `stack[top]` before decrementing, without erasing the old cell?
 - How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- Why does `size` equal the count, while the nonempty top index is `size - 1`?
+- Why is `top` the last active index, while `top + 1` is the item count?
 - How can a snapshot show that a boundary predicate preserves state without calling an invalid operation?
 
 ### Expression conversion and evaluation
@@ -99,15 +102,18 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do shared global `size`, local output cursor `pos`, and token length describe different state?
-- Why does conversion count the sentinel in `size` and finish with `pos == 8`?
+- How do shared global `top`, local output cursor `pos`, and token length describe different state?
+- Why does the explicit terminator write change `pos` from 7 to 8 after the Stack is already empty?
+- Why does the closing-parenthesis loop pop `(` before `break`, without writing it?
+- Why does `1+(2+3)` produce five postfix tokens `123++` and evaluate to 6?
+- Why are balanced parentheses required even though the dedicated converter handles grouping?
 
 ### Tests and debugging
 
 - Which tests distinguish empty, one-item, and full Stack states?
 - How can `8-3-2+1` distinguish left associativity from right associativity?
 - Why can a faulty top read stay inside the physical array and still be wrong?
-- Why do repeated seven-character conversions and prior active items test shared-state reset and termination?
+- Why do repeated conversions of different lengths and prior active items test shared-state reset and termination?
 
 ### Complexity
 
@@ -118,10 +124,10 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 ### Safety and interpretation
 
-- Why do the fixed seven-iteration loops require exactly seven token characters, even for a shorter valid mathematical expression?
+- Why do the null-terminated scans accept a one-digit expression such as `7`?
 - Which syntax restrictions are assumptions rather than validated rejections in this source?
 - Why must divisors be nonzero and intermediate integer results be representable?
-- How does the stored `'\0'` sentinel prevent an empty peek during valid conversion?
+- How does `!is_empty()` prevent conversion from peeking or popping an empty Stack?
 
 ### Assignment and evidence
 
@@ -132,7 +138,7 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 ### Transfer and prerequisites
 
-- How does this active prefix reuse Chapter 1's count and next-insertion convention?
+- How does this top-index representation differ from Chapter 1's stored item count?
 - How can a later Stack use pointer items while preserving the same LIFO rule?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
@@ -141,5 +147,4 @@ Sources: [Module 4 teaching-package overview](../module_04_stack/README.md),
 
 - How could explicit error reporting safely reject unsupported characters and missing operands?
 - What additional parsing rules and buffers would multi-digit operands require?
-- How would parentheses change the operator-Stack algorithm?
 - How does the optional legacy caller-owned integer API share the active-prefix layout but differ in ownership and error reporting?

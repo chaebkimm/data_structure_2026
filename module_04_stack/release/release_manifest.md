@@ -26,7 +26,7 @@ Release after initial return-order models are preserved:
 
 The reveal connects the abstract function-return trace to characters
 `'A'`, `'B'`, and `'C'` in `lab.c`'s concrete `int stack[10]`. Its active range
-is `stack[0]` through `stack[size - 1]` when nonempty, with `0 <= size <= capacity`. The pause preserves
+is `stack[0]` through `stack[top]` when nonempty, with `-1 <= top < capacity`. The pause preserves
 return-order reasoning, boundary decisions, and expression-precedence
 transfer. Approved timing or response accommodations retain those same
 targets.
@@ -38,11 +38,12 @@ Release after the pause and instructor calibration:
 - standard investigation worksheet;
 - linear accessible investigation worksheet.
 
-This stage asks about LIFO operations, an active prefix counted by `size`, fixed storage,
+This stage asks about LIFO operations, an active prefix ending at `top`, fixed storage,
 boundary behavior, operator precedence, postfix evaluation, and inactive
 slots without supplying instructor answers. Conversion uses local output
-cursor `pos` and a stored sentinel; both phases reset and reuse the same
-global integer array and `size`. Inputs have exactly seven token characters.
+cursor `pos`, guarded operator reads, and an explicit null-terminator write; both phases reset and reuse the same
+global integer array and `top`. Valid inputs contain at most seven characters
+plus a terminator; the dedicated parentheses converter handles balanced groups.
 
 ## Stage D — Textbook and Models
 
@@ -54,7 +55,8 @@ Stage C investigation:
 - diagrams with exact text equivalents.
 
 Choose either language edition; reading both is optional. Both editions
-follow the worked expression `1-2*3+4` → `123*-4+` → `-1`. Stage D contains
+follow `1-2*3+4` → `123*-4+` → `-1` and the parentheses
+example `1+(2+3)` → `123++` → `6`. Stage D contains
 no autopsy answer or private instructor material.
 
 ## Stage E — Lab and Evidence
@@ -63,8 +65,9 @@ Release for Meeting B:
 
 - current `student/lab.c`;
 - lab, rubric, evidence template, and Stack-Top Autopsy prompt;
+- `student/ppt_lab_material.md`, the lab lecture source linked from the lab;
 - `code/lab_demo.c`, which supplies the demonstration's `main`;
-- `code/tests/test_lab.c`, with six baseline groups and space for three
+- `code/tests/test_lab.c`, with eight baseline groups and space for three
   justified student tests;
 - student-only PowerShell and GNU Make build files plus the code README; and
 - isolated `code/autopsy/faulty_top.c` and its README.

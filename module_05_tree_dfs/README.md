@@ -1,18 +1,45 @@
-# Module 5 — Tree Depth-First Traversal
+# Module 5 — Depth-First Traversal and Expression Trees
 
-This Week 5 package applies depth-first traversal to the expression tree
-`(3+5)*2`.
+The current lecture follows [`student/lab.c`](student/lab.c) and the
+[Chapter 5 textbook](student/textbook.md). Nodes store characters and integer
+child indices in `nodes[10]`; `-1` marks an absent child.
 
-Students learn three roles for the same left-first recursive shape:
+Students first trace the alphabet tree rooted at `F`. The three assignment
+positions in `tree_traversal()` show preorder, inorder, and postorder. The
+globals retain only their last assigned characters, `G`, `G`, and `F`.
 
-- preorder creates a structurally independent copy;
-- inorder prints the expression with required parentheses; and
-- postorder evaluates children before their operator.
+Next, `eq_tree()` builds `123*+` using a stack of subtree-root indices. It
+returns root index 4 for `1+2*3`. `write_infix()` preserves grouping with
+parentheses, and `start_write_infix()` resets and terminates the output.
+The lab assumes valid, nonempty postfix input of at most five tokens,
+using single digits and binary `+`, `-`, `*`, `/`, or `%`.
 
-The implementation uses a caller-owned pool of 100 nodes. It accepts
-single-digit operands and the operators `+` and `*`. Failed copies restore the
-pool position and preserve the caller's output pointer. Failed evaluations
-preserve the caller's previous result.
+## Lecture materials
 
-Students edit `code/starter/tree_dfs.c` and `code/tests/test_student.c`.
-Instructors validate with `make solution-core solution-extension` from `code/`.
+- [Instructor guide](../instructor_guide/chapter_05.md): questions and board traces.
+- [Lesson plan](instructor/lesson_plan.md): two meetings within 180 minutes.
+- [Technical notes](instructor/technical_notes.md) and [answer key](instructor/answer_key.md): implementation facts and instructor checks.
+- [Initial inquiry](student/inquiry_prompt.md) and [linear version](student/inquiry_prompt_linear.md): predictions before the reveal.
+- [Representation reveal](student/representation_reveal.md), [pause](student/cognitive_pause.md), and [vocabulary](student/vocabulary.md): name and explain the observed operations.
+- [Investigation worksheet](student/investigation_worksheet.md) and [linear version](student/investigation_worksheet_linear.md): equivalent reasoning tasks.
+- [Tree models](diagrams/dfs_models.md) and [question bank](../student_question_bank/week_05_tree_dfs.md): lecture and discussion support.
+- [Runnable demo](code/lecture/lab_demo.c): the textbook's driver using the actual lab source.
+
+From `code/`, run `make lecture`. For PowerShell, run
+`./build.ps1 -Target lecture`. See the [code guide](code/README.md) for
+manual compilation and expected output. `lab.c` has no `main`; the demo
+supplies it. Predict the output before running it.
+
+## Separate earlier exercises
+
+The pointer-based copy/print/evaluate exercise remains in `code/include`,
+`code/starter`, `code/solution`, and its original tests and autopsy. Its
+[lab instructions](student/lab.md), rubric, evidence record, and Stage E
+release use that earlier API. Those requirements do not describe the
+current lecture or test `student/lab.c`.
+
+The staged release script still packages that earlier Stage E exercise and
+does not include the new lecture driver. Use the repository lecture files
+above for this lesson. The [iterative traversal sample](code/lecture/iterative_traversals.c)
+is an optional pointer-based comparison; it is not the implementation in
+`student/lab.c`.

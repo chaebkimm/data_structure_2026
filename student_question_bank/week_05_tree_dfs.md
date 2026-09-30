@@ -1,124 +1,113 @@
-# Week 5 — Tree DFS with Recursive Core: Vocabulary and Questions
+# Week 5 — Tree DFS and Expression Trees: Vocabulary and Questions
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-Required scope: trace and implement recursive preorder, inorder, and postorder traversal, reason about active calls and `O(h)` space, trace strict-BST search, and destroy an owned tree in postorder. A complete explicit-Stack tree traversal is an optional extension.
-
-Sources: [Module 5 teaching-package overview](../module_05_tree_dfs/README.md), [Module 5 full vocabulary reference](../module_05_tree_dfs/student/vocabulary.md), and [Weeks 1–7 anticipated-question source](01_weeks_01_07_questions.md).
+Lecture scope: trace the current array-based [`lab.c`](../module_05_tree_dfs/student/lab.c),
+explain its three recursive visit positions, construct expression trees
+from postfix, and write infix with parentheses and a complete C string.
+Use the [textbook](../module_05_tree_dfs/student/textbook.md),
+[vocabulary](../module_05_tree_dfs/student/vocabulary.md), and
+[lecture demo](../module_05_tree_dfs/code/lecture/lab_demo.c).
 
 ## Vocabulary students will learn
 
 | Term | Working meaning |
-|---|---|
-| algorithm | A precise, repeatable set of steps. |
-| visit | Perform the current task at one reached node. |
-| visit order | The sequence in which nodes receive the visit task. |
-| tree traversal | An algorithm that visits tree nodes in a stated order. |
-| subtree | One node together with every node below it. |
-| depth-first search (DFS) | A method that explores one subtree deeply before returning to unfinished choices. |
-| backtrack | Return to an earlier unfinished choice. |
-| preorder | Visit the node, then its left subtree, then its right subtree. |
-| inorder | Visit the left subtree, then the node, then its right subtree. |
-| postorder | Visit the left subtree, then its right subtree, then the node. |
-| recursion | A function calling itself directly or through other functions. |
-| recursive call | A function call made as part of recursion. |
-| base case | An input that stops further recursive calls. |
-| `NULL` subtree | A missing subtree; the traversal base case that visits nothing. |
-| active call | A function call that has started but has not returned. |
-| return | Finish one call and continue the caller’s saved work. |
-| caller | The function or program part that requested another function call. |
-| call frame | Saved state for one active call, including where execution must resume. |
-| runtime call stack | Bookkeeping commonly used by C to manage active function calls. |
-| Stack ADT | A collection defined by last-in, first-out access. |
-| tree height (`h`) | The greatest number of downward links from a node to a leaf. |
-| node count (`n`) | The number of nodes in the tree being analyzed. |
-| auxiliary space | Extra working storage used by an algorithm. |
-| `O(n)` time | Work that may grow in proportion to the number of tree nodes. |
-| `O(h)` space | Extra storage that may grow with the tree’s height. |
-| output parameter | Caller-provided storage in which a function writes a result. |
-| bounded output | A result limited to a stated maximum number of stored visits. |
-| failure atomicity | A failed operation leaves the previous valid output or structure unchanged. |
-| dynamic allocation | Obtaining storage while the program runs. |
-| ownership | Responsibility for eventually releasing allocated storage. |
-| postorder destruction | Release each node only after its children have been released. |
-| `tree_node_release` | The supplied operation that releases one node after its children are handled. |
-| `tree_destroy_postorder` | The operation that releases a whole tree child-before-parent and resets its root. |
-| dangling pointer | An address that refers to storage already released. |
-| binary search tree (BST) | A binary tree whose entire left subtree has smaller keys and right subtree has larger keys at every node. |
-| strict ordering | An ordering rule that rejects duplicate keys. |
-| BST search | Choose left or right from key comparisons until the key is found or a `NULL` subtree is reached. |
-| cycle | A route that returns to an already reached node. |
-| shared child | A node reached through more than one parent link. |
-| visited set | Stored marks showing which nodes have already been reached; valid tree DFS does not need one. |
+| --- | --- |
+| Node index | An integer selecting a slot in `nodes[10]`. |
+| Root | The starting index for a tree or subtree. |
+| Absent child | A child link containing `-1`. |
+| Reachable node | An entry reached by following links from the chosen root. |
+| Visit | Work at a reached node; here, assigning a character to a global. |
+| Assignment trace | The sequence of assigned values, which a single final variable does not retain. |
+| Depth-first search | Finish one branch before returning to another. |
+| Preorder | Current node, left subtree, right subtree. |
+| Inorder | Left subtree, current node, right subtree. |
+| Postorder | Left subtree, right subtree, current node. |
+| Active call | A call that has started but has not returned. |
+| Call frame | One active call's saved state and continuation. |
+| Runtime call stack | Storage used to remember unfinished calls. |
+| Height (`h`) | Maximum number of edges from root to leaf; a deepest path has `h + 1` nodes. |
+| Explicit stack | `eq_tree()`'s array of completed subexpression root indices. |
+| Postfix | Place each binary operator after its operands. |
+| Expression tree | Digit leaves joined by binary operator nodes. |
+| Infix | Place each binary operator between its operands. |
+| Precedence | Priority that determines grouping among operator levels. |
+| Left associativity | Group equal-precedence operators from left to right. |
+| Output position | Next character slot during writing; the final `pos` includes the terminator. |
+| Null terminator | `'\0'`, the end marker for a C string. |
+| Wrapper | `start_write_infix()`, which resets, invokes the writer, and terminates. |
+| Capacity | Reserved array space, including room for a string's terminator. |
+| Input assumption | A condition the code relies on without validating it. |
 
 ## Anticipated student questions
 
-### Meaning and mental model
+### Representation and visits
 
-- What makes a traversal depth-first rather than breadth-first?
-- How does recursion remember the node, next child, and return location for each unfinished branch?
-- What is the difference among preorder, inorder, and postorder?
-- Why is `NULL` a stopping case rather than a node that should be recorded?
+- Why do `left`, `right`, and a root hold integers while `data` holds a character?
+- Why does `tree_connect()` return 5, and why is `size` 10 when only seven
+  alphabet nodes are reachable?
+- Does changing a child index move any node in the array?
+- How do the three assignment positions produce preorder, inorder, and postorder?
+- Why do the globals end as `G`, `G`, and `F` instead of containing complete sequences?
+- Why does a parent skip `-1`, and why is `tree_traversal(-1)` unsupported?
+- What assumptions about valid indices, cycles, and multiple parents make this recursion work?
 
-### Representation and invariants
+### Calls and storage
 
-- What assumptions about cycles, shared children, and ownership do the recursive traversal functions make?
-- Why can a `TreeOrder` hold at most `TREE_DFS_MAX_NODES` visits?
-- What is the relationship between tree height and the number of simultaneously active recursive calls?
-- Why does strict BST ordering apply to entire subtrees rather than only immediate children?
+- What work is saved in the calls for `F`, `A`, and `B` while `D` is active?
+- If height counts edges, why is the maximum number of active node calls `h + 1`?
+- Why does traversal take `O(n)` time for `n` reachable nodes?
+- Why do traversal and writing use `O(h + 1)` call-stack space?
+- How do the runtime call stack and `eq_tree()`'s explicit stack differ?
+- What is the difference between reserved capacity and the number of slots currently used?
 
-### Operations, C API, and ownership
+### Constructing the expression
 
-- Which recursive traversals must I implement in the required Week 5 core?
-- Why must `out_order` remain unchanged if traversal encounters a limit or invalid argument?
-- What is the difference between `tree_node_release` and `tree_destroy_postorder`?
-- Why must `tree_destroy_postorder` receive a pointer to the root pointer and set the caller’s root to `NULL`?
+- Why does input position `i` become node index `i` in `eq_tree()`?
+- What subtree does each stack entry represent after every token of `123*+`?
+- Why is the first popped root the right child? What would reversal do to `12-`?
+- Why is `size` 5 while `top` is 0 at the end of the default construction?
+- Why do digits remain characters rather than being converted with `c - '0'`?
+- Does construction evaluate the expression, and what happens to the previous alphabet tree?
+- Why must every operator have two available roots and the final stack have exactly one root?
+- Which assumptions permit `eq_tree()` to omit validation? Are empty input, spaces,
+  multidigit operands, and unary operators within that contract?
 
-### Tracing
+### Writing infix
 
-- For one asymmetric tree, what visit sequences result from preorder, inorder, and postorder?
-- What active call frames exist immediately before and after returning from a leaf?
-- How does a recursive preorder trace correspond to push/pop-like behavior on the runtime call stack?
-- What branch decisions does `tree_bst_search` make for a present key and for a missing key?
+- Why do `123*+` and `12+3*` need different infix strings despite the same
+  unparenthesized inorder symbols?
+- Why are the parentheses conditions `>` on the left and `>=` on the right?
+- What distinguishes the grouping of `12-3-` and `123--`?
+- Why does `123++` become `1+(2+3)` even when arithmetic simplification is possible?
+- How are `/` and `%` handled by the same precedence rules?
+- Why does giving digits precedence 3 avoid unnecessary parentheses?
+- Does `prec()` returning 0 make an unsupported token valid?
+- Why can the alphabet tree be traversed but not passed to the infix writer?
 
-### Tests and debugging
+### Wrapper, bounds, and observation
 
-- Which tests distinguish an empty tree, singleton tree, left chain, right chain, and branching tree?
-- How can a test prove that traversal records both each node’s key and its `flagged` value?
-- In the Tree DFS Autopsy, what missing or misplaced base case causes the first incorrect recursive action?
-- How can the live-node-count test seam reveal a leak after an insertion allocation failure or incomplete destruction?
+- Why must a complete formatting operation start with `start_write_infix()`?
+- What would resetting `pos` inside every recursive call do to the output?
+- Why are both the reset and `'\0'` needed when a shorter expression replaces a longer one?
+- Why does the final `pos` include the terminator?
+- How do five input tokens imply at most two operators and one added pair of parentheses?
+- Why do eight characters suffice under the current input limit, and why does
+  that not guarantee every larger tree fitting `nodes[10]` fits `infix[10]`?
+- How can a trace or debugger show full assignment sequences that the demo's
+  `Last visits` line cannot show?
+- Which valid examples distinguish left parentheses, right parentheses,
+  repeated formatting, and replacement by a shorter string?
 
-### Complexity
+### Transfer and optional extensions
 
-- Why does a complete traversal take `O(n)` time regardless of visit order?
-- Why is recursive traversal’s extra space `O(h)` rather than always `O(n)`?
-- How do balanced and completely skewed shapes change `h` and BST-search time?
-- Why can a very deep but valid tree still exhaust the C runtime call stack?
+- How does Chapter 4's value stack become a stack of subtree roots here?
+- Why will graph DFS need visited state when a valid tree has no cycles or shared children?
+- How would increasing input capacity change the node, stack, and output capacity analysis?
+- What additional checks would a generalized builder need before accepting untrusted input?
+- How could an explicit stack reproduce the same visit order as recursion?
 
-### Cybersecurity and interpretation
-
-- How could a cycle or shared child turn trusted tree-recursion code into nontermination or double-free behavior?
-- Why must tree shape and ownership be validated at a trust boundary before destructive traversal?
-- How can adversarial key order make an unbalanced BST a performance risk?
-- What does a `flagged` field demonstrate, and what security conclusion can it not establish by itself?
-
-### Assignment and evidence
-
-- Is recursive preorder alone required, or are recursive preorder, inorder, postorder, and postorder cleanup all core evidence?
-- Is a complete explicit-Stack tree traversal required in the 14-week path?
-- What must my three student-authored tests add beyond the supplied traversal cases?
-- What should the tree-to-graph transfer explanation identify about assumptions that will no longer hold in Week 6?
-
-### Transfer and prerequisites
-
-- Which Week 2 tree, ownership, and recursion ideas must I retrieve before learning formal traversal orders and BST rules?
-- How is the implicit runtime call stack related to, but different from, the Week 4 Stack ADT?
-- Why will graph DFS need visited state even if tree DFS does not?
-- How will inorder traversal and BST search reappear in the later AVL unit?
-
-### Extension questions — optional
-
-- How can an explicit Stack reproduce left-first preorder without recursion?
-- Why would an iterative preorder implementation push the right child before the left child?
-- What should happen if the explicit Stack’s configured limit is too small for the pending frontier?
-- Is `tree_preorder_iterative` optional enrichment or required Week 5 evidence in the 14-week course?
+The lecture uses well-formed, nonempty postfix strings of at most five
+single-character tokens: digits and binary `+`, `-`, `*`, `/`, or `%`, with
+no spaces. Extensions to validation, input size, or traversal implementation
+are discussion topics beyond the current lab's behavior.

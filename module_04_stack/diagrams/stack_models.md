@@ -20,19 +20,20 @@ This is last in, first out, regardless of how the cells are arranged.
 ## 2. Canonical character trace
 
 ```text
-request       returned code         logical Stack    size    count
-start         none                  empty              0      0
-push('A')     none                  A                  1      1
-push('B')     none                  A, B               2      2
-push('C')     none                  A, B, C            3      3
-peek()        C                     A, B, C            3      3
-pop()         C                     A, B               2      2
-pop()         B                     A                  1      1
-pop()         A                     empty              0      0
+request       returned code         logical Stack     top    count
+start         none                  empty             -1      0
+push('A')     none                  A                   0      1
+push('B')     none                  A, B                1      2
+push('C')     none                  A, B, C             2      3
+peek()        C                     A, B, C             2      3
+pop()         C                     A, B                1      2
+pop()         B                     A                   0      1
+pop()         A                     empty             -1      0
 ```
 
-Text equivalent: pushes increase `size`; pops decrease it. The count equals
-`size`. Push has return type `void`; peek and pop return integers, shown here as character labels.
+Text equivalent: pushes increase `top` before writing; pops read before
+decreasing it. The count equals `top + 1`. Push has return type `void`;
+peek and pop return integers, shown here as character labels.
 
 ## 3. Physical cells and the active prefix
 
@@ -41,38 +42,39 @@ index:       0    1    2    3    4    5    6    7    8    9
 stack:     [ A ][ B ][ C ][ . ][ . ][ . ][ . ][ . ][ . ][ . ]
             <--- active --> <----------- inactive ---------->
              ^         ^    ^
-           bottom     top  size = 3 (next insertion)
+           bottom    top=2  top+1=3 (next insertion)
 
 active indexes: 0 through 2
-count: size = 3
-next push writes index 3, then increases size to 4
+count: top + 1 = 3
+next push increases top to 3, then writes index 3
 ```
 
 Text equivalent: dots mean inactive positions, not required stored values.
 The most recent character C is at `stack[2]`; bottom A is at index 0. Logical
 bottom-to-top order follows increasing physical indexes. The top read is
-`stack[size - 1]`.
+`stack[top]`.
 
 ## 4. Empty, full, and the invariant
 
 ```text
-valid caller-maintained state: 0 <= size <= capacity  (capacity = 10)
-empty:    size == 0, no top; is_empty() is true; do not peek or pop
-nonempty: size == 3, top at stack[2]
-full:     size == 10; is_full() is true; do not push
+valid caller-maintained state: -1 <= top < capacity  (capacity = 10)
+empty:    top == -1, no top; is_empty() is true; do not peek or pop
+nonempty: top == 2, top at stack[2], count 3
+full:     top == 9, count 10; is_full() is true; do not push
 ```
 
-Text equivalent: the predicates report boundaries but do not guard the
-operations. A full push accesses index 10; empty peek/pop access index -1.
-These invalid calls have undefined behavior and no promised return or final
-state. `capacity` affects `is_full()` only; it cannot resize the ten-cell array.
+Text equivalent: `is_full()` checks `top + 1 == capacity`. The predicates
+report boundaries but do not guard operations. A full push accesses index
+10; empty peek/pop access index -1. These invalid calls have undefined
+behavior and no promised return or final state. `capacity` affects
+`is_full()` only; it cannot resize the ten-cell array.
 
 ## 5. Peek and pop
 
 ```text
-before: size = 3; stack[0] = 'A', stack[1] = 'B', stack[2] = 'C'
-peek:   read stack[size - 1], index 2 -> integer code for 'C'; size stays 3
-pop:    --size makes size 2; read stack[2] -> integer code for 'C'
+before: top = 2; stack[0] = 'A', stack[1] = 'B', stack[2] = 'C'
+peek:   read stack[top], index 2 -> integer code for 'C'; top stays 2
+pop:    read stack[top], index 2 -> integer code for 'C'; then top becomes 1
         stack[2] can still contain 'C', but that cell is now inactive
 ```
 
@@ -87,82 +89,117 @@ The PPT first calculates with conceptual operator and value Stacks. When
 addition with 4 gives -1. Recording this order produces `123*-4+`.
 
 ```text
-eq: 1-2*3+4  -- conversion -->  eq_re: 123*-4+  -- evaluation -->  -1
-                    |                                 |
-             int stack[10]                     same int stack[10]
-             operator codes + sentinel         numeric values
-             reset global size                 reset global size
-             local cursor pos starts 0         no sentinel
+eq: 1-2*3+4 -- convert_to_postfix --> postfix: 123*-4+ -- eval_postfix --> -1
+                     |                                      |
+               int stack[10]                          same int stack[10]
+               operator codes                         numeric values
+               reset top = -1                         reset top = -1
+               local cursor pos = 0                   result returned by pop
 
-eq_re[7] = '\0'; conversion pos ends 8; visible token length is 7
+postfix[7] = '\0' is written explicitly after draining; pos ends 8
 ```
 
-Text equivalent: conversion writes postfix characters using a local cursor
-`pos`. Its Stack holds operator codes above a real bottom sentinel. Evaluation
-resets the same global count and reuses the same integer array for operands
-and intermediate results. No separate value array or global output count exists.
+Text equivalent: conversion starts empty and writes postfix characters with
+local cursor `pos`. Its operator loop checks nonempty before peeking. A
+lower-precedence waiting operator triggers `break`; otherwise it is popped
+to output. After the final drain, a separate assignment writes the null
+terminator. Evaluation resets the top index and reuses the array for operands
+and intermediate results. No bottom sentinel is stored.
 
 ## 7. Converting `1-2*3+4`
 
 ```text
-read/work       visible postfix     Stack, bottom to top    size  pos
-push sentinel   empty               '\0'                       1    0
-1               1                   '\0'                       1    1
--               1                   '\0', -                    2    1
-2               12                  '\0', -                    2    2
-*               12                  '\0', -, *                 3    2
-3               123                 '\0', -, *                 3    3
-+               123*-               '\0', +                    2    5
-4               123*-4              '\0', +                    2    6
-drain +         123*-4+             '\0'                       1    7
-drain sentinel  123*-4+ terminated  empty                      0    8
+read/work        visible postfix     Stack, bottom to top     top  pos
+reset to empty   empty               empty                     -1    0
+1                1                   empty                     -1    1
+-                1                   -                          0    1
+2                12                  -                          0    2
+*                12                  -, *                       1    2
+3                123                 -, *                       1    3
++                123*-               +                          0    5
+4                123*-4              +                          0    6
+drain +          123*-4+             empty                     -1    7
+write terminator 123*-4+ terminated  empty                     -1    8
 ```
 
-Text equivalent: digits go directly to output. Incoming `+` pops `*` and `-`
-because their precedence is greater or equal, then stops at the precedence-0
-sentinel. The final drain writes `+`, then writes the sentinel to `eq_re[7]`.
-That last write increments `pos` to 8. Each conversion resets `size` and `pos`.
+Text equivalent: digits go directly to output. At incoming `*`, the waiting
+`-` has lower precedence, so the operator loop breaks before `*` is pushed.
+Incoming `+` pops `*` and `-`, then the empty check stops the loop before
+`+` is pushed. After the final drain, `postfix[pos++] = '\0'` writes at index
+7. The Stack holds at most two operators, with maximum `top == 1`.
 
-## 8. Evaluating `123*-4+`
+## 8. Keeping `1+(2+3)` grouped
+
+The inner addition must be recorded before the outer addition. The dedicated
+`infix_to_postfix_parentheses()` function reads `eq_paren` and uses `(` as a
+boundary between waiting operators.
 
 ```text
-token        integer stack, bottom to top    size    calculation
-1            1                               1      digit -> integer
-2            1, 2                            2      digit -> integer
-3            1, 2, 3                         3      digit -> integer
-*            1, 6                            2      2 * 3 = 6
--            -5                              1      1 - 6 = -5
-4            -5, 4                           2      digit -> integer
-+            -1                              1      -5 + 4 = -1
-final pop    empty                           0      return -1
+read/work        visible postfix     Stack, bottom to top     top  pos
+reset to empty   empty               empty                     -1    0
+1                1                   empty                     -1    1
+outer +          1                   +                          0    1
+(                1                   +, (                       1    1
+2                12                  +, (                       1    2
+inner +          12                  +, (, +                    2    2
+3                123                 +, (, +                    2    3
+)                123+                +                          0    4
+drain outer +    123++               empty                     -1    5
+write terminator 123++ terminated    empty                     -1    6
 ```
 
-Text equivalent: evaluation resets global `size`, converts digit characters
-using `c - '0'`, and reuses `int stack[10]`. Each operator pops right operand
-`num2` before left operand `num1`. `pop()` decrements `size` before reading.
-The seven-token loop excludes the terminator; the final pop empties the Stack.
+Text equivalent: an opening `(` is pushed. At `)`, the loop checks nonempty,
+pops the inner `+`, and emits it. It then pops `(` and breaks without writing
+it. The final drain emits outer `+`; the separate terminator assignment
+writes `postfix[5] = '\0'` and advances `pos` from 5 to 6. The maximum
+Stack count is three, with `top == 2`. Balanced groups are assumed; an
+unmatched close can be silently consumed and an unmatched open can be emitted.
 
-## 9. Current input boundary
+## 9. Evaluating the postfix output
 
 ```text
-eq[8]:       exactly 7 token characters + '\0'
-eq_re[8]:    those 7 tokens reordered  + '\0'
-operators:   + -       precedence 1
-             * / %     precedence 2
-sentinel:    '\0'      precedence 0
+token        integer stack, bottom to top     top    calculation
+1            1                                0     digit -> integer
+2            1, 2                             1     digit -> integer
+3            1, 2, 3                          2     digit -> integer
+*            1, 6                             1     2 * 3 = 6
+-            -5                               0     1 - 6 = -5
+4            -5, 4                            1     digit -> integer
++            -1                               0     -5 + 4 = -1
+final pop    empty                           -1     return -1
 ```
 
-Text equivalent: four single digits alternate with three binary operators.
-Both loops run exactly seven times; shorter expressions are unsupported.
-Exclude spaces, parentheses, unary signs, multi-digit operands, zero divisors,
-and arithmetic outside C `int`. These conditions are assumptions, not checked
-rejections.
+Text equivalent: evaluation resets global `top = -1`, converts digit
+characters using `c - '0'`, and reuses `int stack[10]`. Each operator pops
+right operand `num2` before left operand `num1`. `pop()` reads before
+decrementing `top`. The scan stops before the terminator, and the final pop
+empties the Stack. For `123++`, the same evaluator computes `2+3 = 5`, then
+`1+5 = 6` and returns 6 with `top == -1`.
 
-## 10. Three related meanings
+## 10. Current input boundary
+
+```text
+eq[8]:       up to 7 plain infix characters + '\0'
+eq_paren[8]: up to 7 infix characters, including balanced parentheses + '\0'
+postfix[8]:  output tokens + '\0', within 8 cells
+operators:   + -        precedence 1
+             * / %      precedence 2
+opening (:              precedence 0
+terminator:  '\0'       explicitly written after draining
+```
+
+Text equivalent: each input is a nonempty valid expression with single-digit
+operands and binary operators. Shorter valid expressions such as `7` and
+`1+2` work because all scans stop at `'\0'`. Use the dedicated converter for
+balanced parentheses. Exclude spaces, unary signs, multi-digit operands,
+zero divisors, and arithmetic outside C `int`. These conditions are
+assumptions, not checked rejections.
+
+## 11. Three related meanings
 
 ```text
 Stack ADT          LIFO behavior through push, peek, pop
-explicit storage   int stack[10] and its next-insertion/count size
+explicit storage   int stack[10] and its top index top; count is top + 1
 runtime call stack bookkeeping for actual active function calls
 ```
 
