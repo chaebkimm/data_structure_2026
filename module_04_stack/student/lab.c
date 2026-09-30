@@ -21,9 +21,9 @@ int prec(char op) {
 }
 
 char eq[8] = "1-2*3+4";
-char eq_re[8] = "";
+char eq_post[8] = "";
 
-void infix_to_postfix() {
+void convert_to_postfix() {
     int pos = 0;
     top = -1;
     push('\0');
@@ -31,19 +31,19 @@ void infix_to_postfix() {
         char c = eq[i];
 
         if (c >= '0' && c <= '9') {
-            eq_re[pos++] = c;
+            eq_post[pos++] = c;
         }
         else {
             char op = peek();
             while (prec(op) >= prec(c)) {
-                eq_re[pos++] = pop();
+                eq_post[pos++] = pop();
                 op = peek();
             }
             push(c);
         }
     }
     while (!is_empty()) {
-        eq_re[pos++] = pop();
+        eq_post[pos++] = pop();
     }
 }
 
@@ -61,8 +61,8 @@ int calc(int num1, int num2, int op) {
 int eval_postfix() {
     top = -1;
 
-    for (int i = 0; eq_re[i] != '\0'; i++) {
-        char c = eq_re[i];
+    for (int i = 0; eq_post[i] != '\0'; i++) {
+        char c = eq_post[i];
         if (c >= '0' && c <= '9') {
             push(c - '0');
         }
@@ -86,7 +86,7 @@ void infix_to_postfix_parentheses() {
         char c = eq_paren[i];
 
         if (c >= '0' && c <= '9') {
-            eq_re[pos++] = c;
+            eq_post[pos++] = c;
         }
         else if (c == '(') {
             push(c);
@@ -94,7 +94,7 @@ void infix_to_postfix_parentheses() {
         else if (c == ')') {
             char op = peek();
             while (op != '(') {
-                eq_re[pos++] = pop();
+                eq_post[pos++] = pop();
                 op = peek();
             }
             pop();
@@ -102,13 +102,13 @@ void infix_to_postfix_parentheses() {
         else {
             char op = peek();
             while (prec(op) >= prec(c)) {
-                eq_re[pos++] = pop();
+                eq_post[pos++] = pop();
                 op = peek();
             }
             push(c);
         }
     }
     while (!is_empty()) {
-        eq_re[pos++] = pop();
+        eq_post[pos++] = pop();
     }
 }
