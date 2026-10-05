@@ -1,129 +1,90 @@
-struct TreeNode {
-    char data;
-    int left;
-    int right;
-};
-
-struct TreeNode nodes[10];
-int capacity = 10;
-int size = 0;
-
-
-void alphabet_init() {
-	size = capacity;
-
-	for (int i = 0; i < capacity; i++) {
-		nodes[i].data = 'A' + i;
-		nodes[i].left = nodes[i].right = -1;
-	}
-}
-
-int tree_connect() {
-	int root = 0;
-
-	nodes[root].left = 1;
-	nodes[root].right = 2;
-
-	nodes[1].left = 3;
-	nodes[1].right = 4;
-
-	nodes[5].left = root;
-	root = 5;
-  	nodes[5].right = 6;
-
-	return root;
-}
+#include "module_02_binary_tree/student/lab.c"
+#include "module_04_stack/student/lab.c"
 
 int pre_data, in_data, post_data;
 
 void tree_traversal(int i) {
+    if (i < 0) {
+        return;
+    }
     pre_data = nodes[i].data;
-    if (nodes[i].left != -1) {
-        tree_traversal(nodes[i].left);
-    }
+    tree_traversal(nodes[i].left);
     in_data = nodes[i].data;
-    if (nodes[i].right != -1) {
-        tree_traversal(nodes[i].right);
-    }
+    tree_traversal(nodes[i].right);
     post_data = nodes[i].data;
 }
 
-char post_eq[6] = "123*+"; /* assume no malformed post_eq */
-
-int eq_tree() {
-    int stack[10];
-    int top = -1;
-    size = 0;
-    for (int i = 0; post_eq[i] != '\0'; i++) {
-        char c = post_eq[i];
+int build_tree_from_postfix() {
+    top = -1;
+    nodes_size = 0;
+    for (int i = 0; postfix[i] != '\0'; i++) {
+        char c = postfix[i];
         nodes[i].data = c;
         if (c >= '0' && c <= '9') {
-            nodes[i].left = nodes[i].right = -1;
+            nodes[i].left = -1;
+            nodes[i].right = -1;
         } else {
-            nodes[i].right = stack[top--];
-            nodes[i].left = stack[top--];
-
+            nodes[i].right = pop();
+            nodes[i].left = pop();
         }
-        stack[++top] = i;
-        size++;
+        push(i);
+        ++nodes_size;
     }
-    return stack[top];
-}
-
-int prec(char op) {
-    if (op == '+' || op == '-') {
-        return 1;
-    }
-    else if (op == '*' || op == '/' || op == '%') {
-        return 2;
-    }
-    else if (op >= '0' && op <= '9') {
-        return 3;
-    }
-    return 0;
+    return pop();
 }
 
 char infix[10] = "";
-int pos = 0;
+int infix_pos = 0;
 
-void write_infix(int i) {
+/* assume original equation did not have parenthesis*/
+void _write_infix(int i) {
     char c = nodes[i].data;
-    if (c >= '0' && c <= '9') {
-        infix[pos++] = c;
+    if (is_digit(c)) {
+        infix[infix_pos++] = c;
+        return;
+    }
+    _write_infix(nodes[i].left);
+    infix[infix_pos++] = c;
+    _write_infix(nodes[i].right);
+}
+
+/* only single run */
+void write_infix(int root) {
+    _write_infix(root);
+    infix[infix_pos++] = '\0';
+}
+
+int progress[10] = {0};
+
+void tree_traversal_proceed() {
+    int i = peek();
+    if (i < 0) {
+        pop();
         return;
     }
 
-    int l = nodes[i].left;
-    char l_data = nodes[l].data;
-
-    if (prec(c) > prec(l_data)) {
-        infix[pos++] = '(';
-    }
-
-    write_infix(nodes[i].left);
-
-    if (prec(c) > prec(l_data)) {
-        infix[pos++] = ')';
-    }
-
-    infix[pos++] = c;
-
-    int r = nodes[i].right;
-    char r_data = nodes[r].data;
-    
-    if (prec(c) >= prec(r_data)) {
-        infix[pos++] = '(';
-    }
-
-    write_infix(r);
-
-    if (prec(c) >= prec(r_data)) {
-        infix[pos++] = ')';
+    int step = progress[i]++;
+    switch (step) {
+        case 0:
+            pre_data = nodes[i].data;
+            push(nodes[i].left);
+            return;
+        case 1:
+            in_data = nodes[i].data;
+            push(nodes[i].right);
+            return;
+        case 2:
+            post_data = nodes[i].data;
+            pop();
+            return;
     }
 }
 
-void start_write_infix(int root) {
-    pos = 0;
-    write_infix(root);
-    infix[pos++] = '\0';
+/* only single run */
+void tree_traversal_with_stack(int root_index) {
+    top = -1;
+    push(root_index);
+    while (!is_empty()) {
+        tree_traversal_proceed();
+    }
 }
