@@ -28,14 +28,6 @@ An empty subtree contains no node to explore, so we return immediately. This is 
 
 Each step is responsible for its own subtree. The parent waits for the child's exploration to finish, then continues its remaining work. Finishing smaller subtrees finishes larger subtrees in turn, until exploration of the whole tree rooted at A is complete.
 
-### How do we return after finishing a branch?
-
-Suppose we explore the left side first. From A we descend to B, then D. D has no children, so we return to B. B still has its right side to explore, so we continue to E. After finishing E, we return to B, then A, where C is still waiting. We then explore C, going to F, returning to C, and continuing to G before returning through C to A.
-
-At each descent, we must remember the parent and its remaining work. The most recently paused parent is the first one we return to. This is Chapter 4's last-in, first-out rule.
-
-Following a branch as far as needed before returning to the remaining branches is depth-first search (DFS). The same reasoning applies to every subtree: explore its left side, explore its right side, and then return to its parent. An empty subtree has nothing to explore.
-
 ### What changes when we process the parent's data first, between, or last?
 
  Here, our example of processing data is recording the node's label. We can process the parent's data before exploring its children, between the two subtrees, or after both subtrees.
