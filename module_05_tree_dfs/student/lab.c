@@ -1,5 +1,8 @@
-#include "module_02_binary_tree/student/lab.c"
-#include "module_04_stack/student/lab.c"
+#include "../../module_02_binary_tree/student/lab.c"
+/* Both earlier labs use capacity; keep the stack's definition distinct. */
+#define capacity stack_capacity
+#include "../../module_04_stack/student/lab.c"
+#undef capacity
 
 int pre_data, in_data, post_data;
 
@@ -39,7 +42,7 @@ int infix_pos = 0;
 /* assume original equation did not have parenthesis*/
 void _write_infix(int i) {
     char c = nodes[i].data;
-    if (is_digit(c)) {
+    if (c >= '0' && c <= '9') {
         infix[infix_pos++] = c;
         return;
     }

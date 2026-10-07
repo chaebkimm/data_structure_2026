@@ -17,7 +17,7 @@ all: starter-core
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-lecture: lecture/lab_demo.c ../student/lab.c | $(BUILD_DIR)
+lecture: lecture/lab_demo.c ../student/lab.c ../../module_02_binary_tree/student/lab.c ../../module_04_stack/student/lab.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
 	$(BUILD_DIR)/lab_demo
 

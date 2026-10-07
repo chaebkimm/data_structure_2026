@@ -1,5 +1,9 @@
 # Lab — Copy, Print, and Evaluate an Expression Tree
 
+This is the separate pointer-based starter/solution assignment. For the
+current array-based lecture, use [`lab.c`](lab.c), the
+[investigation worksheet](investigation_worksheet.md), and [textbook](textbook.md).
+
 ## Goal
 
 Implement three depth-first operations for this tree:

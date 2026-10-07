@@ -1,120 +1,115 @@
 # Stage C — Investigation Worksheet
 
-Use [`lab.c`](lab.c) and the [textbook](textbook.md). Record predictions
-before running the [lecture demo](../code/lecture/lab_demo.c). From
-`module_05_tree_dfs/code`, use `make lecture` (or `./build.ps1 -Target lecture`
-in PowerShell). The input contract is a well-formed, nonempty postfix
-string of at most five tokens: single digits and binary `+`, `-`, `*`, `/`,
-or `%`, with no spaces.
+Use [`lab.c`](lab.c), the [textbook](textbook.md), and
+[`ppt_material.md`](ppt_material.md). Preserve predictions before tracing or
+running the [lecture demo](../code/lecture/lab_demo.c). The current lab uses
+single-digit operands and binary `+ - * / %`, with nonempty valid postfix
+text of at most seven tokens and no spaces. The stack traversal and writer
+are single-run operations. Parentheses and repeated-run resets are
+extensions to reason about, not implemented behavior.
 
 ## A. Follow and visit the alphabet tree
 
-Run `alphabet_init()` and `tree_connect()` on paper.
+Run `alphabet_init()` and `tree_connect()` on paper. Record the root index
+and character, `nodes_size`, reachable count, and unreachable characters.
+Explain `-1` links and why connecting a child does not move it. Trace each
+complete assignment sequence and final value of `pre_data`, `in_data`,
+and `post_data`. Do the globals save those sequences?
 
-- Root index and character: ______________________________________
-- `size`, reachable node count, and unreachable characters: _______
-- Meaning of a child index of `-1`: _______________________________
-- Why changing a child link does not move a node: __________________
-
-Trace the three assignments in `tree_traversal(root)` separately.
-
-| Assignment | Complete assignment sequence | Final stored character |
-| --- | --- | --- |
-| `pre_data` | ____________________________ | ______________________ |
-| `in_data` | ____________________________ | ______________________ |
-| `post_data` | ____________________________ | ______________________ |
-
-Does the function save these sequences? Explain the difference between
-an assignment trace and its final three global values.
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-## B. Explain saved work
+## B. Explain saved recursive work
 
-While processing `D`, list the active node calls and the work each older
-call must resume. What happens at a leaf? Why is passing `-1` directly to
-`tree_traversal()` different from encountering it as a child link?
+While processing `D`, list the active real-node calls and each caller's
+remaining work. Give the height in edges and maximum active real-node calls.
+Locate the negative-index base case. What happens in `tree_traversal(-1)`?
+How many empty-child calls does a leaf make? Distinguish real-node calls
+from the extra empty-child frame.
 
-________________________________________________________________
-
-State the alphabet tree's height in edges and maximum active node calls.
-
-________________________________________________________________
-
-## C. Build from postfix
-
-Complete the trace for `123*+`. Stack entries are array indices; show the
-top on the right. For a digit, record `-1` in both child columns.
-
-| Input index/token | Left child | Right child | Stack after token | `size` |
-| --- | --- | --- | --- | --- |
-| 0 / `'1'` | ______ | ______ | ______________ | ______ |
-| 1 / `'2'` | ______ | ______ | ______________ | ______ |
-| 2 / `'3'` | ______ | ______ | ______________ | ______ |
-| 3 / `'*'` | ______ | ______ | ______________ | ______ |
-| 4 / `'+'` | ______ | ______ | ______________ | ______ |
-
-State the returned root, final `top`, and peak number of used stack slots.
-Explain the difference between `size` and `top + 1`. Use `12-` to explain
-why the first popped root must become the right child. Does construction
-calculate a numeric result? What happens to the earlier alphabet tree?
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-## D. Write infix with parentheses
+## C. Replace calls with a stack
 
-Complete each output, then explain the needed or omitted parentheses.
+Trace `tree_traversal_with_stack(5)` through the first visit to `E`.
+For each step, record the top index, old progress, visit, updated progress,
+and stack from bottom to top. Include the `-1` entries. Explain how steps
+0, 1, and 2 resume preorder, inorder, and postorder work. What is the final
+progress of every reached node? Why would a second run fail to terminate,
+and what reset would support repeated runs?
 
-| Postfix input | Written infix |
-| --- | --- |
-| `123*+` | ________________________ |
-| `12+3*` | ________________________ |
-| `123--` | ________________________ |
-| `12-3-` | ________________________ |
-| `123++` | ________________________ |
-| `123/%` | ________________________ |
-
-Why does the left-child comparison use `>` while the right uses `>=`?
-What precedence value keeps digits from acquiring parentheses? Does a
-fallback result of 0 from `prec()` make unsupported input valid?
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-## E. Start, finish, and repeat
+## D. Reconstruct from traversal orders
 
-Trace `start_write_infix()` for `123++`, then rebuild and format `12+`.
-For each call record the characters including `'\0'`, its index, and final
-`pos`. Explain the separate roles of resetting `pos` and terminating the
-string. Why must recursive child calls not reset `pos`?
+The slides give preorder `ABDECFG` and inorder `DBEAFCG`. Find the root,
+split the inorder sequence, count the two subtrees, and select their
+preorder segments. Repeat until the tree is complete; verify postorder
+`DEBFGCA`. Why must labels be distinct? Why is this `A`-rooted tree different
+from the supplied alphabet tree? Is this reconstruction implemented in
+`lab.c`?
 
-________________________________________________________________
-
-Predict the complete lecture demo output before running it. Explain what
-its first line reports. Choose another valid expression within the input
-limit and record its expected output before trying it in a scratch driver.
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-## F. State assumptions and capacity
+## E. Build from postfix
 
-State the required tree shape and valid-root assumptions. Explain why the
-alphabet tree cannot be passed to `write_infix()`. Does `eq_tree()` validate
-postfix input, and does the writer check output capacity?
+Prepare `postfix` as `123*+` before calling `build_tree_from_postfix()`.
+For each token, record its index, left and right links, stack, and
+`nodes_size`. Digits have two `-1` links. State the returned root, `top`
+after the final pop, and peak stack usage. Use `12-` to justify popping
+right before left. Does construction calculate a value? What happens to
+the alphabet nodes? Why must the initially empty `postfix` be prepared?
+
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-Derive the maximum tokens, operators, parentheses, and total characters
-including `'\0'` for the current `post_eq[6]`. Does the same reasoning cover
-every larger tree that might fit in `nodes[10]`?
+## F. Write inorder and preserve grouping
+
+For `123*+`, `12+3*`, `123--`, `12-3-`, `123++`, and `123/%`, record
+both the current writer's output and the infix expression required to
+preserve the tree. Use a fresh run for each current output. Which outputs
+lose grouping? Derive the slides' left `>` and right `>=` parentheses rules.
+When extending `_write_infix()`, where do opening and closing parentheses
+go? What does Chapter 4's `prec()` return for digits, and why must digits
+be excluded from these comparisons?
+
+Record prediction, trace, and explanation:
 
 ________________________________________________________________
 
-## G. Count work and storage
+## G. Start, finish, and repeat
 
-Let `n` be reachable nodes, `t` postfix tokens, and `h` height in edges.
-Explain traversal and formatting time, construction time, and maximum
-active node calls in terms of these quantities. Distinguish the ten slots
-reserved by `stack[10]` from the slots used by `123*+`, and from the space
-needed by a general builder whose capacity can grow with input.
+Trace one `write_infix()` call for `123*+`. Record characters, terminator
+index, and final `infix_pos`. Does this wrapper reset its position? Predict
+what a second call would do. Explain the reset needed for repeated writing
+and why recursive child calls must share the advancing position. Predict
+the lecture output before running `make lecture` from
+`module_05_tree_dfs/code` (or `./build.ps1 -Target lecture` in PowerShell).
+Explain why its visit lines do not show complete traversal orders.
+
+Record prediction, trace, and explanation:
+
+________________________________________________________________
+
+## H. State assumptions, capacities, and costs
+
+State the valid-tree and expression-tree assumptions and whether the
+builder or writer validates input or bounds. How many tokens fit in
+`postfix[8]`? Does the current output fit `infix[10]`? For the parentheses
+extension, count all characters in `1+(2+(3+4))`, including its terminator.
+How many entries would iterative traversal of a ten-node chain need when
+it also pushes absent children? Explain time and space for both traversals,
+construction, and writing using reachable nodes, tokens, and height.
+Distinguish used stack entries from reserved capacity and progress storage.
+
+Record prediction, trace, and explanation:
 
 ________________________________________________________________

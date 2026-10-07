@@ -1,20 +1,17 @@
 # Stage B — Five-Minute Cognitive Pause
 
-Use [`lab.c`](lab.c). Answer from your trace before checking the
-[representation reveal](representation_reveal.md).
+Use [`lab.c`](lab.c) before checking the [reveal](representation_reveal.md).
 
-1. After `alphabet_init()` and `tree_connect()`, distinguish `size` from
-   the number of reachable nodes. Trace the three visit orders and state
-   the final values of `pre_data`, `in_data`, and `post_data`. Why are those
-   three values not complete traversal sequences?
-2. While processing `D`, list the active node calls. If height `h` counts
-   edges, how many calls can a deepest path keep active? Where is `-1`
-   checked before a child call?
-3. For `123*+`, state the stack contents just before and just after `*`.
-   Explain what an entry represents and why the first pop is the right
-   child. Does `eq_tree()` calculate the expression?
-4. Compare the outputs for `12+3*`, `12-3-`, and `123--`. Explain the
-   different comparisons for left and right parentheses.
-5. Why must `start_write_infix()` both reset `pos` and append `'\0'` when
-   formatting a shorter expression? Which current input limit makes the
-   ten-character output buffer sufficient?
+1. Distinguish `nodes_size` from reachable nodes. Why do the three visit
+   globals finish as `G G F` rather than complete sequences?
+2. Compare the recursive negative-index base case with the iterative
+   negative-entry pop. What do progress steps 0, 1, and 2 remember?
+3. Why must `progress` be reset before a second stack traversal? Why must
+   `infix_pos` be reset before a second complete write?
+4. Split preorder `ABDECFG` and inorder `DBEAFCG` at their root. Which tree
+   do they describe? What makes this reconstruction unambiguous?
+5. For `123*+`, what does the stack contain before and after `*`, and why
+   is the first pop the right child? What is `top` after returning the root?
+6. What does the current writer produce for `12+3*`? How would the slides'
+   parentheses extension preserve grouping, and why does it need a new
+   output-capacity analysis?

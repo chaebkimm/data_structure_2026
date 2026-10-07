@@ -1,131 +1,128 @@
 # Module 5 Answer Key
 
-These answers correspond to [student/lab.c](../student/lab.c), the
-[textbook](../student/textbook.md), and the current lecture inquiry
-activities. They do not replace the separate legacy exercise contracts.
+These answers match the current [lab](../student/lab.c),
+[textbook](../student/textbook.md), and both worksheet formats. Parentheses
+and repeated-run resets are extensions; the legacy pointer exercise has
+its own contracts.
 
-## Alphabet tree and visit positions
+## A–B. Alphabet tree and recursion
 
-After `alphabet_init()`, ten nodes are initialized and `size == 10`.
-After `tree_connect()`, the returned root is index 5 (`F`). Its left child
-is `A [0]`, its right child is `G [6]`, `A` has children `B [1]` and
-`C [2]`, and `B` has children `D [3]` and `E [4]`. Exactly seven nodes are
-reachable. `H`, `I`, and `J` stay unconnected.
+`nodes_size == 10`; root 5 contains `F`; seven nodes are reachable and
+`H, I, J` are unconnected. Changing links does not move array entries.
 
-| Assignment | Complete assignment sequence | Final stored character |
+| Visit | Complete assignment sequence | Final global |
 | --- | --- | --- |
-| `pre_data` before either child | `F A B D E C G` | `G` |
-| `in_data` between child calls | `D B E A C F G` | `G` |
-| `post_data` after both children | `D E B C A G F` | `F` |
+| Preorder | `F A B D E C G` | `G` |
+| Inorder | `D B E A C F G` | `G` |
+| Postorder | `D E B C A G F` | `F` |
 
-On return from `D`, the call on `B` assigns `B` to `in_data`, visits `E`,
-and finally assigns `B` to `post_data`. A leaf makes all three assignments
-without another call. The globals contain only the latest values; the
-function does not emit these sequences.
+At `D`, the real-node calls are `F, A, B, D`; height is three edges.
+Each caller still needs its inorder visit, right subtree, and postorder
+visit. A leaf makes two empty-child calls; `tree_traversal(-1)` returns
+before reading the array. Four real-node frames can be active, plus one
+empty-child frame. The globals do not retain whole sequences.
 
-## Postfix construction
+## C. Explicit traversal
 
-For the default input `123*+`, each token becomes the node at the same
-index. Stack contents below are indices, bottom to top:
-
-| Token | Child links of the new node | Stack | `top` | `size` |
-| --- | --- | --- | ---: | ---: |
-| `1` at 0 | `left = right = -1` | `[0]` | 0 | 1 |
-| `2` at 1 | `left = right = -1` | `[0, 1]` | 1 | 2 |
-| `3` at 2 | `left = right = -1` | `[0, 1, 2]` | 2 | 3 |
-| `*` at 3 | Right 2, left 1 | `[0, 3]` | 1 | 4 |
-| `+` at 4 | Right 3, left 0 | `[4]` | 0 | 5 |
-
-The returned root is 4. The stack stores completed subtree roots, not
-arithmetic values. Its maximum use is three entries. `size` counts created
-nodes, whereas `top + 1` counts the roots currently waiting on the stack.
-
-For `12-`, the first popped index is 1 (the digit `2`), so it must become
-the right child. The second pop is index 0 (the digit `1`), the left child.
-Reversing those assignments would construct `2-1`.
-
-## Parentheses and the output wrapper
-
-| Postfix | Expected infix | Reason | Final `pos` |
-| --- | --- | --- | ---: |
-| `123*+` | `1+2*3` | Right child has higher precedence | 6 |
-| `12+3*` | `(1+2)*3` | Left child has lower precedence | 8 |
-| `12-3-` | `1-2-3` | Equal precedence on the left follows left associativity | 6 |
-| `123--` | `1-(2-3)` | Equal precedence on the right requires grouping | 8 |
-| `123++` | `1+(2+3)` | Preserve the right subtree's grouping | 8 |
-| `123/%` | `1%(2/3)` | Preserve the equal-precedence right subtree | 8 |
-| `123//` | `1/(2/3)` | Preserve the right subtree's grouping | 8 |
-| `12+` | `1+2` | Both children are digits | 4 |
-| `7` | `7` | A digit is written directly | 2 |
-
-These are formatting examples, not evaluation cases. `prec()` returns
-1 for `+ -`, 2 for `* / %`, 3 for digits, and 0 for unsupported characters.
-The left comparison is `prec(c) > prec(l_data)`; the right comparison is
-`prec(c) >= prec(r_data)`. Child indices `l` and `r` are integers; child
-symbols `l_data` and `r_data` are characters.
-
-`start_write_infix()` resets `pos = 0`, calls the recursive writer, and
-appends `'\0'`. For `123++` followed by `12+`, the first string is
-`1+(2+3)` (terminator at index 7, final `pos == 8`) and the second is
-`1+2` (terminator at index 3, final `pos == 4`). The new terminator excludes
-the old suffix. Resetting in a child call would overwrite the partially written
-expression. Final `pos` counts every written byte including the terminator,
-so it is one greater than the visible string length.
-
-For the chapter guide's final check, `123--` creates node 3 with left 1
-and right 2, then node 4 with left 0 and right 3. The returned root is 4;
-the result is `1-(2-3)`, and final `pos == 8`.
-
-## Demo output
-
-Run `make lecture` from `module_05_tree_dfs/code` using
-[the lecture driver](../code/lecture/lab_demo.c):
+Beginning stack trace, bottom to top:
 
 ```text
-Last visits: G G F
-123*+ -> 1+2*3
-12+3* -> (1+2)*3
-123-- -> 1-(2-3)
-12+ -> 1+2
+[5] → [5,0] → [5,0,1] → [5,0,1,3]
+→ [5,0,1,3,-1] → [5,0,1,3]
+→ [5,0,1,3,-1] → [5,0,1,3] → [5,0,1] → [5,0,1,4]
 ```
 
-The first line reports the final values of the visit globals. It is not
-three complete traversal sequences. Rebuilding an expression reuses the
-node array, replacing the previous tree.
+Before pushing each child, the parent's progress advances. Steps 0, 1,
+and 2 perform preorder/push-left, inorder/push-right, and postorder/pop.
+Negative top entries are popped without reading progress. Final progress
+is 3 for each reached node and 0 for the unconnected nodes. A second run
+starts at step 3, matches no case, and never removes the root. Reset all
+progress entries to zero before reuse.
 
-## Preconditions and efficiency
+## D. Reconstruction
 
-The builder assumes a nonempty, well-formed postfix expression using
-single digits and binary `+ - * / %`, with at most five tokens and a
-terminator in `post_eq[6]`. Each operator needs two available roots and
-exactly one root must remain at completion. There are no spaces, unary
-operators, or multidigit numbers. The implementation does not validate
-these conditions. A fallback precedence of 0 does not validate a token.
+Root `A` splits inorder into `DBE` and `FCG`. Each subtree has three nodes,
+selecting preorder `BDE` and `CFG`. Their roots `B` and `C` split into
+children `D, E` and `F, G`. Postorder is `DEBFGCA`. Distinct labels allow
+unique splits; repeated labels can be ambiguous. This is the slides'
+`A`-rooted tree, not Chapter 2's `F`-rooted tree. No reconstruction function
+is supplied in `lab.c`.
 
-The writer requires a valid expression tree and sufficient output space.
-The alphabet tree is not an expression tree. None of the recursive
-routines checks for invalid indices or cycles, and `-1` is not an accepted
-root argument.
+## E. Postfix construction
 
-At most five valid tokens contain at most two binary operators. Only one
-operator can be another operator's child, allowing at most one pair of
-parentheses. Five tokens plus two parentheses plus `'\0'` use at most
-eight bytes, so `infix[10]` fits the current input limit. A larger input
-or manually built expression needs a new capacity argument.
+| Token/index | Left | Right | Stack after token | `nodes_size` |
+| --- | ---: | ---: | --- | ---: |
+| `1` / 0 | -1 | -1 | `[0]` | 1 |
+| `2` / 1 | -1 | -1 | `[0,1]` | 2 |
+| `3` / 2 | -1 | -1 | `[0,1,2]` | 3 |
+| `*` / 3 | 1 | 2 | `[0,3]` | 4 |
+| `+` / 4 | 0 | 3 | `[4]` | 5 |
 
-Construction takes `O(n)` time for `n` tokens. Traversal and formatting
-take `O(r)` time for `r` reachable nodes. With height `h` measured in
-edges, recursive call space is `O(h + 1)`; the alphabet tree has a longest
-path of four nodes and three edges. A generalized postfix builder can use
-`O(n)` stack entries, though this lab reserves exactly ten. Tree height,
-not the total number of allocated slots, determines simultaneous node
-calls.
+The final pop returns root 4 and leaves `top == -1`; peak usage is three.
+For `12-`, index 1 (`2`) is popped first and belongs on the right, with
+index 0 (`1`) on the left. Construction replaces the shared nodes without
+calculating a value. The included `postfix` initially is empty; use
+conversion or supply a valid string before building.
 
-## Interpreting student evidence
+## F. Current output versus grouping extension
 
-Accept a diagram, table, linear state log, or oral explanation that
-identifies the same links, waiting work, visit positions, and output
-decisions. Look for a preserved prediction followed by a revision tied to
-an actual source statement. Do not require pointer copy independence,
-numeric evaluation, rollback, or legacy autopsy outputs as evidence for
-this lecture.
+| Postfix | Current output | Grouping-preserving extension |
+| --- | --- | --- |
+| `123*+` | `1+2*3` | `1+2*3` |
+| `12+3*` | `1+2*3` | `(1+2)*3` |
+| `123--` | `1-2-3` | `1-(2-3)` |
+| `12-3-` | `1-2-3` | `1-2-3` |
+| `123++` | `1+2+3` | `1+(2+3)` |
+| `123/%` | `1%2/3` | `1%(2/3)` |
+
+Use independent runs for current outputs. In the extension, open before
+and close after a child call. Parenthesize operator children when parent
+precedence is greater on the left or greater than or equal on the right.
+Equal precedence groups left to right. `prec()` returns 0 for digits, so
+exclude digits with `is_digit()` rather than comparing their precedence.
+Unsupported characters also return 0; this is not validation.
+
+## G. Output state and demo
+
+For `123*+`, characters are `1 + 2 * 3 \0`; the terminator is at index 5
+and final `infix_pos` is 6. The wrapper does not reset the position. Another
+write starts after the old terminator, retaining the old visible string
+and potentially overrunning the array. Reset `infix_pos` before each
+complete write for reuse; never reset it in recursive child calls.
+
+The demo performs one stack traversal and one write:
+
+```text
+Recursive last visits: G G F
+Stack last visits: G G F
+123*-4+ -> 1-2*3+4
+Root: 6; nodes: 7; top: -1
+```
+
+Visit lines show only final globals. The converted expression has seven
+nodes and root 6. The builder's final pop empties the stack.
+
+## H. Assumptions, capacity, and efficiency
+
+Tree links must form an acyclic tree with one parent per non-root node
+and valid present indices. Traversal handles negative indices; the writer
+requires a nonempty expression tree. Valid postfix uses single digits and
+binary `+ - * / %`, no spaces, with two available roots per operator and
+one final root. The code does not validate input or bounds.
+
+`postfix[8]` allows seven tokens plus its terminator. The current writer
+needs at most eight bytes. The parentheses extension's `1+(2+(3+4))`
+requires twelve bytes including the terminator, exceeding `infix[10]`.
+A ten-node path plus its empty-child sentinel requires eleven stack
+entries; increase capacity or skip pushing absent children in an extension.
+
+Traversal and writing are linear in reachable nodes; construction is
+linear in tokens. Used recursive/path storage is `O(h + 1)`; progress
+storage is separate, one integer per node slot. A generalized postfix
+builder can use linear stack space in tokens. Reconstruction by repeated
+inorder scans can take quadratic time; precomputed positions permit linear
+time with distinct labels.
+
+Assess preserved predictions and revisions justified by source statements.
+Do not attribute the pointer exercise's copying, evaluation, validation,
+or rollback behavior to this classroom lab.

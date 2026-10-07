@@ -1,113 +1,92 @@
 # Week 5 — Tree DFS and Expression Trees: Vocabulary and Questions
 
-[All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
+[All-week question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-Lecture scope: trace the current array-based [`lab.c`](../module_05_tree_dfs/student/lab.c),
-explain its three recursive visit positions, construct expression trees
-from postfix, and write infix with parentheses and a complete C string.
-Use the [textbook](../module_05_tree_dfs/student/textbook.md),
+Use the current [lab](../module_05_tree_dfs/student/lab.c),
+[textbook](../module_05_tree_dfs/student/textbook.md),
 [vocabulary](../module_05_tree_dfs/student/vocabulary.md), and
-[lecture demo](../module_05_tree_dfs/code/lecture/lab_demo.c).
+[lecture demo](../module_05_tree_dfs/code/lecture/lab_demo.c). Core topics
+include recursive and stack-based traversal, conceptual reconstruction,
+postfix construction, and bare inorder writing. Parentheses and repeated
+runs are extensions to the current single-run code.
 
-## Vocabulary students will learn
+## Vocabulary
 
-| Term | Working meaning |
-| --- | --- |
-| Node index | An integer selecting a slot in `nodes[10]`. |
-| Root | The starting index for a tree or subtree. |
-| Absent child | A child link containing `-1`. |
-| Reachable node | An entry reached by following links from the chosen root. |
-| Visit | Work at a reached node; here, assigning a character to a global. |
-| Assignment trace | The sequence of assigned values, which a single final variable does not retain. |
-| Depth-first search | Finish one branch before returning to another. |
-| Preorder | Current node, left subtree, right subtree. |
-| Inorder | Left subtree, current node, right subtree. |
-| Postorder | Left subtree, right subtree, current node. |
-| Active call | A call that has started but has not returned. |
-| Call frame | One active call's saved state and continuation. |
-| Runtime call stack | Storage used to remember unfinished calls. |
-| Height (`h`) | Maximum number of edges from root to leaf; a deepest path has `h + 1` nodes. |
-| Explicit stack | `eq_tree()`'s array of completed subexpression root indices. |
-| Postfix | Place each binary operator after its operands. |
-| Expression tree | Digit leaves joined by binary operator nodes. |
-| Infix | Place each binary operator between its operands. |
-| Precedence | Priority that determines grouping among operator levels. |
-| Left associativity | Group equal-precedence operators from left to right. |
-| Output position | Next character slot during writing; the final `pos` includes the terminator. |
-| Null terminator | `'\0'`, the end marker for a C string. |
-| Wrapper | `start_write_infix()`, which resets, invokes the writer, and terminates. |
-| Capacity | Reserved array space, including room for a string's terminator. |
-| Input assumption | A condition the code relies on without validating it. |
+Node index, child link, root, leaf, reachable node, `nodes_size`, visit,
+assignment trace, DFS, preorder, inorder, postorder, call frame, base case,
+explicit stack, `top`, progress, sentinel, height, reconstruction, postfix,
+expression tree, infix, precedence, left associativity, `infix_pos`, null
+terminator, wrapper, capacity, and input assumption. See the linked
+vocabulary for working definitions.
 
-## Anticipated student questions
+## Representation and recursive visits
 
-### Representation and visits
+- Why are child links integers while node data is a character?
+- Why is root 5 `F`, and why is `nodes_size` 10 when seven nodes are reachable?
+- Does changing a child index move a node?
+- How do the three visit positions produce their complete orders?
+- Why do the globals retain `G G F` rather than whole sequences?
+- Where is a negative index checked, and why does `tree_traversal(-1)` return safely?
+- How many empty-child calls does a leaf make?
+- Which calls are waiting while `D` is active, and what must they resume?
+- How many real-node frames and extra empty-child frames can be active?
+- What assumptions exclude cycles, shared children, and invalid positive indices?
 
-- Why do `left`, `right`, and a root hold integers while `data` holds a character?
-- Why does `tree_connect()` return 5, and why is `size` 10 when only seven
-  alphabet nodes are reachable?
-- Does changing a child index move any node in the array?
-- How do the three assignment positions produce preorder, inorder, and postorder?
-- Why do the globals end as `G`, `G`, and `F` instead of containing complete sequences?
-- Why does a parent skip `-1`, and why is `tree_traversal(-1)` unsupported?
-- What assumptions about valid indices, cycles, and multiple parents make this recursion work?
+## Explicit traversal and reconstruction
 
-### Calls and storage
+- Why must an explicit traversal remember both node index and progress?
+- What do steps 0, 1, and 2 do, and why advance before pushing a child?
+- Why must the helper read the stack top again after a child finishes?
+- What happens when the top is `-1`?
+- Why does a second unchanged stack traversal fail to terminate?
+- What reset makes another run possible?
+- How many stack entries does a ten-node chain need with its sentinel?
+- How does progress storage differ from used path storage?
+- How do `ABDECFG` and `DBEAFCG` reconstruct the slides' tree?
+- Why must subtree sizes determine the preorder segments?
+- Why do distinct labels matter, and why is preorder alone insufficient?
+- Which examples have root `A` and which have root `F`?
+- Is reconstruction implemented in the current lab?
 
-- What work is saved in the calls for `F`, `A`, and `B` while `D` is active?
-- If height counts edges, why is the maximum number of active node calls `h + 1`?
-- Why does traversal take `O(n)` time for `n` reachable nodes?
-- Why do traversal and writing use `O(h + 1)` call-stack space?
-- How do the runtime call stack and `eq_tree()`'s explicit stack differ?
-- What is the difference between reserved capacity and the number of slots currently used?
+## Postfix construction
 
-### Constructing the expression
+- Why must the initially empty `postfix` be prepared before building?
+- What does Chapter 4's default expression convert to?
+- Why does token index become node index in `build_tree_from_postfix()`?
+- What does each stack entry represent after every token of `123*+`?
+- Why is the first pop the right child, and what would reversal do to `12-`?
+- What are the returned root, `nodes_size`, and `top` after the final pop?
+- Why are digits stored as characters, and does construction calculate values?
+- What happens to the earlier alphabet tree?
+- Why need two roots per operator and exactly one before returning?
+- Does the builder validate malformed input, empty input, or capacity?
 
-- Why does input position `i` become node index `i` in `eq_tree()`?
-- What subtree does each stack entry represent after every token of `123*+`?
-- Why is the first popped root the right child? What would reversal do to `12-`?
-- Why is `size` 5 while `top` is 0 at the end of the default construction?
-- Why do digits remain characters rather than being converted with `c - '0'`?
-- Does construction evaluate the expression, and what happens to the previous alphabet tree?
-- Why must every operator have two available roots and the final stack have exactly one root?
-- Which assumptions permit `eq_tree()` to omit validation? Are empty input, spaces,
-  multidigit operands, and unary operators within that contract?
+## Inorder output and extensions
 
-### Writing infix
+- What does the current writer output for `123*+`, `12+3*`, and `123--`?
+- Which outputs lose grouping, and why does bare inorder lose information?
+- What parentheses would preserve each tree?
+- Why does the slides' extension use `>` on the left and `>=` on the right?
+- How does left associativity distinguish `1-2-3` from `1-(2-3)`?
+- Why might the extension retain `1+(2+3)` without simplifying it?
+- What does Chapter 4's `prec()` return for digits, and why exclude digit children?
+- Where should opening and closing parentheses surround each child call?
+- Why can the alphabet tree be traversed but not passed to the writer?
 
-- Why do `123*+` and `12+3*` need different infix strings despite the same
-  unparenthesized inorder symbols?
-- Why are the parentheses conditions `>` on the left and `>=` on the right?
-- What distinguishes the grouping of `12-3-` and `123--`?
-- Why does `123++` become `1+(2+3)` even when arithmetic simplification is possible?
-- How are `/` and `%` handled by the same precedence rules?
-- Why does giving digits precedence 3 avoid unnecessary parentheses?
-- Does `prec()` returning 0 make an unsupported token valid?
-- Why can the alphabet tree be traversed but not passed to the infix writer?
+## State, capacity, and efficiency
 
-### Wrapper, bounds, and observation
+- Does `write_infix()` reset `infix_pos`, and what would another call do?
+- Why must child calls share the advancing position?
+- Why does final `infix_pos` include the null terminator?
+- Which reset permits a shorter output to replace a previous expression?
+- How many tokens fit `postfix[8]`, and why does bare output fit `infix[10]`?
+- Why does grouped `1234+++` exceed the existing output buffer?
+- Why are traversal and writing linear in reachable nodes, and building linear in tokens?
+- Why is used path/call storage `O(h + 1)` despite separate progress storage?
+- How do fixed reserved arrays differ from used space and generalized bounds?
+- Why can reconstruction by inorder scans take quadratic time, and how does a map help?
+- How can breakpoints show full orders that the demo's final visit lines do not?
 
-- Why must a complete formatting operation start with `start_write_infix()`?
-- What would resetting `pos` inside every recursive call do to the output?
-- Why are both the reset and `'\0'` needed when a shorter expression replaces a longer one?
-- Why does the final `pos` include the terminator?
-- How do five input tokens imply at most two operators and one added pair of parentheses?
-- Why do eight characters suffice under the current input limit, and why does
-  that not guarantee every larger tree fitting `nodes[10]` fits `infix[10]`?
-- How can a trace or debugger show full assignment sequences that the demo's
-  `Last visits` line cannot show?
-- Which valid examples distinguish left parentheses, right parentheses,
-  repeated formatting, and replacement by a shorter string?
-
-### Transfer and optional extensions
-
-- How does Chapter 4's value stack become a stack of subtree roots here?
-- Why will graph DFS need visited state when a valid tree has no cycles or shared children?
-- How would increasing input capacity change the node, stack, and output capacity analysis?
-- What additional checks would a generalized builder need before accepting untrusted input?
-- How could an explicit stack reproduce the same visit order as recursion?
-
-The lecture uses well-formed, nonempty postfix strings of at most five
-single-character tokens: digits and binary `+`, `-`, `*`, `/`, or `%`, with
-no spaces. Extensions to validation, input size, or traversal implementation
-are discussion topics beyond the current lab's behavior.
+Use nonempty valid postfix of up to seven single-character tokens, digits
+and binary `+ - * / %`, with no spaces. Keep current behavior separate from
+extension proposals and from the legacy pointer-based exercise's contracts.

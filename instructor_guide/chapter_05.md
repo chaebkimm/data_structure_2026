@@ -1,160 +1,93 @@
 # Chapter 5. Depth-First Traversal and Expression Trees
 
-## Starting Question
+## Starting question
 
-> After a child call finishes, what work remains for the node that called it?
+> After a child finishes, how does its parent know which work to do next?
 
-**Expected answer:** The caller resumes where it paused. Depending on the
-visit position, it may still visit itself, process its right subtree, or
-finish its final visit. Preserve students' first predictions before naming
-the traversal orders.
+A recursive call frame remembers the paused position. The explicit stack
+version remembers the node index and its next progress step. Preserve
+first predictions before introducing traversal names.
 
-## Why We Need This
+## Board walkthrough
 
-Chapter 2 introduced child links stored as array indices. Chapter 4 used a
-stack to remember waiting values. The current [lab.c](../module_05_tree_dfs/student/lab.c)
-uses recursive calls to follow a tree and a separate explicit stack of
-indices to build an expression tree from postfix notation.
+Use the [lab](../module_05_tree_dfs/student/lab.c),
+[textbook](../module_05_tree_dfs/student/textbook.md), and
+[slides](../module_05_tree_dfs/student/ppt_material.md).
 
-The [textbook](../module_05_tree_dfs/student/textbook.md) develops three visit
-positions, then asks how inorder output can preserve an expression's
-grouping. The lab builds and formats expressions; it does not evaluate or
-copy them.
+1. Initialize and connect Chapter 2's alphabet tree. Root 5 contains `F`;
+   its children are `A [0]` and `G [6]`. `A` has `B [1], C [2]`, and `B`
+   has `D [3], E [4]`. `nodes_size` is 10, but only seven are reachable.
+2. Trace preorder `FABDECG`, inorder `DBEACFG`, and postorder `DEBCAGF`.
+   The globals finish as `G G F`; they do not save complete sequences.
+   Each leaf makes two calls on `-1`, which return at the base case.
+3. Replace recursive frames with stack indices and progress. Step 0 visits
+   preorder and pushes left, step 1 visits inorder and pushes right, and
+   step 2 visits postorder and pops. Progress advances before a child is
+   pushed. Include sentinel pushes and immediate pops in the trace.
+   A second run requires resetting progress from 3 to 0.
+4. Reconstruct the slides' separate tree from preorder `ABDECFG` and inorder
+   `DBEAFCG`. Root `A` splits inorder into `DBE` and `FCG`; their sizes
+   select preorder `BDE` and `CFG`. Repeat to obtain `B` with `D, E` and
+   `C` with `F, G`. Verify postorder `DEBFGCA`; require distinct labels.
+5. Prepare `postfix` as `123*+`, then trace `build_tree_from_postfix()`:
+   `[0] → [0,1] → [0,1,2] → [0,3] → [4]`. Each operator pops right then
+   left. The final pop returns root 4, leaving `top == -1` and
+   `nodes_size == 5`. Construction records nodes without calculating.
+6. Trace bare inorder output for `123*+`, `12+3*`, and `123--`: `1+2*3`,
+   `1+2*3`, and `1-2-3`. The latter two lose grouping. Derive the slides'
+   extension: parenthesize operator children using parent `>` left
+   precedence and parent `>=` right precedence. Digits have `prec() == 0`
+   in Chapter 4; exclude them with `is_digit()`.
+7. Trace `write_infix()` once from position zero. It calls `_write_infix()`
+   and terminates without resetting. For `1+2*3`, final `infix_pos` is 6.
+   Reuse needs a reset in the wrapper, never in child calls. Added
+   parentheses also require output-capacity analysis.
 
-## Board Walkthrough
+## Common first thoughts and neutral questions
 
-Call `alphabet_init()` before `tree_connect()`. Draw the returned root at
-index `5`, containing `F`:
+- “Ten initialized nodes means ten visits.” Which nodes are reachable?
+- “The globals save the orders.” What remains after the last assignment?
+- “A stack index alone replaces a recursive frame.” Where is the next step kept?
+- “Resetting the stack restarts traversal.” What progress remains after a run?
+- “All traversal orders describe the same example.” Which root does each example use?
+- “The first pop is the left child.” What tree would that build for `12-`?
+- “Inorder preserves meaning.” Which grouping does bare `1-2-3` describe?
+- “Digits have precedence 3.” What does the included `prec()` actually return?
+- “Writing again replaces the string.” Does the wrapper reset `infix_pos`?
+- “The extension fits the old buffer.” Count `1+(2+(3+4))` plus its terminator.
 
-```text
-          F [5]
-         /     \
-      A [0]   G [6]
-      /   \
-   B [1] C [2]
-   /   \
-D [3] E [4]
-```
+## Scope and evidence
 
-`size` is 10 after initialization, but only seven nodes are reachable from
-this root. `H`, `I`, and `J` remain unconnected. Links change; the nodes do
-not move between array slots. Each missing child has index `-1`.
+Use [both inquiry formats](../module_05_tree_dfs/student/inquiry_prompt.md)
+and [both worksheet formats](../module_05_tree_dfs/student/investigation_worksheet.md)
+for equivalent reasoning. The [lesson plan](../module_05_tree_dfs/instructor/lesson_plan.md)
+allocates 160 minutes within the 180-minute week. Use
+[the answer key](../module_05_tree_dfs/instructor/answer_key.md) for traces.
 
-Reveal one call or return at a time. Keep each visit sequence separate from
-the globals' current contents:
+The lab's current stack traversal and writer are single-run operations.
+Reconstruction is conceptual; parentheses and repeated-run resets are
+extensions. Valid nonempty postfix contains up to seven tokens in
+`postfix[8]`: single digits and binary `+ - * / %`, no spaces. The builder
+and writer do not validate input or bounds. Added grouping can require
+twelve output bytes; a ten-node path plus its sentinel needs eleven stack
+entries. The supplied demonstration fits the current arrays.
 
-| Visit position | Assignment sequence | Final global value |
-| --- | --- | --- |
-| Before the left call | `F A B D E C G` | `pre_data == 'G'` |
-| Between child calls | `D B E A C F G` | `in_data == 'G'` |
-| After the right call | `D E B C A G F` | `post_data == 'F'` |
+Run `make lecture` from `module_05_tree_dfs/code`. Predict the final visit
+lines and conversion/build/write output before running; trace or debug
+for complete assignment orders. Both traversals and writing take linear
+reachable-node time; construction is linear in tokens. Used path/call
+storage is `O(h + 1)`, with separate per-node progress storage.
 
-At `B`, pause after `D` returns. Ask what statement runs next before
-revealing the assignment to `in_data`, the call on `E`, and the assignment
-to `post_data`. The function assigns character codes to three `int`
-globals; it does not print or retain the sequences.
+The pointer-based copy/print/evaluate starter, tests, and autopsy remain a
+separate assignment. Graph visited state comes later.
 
-Next trace `eq_tree()` on `123*+`. Stack entries are node indices, with the
-top on the right:
+## Final check
 
-| Token | New node links | Stack after the token |
-| --- | --- | --- |
-| `1` at 0 | Leaf | `[0]` |
-| `2` at 1 | Leaf | `[0, 1]` |
-| `3` at 2 | Leaf | `[0, 1, 2]` |
-| `*` at 3 | Right 2, then left 1 | `[0, 3]` |
-| `+` at 4 | Right 3, then left 0 | `[4]` |
+> For `123--`, what does the current writer emit, what grouping is needed,
+> and which changes would support the grouped output repeatedly?
 
-The returned root is 4, `size` is 5, and `top` is 0. Contrast stored digit
-characters with numeric values: the builder connects nodes without doing
-arithmetic. Use `12-` to reason about why the first pop supplies the right
-child.
-
-Compare the infix results `1+2*3`, `(1+2)*3`, and `1-(2-3)`. The writer
-visits left expression, operator, then right expression. It parenthesizes
-the left child when `prec(c) > prec(l_data)` and the right child when
-`prec(c) >= prec(r_data)`. The unequal comparisons preserve the grouping
-of equal-precedence operators, which associate from left to right. The
-child indices `l` and `r` are `int`; their stored symbols `l_data` and
-`r_data` are `char`.
-
-Finish by formatting a shorter expression. `start_write_infix(root)` resets
-`pos`, calls the writer, and appends `'\0'`. For `1+2*3`, five visible
-characters are written and `pos` ends at 6 because the terminator also
-increments it. Child calls share the advancing position and must not reset
-it.
-
-## Common First Thoughts
-
-- “The root is always node 0.”
-- “`size == 10` means this traversal visits ten nodes.”
-- “The three globals store three complete traversal sequences.”
-- “The postfix stack stores the values of the expressions.”
-- “The first popped root becomes the left child.”
-- “Inorder symbols always preserve the expression's grouping.”
-- “Equal-precedence children use the same parentheses rule on both sides.”
-- “Resetting `pos` is enough to finish a shorter output string.”
-- “An input assumption means the function checks that input.”
-
-## Neutral Questions
-
-- Which indices can be reached by following links from the returned root?
-- Which statement executes after the call on `D` returns?
-- What information remains in each global when all calls finish?
-- What does each entry in the construction stack represent?
-- For `12-`, which operand belongs on each side of the operator?
-- What grouping does the unparenthesized expression `1-2-3` describe?
-- After formatting a shorter expression, which byte marks its end?
-- Which source statements, if any, reject a malformed postfix expression?
-
-## Vocabulary Rules
-
-**Words we can use:** Array, character, index, count, binary tree, root,
-child, leaf, subtree, height, recursion, stack, LIFO, postfix, infix,
-operand, operator, precedence, associativity, and null terminator.
-
-**Names developed in this chapter:** Traversal, visit, depth-first search,
-preorder, inorder, postorder, call stack, subtree root, and invariant.
-Distinguish an assignment sequence from the final stored value, and the
-runtime call stack from `eq_tree()`'s local array stack.
-
-**Deferred or optional:** The separate
-[iterative traversal example](../module_05_tree_dfs/code/lecture/iterative_traversals.c)
-uses pointers and explicit traversal stacks. Allocation, copy/evaluation
-APIs, failure rollback, and the existing legacy exercise package are not
-requirements of this lecture. Graph cycle detection is developed later.
-
-## Scope and Evidence
-
-Core input is a nonempty, well-formed postfix expression with single-digit
-operands and binary `+ - * / %`, no spaces or unary operators, and at most
-five tokens plus the terminator in `post_eq[6]`. The builder relies on these
-conditions. It performs no malformed-input or capacity checks.
-
-With this limit, at most one pair of parentheses is added: five tokens,
-two parentheses, and `'\0'` need at most eight bytes of `infix[10]`.
-Expanding input or supplying a larger manually built expression requires
-reconsidering that capacity. The alphabet tree must not be passed to the
-expression writer.
-
-Use the [lecture driver](../module_05_tree_dfs/code/lecture/lab_demo.c) with
-`make lecture` from `module_05_tree_dfs/code`. Students first predict the
-visits, stack states, and formatted text, then compare them with traces and
-the demo. Standard and linear activities require the same reasoning.
-
-For `r` reachable nodes, traversal and formatting take `O(r)` time. With
-height `h` measured in edges, recursion uses `O(h + 1)` active calls.
-Construction takes `O(n)` time for `n` input tokens; its explicit stack can
-use `O(n)` entries in a generalized version. Keep the full week's lesson,
-practice, and checks within 180 minutes; the
-[lesson plan](../module_05_tree_dfs/instructor/lesson_plan.md) allocates 160.
-
-## Final Check
-
-> For postfix `123--`, how are the children connected, what text is written,
-> and what does `pos` count when formatting finishes?
-
-**Minimum answer:** The `-` at index 3 connects left 1 (`2`) and right 2
-(`3`). The `-` at index 4 connects left 0 (`1`) and right 3. The right child
-has equal precedence, so the text is `1-(2-3)`. The wrapper terminates the
-seven-character string, leaving `pos == 8`.
+The current writer emits `1-2-3`, ending at `infix_pos == 6` on a fresh run.
+The tree requires `1-(2-3)` because the right child has equal precedence.
+Add parentheses around that child, provide sufficient output capacity,
+and reset the position before each complete write. Its grouped output
+would end at position 8 including the terminator.

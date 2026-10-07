@@ -1,14 +1,13 @@
-# Stage B — Representation Reveal: Indices, Visits, and Expressions
+# Stage B — Representation Reveal: Indices, Visits, and Saved Progress
 
-The implementation is [`lab.c`](lab.c); the full explanation is in the
-[textbook](textbook.md).
+The implementation is [`lab.c`](lab.c), with explanations and code in the
+[textbook](textbook.md). The lesson order follows [the slides](ppt_material.md).
 
-## Array links and three visit positions
+## Follow and visit
 
-`struct TreeNode` stores `char data`, `int left`, and `int right`. Child
-links select entries in `nodes[10]`; `-1` means absent. `alphabet_init()`
-initializes all ten entries and sets `size` to 10. `tree_connect()` returns
-root index 5 (`F`), with these links:
+`nodes[10]` stores characters and integer child indices; `-1` is absent.
+`alphabet_init()` sets `nodes_size` to 10. `tree_connect()` returns root
+5 (`F`), reaching seven nodes and leaving `H`, `I`, and `J` unconnected.
 
 ```text
           F [5]
@@ -20,85 +19,74 @@ root index 5 (`F`), with these links:
 D [3] E [4]
 ```
 
-Only seven nodes are reachable. `H`, `I`, and `J` remain unconnected.
-Assignments to child indices do not move nodes.
+| Position | Order | Assignment sequence | Final value |
+| --- | --- | --- | --- |
+| Before children | Preorder | `F A B D E C G` | `G` |
+| Between children | Inorder | `D B E A C F G` | `G` |
+| After children | Postorder | `D E B C A G F` | `F` |
 
-| Visit position in `tree_traversal` | Formal name | Assignment sequence |
+The globals retain only final values. `tree_traversal(i)` returns when
+`i < 0`; each leaf calls both absent children. At `D`, four real-node
+calls are active along `F → A → B → D`, with one additional frame while
+an empty-child call is active.
+
+## Resume with an explicit stack
+
+`tree_traversal_with_stack()` pushes the root and repeatedly processes the
+current top. `progress[i]++` records where that node will resume:
+
+| Old progress | Visit | Action |
 | --- | --- | --- |
-| `pre_data`, before either child | Preorder | `F A B D E C G` |
-| `in_data`, between children | Inorder | `D B E A C F G` |
-| `post_data`, after both children | Postorder | `D E B C A G F` |
+| 0 | Preorder | Push left child |
+| 1 | Inorder | Push right child |
+| 2 | Postorder | Pop current node |
 
-The globals are overwritten on each visit. Their final contents are
-`'G'`, `'G'`, and `'F'`; the function does not store or print whole sequences.
-Trace the assignments or observe them with a debugger to see each order.
+A top entry of `-1` is popped without reading its progress. Thus a leaf
+pushes and removes two empty-child entries before its own removal. The
+stack holds the unfinished path. Reached nodes finish with progress 3;
+the current wrapper does not reset progress and supports only one run.
 
-At `D`, the active node calls are `F → A → B → D`. Calls return to the
-saved next step in their parent. The parent checks for `-1` before calling
-a child; `tree_traversal(-1)` is not a supported empty-tree call. A leaf
-still performs all three assignments.
+## Reconstruct from two orders
 
-## A stack of subtree roots
+The slides' separate tree has preorder `ABDECFG`, inorder `DBEAFCG`, and
+postorder `DEBFGCA`. Root `A` splits inorder into `DBE` and `FCG`; their
+sizes select preorder segments `BDE` and `CFG`. Repeating gives `B` with
+children `D, E` and `C` with children `F, G`. Distinct labels make the
+split unambiguous. This reconstruction is not implemented in the lab.
 
-`eq_tree()` reads `post_eq = "123*+"`. A token at input index `i` becomes
-`nodes[i]`; digit leaves have two `-1` child links. The local `stack[10]`
-holds node indices, with its top on the right below.
+## Build from postfix
 
-| Token | Stack after processing | New child links |
-| --- | --- | --- |
-| `'1'` at 0 | `[0]` | Leaf |
-| `'2'` at 1 | `[0, 1]` | Leaf |
-| `'3'` at 2 | `[0, 1, 2]` | Leaf |
-| `'*'` at 3 | `[0, 3]` | Left 1, right 2 |
-| `'+'` at 4 | `[4]` | Left 0, right 3 |
+Prepare the initially empty shared `postfix` first. For `123*+`, stack
+states after each token are `[0]`, `[0,1]`, `[0,1,2]`, `[0,3]`, and `[4]`.
+Each operator pops right then left and pushes its own index. The builder
+returns the final root by popping it: root 4, `nodes_size == 5`,
+`top == -1`. Peak stack usage is three. The nodes replace the alphabet
+tree; construction stores digit characters and does not calculate values.
 
-Each operator pops its right root first and its left root second, then
-pushes its own index. The final root is 4, `size` is 5, and `top` is 0.
-`size` counts constructed nodes; `top + 1` counts currently stacked roots.
-This constructs a tree; it does not calculate a value. Reusing `nodes`
-replaces the earlier alphabet tree.
+## Write once; extend grouping later
 
-## Write the tree's grouping
+`_write_infix()` writes left expression, operator, right expression without
+parentheses. `write_infix()` appends `'\0'` but does not reset `infix_pos`.
+For `123*+`, it writes `1+2*3` and finishes at position 6. For `12+3*`,
+it also writes `1+2*3`, losing the intended grouping `(1+2)*3`.
 
-`prec()` returns 1 for `+` and `-`, 2 for `*`, `/`, and `%`, and 3 for
-digits. For an operator, `write_infix()` writes left subtree, operator,
-right subtree. It surrounds a child expression with parentheses as follows:
-
-| Side | Parentheses condition | Example |
-| --- | --- | --- |
-| Left | Parent precedence `>` child precedence | `12+3*` → `(1+2)*3` |
-| Right | Parent precedence `>=` child precedence | `123--` → `1-(2-3)` |
-
-Equal-precedence operators associate left to right. The asymmetric checks
-preserve the tree's grouping: `12-3-` becomes `1-2-3`, but `123--` needs
-right-side parentheses. Even `123++` becomes `1+(2+3)`; the writer does not
-simplify expressions. The default `123*+` becomes `1+2*3`.
-
-`start_write_infix(root)` resets `pos`, runs the recursive writer, then
-appends `'\0'`. Child calls share the current next-write position. The
-terminator prevents a shorter new result from retaining an old suffix.
-After formatting `1+2*3`, `pos` is 6 because the wrapper increments it for
-the terminator too.
+The slides' extension adds parentheses around operator children when
+parent precedence is greater on the left, or greater than or equal on the
+right. Chapter 4's `prec()` returns 0 for digits; exclude them using
+`is_digit()`. Reset the position before repeated complete writes, never
+inside child calls. These changes are exercises, not current behavior.
 
 ## Limits and costs
 
-The lab assumes a nonempty, well-formed postfix string of single digits
-and binary `+`, `-`, `*`, `/`, or `%`, without spaces, fitting `post_eq[6]`.
-The builder does not validate those conditions. The writer requires a
-valid expression root; the alphabet tree is not input to it.
+Valid nonempty input consists of up to seven single-character tokens in
+`postfix[8]`, using digits and binary `+ - * / %`, without spaces. The
+builder assumes valid input and the writer assumes a nonempty expression
+tree. Neither checks bounds. The current writer fits the input limit;
+the extension's `1+(2+(3+4))` needs twelve bytes including its terminator,
+exceeding `infix[10]`. A ten-node chain plus an empty-child sentinel also
+exceeds `stack[10]` during iterative traversal.
 
-At most five tokens fit. A valid five-token binary expression has two
-operators and at most one operator below another. Thus the writer adds at
-most one pair of parentheses: five tokens, two parentheses, and a
-terminator need eight characters, fitting `infix[10]`. A larger input or
-manually built expression requires a new capacity analysis; the writer
-does not check its output bounds.
-
-For `n` reachable nodes, traversal and formatting take `O(n)` time. For
-`t` postfix tokens, construction takes `O(t)` time. Height `h` counts edges,
-so a deepest path has `h + 1` active node calls and uses `O(h + 1)` recursive
-space. The alphabet tree's height is 3 and its peak is four node calls;
-the default expression tree's height is 2 and its peak is three node calls.
-The wrapper adds one constant frame to formatting. The explicit construction
-stack reserves ten entries; it uses at most three for `123*+`. A builder
-with capacities that grow with the input can need `O(t)` stack entries.
+Traversal and writing take linear time in reachable nodes; construction
+takes linear time in tokens. Recursive frames and used iterative path
+entries require `O(h + 1)` space for height `h` edges. The progress array
+reserves one entry per node slot, separately from the path stack.

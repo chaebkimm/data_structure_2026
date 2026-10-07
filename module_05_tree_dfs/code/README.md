@@ -40,40 +40,38 @@ For AddressSanitizer and UndefinedBehaviorSanitizer, add
 `-fsanitize=address,undefined -fno-omit-frame-pointer` to that compile command.
 Do not also pass `../student/lab.c`; its definitions are already included.
 
-The current lab has three parameterless definitions written with `()` and
-an implicit `int`-to-`char` conversion in `alphabet_init()`. Strict C11
-settings may warn about those lines. The lecture driver does not change
-the lab's source or hide these warnings.
+The lab includes Chapter 2 and Chapter 4 through relative paths, renames
+the stack's duplicate `capacity` to `stack_capacity` during inclusion,
+and defines `is_digit()`. Strict flags may still warn about classroom
+code in the earlier labs, including an unused variable in Chapter 2.
 
 ## Expected lecture output
 
 ```text
-Last visits: G G F
-123*+ -> 1+2*3
-12+3* -> (1+2)*3
-123-- -> 1-(2-3)
-12+ -> 1+2
+Recursive last visits: G G F
+Stack last visits: G G F
+123*-4+ -> 1-2*3+4
+Root: 6; nodes: 7; top: -1
 ```
 
-The first line reports the final contents of `pre_data`, `in_data`, and
-`post_data`; it does not print the complete traversal sequences. Trace the
-three assignment positions to obtain those sequences.
+Both visit lines report final globals, not full sequences. The driver
+runs each traversal once, calls `convert_to_postfix()` for Chapter 4's
+`1-2*3+4`, builds seven nodes with root 6, and writes infix once. The
+builder's final pop leaves `top == -1`.
 
-Each expression rebuilds the shared node array. `eq_tree()` resets `size`;
-`start_write_infix()` resets `pos` and writes a final `'\0'`. The last case
-shows that formatting a shorter expression replaces the previous string.
-The wrapper leaves `pos` equal to the visible output length plus one.
+The input contract is nonempty valid postfix in `postfix[8]`, up to seven
+tokens: single digits and binary `+ - * / %`, no spaces, unary operators,
+or multidigit operands. The builder assumes two roots per operator and
+one final root; it does not validate input. The writer requires digit
+leaves and binary operators with two children and adds no parentheses.
 
-The valid-input contract is nonempty postfix text with single digits and
-binary `+`, `-`, `*`, `/`, or `%`, at most five tokens plus `'\0'` in
-`post_eq[6]`. There are no spaces, unary signs, or multidigit operands.
-Operators have two child subtrees. The builder assumes this contract; it
-does not validate malformed input. The formatter records grouping and does
-not evaluate arithmetic.
-
-With this input limit, at most seven visible output characters and a
-terminator are needed, so `infix[10]` fits. Larger manually built trees need
-a separate capacity analysis. The writer does not check bounds.
+The stack traversal does not reset `progress`; another run can loop
+forever. The writer does not reset `infix_pos`; another write appends after
+the old terminator and can overrun the buffer. Repeated-run resets and
+parentheses are extension tasks. Adding grouping for `1234+++` requires
+twelve bytes for `1+(2+(3+4))` including its terminator, exceeding the
+current ten-character output buffer. A ten-node traversal chain also
+needs an extra stack entry for its sentinel. The supplied example fits.
 
 ## Optional iterative comparison
 

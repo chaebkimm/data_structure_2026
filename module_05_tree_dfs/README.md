@@ -8,11 +8,18 @@ Students first trace the alphabet tree rooted at `F`. The three assignment
 positions in `tree_traversal()` show preorder, inorder, and postorder. The
 globals retain only their last assigned characters, `G`, `G`, and `F`.
 
-Next, `eq_tree()` builds `123*+` using a stack of subtree-root indices. It
-returns root index 4 for `1+2*3`. `write_infix()` preserves grouping with
-parentheses, and `start_write_infix()` resets and terminates the output.
-The lab assumes valid, nonempty postfix input of at most five tokens,
-using single digits and binary `+`, `-`, `*`, `/`, or `%`.
+Students then trace `tree_traversal_with_stack()` using three per-node
+progress steps, and reconstruct the slides' `A`-rooted tree from preorder
+and inorder. `build_tree_from_postfix()` uses the shared Chapter 4 stack
+to join expression subtrees, popping right before left and returning the
+root with a final pop. Prepare the initially empty `postfix` before use.
+
+`write_infix()` emits bare inorder symbols and terminates the output.
+Stack traversal and writing currently support one run. Parentheses,
+progress resets, and output-position resets are extension exercises from
+the slides/textbook. Input is valid nonempty postfix of at most seven
+tokens: single digits and binary `+ - * / %`, with no spaces. Neither input
+nor output bounds are validated.
 
 ## Lecture materials
 
