@@ -28,51 +28,27 @@ An empty subtree contains no node to explore, so we return immediately. This is 
 
 Each step is responsible for its own subtree. The parent waits for the child's exploration to finish, then continues its remaining work. Finishing smaller subtrees finishes larger subtrees in turn, until exploration of the whole tree rooted at A is complete.
 
-### What changes when we process the parent's data first, between, or last?
+### What changes when we process a node's data first, between, or last?
 
- Here, our example of processing data is recording the node's label. We can process the parent's data before exploring its children, between the two subtrees, or after both subtrees.
+When a node has two child subtrees, there are three possible times to process its data: before both child subtrees, between them, or after both are finished.
 
-| Order | When to process the parent's data | Sequence for the A–G tree |
+Suppose we always explore the left child subtree before the right child subtree. If we process the node's data first, we process its data, then the data of every node in the left child subtree, then the data of every node in the right child subtree. If we process the node's data in the middle, we process all the data in the left child subtree, then the node's data, then all the data in the right child subtree. If we process the node's data last, we process all the data in the left child subtree, then all the data in the right child subtree, then the node's data.
+
+Therefore, processing each node's data first makes the root's data the first to be processed. Processing each node's data in the middle makes the leftmost node reached from the root the first to be processed. Processing each node's data last makes the root's data the last to be processed.
+
+| Order | When to process the node's data | Processing sequence for the A–G tree |
 | --- | --- | --- |
-| Preorder | Before either subtree | A B D E C F G |
-| Inorder | After the left subtree, before the right | D B E A F C G |
-| Postorder | After both subtrees | D E B F G C A |
+| Preorder | Before both child subtrees | A B D E C F G |
+| Inorder | After the left child subtree, before the right | D B E A F C G |
+| Postorder | After both child subtrees are finished | D E B F G C A |
 
-Focus on the subtree rooted at B. Preorder records B, D, E; inorder records D, B, E; postorder records D, E, B. D and E are leaves, so each has only its own label to record. Applying the same rule at every node produces the complete traversal order.
+### How can a stack store the state of work?
 
-Try predicting the three orders for the subtree rooted at C before checking them against the full-tree sequences. The connections stay the same; only the moment at which we process each parent's data changes.
+Imagine storing a work record for each node on a stack. Each record contains one node and its next task. The tasks process data at the times described above. After preorder processing, add the left child node to the stack. After inorder processing, add the right child node to the stack. After postorder processing, remove the current node from the stack.
 
-### How can a stack remember unfinished work?
+To carry out a task, first read the current task from the record at the top of the stack. Update the record to the next step, then carry out the current task. The records below describe the work of ancestors waiting for the current subtree to finish.
 
-Imagine keeping a stack of cards. Each card names a node and says which part of its work comes next. Only the top card is active; the cards below it describe ancestors waiting for the current subtree to finish. The table compares all three possible times to process data. For one traversal order, process each node's data only at that order's chosen time.
-
-| Next task on the top card | Data processing | What happens next |
-| --- | --- | --- |
-| Explore the left subtree | Preorder | Mark the parent ready for its middle processing step; add a card for the left child if present |
-| Explore the right subtree | Inorder | Mark the parent ready for its final processing step; add a card for the right child if present |
-| Finish this subtree | Postorder | Remove the parent's card |
-
-Update the parent's reminder before descending. When the child's card is removed, the parent's card becomes active again with the correct next task already marked. If a child is absent, there is no subtree to explore, so we move directly to the next task.
-
-| Action | Cards, bottom → top |
-| --- | --- |
-| Start at A | A |
-| Process A's data in preorder; descend to B | A, B |
-| Process B's data in preorder; descend to D | A, B, D |
-| Process D's data at each order's chosen time; finish D | A, B |
-| Process B's data in inorder; descend to E | A, B, E |
-| Process E's data at each order's chosen time; finish E | A, B |
-| Process B's data in postorder; return to A | A |
-| Process A's data in inorder; descend to C | A, C |
-| Process C's data in preorder; descend to F | A, C, F |
-| Process F's data at each order's chosen time; finish F | A, C |
-| Process C's data in inorder; descend to G | A, C, G |
-| Process G's data at each order's chosen time; finish G | A, C |
-| Process C's data in postorder; return to A | A |
-| Process A's data in postorder; finish the tree | Empty |
-
-
-A recursive description lets each subtree temporarily pause its parent's work. The cards make that same memory visible. Both follow the same branches and produce the same data processing orders.
+The parent's work pauses while its child subtree is processed, so this works in the same way as the recursive approach.
 
 ### How can traversal orders reconstruct a tree?
 

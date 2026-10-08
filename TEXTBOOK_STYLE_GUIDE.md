@@ -59,6 +59,7 @@ For terms not in the table, explain their meaning immediately the first time the
 
 ### Consistent Terms Across Chapters
 
+* In Korean textbooks and webpages, use lowercase `preorder`, `inorder`, and `postorder` for traversal names, and `prefix`, `infix`, and `postfix` for notation and operator-position names. Use these English terms directly instead of Korean translations or duplicate parenthetical names.
 * Graph storage methods are written as `edge list`, `adjacency list`, and `adjacency matrix`.
 * General data is `data`, C types are `data types`, and abstract data types are `abstract data types`.
 * Graphs that do not distinguish direction are written as `undirected graphs`.

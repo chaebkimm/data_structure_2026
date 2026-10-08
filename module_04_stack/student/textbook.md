@@ -169,8 +169,8 @@ The operations and expression rules now have concrete examples. The table collec
 | Underflow / 언더플로 | Reading or removing an item from an empty stack |
 | Invariant / 불변식 | A rule maintained by every valid operation |
 | Null terminator / 널 종료 문자 | `'\0'` written after the output characters to end the string |
-| Infix / 중위 표기 | Places an operator between its operands |
-| Postfix / 후위 표기 | Places an operator after its operands |
+| infix | Places an operator between its operands |
+| postfix | Places an operator after its operands |
 | Operand / 피연산자 | A value used by an operation |
 | Operator / 연산자 | Selects an operation to apply to values |
 | Precedence / 우선순위 | Determines which operations must happen first |
