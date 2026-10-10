@@ -29,14 +29,39 @@ void init_visit() {
     }
 }
 
-void _init_edges_list(int node) {
+void _edge_iteration_(int node) {
     visit_num[node] = ++visit_time;
     for (int i = 0; i < nodes[node].adj_size; i++) {
         int adj = nodes[node].adj_list[i];
         if (visit_num[adj] == 0) {
             /* tree edge */
             parent[adj] = node;
+            _edge_iteration_(adj);
+        }
+        else if (adj == parent[node]) {
+            /* tree edge to parent node (processed) */
+        }
+        else if (visit_num[adj] < visit_num[node]) {
+            /* back edge to ancester */
+        }
+        else if (visit_num[adj] > visit_num[node]) {
+            /* back edge to descendant (processed) */
+        }
+        else {
+            /* edge connecting node to itself */
+        }
+    }
+    /* postorder processing */
+}
+
+void _init_edges_list(int node) {
+    visit_num[node] = ++visit_time;
+    for (int i = 0; i < nodes[node].adj_size; i++) {
+        int adj = nodes[node].adj_list[i];
+        if (visit_num[adj] == 0) {
+            /* tree edge */
             add_edge(node, adj);
+            parent[adj] = node;
             _init_edges_list(adj);
         }
         else if (adj == parent[node]) {
@@ -112,10 +137,10 @@ void _find_bcc(int node) {
 }
 
 /* called once */
-void find_bcc(int root) {
+void find_bcc(int start_node) {
     init_visit();
-    save_back_num(root);
+    save_back_num(start_node);
     top = -1;
     init_visit();
-    _find_bcc(root);
+    _find_bcc(start_node);
 }
