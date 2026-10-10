@@ -59,13 +59,7 @@ void write_infix(int root) {
 
 int progress[10] = {0};
 
-void tree_traversal_proceed() {
-    int i = peek();
-    if (i < 0) {
-        pop();
-        return;
-    }
-
+void tree_traversal_proceed(int i) {
     int step = progress[i]++;
     switch (step) {
         case 0:
@@ -88,6 +82,10 @@ void tree_traversal_with_stack(int root_index) {
     top = -1;
     push(root_index);
     while (!is_empty()) {
-        tree_traversal_proceed();
+        if (peek() < 0) {
+            pop();
+            continue;
+        }
+        tree_traversal_proceed(peek());
     }
 }
