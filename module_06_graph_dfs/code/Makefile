@@ -54,3 +54,9 @@ autopsy: | $(BUILD_DIR)
 
 clean:
 	$(RM) -r $(BUILD_DIR)
+
+# Array-based lecture lab; the matrix-based targets above are legacy exercises.
+.PHONY: lecture
+lecture: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I../.. lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
+	$(BUILD_DIR)/lab_demo

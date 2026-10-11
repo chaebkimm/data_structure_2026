@@ -1,68 +1,107 @@
-# Chapter 6. How Not to Get Lost in a Graph
+# Chapter 6. Graph DFS, Edge Lists, and Biconnected Components
 
-## Starting Question
+Teach from [lab.c](../module_06_graph_dfs/student/lab.c), the
+[textbook](../module_06_graph_dfs/student/textbook.md), and the
+[lecture material](../module_06_graph_dfs/student/ppt_material.md).
+The lab reuses the Module 3 undirected adjacency-list graph and Module 4
+integer stack. The explicit stack holds edge indices; recursion explores
+vertices.
 
-> "In a graph with loops (cycles), what do we need to remember to follow one path to the end without working on the same vertex twice?"
+## Starting question
 
-**Expected Answer:** If students say we need to record the vertices we put into the stack, write it down. We will check the exact time to mark them during the walkthrough.
+> We already know how to visit a connected graph. How can we collect its
+> edges into groups that meet only at separating vertices?
 
-## Why We Need This
+Retrieve discovery numbers, DFS parents, and `save_back_num()` from Module
+3 before introducing a new edge index or block rule. Preserve predictions
+before revealing the output.
 
-In a tree, there is only one path to a node. In a graph, multiple paths can meet at one vertex and go back to a vertex we already passed. If we just copy the depth-first idea from trees, we might put the same vertex into the stack many times.
+## Board walkthrough
 
-We must follow one path to the end, but we shouldn't put a vertex into the stack again if it is already there. So, we record whether each vertex has been discovered or not.
-
-## Board Walkthrough
-
-We use the directed graph from the main text.
+Use A–J, indices 0–9, and the unchanged input pairs:
 
 ```text
-0 → 1   0 → 2   1 → 3
-2 → 3   3 → 4   4 → 1
-5 is not connected to any vertex.
-
+A-B, B-C, B-D, B-E, B-F, D-E, D-F, E-F, G-H
+I and J are isolated.
 ```
 
-Write the stack from bottom to top. Cover the next lines and ask first:
+Start at A. Follow stored neighbor order, not a new sorting rule.
 
-* Prediction 1: After processing 0, what will be left in the stack and in what order?
-* Prediction 2: When checking `4 → 1` from 4, what record should we look at?
-* Prediction 3: Will 5 be in the result after the stack becomes empty?
+1. Mark on recursive entry. Enter A, B, C, D, E, F.
+2. Classify the neighbor cases: new child, parent, ancestor, descendant,
+   self. Record only child and ancestor edges.
+3. Give A–B index 0, B–C index 1, B–D index 2, D–E index 3, E–B index 4,
+   E–F index 5, F–B index 6, and F–D index 7.
+4. Trace low-link values: A=1, B=2, C=3, D=2, E=2, F=2.
+5. Push tree edges before recursion and back edges toward ancestors.
+6. At each non-root return, pop through the parent edge when
+   `back_num[node] >= visit_num[parent[node]]`.
 
-| Processed Vertex | Stack | Result |
+| Return | Comparison | Block indices, in pop order |
 | --- | --- | --- |
-| Before start | `0` | Empty |
-| 0 | `2, 1` | `0` |
-| 1 | `2, 3` | `0, 1` |
-| 3 | `2, 4` | `0, 1, 3` |
-| 4 | `2` | `0, 1, 3, 4` |
-| 2 | Empty | `0, 1, 3, 4, 2` |
+| C to B | `3 >= 2` | `[1]` |
+| F to E | `2 < 5` | none |
+| E to D | `2 < 4` | none |
+| D to B | `2 >= 2` | `[7, 6, 5, 4, 3, 2]` |
+| B to A | `2 >= 1` | `[0]` |
 
-We mark a vertex right after we successfully put it into the stack. A vertex waiting to be taken out is also an already discovered vertex. In the activity of counting connected components in an undirected graph, we start a new search from a vertex that is not marked yet.
+The blocks are B–C, the six edges among B/D/E/F, and A–B.
+B is the shared cut vertex. A is not a cut vertex: its DFS root has one
+child. Root A does not reach G–H, I, or J. An isolated root emits no edge
+block in this implementation.
 
-## Common First Thoughts
+## Code walkthrough
 
-* "We can mark it when we take it out of the stack." But even before taking it out, another edge might meet the same vertex.
-* "It's safe to mark it before putting it in." But if putting it in fails, a vertex that isn't actually waiting gets marked.
-* "We started at 0, so we saw the whole graph." But 5, which cannot be reached from 0, is not included in a single search.
-* "Recursive calls are also what we need to code this time." But the coding focus of this chapter is the repeating (iterative) method using a stack.
+Read the functions in this order:
 
-## Neutral Questions
+1. `add_edge()`: one record and two symmetric lookup cells.
+2. `init_visit()`: discovery and parent reset, without clearing low-link
+   values or block results.
+3. `_init_edges_list()` and `init_edges_list()`: edge classification and
+   index preparation.
+4. Included `save_back_num()`: entry, child-return, and non-parent-neighbor
+   updates.
+5. `_find_bcc()`: edge pushes and postorder block extraction.
+6. `find_bcc()`: low-link pass, stack reset, discovery reset, extraction
+   pass in the same order.
 
-* How do the steps of the stack change if we change the time we mark the vertex?
-* What state is left at the exact moment putting a vertex into the stack fails?
-* How should we choose the starting points for the search to see the whole graph, including vertex 5?
+Run `make lecture` from `module_06_graph_dfs/code`. The driver includes the
+unchanged lab. Expect eight indexed edges, three rows of sizes 1/6/1, and
+an empty stack.
 
-## Vocabulary Rules
+## Common mistakes and useful questions
 
-**Words we can use:** Directed graph, undirected graph, vertex, edge, loop (cycle), adjacency matrix, adjacency list, connected component, stack, and depth-first search for trees.
+- Treating the stack as pending vertices: ask students to resolve each
+  pushed integer through `edges[index]`.
+- Treating the parent entry as a back edge: ask which edge has already been
+  recorded and why both endpoint lists contain it.
+- Using `>` instead of `>=` to close a block: revisit D's value 2 and B's
+  discovery number 2. Strict `>` is the bridge condition.
+- Popping until the parent edge but excluding it: read the `do ... while`
+  body before its condition.
+- Calling `_find_bcc()` before indexing or saving low-link values: identify
+  the unprepared lookup/value used by the next operation.
+- Assuming repeatability: locate `current_bcc` and ask where it is reset.
+- Counting three blocks as three connected components: identify the shared
+  vertex B and the four whole-graph connected groups.
 
-**Names we will introduce in this chapter:** Starting vertex, reachability, visit history, discovery, waiting, processing, graph depth-first search using a stack, and counting connected components. We only cover the recursive call method in extended learning.
+## Cost and contract check
 
-**Words we won't use yet:** We won't name the next data structure that takes out the first added item first, nor the next search method that looks at the closest vertices first. We also won't talk about the path with the fewest edges yet.
+Adjacency-list passes cost `O(R + E_R)` for reached vertices and edges.
+Initializing the entire active edge-index table costs `O(V²)`. The complete
+pipeline costs `O(V² + E_R)`. Recursive calls use `O(R)` working space;
+the pending-edge stack uses `O(E_R)` in a generalized implementation.
 
-## Final Check
+The actual lab uses unchecked fixed arrays and is marked for one call.
+Assume a valid nonempty simple undirected graph, symmetric lists, a valid
+root, and fitting capacities. Do not teach allocation errors or unchanged
+outputs as guarantees of this source. The matrix/typed-stack starter and
+its Practical 1 assessment documents remain a separate legacy track.
 
-> "Can you explain why we must mark a vertex right after putting it into the stack, and also why 5 is missing from the result when we start at 0?"
+## Final check
 
-**Minimum Expected Answer:** Students should mention that a waiting vertex is already discovered, we don't mark it before a successful insert, and vertex 5 cannot be reached from vertex 0.
+> Explain why D's equality case closes a block, what the pop loop includes,
+> and why the same root and neighbor order must be used in both BCC passes.
+
+Require the exact condition, inclusion of the parent edge, and reuse of
+saved low-link values with reproduced discovery numbers.

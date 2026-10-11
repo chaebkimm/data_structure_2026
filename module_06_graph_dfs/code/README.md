@@ -1,5 +1,10 @@
 # Module 6 C Package
 
+> Legacy checked matrix-DFS exercise. The current array-based textbook and
+> lecture follow `student/lab.c` instead. See the Module 6 README for the
+> current teaching path and `make lecture` driver. The contracts below
+> apply only to the separate starter/support package.
+
 This package explores a bounded graph with depth-first search (DFS). DFS
 follows one pending route deeply before returning to other unfinished work.
 Unlike the Module 5 tree, a graph can contain a cycle or two routes to the

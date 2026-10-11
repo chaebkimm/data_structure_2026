@@ -11,7 +11,7 @@ Before starting the course, first read about what data structures and efficiency
 | 3 | [Storing Relationships in Multiple Directions](https://www.google.com/search?q=module_03_graph/student/textbook.md) |
 | 4 | [Taking Out the Last Value First](https://www.google.com/search?q=module_04_stack/student/textbook.md) |
 | 5 | [Following One Path to the End](https://www.google.com/search?q=module_05_tree_dfs/student/textbook.md) |
-| 6 | [Searching a Graph Without Repeating](https://www.google.com/search?q=module_06_graph_dfs/student/textbook.md) |
+| 6 | [Graph DFS, Edge Lists, and Biconnected Components](module_06_graph_dfs/student/textbook.md) |
 | 7 | [Taking Out the First Arrived Data First](https://www.google.com/search?q=module_07_queue/student/textbook.md) |
 | 8 | [Visiting Nodes Closest to the Root First](https://www.google.com/search?q=module_08_tree_bfs/student/textbook.md) |
 | 9 | [Finding the Path with the Fewest Edges](https://www.google.com/search?q=module_09_graph_bfs/student/textbook.md) |

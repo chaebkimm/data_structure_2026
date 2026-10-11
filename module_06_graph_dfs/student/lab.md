@@ -1,5 +1,10 @@
 # Lab — Follow Routes Without Repeating Vertices
 
+> Legacy checked matrix-DFS exercise. The current array-based textbook and
+> lecture follow `student/lab.c` instead. See the Module 6 README for the
+> current teaching path and `make lecture` driver. The contracts below
+> apply only to the separate starter/support package.
+
 ## Purpose
 
 You will complete exactly three implementation tasks:

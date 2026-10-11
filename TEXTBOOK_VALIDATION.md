@@ -2,6 +2,51 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 6 Array DFS and Biconnected Components — October 10, 2026
+
+The current `module_06_graph_dfs/student/lab.c` is the authority and was
+left unchanged. The textbook, new Korean `ppt_material.md`, instructor
+chapter/lesson/technical/answer materials, diagrams, and module overview
+now use the included Module 3 adjacency-list graph, discovery numbers,
+DFS edge indexing, saved low-link values, and an edge stack for postorder
+biconnected-component extraction. The index and vocabulary boundary now
+match this chapter. The matrix/typed-vertex-stack starter, assessment,
+release, and Practical 1 materials remain a separate legacy track.
+
+The example is A–J with the nine supplied undirected edges. Root A reaches
+A–F and indexes eight edges. Its exact result rows are `[1]`,
+`[7,6,5,4,3,2]`, and `[0]`, with sizes 1/6/1 and `top == -1`.
+Explanations distinguish `>=` block closure from `>` bridge detection,
+include the parent edge in each popped row, explain root short-circuit
+behavior, and retain the one-component/one-call and unchecked-capacity
+assumptions. No validation or failure-preservation API is attributed to
+this source.
+
+Validation completed:
+
+- The new `code/lecture/lab_demo.c` includes the unchanged lab. The
+  `make lecture` target built and produced the expected discovery, parent,
+  low-link, edge, and block tables.
+- A temporary verification harness passed six independent cases under
+  AddressSanitizer and UndefinedBehaviorSanitizer: exact supplied root-A
+  results, chain, triangle equality closure, branching root, root G, and
+  isolated root I. It also checked symmetric edge indices, exactly-once
+  edge membership, and an empty stack at completion.
+- The textbook's four implementation C blocks reproduce `lab.c` modulo
+  whitespace. Combining those blocks with the lecture entry point compiled
+  under the sanitizers and produced output identical to the lecture driver.
+- Required five-section textbook structure, Markdown fence pairing, local
+  links in the revised teaching path, and changed-file whitespace passed.
+- Strict C11 compilation reported 19 warnings in the unchanged included
+  sources: 11 empty-parameter-list warnings and 8 integer-to-character
+  conversion warnings. No warning-clean claim is made. Native toolchain
+  binaries and an explicit SDK path were used because the system developer
+  tool wrappers stopped at an unaccepted Xcode license.
+
+No Chapter 6 webpage mirror exists in the current web source. Website
+publication and legacy assessment/release migration were not part of this
+revision.
+
 ## Chapter 4 Updated PPT Lab and Explicit Termination — September 30, 2026
 
 The current `module_04_stack/student/lab.c` and `ppt_lab_material.md` were

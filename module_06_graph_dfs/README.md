@@ -1,148 +1,62 @@
-# Module 6 Teaching Package
+# Module 6 Teaching Package — Graph DFS and Biconnected Components
 
-## Graph Depth-First Search
+The current textbook and lecture follow [student/lab.c](student/lab.c).
+The lab includes Module 3's undirected adjacency-list graph and discovery/
+low-link algorithms, and Module 4's unchecked integer stack. Recursion
+explores vertices; the explicit stack stores edge indices awaiting block
+assignment.
 
-This package is the Graph stage of the second
-Linear → Tree → Graph spiral in **Data Structures Course 2026**.
+## Current teaching path
 
-## 14-week delivery role
+- [Textbook](student/textbook.md): neighbor classification, edge indexing,
+  saved low-link values, and postorder block extraction.
+- [Lecture material](student/ppt_material.md): Korean slide-ready notes and
+  the exact root-A edge/stack trace.
+- [Chapter guide](../instructor_guide/chapter_06.md): board walkthrough and
+  common mistakes.
+- [Lesson plan](instructor/lesson_plan.md): two 90-minute meetings.
+- [Technical notes](instructor/technical_notes.md) and
+  [answer key](instructor/answer_key.md): contracts, resets, reference output,
+  and capacity assumptions.
+- [Models](diagrams/dfs_models.md): graph, DFS edges, pending stack, and blocks.
+- [Lecture driver](code/lecture/lab_demo.c): runs the unchanged lab and
+  prints its active results.
 
-This is the required **Week 6** graph-search package. Iterative graph DFS
-with the typed vertex Stack is the core implementation; recursive graph DFS
-is an extension. **Practical 1 replaces the ordinary Module 6 lab and its
-submission**, so students receive only one assessed submission in Week 6.
-The complete recursive-and-iterative package remains an instructor resource.
+From `code`, run:
 
-Use the exact 180-minute sequence in the
-[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Where the full-package targets, release order, or submission list below are
-broader, the guide and this delivery-role note control the required path.
-
-## Beginner-first rule
-
-Students are not expected to know graph depth-first search, visited state,
-recursion on a graph, or connected-component counting before this module.
-Every student-facing technical term is explained in ordinary language when
-first needed. Assessment rewards accurate reasoning, not memorized wording.
-
-## Module question
-
-> A tree branch does not reconnect to an earlier branch. What must change
-> when a graph route can lead back to a vertex already reached?
-
-## Core learning targets
-
-Students will be able to:
-
-1. explain why graph search needs one yes-or-no visited record per vertex;
-2. distinguish a discovered vertex from a vertex already processed;
-3. trace recursive depth-first search through outgoing directed edges;
-4. trace iterative depth-first search with a Stack of vertex identifiers;
-5. determine which vertices are reachable from one source;
-6. explain why one search may not cover a disconnected graph;
-7. count connected components in an undirected graph;
-8. implement recursive and iterative graph DFS in C;
-9. preserve caller outputs when an operation fails; and
-10. compare adjacency-matrix and adjacency-list search costs.
-
-A **vertex** is one item in a graph. An **edge** is a stored connection.
-**Depth-first search (DFS)** follows one route deeply before returning to
-another waiting choice. A vertex is **visited** here as soon as it has been
-discovered and scheduled, so it is not scheduled twice. A **connected
-component** is one largest group in an undirected graph whose vertices can
-reach one another.
-
-## Package map
-
-```text
-module_06_graph_dfs/
-├── README.md
-├── diagrams/
-│   └── dfs_models.md
-├── instructor/
-│   ├── answer_key.md
-│   ├── lesson_plan.md
-│   └── technical_notes.md
-├── student/
-│   ├── cognitive_pause.md
-│   ├── evidence_template.md
-│   ├── graph_dfs_autopsy.md
-│   ├── inquiry_prompt.md
-│   ├── inquiry_prompt_linear.md
-│   ├── investigation_worksheet.md
-│   ├── investigation_worksheet_linear.md
-│   ├── lab.md
-│   ├── representation_reveal.md
-│   ├── rubric.md
-│   ├── textbook.md
-│   └── vocabulary.md
-├── release/
-│   ├── prepare_student_release.ps1
-│   ├── release_manifest.md
-│   ├── stage_a_README.md … stage_e_README.md
-│   ├── student_build.ps1
-│   ├── student_code_README.md
-│   └── student_Makefile
-├── dist/
-│   └── module_06_stage_a_*.zip … module_06_stage_e_*.zip
-└── code/
-    ├── README.md
-    ├── build.ps1
-    ├── Makefile
-    ├── include/
-    │   ├── graph_dfs.h
-    │   ├── graph_matrix.h
-    │   └── vertex_stack.h
-    ├── starter/graph_dfs.c
-    ├── solution/graph_dfs.c
-    ├── support/
-    │   ├── graph_matrix.c
-    │   └── vertex_stack.c
-    ├── tests/
-    │   ├── test_core.c
-    │   ├── test_extension.c
-    │   ├── test_self_loop.c
-    │   └── test_student.c
-    └── autopsy/
-        ├── README.md
-        └── faulty_cycle_dfs.c
+```sh
+make lecture
 ```
 
-## Recommended release order
+The lab has no `main()`. The driver initializes A–J, builds the supplied
+nine-edge graph, and calls `init_edges_list(0)` then `find_bcc(0)` in a
+fresh process.
 
-1. Run `release/prepare_student_release.ps1`.
-2. Release Stage A before Meeting A. It withholds DFS terminology, visited
-   state, formal procedures, code, and exact answers.
-3. Release Stage B after each student preserves the initial route model.
-4. Release Stage C after the three-target Cognitive Pause and comparison.
-5. Release Stage D only after the student preserves Sections A through F of
-   Stage C.
-6. Release Stage E after retrieval and Stage D calibration in Meeting B.
-7. Keep `instructor/`, `code/solution/`, and
-   `code/tests/test_extension.c` instructor-only until revisions close.
+## Learning targets
 
-## Core submission
+Students explain how discovery numbers stop repeated recursion, classify
+five neighbor cases in a simple undirected graph, index each reached edge
+once, propagate low-link values, and use an edge stack to emit blocks.
+They distinguish connected groups of vertices from blocks of edges,
+explain equality at block boundaries, and identify reset/capacity limits.
 
-Students submit:
+Root A reaches A–F. Eight indexed edges produce rows `[1]`,
+`[7,6,5,4,3,2]`, and `[0]`, with sizes 1/6/1 and an empty final stack.
+G–H and isolated I/J are outside this run. The wrappers handle one starting
+component and `find_bcc()` is marked for one call. Input validation,
+whole-graph extraction, and repeatability are extensions.
 
-- completed `code/starter/graph_dfs.c`;
-- completed `code/tests/test_student.c`;
-- saved output from supplied and student-authored tests;
-- three original tests, one in each required category;
-- warning-enabled compiler or instructor-CI evidence;
-- completed evidence record and Graph DFS Autopsy;
-- corrected Cognitive Pause; and
-- a short tree-to-graph transfer explanation.
+## Legacy checked-DFS exercise
 
-**CI**, or continuous integration, means another computer automatically
-builds and tests submitted code.
+The matrix-based `code/include`, `code/support`, `code/starter`,
+`code/solution`, and existing tests retain their separate public API.
+[code/README.md](code/README.md) and [student/lab.md](student/lab.md) describe
+that exercise, including status codes, typed vertex-stack DFS, failure
+preservation, and the three TODOs.
 
-## Relationship to the course spiral
-
-- **Revisits:** Module 3's directed integer adjacency-matrix idea, Module 4
-  LIFO Stack, Module 5
-  recursive and iterative depth-first models, checked errors, and cleanup.
-- **Introduces:** visited-aware graph DFS, source reachability, and
-  undirected connected-component counting.
-- **Forwards:** Queue-based breadth-first search in Modules 7–9 and graph
-  path algorithms later in the course.
+The staged inquiry/worksheet/pause files, evidence template, rubric,
+autopsy, release scripts, and course-wide Practical 1 delivery schedule
+also remain on that legacy track. Use their existing release gates if
+assigning it. Those contracts and assessments do not describe
+`student/lab.c`. This revision updates the textbook and lecture path;
+it does not migrate the assessment or release archives.

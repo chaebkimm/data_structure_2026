@@ -1,231 +1,339 @@
-# Chapter 6. Exploring Maps Without Going in Circles
+# Chapter 6. Graph DFS, Edge Lists, and Biconnected Components
+
+We will reuse Chapter 3's undirected adjacency lists and discovery numbers. We will give each reached edge an index, then use Chapter 4's stack to collect edges into blocks when a recursive branch finishes.
+
+The implementation for this chapter is [lab.c](lab.c). It includes the earlier graph and stack labs. The checked matrix-based implementation under `code/starter` and `code/solution` is a separate legacy exercise.
 
 ## Thinking Logically
 
-### What changes if we follow one path like in a tree?
+### Which vertices can one search reach?
 
-In a tree, there is only one straight, downward path to reach a specific item. But in a free-flowing map, multiple connections can lead to the exact same item, and paths can even loop all the way back to an item you have already visited.
+Chapter 3 stores each undirected connection in both endpoint lists. Following every connection recursively would return to a vertex already entered. A discovery number prevents another call: zero means unvisited, and a positive number records the first entry.
 
-```text
-0 → 1   0 → 2   1 → 3
-2 → 3   3 → 4   4 → 1
-5 is not connected to any item.
-
-```
-
-We can still use our strategy of following one path all the way to a dead end. But if we don't remember the items we have already visited, we might loop around the `1 → 3 → 4 → 1` path forever, or accidentally process item 3 twice.
-
-### When should we leave a mark to avoid checking an item again?
-
-We keep a simple true/false checklist for each item. If an item is marked "true", it means we have already found it and reserved its turn to be checked.
-
-We must check off an item **the exact moment we drop it into our waiting container**, not later when we finally take it out. This completely stops other connections from trying to shove the exact same item into the container again while it is already waiting patiently inside.
-
-We only leave a checkmark if it successfully goes into the container. If the container is full and fails to take the item, but we mark it as "true" anyway, it won't actually be in the container, and we will accidentally skip checking it forever!
-
-### In what order should we add neighbors to visit smaller numbers first?
-
-In our tall waiting container, the last item dropped in is always the first one to come out. So, if we look at our current item's neighbors and drop them in starting from the *largest* number, the *smallest* number will go in last—meaning it will pop out first!
+Use the graph built by `alphabet_nodes_init()` and `edges_init()` throughout this chapter. The labels A–J have indices 0–9. The stored undirected pairs are:
 
 ```text
-Drop the starting item 0 in and mark it.
-
-Repeat until the container is empty:
-    Take out an item and write it down in the final list.
-    Check its neighbors starting from the largest number.
-    Drop a neighbor into the container if it is not marked yet.
-    If it successfully goes in, mark it as true.
-
+A-B, B-C, B-D, B-E, B-F, D-E, D-F, E-F, G-H
+I and J are isolated.
 ```
 
-In the example map above, if we start from 0, the container changes like this. The container is written from bottom to top.
+Neighbors are read in their stored insertion order. They are not sorted by this lab.
 
-| Processed Item | Inside the Container | Final Visit Order |
+| Vertex | Index | Stored neighbors |
+| --- | ---: | --- |
+| A | 0 | B |
+| B | 1 | A, C, D, E, F |
+| C | 2 | B |
+| D | 3 | B, E, F |
+| E | 4 | B, D, F |
+| F | 5 | B, D, E |
+| G | 6 | H |
+| H | 7 | G |
+| I | 8 | none |
+| J | 9 | none |
+
+Starting at A enters A, B, C, D, E, F. G, H, I, and J remain unvisited. The whole graph has four connected components, but the Module 6 wrappers explore only the selected starting component. They do not perform Chapter 3's all-vertex sweep.
+
+### How do we record each undirected edge once?
+
+Each undirected edge appears twice in the neighbor lists. We need one record for the connection, so both endpoint orders must refer to the same edge index.
+
+When the neighbor is unvisited, record the current-to-neighbor edge, assign the neighbor's parent, and recurse. This is a tree edge: it creates a new DFS child. When the neighbor is the parent, skip the reverse entry of the same tree edge.
+
+For another visited neighbor, compare discovery numbers. A smaller number identifies an ancestor in this simple undirected DFS. Record the current-to-ancestor connection as a back edge. A larger number is the reverse entry of an already recorded connection and is skipped. An equal number represents a self-loop and is ignored by this lab.
+
+These rules assume a simple undirected graph with symmetric adjacency lists. Discovery-number comparisons alone do not classify edges in a directed graph. Parallel edges would also require different handling: skipping by parent vertex could discard a separate edge.
+
+`init_edges_list(0)` produces the following records. The directions describe DFS processing; the input edges remain undirected.
+
+| Edge index | `from → to` | Kind |
+| ---: | --- | --- |
+| 0 | A → B | tree |
+| 1 | B → C | tree |
+| 2 | B → D | tree |
+| 3 | D → E | tree |
+| 4 | E → B | back |
+| 5 | E → F | tree |
+| 6 | F → B | back |
+| 7 | F → D | back |
+
+For example, `edge_index[1][4]` and `edge_index[4][1]` both contain 4. The disconnected edge G–H is not indexed; its entries remain -1. Only `edges[0]` through `edges[edges_size - 1]` are active.
+
+### How far back can a finished branch reconnect?
+
+A branch may contain a connection to an earlier ancestor. Chapter 3's `save_back_num()` summarizes that possibility. On entry, it gives a vertex the same discovery and back number. After a child returns, it keeps the smaller child back number. For a visited non-parent neighbor, it keeps the smaller neighbor discovery number.
+
+The result, called a low-link value here, is the earliest discovery number reachable by descending through tree edges and then using at most one back edge. It also includes the vertex's own discovery number.
+
+After starting at A, the values are:
+
+| Vertex | `visit_num` | `parent` | `back_num` |
+| --- | ---: | --- | ---: |
+| A | 1 | -1 | 1 |
+| B | 2 | A (0) | 2 |
+| C | 3 | B (1) | 3 |
+| D | 4 | B (1) | 2 |
+| E | 5 | D (3) | 2 |
+| F | 6 | E (4) | 2 |
+
+F connects back to B and D. Its minimum is B's discovery number, 2. That value returns through E and D. C has only its parent edge, so its value remains 3.
+
+### When can we close a group of edges?
+
+We now want groups whose vertices cannot be separated by deleting one vertex inside a group. Such a group is a biconnected component, or block. This lab groups edges. A bridge, an edge whose removal disconnects its endpoints, forms a one-edge block. An isolated vertex has no edge and creates no row in this lab's result.
+
+Push a tree edge's index before entering its child. Push a back edge's index when scanning it from descendant to ancestor. The stack holds edges that have not yet been assigned to a block. Recursion still controls vertex traversal; the explicit stack stores edge indices.
+
+When a non-root child `node` finishes, compare `back_num[node]` with `visit_num[parent[node]]`.
+
+- If the child's value is smaller, its branch reconnects above its parent. Leave the pending edges on the stack.
+- If the child's value is equal or larger, the branch cannot reconnect above its parent. Pop through the parent-to-child tree edge, inclusive. Those popped edges form one block.
+
+Equality closes a block. A back edge to the parent connects within that block, but does not reconnect above the parent. A bridge uses the stricter condition `back_num[child] > visit_num[parent]`.
+
+The root returns from its own postorder processing. Each of its children can close a block, since no discovery number is smaller than the root's number. Root articulation status is a different question: the root is a cut vertex only if it has at least two DFS children. The lab does not output cut vertices or bridges separately.
+
+### What happens to the stack in the example?
+
+The stack is listed bottom to top. A block row preserves pop order.
+
+| Event | Pending edge indices | Emitted row |
 | --- | --- | --- |
-| Before start | `0` | Empty |
-| 0 | `2, 1` | `0` |
-| 1 | `2, 3` | `0, 1` |
-| 3 | `2, 4` | `0, 1, 3` |
-| 4 | `2` | `0, 1, 3, 4` |
-| 2 | Empty | `0, 1, 3, 4, 2` |
+| Enter B through A–B | `0` | none |
+| Enter C through B–C | `0, 1` | none |
+| Finish C: `3 >= 2` | `0` | `bcc[0] = [1]` |
+| Enter D, then E | `0, 2, 3` | none |
+| Scan E → B | `0, 2, 3, 4` | none |
+| Enter F | `0, 2, 3, 4, 5` | none |
+| Scan F → B, then F → D | `0, 2, 3, 4, 5, 6, 7` | none |
+| Finish F: `2 < 5` | unchanged | none |
+| Finish E: `2 < 4` | unchanged | none |
+| Finish D: `2 >= 2` | `0` | `bcc[1] = [7, 6, 5, 4, 3, 2]` |
+| Finish B: `2 >= 1` | empty | `bcc[2] = [0]` |
+| Finish root A | empty | none |
 
-Item 5 is not in the final list because there is no path leading to it from 0. The starting item is always included in the final list.
+The rows represent B–C, the six edges among B/D/E/F, and A–B. The middle block shares B with both one-edge blocks. Connected components partition vertices; these blocks partition reached edges and may share a cut vertex.
 
-### Can we find the same items using repeating instructions?
+### Why does the lab run DFS more than once?
 
-Yes! When we arrive at an item, we mark it, write it down, and then simply tell the computer to run the exact same instructions for all unvisited neighbors, starting from the smallest number. The exact order we visit them might be slightly different than using the container, but the final group of items we reach will be exactly the same.
+Edge indexing must finish before the stack can store valid edge indices. Low-link values must also be available before block extraction begins.
 
-The repeating instructions use the computer's hidden background memory. The container method uses our own custom-built container to hold the item numbers.
+Call `init_edges_list(root)` first. It resets discovery state, edge count, and the active part of `edge_index`, then indexes the root's reachable edges. Next call `find_bcc(root)` with the same root and unchanged adjacency lists.
 
-### How do we find items we can't reach from our starting point?
+`find_bcc()` runs `save_back_num(root)` after a discovery reset, resets `top`, resets discovery state again, and runs `_find_bcc(root)`. The second pass reproduces the first pass's discovery numbers because the root and neighbor order are unchanged. It uses the saved `back_num`; `_find_bcc()` does not recompute those values.
 
-A single search only finds the items you can actually reach from where you started. If we want to find everything, we can scan the entire map. Every time we see an unmarked item, we start a brand-new search. This lets us count completely separate, independent groups (like islands) one by one.
-
-If we make all the connections in our example two-way streets, items 0 to 4 form one connected group, and the lonely item 5 forms a second independent group. So, there are 2 groups in total. A completely empty map has 0 groups.
-
-In a one-way map, just because you can go down a connection doesn't mean you can come back. Because of this, our group-counting tool will safely reject one-way maps.
-
-### How do we protect the result if the search fails?
-
-Before searching, we make sure the map grid from Chapter 3 is valid. The starting item must actually exist, and our container is strictly limited to 16 items.
-
-We build the final visit list in a temporary workspace first. If the map is broken, or if we hit the container limit or run out of memory, we throw away the workspace and do not change the user's existing list. We only copy the finished list when everything succeeds perfectly.
+The comment `/* called once */` matters. `find_bcc()` does not reset `current_bcc`, `bcc`, or `bcc_size`. A fresh program starts them at zero. Repeated runs or a whole-graph extension require explicit result management. Calling `init_edges_list()` for another component also rebuilds the edge indices, so old rows cannot be interpreted using the new edge list.
 
 ## Calculating Efficiency
 
-### How long does it take to process one item in a grid map?
+### How much neighbor work is repeated?
 
-To find neighbors in our grid map, we must check all `V` possible destination boxes in that item's row. Because we eventually check every item, checking all `V` rows takes an amount of work that grows very rapidly, like the square of the items: `O(V^2)`.
+The reached A–F component has six vertices and eight undirected edges. Each pass enters six vertices and examines sixteen neighbor entries. Edge indexing, low-link computation, and extraction each traverse those lists once.
 
-### How long does it take if we use a different map style?
+Let `R` be the number of reached vertices and `E_R` the number of edges in that component. Each traversal takes `O(R + E_R)` time. Every indexed edge is pushed once and popped once during extraction, adding `O(E_R)` work.
 
-If we stored our map as a simple list of connected paths instead of a giant grid, we would only check the actual paths that exist. This takes `O(V + E)` time, where `E` is the number of connections. Even for the exact same search, the time it takes changes depending on how the map is stored!
+### What does initialization add?
 
-### How much extra space is needed during the search?
+The resets loop over all active vertices, including unreachable ones. `init_edges_list()` also sets every active cell of `edge_index` to -1. For `V` active vertices that is `V × V` assignments: 100 in the supplied ten-vertex graph. The complete indexing-and-extraction pipeline therefore takes `O(V² + E_R)` time when generalized beyond the fixed arrays. The square term comes from initializing the lookup table, not from scanning adjacency lists.
 
-Because the true/false checklist and the waiting container can hold up to the total number of items, it requires a steady amount of extra space proportional to the total items, `O(V)`.
+### How much storage do the passes use?
 
-### How long does it take to count independent groups?
+The explicit stack holds seven edges at its peak in this example. Recursive calls hold at most five vertices at once: A, B, D, E, F. In a generalized implementation, active recursive calls need `O(R)` storage and pending edges need `O(E_R)` storage.
 
-Every item is marked exactly once. Because we have to check all the rows in our grid map to find connections, it still takes `O(V^2)`. (If it were a list of connected paths, it would be `O(V + E)`).
+The actual lab reserves fixed arrays: ten vertices, ten edge records, a ten-entry stack, `edge_index[10][10]`, and `bcc[10][45]`. The 45 columns do not enlarge `edges[10]` or `stack[10]`. The full sample graph has nine undirected edges, so even indexing every component would fit ten edge records. The code provides no bounds checks or allocation/status interface. Larger inputs need redesigned capacities and checks before these raw operations can be used.
 
 ## Glossary
 
-### Depth-First Search (DFS)
-
-A search method that follows one branch all the way to the end before returning to check the remaining branches.
-
-### Visited Mark
-
-A value that remembers whether each vertex has already been found to prevent processing it again.
-
-### Reachability
-
-The ability to reach another vertex by following the edges from a starting vertex.
-
-### Cycle
-
-A path that follows edges and loops back to the vertex where it started.
-
-### Connected Component
-
-The largest group of vertices in an undirected graph that can all reach each other.
+- **Discovery number:** A positive first-entry number in `visit_num`; zero means unvisited.
+- **DFS parent:** The vertex that first enters a child through a tree edge; roots use -1 after `init_visit()`.
+- **Tree edge:** An edge used to discover an unvisited vertex.
+- **Back edge:** In this simple undirected DFS, a non-parent edge from a descendant to an ancestor.
+- **Low-link value:** `back_num`, the earliest discovery number reachable by tree descent followed by at most one back edge, including the current vertex itself.
+- **Connected component:** A maximal group of vertices joined by undirected paths.
+- **Biconnected component (block):** An edge group with no separating vertex within the group; this lab also emits bridges as one-edge blocks.
+- **Cut vertex (articulation point):** A vertex whose deletion increases the number of connected components.
+- **Bridge:** An edge whose deletion increases the number of connected components.
+- **Postorder processing:** Work done after the current vertex's neighbor loop finishes.
 
 ## Coding Plan
 
-### Searching with Recursion (Repeating Instructions)
+1. **Prepare the graph.** Call `alphabet_nodes_init()` and `edges_init()` once in a fresh program. Choose root 0.
+2. **Reset discovery state.** Set `visit_time` and active discovery entries to zero and parents to -1.
+3. **Index edges.** Record tree edges before recursion and back edges toward ancestors. Store the same index for both endpoint orders.
+4. **Save low-link values.** Reset discovery state and use the included `save_back_num()` with the chosen root.
+5. **Extract blocks.** Clear the shared stack, reset discovery state, and traverse in the same order. Push edge indices and pop a block at each qualifying child return.
+6. **Read active results.** Use rows below `current_bcc`, entries below `bcc_size[row]`, and the indexed `edges` records. Keep all input and capacity assumptions explicit.
 
-* **Mark:** Change the checklist to `true` the exact moment you enter a vertex.
-* **Record:** Add the current vertex to the visit result.
-* **Progress:** Check outgoing edges starting from the smallest number, and call the instructions again for unvisited neighbors.
-* **Complete:** Copy the temporary workspace to the final output only after the whole process is fully built.
-
-### Searching with a Stack (Waiting Container)
-
-* **Start:** Push the starting vertex into the stack, then immediately mark it as `true`.
-* **Visit:** Pop the vertex out and record it in the result.
-* **Reserve:** Check neighbors starting from the largest number. Only mark the vertices that were successfully pushed into the stack.
-* **Clean up:** Free the stack's memory whether the search succeeds or fails.
-
-### Counting Connected Components
-
-* **Check:** Make sure the graph is a two-way (undirected) graph.
-* **Search:** Look at all the vertices starting from 0, and start a brand-new DFS whenever you find an unmarked vertex.
-* **Calculate:** Increase the connected component count by 1 every time you trigger a new DFS.
-* **Finish:** Output the final calculated count after checking all vertices.
-
-### Protecting the Output on Failure
-
-* **Inspect:** First, check the graph, the starting vertex, the output address, and the stack limits.
-* **Build:** Create the visiting order and the component count entirely inside temporary variables.
-* **Apply:** Update the user's actual output variables only when all tasks succeed completely.
+Steps 4 and 5 are coordinated by `find_bcc()`. They are recursive DFS passes with an edge stack, not iterative vertex DFS.
 
 ## C Code
 
-### How does the recursive search continue?
+### Which earlier code does the lab include?
+
+The graph globals and `save_back_num()` come from Chapter 3. The integer stack and unchecked `push()`/`pop()` come from Chapter 4. Compile from the repository root with `-I.` so the included paths resolve.
 
 ```c
-static void recursive_visit(
-    const Graph *graph,
-    size_t vertex,
-    bool seen[GRAPH_MAX_VERTICES],
-    GraphDfsOrder *order
-)
-{
-    size_t neighbor;
+#include "module_03_graph/student/lab.c"
+#include "module_04_stack/student/lab.c"
+```
 
-    seen[vertex] = true;
-    order->vertices[order->count] = vertex;
-    order->count += 1U;
+### How does one edge receive one index?
 
-    for (neighbor = 0U; neighbor < graph->vertex_count; ++neighbor) {
-        if (graph->adjacency[vertex][neighbor] && !seen[neighbor]) {
-            recursive_visit(graph, neighbor, seen, order);
+The two endpoint orders share one index. The helper does not check capacity or reject duplicate insertion. Its callers enforce the one-record traversal rule.
+
+```c
+struct GraphEdge {
+    int from, to;
+    /* tree edge: visit_num[from] < visit_num[to] */
+    /* back edge: visit_num[from] > visit_num[to] */
+};
+
+struct GraphEdge edges[10];
+int edges_size = 0;
+
+int edge_index[10][10] = {0};
+
+void add_edge(int u, int v) {
+    int index = edges_size++;
+    edges[index].from = u;
+    edges[index].to = v;
+    edge_index[u][v] = index;
+    edge_index[v][u] = index;
+}
+```
+
+The comments inside `GraphEdge` describe the orientations produced by this traversal. A discovery-number inequality alone is not a general tree-edge test.
+
+### How are discovery state and edges prepared?
+
+The parent test precedes the ancestor test. It prevents the reverse entry of a tree edge from becoming a back edge. The source retains the comment spelling `ancester`.
+
+```c
+void init_visit() {
+    visit_time = 0;
+
+    for (int i = 0; i < nodes_size; i++) {
+        visit_num[i] = 0;
+        parent[i] = -1;
+    }
+}
+
+void _init_edges_list(int node) {
+    visit_num[node] = ++visit_time;
+    for (int i = 0; i < nodes[node].adj_size; i++) {
+        int adj = nodes[node].adj_list[i];
+        if (visit_num[adj] == 0) {
+            /* tree edge */
+            parent[adj] = node;
+            add_edge(node, adj);
+            _init_edges_list(adj);
+        }
+        else if (adj == parent[node]) {
+            /* tree edge to parent node (processed) */
+        }
+        else if (visit_num[adj] < visit_num[node]) {
+            /* back edge to ancester */
+            add_edge(node, adj);
+        }
+        else if (visit_num[adj] > visit_num[node]) {
+            /* back edge to descendant (processed) */
+        }
+        else {
+            /* edge connecting node to itself */
         }
     }
+    /* postorder processing */
 }
 
-```
-
-The public function first checks the graph and the starting vertex. It fills `seen` and the temporary `GraphDfsOrder` with zeros, runs this function, and then copies only the perfectly finished order to the output.
-
-### When do we leave a mark in the iterative (stack) search?
-
-```c
-stack_status = vertex_stack_push(&stack, start_vertex);
-if (stack_status == VERTEX_STACK_OK) {
-    seen[start_vertex] = true;
-}
-
-while (status == GRAPH_DFS_OK) {
-    size_t vertex;
-    size_t cursor;
-
-    stack_status = vertex_stack_pop(&stack, &vertex);
-    if (stack_status == VERTEX_STACK_UNDERFLOW) {
-        break;
-    }
-    if (stack_status != VERTEX_STACK_OK) {
-        status = map_stack_failure(stack_status);
-        break;
-    }
-
-    candidate.vertices[candidate.count] = vertex;
-    candidate.count += 1U;
-
-    for (cursor = graph->vertex_count; cursor > 0U; --cursor) {
-        size_t neighbor = cursor - 1U;
-
-        if (graph->adjacency[vertex][neighbor] && !seen[neighbor]) {
-            stack_status = vertex_stack_push(&stack, neighbor);
-            if (stack_status != VERTEX_STACK_OK) {
-                status = map_stack_failure(stack_status);
-                break;
-            }
-            seen[neighbor] = true;
+void init_edges_list(int start_node) {
+    init_visit();
+    edges_size = 0;
+    for (int i = 0; i < nodes_size; i++) {
+        for (int j = 0; j < nodes_size; j++) {
+            edge_index[i][j] = -1;
         }
     }
+    _init_edges_list(start_node);
 }
-
 ```
 
-The `map_stack_failure` helper changes stack limit errors and memory allocation failures into `GRAPH_DFS_LIMIT` and `GRAPH_DFS_ALLOCATION` error codes. When the loop ends, it safely destroys the stack and outputs the `candidate` workspace only if `status` is a perfect success.
+### How are pending edges assigned to blocks?
 
-### How do we count connected components?
+The root check uses short-circuit `||`: a root returns before indexing `visit_num[parent[node]]` with -1. For a qualifying child, `do ... while` pops at least once and includes `parent_edge` in the output. Valid indexing and traversal order ensure that edge is still on the stack.
 
 ```c
-size_t component_count = 0U;
-size_t vertex;
+int bcc[10][45];
+int bcc_size[10] = {0};
+int current_bcc = 0;
 
-for (vertex = 0U; vertex < graph->vertex_count; ++vertex) {
-    if (!seen[vertex]) {
-        component_count += 1U;
-        recursive_visit(graph, vertex, seen, &all_vertices);
+void _find_bcc(int node) {
+    visit_num[node] = ++visit_time;
+    for (int i = 0; i < nodes[node].adj_size; i++) {
+        int adj = nodes[node].adj_list[i];
+        if (visit_num[adj] == 0) {
+            /* tree edge add to stack and proceed */
+            push(edge_index[node][adj]);
+            parent[adj] = node;
+            _find_bcc(adj);
+        }
+        else if (adj == parent[node]) {
+            /* tree edge to parent node (processed) */
+        }
+        else if (visit_num[adj] < visit_num[node]) {
+            /* back edge to ancester add to stack */
+            push(edge_index[node][adj]);
+        }
+        else if (visit_num[adj] > visit_num[node]) {
+            /* back edge to descendant (processed) */
+        }
+        else {
+            /* edge connecting node to itself */
+        }
     }
+    /* postorder processing */
+    if (parent[node] == -1 || back_num[node] < visit_num[parent[node]]) {
+        return;
+    }
+    int parent_edge = edge_index[parent[node]][node];
+    int cur = current_bcc++;
+    int pos = 0;
+
+    int edge;
+    do {
+        edge = pop();
+        bcc[cur][pos++] = edge;
+    } while (edge != parent_edge);
+    bcc_size[cur] = pos;
 }
 
-*out_component_count = component_count;
-
+/* called once */
+void find_bcc(int root) {
+    init_visit();
+    save_back_num(root);
+    top = -1;
+    init_visit();
+    _find_bcc(root);
+}
 ```
 
-This code runs only after confirming that the graph is a valid, undirected (two-way) graph. For directed maps, it will safely reject the request and return `GRAPH_DFS_REQUIRES_UNDIRECTED`.
+### How do we run the supplied example?
+
+The lab has no `main()`. Use the [lecture driver](../code/lecture/lab_demo.c), which includes the unchanged lab and prints discovery, low-link, edge, and block tables:
+
+```sh
+cd module_06_graph_dfs/code
+make lecture
+```
+
+In a fresh program the essential sequence is:
+
+```c
+alphabet_nodes_init();
+edges_init();
+init_edges_list(0);
+find_bcc(0);
+```
+
+The expected active sizes are `edges_size == 8`, `current_bcc == 3`, and `bcc_size` beginning with `1, 6, 1`. The final stack is empty with `top == -1`. The exact rows are `[1]`, `[7, 6, 5, 4, 3, 2]`, and `[0]`.
+
+Self-loops are ignored, parallel edges are unsupported, and invalid roots or exceeded capacities are not checked. The lab mutates globals directly and does not promise unchanged output after failure. A whole-graph block extractor, repeatable wrapper, and checked API are subsequent extensions.

@@ -1,304 +1,114 @@
-# Module 6 Graph DFS Models
+# Module 6 Graph DFS and Edge-Block Models
 
-Every visual below has a complete text equivalent. Students may use the
-diagram, edge list, outgoing-neighbor lists, table, tactile objects, or a
-spoken description. No meaning depends on color.
+These models follow [lab.c](../student/lab.c). Every diagram has a text
+representation. Edge indices describe the root-A run and its stored
+adjacency order.
 
-The service examples are synthetic, meaning invented for safe practice. A
-**service** is a program that performs a task for another program. A
-**graph** stores vertices and direct relationships. A **vertex** is one
-item. An **edge** is one direct relationship.
+## Input graph
 
-## 1. Course directed graph
-
-A **directed edge** works in one direction. The arrow label `0 → 1` means
-the edge starts at vertex 0 and ends at vertex 1.
+The input has ten vertices and nine undirected edges.
 
 ```mermaid
 flowchart LR
-    V0["0 Gateway"]
-    V1["1 Web"]
-    V2["2 Admin"]
-    V3["3 Database"]
-    V4["4 Monitor"]
-    V5["5 Archive: isolated"]
-    V0 --> V1
-    V0 --> V2
-    V1 --> V3
-    V2 --> V3
-    V3 --> V4
-    V4 --> V1
+    A --- B
+    B --- C
+    B --- D
+    B --- E
+    B --- F
+    D --- E
+    D --- F
+    E --- F
+    G --- H
+    I["I: isolated"]
+    J["J: isolated"]
 ```
 
-Exact edge-list equivalent:
+Text equivalent: A–B, B–C, B–D, B–E, B–F, D–E, D–F, E–F, G–H.
+I/J have no edges. Connected groups: A–F, G–H, I, J.
+
+Stored neighbor lists, with labels corresponding to indices 0–9:
 
 ```text
-0 → 1
-0 → 2
-1 → 3
-2 → 3
-3 → 4
-4 → 1
+A:[B] B:[A,C,D,E,F] C:[B] D:[B,E,F] E:[B,D,F] F:[B,D,E]
+G:[H] H:[G] I:[] J:[]
 ```
 
-Exact outgoing-neighbor equivalent:
+## DFS tree and back edges from A
 
-```text
-0:[1,2]  1:[3]  2:[3]  3:[4]  4:[1]  5:[]
-```
-
-Exact sentence equivalent:
-
-1. Gateway, vertex 0, leads to Web, vertex 1.
-2. Gateway leads to Admin, vertex 2.
-3. Web leads to Database, vertex 3.
-4. Admin leads to Database.
-5. Database leads to Monitor, vertex 4.
-6. Monitor leads to Web.
-7. Archive, vertex 5, has no edge entering or leaving it.
-
-## 2. Why graph DFS needs visited state
-
-**Depth-first search (DFS)** follows one available route deeply before
-returning to an unfinished choice. A **cycle** is a route that returns to an
-earlier vertex. A **visited array** stores one true-or-false value per
-vertex. To **discover** means to reach for the first time. To **schedule**
-means to arrange for work. To **record** means to append a vertex to output.
-In this module, a marked vertex has been discovered and scheduled. The
-**source** is the starting vertex.
-
-```mermaid
-flowchart LR
-    A["1 Web"] --> B["3 Database"]
-    B --> C["4 Monitor"]
-    C --> A
-```
-
-Exact text equivalent:
-
-```text
-The cycle is 1 → 3 → 4 → 1.
-DFS marks 1 before following 1 → 3.
-It later marks 3 and then 4.
-At edge 4 → 1, visited[1] is true.
-The edge creates no new work, so the cycle stops.
-```
-
-An edge from 2 to 3 also reaches a marked destination after the first branch
-has finished. It creates no second record for 3.
-
-## 3. Recursive DFS
-
-**Recursion** occurs when a function calls itself. A **call frame** stores
-information for one active function call. Recursive DFS marks and records a
-vertex on entry, then checks destinations from lower number to higher
-number.
-
-```mermaid
-flowchart LR
-    R0["enter 0<br/>record 0"]
-    R1["enter 1<br/>record 1"]
-    R3["enter 3<br/>record 3"]
-    R4["enter 4<br/>record 4<br/>skip marked 1"]
-    R2["return to 0<br/>enter 2<br/>record 2<br/>skip marked 3"]
-    R0 --> R1 --> R3 --> R4 --> R2
-```
-
-Exact event equivalent:
-
-1. Enter, mark, and record 0.
-2. Enter, mark, and record 1.
-3. Enter, mark, and record 3.
-4. Enter, mark, and record 4.
-5. Skip edge `4 → 1` because vertex 1 is marked.
-6. Return until the unfinished choice at 0 is active.
-7. Enter, mark, and record 2.
-8. Skip edge `2 → 3` because vertex 3 is marked.
-
-Exact output and final visited set:
-
-```text
-Output: 0, 1, 3, 4, 2
-Visited: {0, 1, 2, 3, 4}
-Unmarked: {5}
-```
-
-## 4. Iterative DFS frontier
-
-An **iterative algorithm** uses a loop instead of recursive calls. A
-**loop** repeats instructions while its condition holds. An explicit
-**Stack** is a last-in, first-out collection operated by the program. Its
-**frontier** contains marked vertices still waiting to be processed.
-`push` adds an item; `pop` removes the newest item.
-
-Iterative DFS checks destinations from higher number to lower number. It
-marks a destination only after its push succeeds. Stack items are listed
-bottom to top.
-
-```mermaid
-flowchart LR
-    S0["start<br/>Stack 0"]
-    S1["process 0<br/>Stack 2,1"]
-    S2["process 1<br/>Stack 2,3"]
-    S3["process 3<br/>Stack 2,4"]
-    S4["process 4<br/>Stack 2"]
-    S5["process 2<br/>Stack empty"]
-    S0 --> S1 --> S2 --> S3 --> S4 --> S5
-```
-
-Exact table equivalent:
-
-| Completed processing | Visited vertices | Stack, bottom to top | Output |
-|---|---|---|---|
-| none | `{0}` | `0` | empty |
-| 0 | `{0,1,2}` | `2,1` | `0` |
-| 1 | `{0,1,2,3}` | `2,3` | `0,1` |
-| 3 | `{0,1,2,3,4}` | `2,4` | `0,1,3` |
-| 4 | `{0,1,2,3,4}` | `2` | `0,1,3,4` |
-| 2 | `{0,1,2,3,4}` | empty | `0,1,3,4,2` |
-
-Exact linear equivalent:
-
-1. Initially, 0 is marked and waiting; output is empty.
-2. After processing 0, 0, 1, and 2 are marked. The Stack is 2 then 1.
-3. After processing 1, 3 is also marked. The Stack is 2 then 3.
-4. After processing 3, 4 is also marked. The Stack is 2 then 4.
-5. After processing 4, only 2 remains on the Stack.
-6. After processing 2, the Stack is empty.
-7. The recorded order is 0, 1, 3, 4, 2.
-
-## 5. Marked is not the same as recorded
-
-To **schedule** means to arrange for work to occur. To **record** means to
-append a vertex number to output.
+The tree edges create new children. The back edges point toward already
+entered non-parent ancestors. The arrow directions reflect processing;
+the input remains undirected.
 
 ```mermaid
 flowchart TD
-    D["discovered destination"]
-    P["successful push"]
-    M["mark visited true<br/>scheduled"]
-    W["wait in frontier"]
-    O["pop and record"]
-    D --> P --> M --> W --> O
+    A -->|0 tree| B
+    B -->|1 tree| C
+    B -->|2 tree| D
+    D -->|3 tree| E
+    E -->|5 tree| F
+    E -.->|4 back| B
+    F -.->|6 back| B
+    F -.->|7 back| D
 ```
 
-Exact text equivalent:
+Text equivalent: tree edges 0:A→B, 1:B→C, 2:B→D, 3:D→E, 5:E→F;
+back edges 4:E→B, 6:F→B, 7:F→D.
+Discovery order: A/B/C/D/E/F. Low-link values: 1/2/3/2/2/2.
+Parents by index: -1/0/1/1/3/4. G/H/I/J are not reached.
 
-1. An unmarked destination is discovered.
-2. Its vertex number is pushed.
-3. Only after successful push is its visited value changed to true.
-4. The marked vertex may wait in the frontier.
-5. It is recorded later when popped.
+## Pending-edge stack
 
-After vertex 0 is processed, vertices 0, 1, and 2 are marked, but only
-vertex 0 is recorded. If a push fails, that destination remains unmarked and
-the caller's old output remains unchanged.
+The explicit stack contains edge indices, bottom to top.
 
-## 6. Undirected connected components
+| Event | Stack | New block row |
+| --- | --- | --- |
+| enter B | `0` | none |
+| enter C | `0,1` | none |
+| finish C | `0` | `[1]` |
+| enter D | `0,2` | none |
+| enter E | `0,2,3` | none |
+| E→B | `0,2,3,4` | none |
+| enter F | `0,2,3,4,5` | none |
+| F→B | `0,2,3,4,5,6` | none |
+| F→D | `0,2,3,4,5,6,7` | none |
+| finish F/E | unchanged | none |
+| finish D | `0` | `[7,6,5,4,3,2]` |
+| finish B | empty | `[0]` |
+| finish A | empty | none |
 
-An **undirected edge** connects both ways. A **connected component** is one
-separate group in an undirected graph whose vertices have routes to one
-another. An **isolated vertex** has no edge; it forms a component of one.
+At a non-root return, a low-link value below the parent's discovery
+number keeps the suffix pending. Equality or a larger value pops through
+the parent tree edge, inclusive.
 
-This is a separate undirected practice graph. It uses the same six pairs of
-vertex numbers as the course directed graph, but each relationship connects
-both ways.
+## Blocks meet at B
+
+The result partitions the eight reached edges into three groups. B is
+shared; the edges are not shared.
 
 ```mermaid
 flowchart LR
-    U0["0"]
-    U1["1"]
-    U2["2"]
-    U3["3"]
-    U4["4"]
-    U5["5 isolated"]
-    U0 --- U1
-    U0 --- U2
-    U1 --- U3
-    U2 --- U3
-    U3 --- U4
-    U4 --- U1
+    BC["row 0: B–C<br/>edge 1"] --- B["cut vertex B"]
+    K["row 1: B/D/E/F<br/>edges 7,6,5,4,3,2"] --- B
+    AB["row 2: A–B<br/>edge 0"] --- B
 ```
 
-Exact undirected edge-list equivalent:
+Text equivalent: B–C and A–B are one-edge blocks. The middle block has all
+six edges among B/D/E/F. All three blocks contain B. No other vertex is
+shared between these blocks. A is a DFS root with one child and is not a
+cut vertex. An isolated root emits no edge row.
+
+## Preparation sequence
+
+Each phase needs results from the preceding phase.
 
 ```text
-{0,1}  {0,2}  {1,3}  {2,3}  {3,4}  {4,1}
+initialize graph once
+    → init_edges_list(root): reset visits, index edges
+    → find_bcc(root): reset visits, save low-link values
+    → reset top and visits, retaining low-link values
+    → _find_bcc(root): push edges, pop blocks at postorder boundaries
 ```
 
-Exact neighbor-list equivalent:
-
-```text
-0:[1,2]
-1:[0,3,4]
-2:[0,3]
-3:[1,2,4]
-4:[1,3]
-5:[]
-```
-
-Exact component and order equivalent:
-
-```text
-Components: {0,1,2,3,4} and {5}
-Count: 2
-Recursive whole-graph order: 0,1,3,2,4 | 5
-Iterative whole-graph order: 0,1,3,4,2 | 5
-```
-
-The vertical line separates searches started for different components.
-Different valid orders may identify the same groups.
-
-## 7. Tree-to-graph transfer
-
-```mermaid
-flowchart TD
-    L["depth-first idea<br/>follow one route deeply"]
-    R["recursive calls<br/>save unfinished work"]
-    E["explicit Stack<br/>stores frontier"]
-    V["graph addition<br/>visited Boolean per vertex"]
-    L --> R
-    L --> E
-    R --> V
-    E --> V
-```
-
-Exact table equivalent:
-
-| Question | Tree DFS | Graph DFS |
-|---|---|---|
-| Current item | node | vertex |
-| Next choices | left/right children | out-neighbors |
-| Start | root | chosen source |
-| Route can reconnect? | no, in a valid tree | yes |
-| Visited state needed? | no | yes |
-| Saved-work choices | recursive calls or explicit Stack | recursive calls or explicit Stack |
-| One start covers all? | yes, from the root | only vertices reachable from the source |
-
-## 8. Representation-sensitive cost
-
-**Time complexity** describes how work grows. Let `V` mean vertex count and
-`E` mean edge count. **Auxiliary space** is temporary working storage
-separate from the graph and output.
-**Big-O notation** writes a growth pattern as `O(...)`.
-
-An **adjacency matrix** is a row-and-column table of possible edges. An
-**adjacency list** stores one list of outgoing neighbors for each vertex.
-
-```mermaid
-flowchart LR
-    M["adjacency matrix<br/>scan V cells per vertex<br/>O(V squared) time"]
-    A["adjacency lists<br/>scan stored neighbors<br/>O(V plus E) time"]
-    W["visited plus calls or Stack<br/>O(V) auxiliary space"]
-    M --> W
-    A --> W
-```
-
-Exact text equivalent:
-
-1. A full adjacency-matrix DFS scans `V` possible destinations for each of
-   `V` vertices, giving `O(V²)` time.
-2. A full adjacency-list DFS scans vertices and stored edges, giving
-   `O(V+E)` time.
-3. The visited array plus recursive calls or explicit Stack uses `O(V)`
-   auxiliary space.
+Use the same root and unchanged lists in each pass. `find_bcc()` does not
+reset `current_bcc`; the supplied use is a fresh one-call run. The complete
+pipeline includes a V×V lookup reset even though traversal reads lists.
