@@ -40,6 +40,9 @@ $stages = @(
         Entries = @(
             @{ Source = "release\stage_d_README.md"; Entry = "README.md" },
             @{ Source = "student\textbook.md"; Entry = "textbook.md" },
+            @{ Source = "student\textbook_korean.md"; Entry = "textbook_korean.md" },
+            @{ Source = "student\ppt_material.md"; Entry = "ppt_material.md" },
+            @{ Source = "student\ppt_lab_material.md"; Entry = "ppt_lab_material.md" },
             @{ Source = "diagrams\dfs_models.md"; Entry = "diagrams/dfs_models.md" }
         )
     },
@@ -47,13 +50,20 @@ $stages = @(
         Name = "module_05_stage_e_lab.zip"
         Entries = @(
             @{ Source = "release\stage_e_README.md"; Entry = "README.md" },
+            @{ Source = "student\lab.c"; Entry = "student/lab.c" },
             @{ Source = "student\lab.md"; Entry = "student/lab.md" },
+            @{ Source = "student\ppt_lab_material.md"; Entry = "student/ppt_lab_material.md" },
+            @{ Source = "student\ppt_material.md"; Entry = "student/ppt_material.md" },
             @{ Source = "student\evidence_template.md"; Entry = "student/evidence_template.md" },
             @{ Source = "student\rubric.md"; Entry = "student/rubric.md" },
             @{ Source = "student\tree_dfs_autopsy.md"; Entry = "student/tree_dfs_autopsy.md" },
             @{ Source = "release\student_code_README.md"; Entry = "code/README.md" },
             @{ Source = "release\student_build.ps1"; Entry = "code/build.ps1" },
             @{ Source = "release\student_Makefile"; Entry = "code/Makefile" },
+            @{ Source = "code\lecture\lab_demo.c"; Entry = "code/lecture/lab_demo.c" },
+            @{ Source = "code\tests\test_lab.c"; Entry = "code/tests/test_lab.c" },
+            @{ Source = "..\module_02_binary_tree\student\lab.c"; Entry = "module_02_binary_tree/student/lab.c" },
+            @{ Source = "..\module_04_stack\student\lab.c"; Entry = "module_04_stack/student/lab.c" },
             @{ Source = "code\include\tree_dfs.h"; Entry = "code/include/tree_dfs.h" },
             @{ Source = "code\starter\tree_dfs.c"; Entry = "code/starter/tree_dfs.c" },
             @{ Source = "code\support\tree_support.c"; Entry = "code/support/tree_support.c" },

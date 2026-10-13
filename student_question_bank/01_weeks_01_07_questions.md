@@ -285,77 +285,93 @@
 - How would parentheses change the operator-Stack algorithm?
 - How does the optional legacy caller-owned integer API share the active-prefix layout but differ in ownership and error reporting?
 
-## Week 5 — Tree DFS with Recursive Core
+## Week 5 — Tree DFS and Expression Trees
 
-### Meaning and mental model
+Use the current [lab](../module_05_tree_dfs/student/lab.c) and
+[lab slides](../module_05_tree_dfs/student/ppt_lab_material.md).
+The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 
-- What makes a traversal depth-first rather than breadth-first?
-- How does recursion remember the node, next child, and return location for each unfinished branch?
-- What is the difference among preorder, inorder, and postorder?
-- Why is `NULL` a stopping case rather than a node that should be recorded?
+### Representation and recursive visits
 
-### Representation and invariants
+- Why are child links integers while node data is a character?
+- Why is root 5 `F`, and why is `nodes_size` 10 when seven nodes are reachable?
+- Does changing a child index move a node?
+- How do the three visit positions produce their complete orders?
+- Which data-processing actions could be added at the preorder, inorder, and postorder comments?
+- Does the current lab record or print visit data at those comments?
+- How does recording only the last visited character differ from retaining a complete sequence?
+- Where is a negative index checked, and why does `tree_traversal(-1)` return safely?
+- How many empty-child calls does a leaf make?
+- Which calls are waiting while `D` is active, and what must they resume?
+- How many real-node frames and extra empty-child frames can be active?
+- What assumptions exclude cycles, shared children, and invalid positive indices?
 
-- What assumptions about cycles, shared children, and ownership do the recursive traversal functions make?
-- Why can a `TreeOrder` hold at most `TREE_DFS_MAX_NODES` visits?
-- What is the relationship between tree height and the number of simultaneously active recursive calls?
-- Why does strict BST ordering apply to entire subtrees rather than only immediate children?
+### Explicit traversal
 
-### Operations, C API, and ownership
+- Why must an explicit traversal remember both node index and progress?
+- What do steps 0, 1, and 2 do, and why advance before pushing a child?
+- How does `int step = progress[i]++;` distinguish the old step from the saved next step?
+- Why does the wrapper pass `peek()` to `tree_traversal_proceed(int i)` on every iteration?
+- What happens when the top is `-1`, and why must it be checked before indexing progress?
+- What are the final progress values for reached and unconnected nodes?
+- Why does a second unchanged traversal have no terminating step-3 case?
+- What reset makes another run possible, and does resetting `top` reset progress?
+- How many stack entries does a ten-node chain need with its sentinel?
+- How does progress storage differ from used path storage?
 
-- Which recursive traversals must I implement in the required Week 5 core?
-- Why must `out_order` remain unchanged if traversal encounters a limit or invalid argument?
-- What is the difference between `tree_node_release` and `tree_destroy_postorder`?
-- Why must `tree_destroy_postorder` receive a pointer to the root pointer and set the caller’s root to `NULL`?
+### Postfix construction
 
-### Tracing
+- Why must the initially empty `postfix` be prepared before building?
+- What does Chapter 4's default expression convert to?
+- Why does token index become node index in `build_tree_from_postfix()`?
+- What does each stack entry represent after every token of `123*+`?
+- Why is the first pop the right child, and what would reversal do to `12-`?
+- What are the returned root, `nodes_size`, and `top` after the final pop?
+- Why are digits stored as characters, and does construction calculate values?
+- What happens to the earlier alphabet tree?
+- Why need two roots per operator and exactly one before returning?
+- Does the builder validate malformed input, empty input, or capacity?
 
-- For one asymmetric tree, what visit sequences result from preorder, inorder, and postorder?
-- What active call frames exist immediately before and after returning from a leaf?
-- How does a recursive preorder trace correspond to push/pop-like behavior on the runtime call stack?
-- What branch decisions does `tree_bst_search` make for a present key and for a missing key?
+### Precedence-aware inorder output
 
-### Tests and debugging
+- What does the current writer output for `123*+`, `12+3*`, and `123--`?
+- How would omitting parentheses lose grouping in the latter two examples?
+- Why does the implemented writer use child `<` parent on the left and child `<=` parent on the right?
+- How does left associativity distinguish `1-2-3` from `1-(2-3)`?
+- Why does the writer retain `1+(2+3)` without simplifying it?
+- How do `prec()` and `prec2()` differ for digits, and why does precedence 3 avoid digit parentheses?
+- Where do opening and closing parentheses surround each child call?
+- How do the writer's preorder, inorder, and postorder comment positions relate to its actions?
+- What does `write_char()` do to the shared cursor?
+- Why can the alphabet tree be traversed but not passed to the writer?
+- How does `write_infix(-1)` produce an empty string, and why does that not validate malformed operator nodes?
 
-- Which tests distinguish an empty tree, singleton tree, left chain, right chain, and branching tree?
-- How can a test prove that traversal records both each node’s key and its `flagged` value?
-- In the Tree DFS Autopsy, what missing or misplaced base case causes the first incorrect recursive action?
-- How can the live-node-count test seam reveal a leak after an insertion allocation failure or incomplete destruction?
+### State, capacity, and efficiency
 
-### Complexity
+- How does `write_infix()` reset `infix_pos` before each complete output?
+- Why must child calls share the advancing position?
+- Why does final `infix_pos` include the null terminator?
+- How can a shorter output replace a longer previous expression?
+- Which wrapper supports repeated calls itself, and which requires a caller reset?
+- How many tokens fit `postfix[8]`?
+- Why does grouped `1234+++` fit the current `infix[20]` buffer?
+- Why can a valid seven-token binary expression require at most twelve output bytes including its terminator?
+- Why are traversal and writing linear in reachable nodes, and building linear in tokens?
+- Why is used path/call storage `O(h + 1)` despite separate progress storage?
+- How do fixed reserved arrays differ from used space and generalized bounds?
+- What do the demo's completion and progress lines show, and how can breakpoints recover visit orders?
 
-- Why does a complete traversal take `O(n)` time regardless of visit order?
-- Why is recursive traversal’s extra space `O(h)` rather than always `O(n)`?
-- How do balanced and completely skewed shapes change `h` and BST-search time?
-- Why can a very deep but valid tree still exhaust the C runtime call stack?
+### Supplemental reconstruction
 
-### Cybersecurity and interpretation
+The companion [concept slides](../module_05_tree_dfs/student/ppt_material.md)
+use an `A`-rooted tree for this activity.
 
-- How could a cycle or shared child turn trusted tree-recursion code into nontermination or double-free behavior?
-- Why must tree shape and ownership be validated at a trust boundary before destructive traversal?
-- How can adversarial key order make an unbalanced BST a performance risk?
-- What does a `flagged` field demonstrate, and what security conclusion can it not establish by itself?
-
-### Assignment and evidence
-
-- Is recursive preorder alone required, or are recursive preorder, inorder, postorder, and postorder cleanup all core evidence?
-- Is a complete explicit-Stack tree traversal required in the 14-week path?
-- What must my three student-authored tests add beyond the supplied traversal cases?
-- What should the tree-to-graph transfer explanation identify about assumptions that will no longer hold in Week 6?
-
-### Transfer and prerequisites
-
-- Which Week 2 tree, ownership, and recursion ideas must I retrieve before learning formal traversal orders and BST rules?
-- How is the implicit runtime call stack related to, but different from, the Week 4 Stack ADT?
-- Why will graph DFS need visited state even if tree DFS does not?
-- How will inorder traversal and BST search reappear in the later AVL unit?
-
-### Extension questions — optional
-
-- How can an explicit Stack reproduce left-first preorder without recursion?
-- Why would an iterative preorder implementation push the right child before the left child?
-- What should happen if the explicit Stack’s configured limit is too small for the pending frontier?
-- Is `tree_preorder_iterative` optional enrichment or required Week 5 evidence in the 14-week course?
+- How do `ABDECFG` and `DBEAFCG` reconstruct that tree?
+- Why must subtree sizes determine the preorder segments?
+- Why do distinct labels matter, and why is preorder alone insufficient?
+- Which examples have root `A` and which have root `F`?
+- Is reconstruction implemented in the current lab?
+- Why can reconstruction by inorder scans take quadratic time, and how does a map help?
 
 ## Week 6 — Graph DFS and Practical 1
 

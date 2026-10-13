@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "autopsy")]
-    [string]$Target = "starter",
+    [ValidateSet("lecture", "lab-tests", "starter", "autopsy")]
+    [string]$Target = "lecture",
 
     [switch]$StudentTests,
 
@@ -12,6 +12,7 @@ $ErrorActionPreference = "Stop"
 
 $codeRoot = $PSScriptRoot
 $includeDirectory = Join-Path $codeRoot "include"
+$archiveRoot = Split-Path -Parent $codeRoot
 $buildDirectory = Join-Path $codeRoot "build"
 
 New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
@@ -42,7 +43,19 @@ PowerShell, then rerun this command.
 
 $testingBuild = $false
 
-if ($Target -eq "autopsy") {
+if ($Target -eq "lecture" -or $Target -eq "lab-tests") {
+    if ($StudentTests) {
+        throw "-StudentTests applies only to -Target starter."
+    }
+
+    if ($Target -eq "lecture") {
+        $sources = @((Join-Path $codeRoot "lecture\lab_demo.c"))
+        $outputName = "lab_demo"
+    } else {
+        $sources = @((Join-Path $codeRoot "tests\test_lab.c"))
+        $outputName = "lab_tests"
+    }
+} elseif ($Target -eq "autopsy") {
     if ($StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
     }
@@ -76,7 +89,8 @@ if ($compilerKind -eq "msvc") {
         "/std:c11",
         "/W4",
         "/Zi",
-        "/I$includeDirectory"
+        "/I$includeDirectory",
+        "/I$archiveRoot"
     )
     if ($testingBuild) {
         $arguments += "/DTREE_DFS_TESTING"
@@ -95,7 +109,8 @@ if ($compilerKind -eq "msvc") {
         "-Wconversion",
         "-Wshadow",
         "-g",
-        "-I$includeDirectory"
+        "-I$includeDirectory",
+        "-I$archiveRoot"
     )
     if ($testingBuild) {
         $arguments += "-DTREE_DFS_TESTING"

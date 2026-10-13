@@ -1,17 +1,26 @@
 # GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
 CC := gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
-CPPFLAGS ?= -Iinclude
+CPPFLAGS ?= -Iinclude -I..
 TEST_CPPFLAGS := $(CPPFLAGS) -DTREE_DFS_TESTING
 BUILD_DIR := build
 STARTER_SOURCES := support/tree_support.c starter/tree_dfs.c
+LAB_DEPENDENCIES := ../student/lab.c ../module_02_binary_tree/student/lab.c ../module_04_stack/student/lab.c
 
-.PHONY: all starter-core starter-student-tests autopsy clean
+.PHONY: all lecture lab-tests starter-core starter-student-tests autopsy clean
 
-all: starter-core
+all: lecture
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+lecture: lecture/lab_demo.c $(LAB_DEPENDENCIES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
+	$(BUILD_DIR)/lab_demo
+
+lab-tests: tests/test_lab.c $(LAB_DEPENDENCIES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) tests/test_lab.c -o $(BUILD_DIR)/lab_tests
+	$(BUILD_DIR)/lab_tests
 
 starter-core: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(STARTER_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core

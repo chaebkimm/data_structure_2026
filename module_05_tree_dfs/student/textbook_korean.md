@@ -1,6 +1,8 @@
 # 제5장. 깊이 우선 순회와 수식 트리
 
-이 장에서는 이진 트리의 데이터를 세 가지 순서로 처리하고, 재귀 호출을 명시적인 스택으로 바꾸며, 순회 순서로부터 트리를 재구성하고, postfix 표기식으로 수식 트리를 만든다.
+이 장에서는 이진 트리의 세 방문 위치를 추적하고, 재귀 호출을 진행 상태가 있는 스택으로 바꾸며, postfix 표기식으로 수식 트리를 만든 뒤 묶음을 유지하는 infix 표기식을 쓴다. 이는 [실습 슬라이드](ppt_lab_material.md)의 네 단계다. 순회 순서로 트리를 재구성하는 것은 [개념 슬라이드](ppt_material.md)의 선택 연습이다.
+
+현재 [`lab.c`](lab.c)는 2장의 `nodes[10]`과 4장의 정수 스택을 재사용한다. `alphabet_init()`과 `tree_connect()`가 만드는 트리의 루트는 `F`이며, `F`의 자식은 `A, G`, `A`의 자식은 `B, C`, `B`의 자식은 `D, E`이다. 도달 가능한 노드는 일곱 개지만 초기화된 `nodes_size`는 10이다. 아래의 균형 잡힌 `A` 루트 트리는 별도의 개념 예제다.
 
 ## 논리적으로 생각해 보기
 
@@ -46,20 +48,6 @@ A가 루트인 트리를 탐색하기 위해 B가 루트인 트리와 C가 루�
 작업을 할 때는 스택의 맨 위의 기록에서 현재 진행할 작업을 먼저 읽는다. 기록은 다음 순서로 업데이트하고, 현재 작업을 진행한다. 스택의 아래쪽에는 현재 서브트리가 끝나기를 기다리는 조상들의 작업 기록이 있다.
 
 자식 트리를 처리하는 동안 부모 노드의 작업을 잠시 멈추게 되기 때문에, 재귀적으로 하는 방법과 동일하다.
-
-### 순회 순서로 트리를 어떻게 재구성할까?
-
-데이터 처리 순서로 같은 A–G 트리를 재구성해 보자.
-
-이 트리의 preorder 순서는 ABDECFG, inorder 순서는 DBEAFCG, postorder 순서는 DEBFGCA이다. 노드의 표시 값이 모두 다르면 preorder 순서와 inorder 순서를 함께 사용해 이진 트리를 유일하게 결정할 수 있다.
-
-1. preorder 순서의 첫 번째 값 A가 루트다.
-2. inorder 순서를 A에서 나눈다. DBE는 왼쪽 서브트리, FCG는 오른쪽 서브트리에 속한다.
-3. 왼쪽 서브트리의 노드는 세 개이므로 해당 preorder 구간은 BDE이다. 남은 구간 CFG는 오른쪽 서브트리에 속한다.
-4. BDE와 DBE에 같은 과정을 적용하면 루트는 B, 왼쪽 자식은 D, 오른쪽 자식은 E이다.
-5. CFG와 FCG에 같은 과정을 적용하면 루트는 C, 왼쪽 자식은 F, 오른쪽 자식은 G이다.
-
-각 서브트리의 크기는 preorder 순서에서 해당 구간이 어디까지인지 알려 준다. preorder 순서만으로는 자식이 하나인 노드에서 그 자식이 왼쪽인지 오른쪽인지 구분할 수 없다. 표시 값이 중복되면 노드를 식별할 추가 정보가 없는 한 inorder 순서를 나눌 위치가 모호해질 수 있다.
 
 ### 스택으로 postfix 표기식에서 트리를 어떻게 만들까?
 
@@ -117,6 +105,20 @@ A의 두 자식은 모두 A보다 우선순위가 낮으므로 두 서브트리 
 
 산술 항등식으로 수식을 단순화할 수 있더라도, 여기서의 목표는 트리가 나타내는 묶음을 유지하는 것이다. 괄호가 필요한 자식 서브트리를 읽기 전에 괄호를 열고, 그 서브트리를 끝낸 뒤 괄호를 닫는다.
 
+### 선택 연습: 순회 순서로 트리를 어떻게 재구성할까?
+
+데이터 처리 순서로 같은 A–G 트리를 재구성해 보자.
+
+이 트리의 preorder 순서는 ABDECFG, inorder 순서는 DBEAFCG, postorder 순서는 DEBFGCA이다. 노드의 표시 값이 모두 다르면 preorder 순서와 inorder 순서를 함께 사용해 이진 트리를 유일하게 결정할 수 있다.
+
+1. preorder 순서의 첫 번째 값 A가 루트다.
+2. inorder 순서를 A에서 나눈다. DBE는 왼쪽 서브트리, FCG는 오른쪽 서브트리에 속한다.
+3. 왼쪽 서브트리의 노드는 세 개이므로 해당 preorder 구간은 BDE이다. 남은 구간 CFG는 오른쪽 서브트리에 속한다.
+4. BDE와 DBE에 같은 과정을 적용하면 루트는 B, 왼쪽 자식은 D, 오른쪽 자식은 E이다.
+5. CFG와 FCG에 같은 과정을 적용하면 루트는 C, 왼쪽 자식은 F, 오른쪽 자식은 G이다.
+
+각 서브트리의 크기는 preorder 순서에서 해당 구간이 어디까지인지 알려 준다. preorder 순서만으로는 자식이 하나인 노드에서 그 자식이 왼쪽인지 오른쪽인지 구분할 수 없다. 표시 값이 중복되면 노드를 식별할 추가 정보가 없는 한 inorder 순서를 나눌 위치가 모호해질 수 있다.
+
 ## 효율 계산해보기
 
 ### 트리 생성과 순회에는 얼마나 많은 작업이 필요할까?
@@ -128,23 +130,23 @@ postfix 표기식의 토큰 수를 `n`, 주어진 루트에서 도달할 수 있
 | `alphabet_init()` | 각 노드 칸 초기화 | `O(capacity)` |
 | `tree_connect()` | 고정 예제의 자식 링크 여섯 개 설정 | `O(1)` |
 | `build_tree_from_postfix()` | 각 토큰의 노드를 만들고 추가하며, 연산자마다 두 번 꺼내기 | `O(n)` |
-| `tree_traversal(root)` | 도달한 노드마다 세 번 방문하고 없는 자식에 대해 호출 | `O(r)` |
+| `tree_traversal(root)` | 도달한 노드마다 세 방문 위치를 지나고 없는 자식에 대해 호출 | `O(r)` |
 | `tree_traversal_with_stack(root)` | 도달한 노드마다 세 단계 실행하고 없는 자식 항목 제거 | `O(r)` |
-| `write_infix(root)` | 도달한 각 토큰과 종료 문자 쓰기 | `O(r)` |
+| `write_infix(root)` | 도달한 각 토큰, 묶음 괄호와 종료 문자 쓰기 | `O(r)` |
 
-제안한 괄호 확장은 자식 링크마다 상수 개의 작업을 추가하므로 출력 시간은 여전히 선형이다. 트리 재구성에서 inorder 구간을 매번 훑어 루트를 찾으면 한쪽으로 치우친 트리에서 `O(r²)` 시간이 걸릴 수 있다. 서로 다른 표시 값에서 inorder 위치로 대응되는 맵을 미리 만들면 `O(r)` 시간에 재구성할 수 있다.
+구현된 괄호 비교는 자식 링크마다 상수 개의 작업을 추가하므로 출력 시간은 여전히 선형이다. 트리 재구성에서 inorder 구간을 매번 훑어 루트를 찾으면 한쪽으로 치우친 트리에서 `O(r²)` 시간이 걸릴 수 있다. 서로 다른 표시 값에서 inorder 위치로 대응되는 맵을 미리 만들면 `O(r)` 시간에 재구성할 수 있다.
 
 ### 임시 저장 공간은 얼마나 필요할까?
 
 높이 `h`를 간선 수로 측정하면, 재귀 순회에서는 실제 노드에 대한 호출 `h + 1`개와 없는 자식에 대한 호출 하나가 동시에 활성 상태일 수 있다. 재귀 출력 함수는 실제 수식 노드에 대해서만 호출한다. 두 함수 모두 `O(h + 1)`의 호출 스택 공간을 사용한다. 반복문을 사용하는 순회도 현재 경로와 최대 하나의 `-1` 센티널을 저장하므로, 사용하는 스택 항목 수는 `O(h + 1)`이다. 별도의 진행 상태 배열은 노드 칸마다 정수 하나를 확보한다. 이를 일반화한 구현에서는 경로 스택 외에 `O(r)`의 진행 상태 공간을 사용한다.
 
-postfix 표기식으로 트리를 만드는 과정은 `O(n)`개의 스택 항목이 필요할 수 있다. `123*+`에서는 세 숫자를 읽은 직후의 깊이 3이 최대다. 수업용 배열은 실제 사용량에 관계없이 노드 열 칸, 스택 열 칸, 진행 상태 열 칸, 출력 문자 열 칸을 확보한다.
+postfix 표기식으로 트리를 만드는 과정은 `O(n)`개의 스택 항목이 필요할 수 있다. `123*+`에서는 세 숫자를 읽은 직후의 깊이 3이 최대다. 수업용 배열은 실제 사용량에 관계없이 노드 열 칸, 스택 열 칸, 진행 상태 열 칸, 출력 문자 스무 칸을 확보한다.
 
 ### 실습을 확장할 때 어떤 용량을 확인해야 할까?
 
-포함된 `postfix[8]`에는 토큰 최대 일곱 개와 종료 문자 하나가 들어간다. 현재 출력 함수는 노드마다 문자 하나를 쓰므로, 이 유효한 입력은 `nodes[10]`에 들어가며 종료 문자 `'\0'`을 포함한 출력도 최대 여덟 문자다. 코드는 이 한계를 검사하지 않고 가정에 의존한다.
+포함된 `postfix[8]`에는 토큰 최대 일곱 개와 종료 문자 하나가 들어간다. 이 유효한 입력은 `nodes[10]`에 들어간다. 현재 출력 함수는 묶음을 유지하는 괄호도 쓰므로 출력이 입력보다 길어질 수 있다. 예를 들어 `1234+++`는 `1+(2+(3+4))`로 쓰며 종료 문자 `'\0'`까지 열두 칸이 필요하다. 현재 `infix[20]`에는 들어간다.
 
-괄호를 추가하면 출력의 최대 길이가 달라진다. 예를 들어 `1234+++`는 일곱 토큰이지만, 필요한 출력 `1+(2+(3+4))`는 종료 문자 `'\0'`까지 포함하면 열두 문자다. 이는 `infix[10]`을 초과한다. 확장을 구현할 때는 버퍼를 늘리거나 남은 용량을 확인해야 한다.
+이항 수식 트리의 토큰 수가 `n`이면 연산자 노드는 `(n - 1) / 2`개다. 루트를 제외한 연산자 자식마다 괄호 한 쌍이 붙을 수 있으므로 `n >= 3`일 때 종료 문자까지 최대 `2n - 2`칸이다. 일곱 토큰은 최대 열두 칸, 숫자 하나는 두 칸이 필요하다. 현재 범위의 유효한 입력은 들어가지만 코드는 용량을 검사하지 않는다. 입력을 일반화하면 모든 배열의 한계를 다시 확인해야 한다.
 
 명시적인 순회 스택에는 실제 경로뿐 아니라 없는 자식의 센티널을 위한 공간도 필요하다. 노드 열 개를 일렬로 연결한 트리를 직접 만들면 스택 항목 열한 개가 필요하여 `stack[10]`을 초과한다. 제공된 일곱 노드의 알파벳 트리는 용량 안에 들어간다. 일반적인 트리를 처리하려면 스택 용량을 늘리거나, 부모의 진행 상태는 계속 증가시키되 음수 자식은 스택에 추가하지 않도록 바꿀 수 있다.
 
@@ -185,7 +187,7 @@ postfix 표기식으로 트리를 만드는 과정은 `O(n)`개의 스택 항목
 
 존재하는 자식은 `nodes`에서 유효하게 초기화된 인덱스이고, 없는 자식은 `-1`이다. 트리에 순환은 없으며 루트가 아닌 각 노드의 부모는 하나이다. `tree_traversal()`은 음수 인덱스를 빈 서브트리로 처리하지만, 범위를 벗어난 양수 인덱스를 거부하거나 순환을 탐지하지는 않는다. 스택 순회도 음수 항목은 방문하지 않고 제거한다.
 
-출력 함수는 비어 있지 않은 수식 트리를 입력으로 받는다. 숫자는 단말이어야 하며, 지원하는 이항 연산자는 유효한 자식 두 개를 가져야 한다. 빈 트리를 처리하는 보호 조건은 없다. 알파벳 트리는 순회할 수 있지만 infix 표기식 출력의 입력으로는 사용할 수 없다. 수식 트리를 만들면 `nodes_size`가 초기화되고 공유 노드 배열을 덮어쓰므로 기존 트리는 대체된다.
+실제 루트를 받는 출력 함수는 올바른 수식 트리를 가정한다. 숫자는 단말이고, 지원하는 이항 연산자는 유효한 자식 두 개를 가져야 한다. `_write_infix()`는 음수 루트에서 반환하므로 `write_infix(-1)`은 빈 문자열을 만든다. 그러나 연산자의 자식 데이터를 재귀 호출 전에 읽으므로 이 보호 조건이 자식 누락을 검증하는 것은 아니다. 알파벳 트리는 순회할 수 있지만 infix 표기식 출력의 입력으로는 사용할 수 없다. 수식 트리를 만들면 `nodes_size`가 초기화되고 공유 노드 배열을 덮어쓰므로 기존 트리는 대체된다.
 
 ### 각 재귀 호출은 무엇을 보장할까?
 
@@ -209,229 +211,217 @@ postfix 표기식으로 트리를 만드는 과정은 `O(n)`개의 스택 항목
 
 ### 출력 위치는 무엇을 나타낼까?
 
-`_write_infix()` 실행 중 `infix[0]`부터 `infix[infix_pos - 1]`까지는 지금까지 쓴 부분이며, `infix_pos`는 다음 빈 위치이다. 래퍼는 종료 문자를 추가하므로 `1+2*3`을 쓴 뒤 `infix_pos`는 6이다. 현재 래퍼는 실행을 시작할 때 출력 위치가 0이라고 가정한다. 이 초기 상태는 사전 조건이며 래퍼가 복원해 주는 성질은 아니다. 자식 호출은 같은 출력 위치를 공유한다. 다음 빈 칸에 문자를 쓰므로 앞서 쓴 부분은 유지된다. 자식 호출 안에서 위치를 초기화하면 앞서 쓴 문자를 덮어쓰게 된다.
+`_write_infix()` 실행 중 `infix[0]`부터 `infix[infix_pos - 1]`까지는 지금까지 쓴 부분이며, `infix_pos`는 다음 빈 위치이다. 래퍼는 종료 문자를 추가하므로 `1+2*3`을 쓴 뒤 `infix_pos`는 6이다. 현재 래퍼는 전체 쓰기를 시작할 때 `infix_pos = 0`으로 초기화한다. 따라서 반복해서 쓰면 첫 칸부터 새 문자열을 쓴다. 자식 호출은 같은 출력 위치를 공유한다. 다음 빈 칸에 문자를 쓰므로 앞서 쓴 부분은 유지된다. 자식 호출 안에서 위치를 초기화하면 앞서 쓴 문자를 덮어쓰게 된다.
 
 ## 코딩 계획
 
 1. 2장의 노드 표현과 4장의 스택 연산을 재사용한다.
 2. 재귀 함수에서 노드에 접근하기 전에 음수 인덱스 종료 조건을 둔다.
-3. 두 자식 호출의 전, 사이, 후에 preorder·inorder·postorder 방문을 둔다.
-4. 스택과 세 단계의 진행 상태로 재귀 호출의 중단과 재개를 표현한다.
-   실제 노드뿐 아니라 없는 자식을 나타내는 항목도 추적한다.
-5. preorder와 inorder 순서를 각 루트에서 나누고 서브트리의 노드 수를 세어,
-   슬라이드의 `A`가 루트인 트리를 재구성한다.
-6. `postfix`를 준비하고 토큰마다 노드를 만든 뒤, 오른쪽을 먼저 꺼내고 왼쪽을 꺼낸다.
-7. 괄호가 없는 수식을 inorder 순서로 쓰고 문자열을 종료한다.
-8. 슬라이드의 우선순위 규칙으로 출력 함수를 확장한다.
-   숫자는 괄호 판단에서 제외하고 충분한 출력 공간을 마련한다.
-9. 반복 실행을 지원하려면 각 래퍼의 시작에서 진행 상태와 출력 위치를 초기화한다.
+3. 두 자식 호출의 전, 사이, 후에서 preorder·inorder·postorder 방문 위치를 찾는다.
+   주석만으로는 기록되지 않으므로 필요한 경우 지정된 기록 작업을 넣는다.
+4. 스택에 노드 인덱스를 두고 세 단계 진행 상태로 중단과 재개를 표현한다.
+   없는 자식도 추적하며 다음 순회 전에는 진행 상태를 0으로 초기화한다.
+5. 유효한 `postfix`를 준비하고 토큰마다 노드를 만든 뒤 오른쪽, 왼쪽 순서로 꺼낸다.
+6. `prec2()`로 숫자에 우선순위 3을 주고 자식과 부모의 우선순위를 비교한다.
+   필요한 괄호는 자식의 재귀 쓰기 전후에 넣는다.
+7. `write_infix()` 시작에서 출력 위치를 초기화하고, 자식 호출에서는 그 위치를 공유하며,
+   전체 수식 뒤에 종료 문자를 쓴다.
+8. 선택 연습: 서로 다른 표시 값을 가진 preorder와 inorder를 나누고 크기를 세어
+   개념 슬라이드의 `A` 루트 트리를 재구성한다.
 
 ## C 코드
 
 ### 어떤 C 문법으로 기억해 둔 작업을 표현할까?
 
-아래 문법 중 일부는 앞 장에서도 등장했다. 이 장에서는 이들을 결합하여 순회 상태를 직접 표현한다. 재귀는 미완료 작업을 호출 프레임에 기억하고, 스택을 사용하는 구현은 노드 인덱스와 진행 상태를 저장한다.
+재귀는 미완료 작업을 호출 프레임에 기억하며 스택 구현은 노드 인덱스와 진행 상태를 직접 저장한다.
 
 | 실습 코드의 문법 | 이 장에서의 의미 |
 | --- | --- |
-| `if (i < 0) { return; }` | 보호 조건으로 빈 서브트리에 대한 호출을 끝내고 `nodes[i]`에 접근하지 않는다. |
-| `tree_traversal(nodes[i].left);` | 저장된 왼쪽 자식 인덱스가 가리키는 서브트리를 재귀 호출로 처리한다. |
-| `int progress[10] = {0};` | 열 항목을 모두 0으로 초기화한다. 전역 배열이므로 호출 사이에도 변경된 값이 유지되며, 순회할 때마다 다시 초기화되지는 않는다. |
-| `int step = progress[i]++;` | 기존 진행 상태를 `step`에 복사하고 저장된 진행 상태를 증가시킨다. 기존 값은 지금 실행할 작업을, 새 값은 재개할 위치를 나타낸다. |
-| `switch (step)`과 `case` | 저장된 단계에 따라 순회 작업 하나를 선택한다. |
-| `case` 안의 `return;` | 작업 하나를 수행한 뒤 보조 함수 전체를 끝낸다. `break`는 `switch`만 빠져나가므로 그 뒤의 코드가 계속 실행될 수 있다. |
-| `while (!is_empty())` | 미완료 스택 항목이 남아 있는 동안 반복한다. `!`는 비어 있다는 참 결과를 거짓으로, 거짓 결과를 참으로 바꾼다. |
-| `infix[infix_pos++] = c;` | 현재 위치에 `c`를 쓰고 다음 칸을 가리키도록 출력 위치를 증가시킨다. |
-| `'\0'` | C 문자열의 끝을 나타내는 널 문자다. 화면에 보이는 숫자 문자 `'0'`과 다르다. |
+| `if (i < 0) { return; }` | 노드에 접근하기 전에 빈 서브트리 호출을 끝낸다. |
+| `tree_traversal(nodes[i].left);` | 왼쪽 자식 인덱스가 선택하는 서브트리를 처리한다. |
+| `int progress[10] = {0};` | 모든 항목을 처음 한 번 0으로 초기화한다. 이후 변경 값은 호출 사이에 남는다. |
+| `int step = progress[i]++;` | 기존 값을 현재 작업용으로 읽고 저장된 다음 단계를 증가시킨다. |
+| `switch (step)`과 `case` | 기존 단계에 해당하는 작업 하나를 선택한다. |
+| `case` 안의 `return;` | 작업 하나 뒤에 보조 함수를 끝낸다. `break`는 switch만 끝낸다. |
+| `tree_traversal_proceed(peek())` | 현재 탑 노드 인덱스를 한 단계 처리 함수에 전달한다. |
+| `while (!is_empty())` | 미완료 스택 항목이 있는 동안 반복한다. |
+| `write_char(c)` | `infix[infix_pos++] = c`로 쓰고 공유 출력 위치를 증가시킨다. |
+| `prec2(r) <= prec2(c)` | 우선순위가 낮거나 같은 오른쪽 자식을 괄호로 묶는다. |
+| `'\0'` | 숫자 문자 `'0'`과 다른 C 문자열 종료 문자다. |
 
-예를 들어 `progress[i]`가 0일 때 `int step = progress[i]++;`를 실행하면 `step == 0`, `progress[i] == 1`이 된다. 따라서 지금은 case 0을 실행하고, 부모가 재개할 때는 case 1이 준비되어 있다. `infix_pos`가 2라면 출력 대입문은 `infix[2]`에 쓰고 `infix_pos == 3`인 상태를 남긴다.
-
-`return;`은 반환형이 `void`인 함수에서 결과값 없이 반환할 때 사용한다. 반면 트리를 만드는 함수의 `return pop();`은 호출한 함수에 루트 인덱스를 반환한다.
+기존 진행 상태가 0이면 `step == 0`, `progress[i] == 1`이 된다. 지금은 preorder 단계를 실행하고 왼쪽 서브트리가 끝난 뒤에는 inorder 단계를 실행할 준비가 되어 있다. 트리 생성 함수의 `return pop();`은 루트 인덱스를 반환하며 순회 보조 함수의 `return;`은 결과값 없이 끝낸다.
 
 ### 컴파일 지시문은 앞 장의 정의를 어떻게 재사용할까?
 
-실습 코드는 이 파일을 기준으로 한 상대 경로로 2장의 트리와 4장의 스택을 포함한다.
-
 ```c
-#include "../../module_02_binary_tree/student/lab.c"
-/* Both earlier labs use capacity; keep the stack's definition distinct. */
+#include "module_02_binary_tree/student/lab.c"
 #define capacity stack_capacity
-#include "../../module_04_stack/student/lab.c"
+#include "module_04_stack/student/lab.c"
 #undef capacity
-
-int is_digit(char c) {
-    return c >= '0' && c <= '9';
-}
 ```
 
-첫 번째 파일은 `nodes`, `nodes_size`, `alphabet_init()`, `tree_connect()`를 제공한다. 두 번째 파일은 `stack`, `top`, `push()`, `peek()`, `pop()`, `is_empty()`, `prec()`, `postfix`를 제공한다. 두 파일 모두 `capacity`를 정의하므로, 임시 매크로로 스택 파일의 정의와 사용 부분을 `stack_capacity`로 바꾸어 중복 정의를 피한다. 실습 코드는 출력 함수에 필요한 `is_digit()`도 제공한다. 이처럼 `.c` 파일을 직접 포함하는 것은 수업을 위한 간편한 방식이다. 재사용할 프로젝트에서는 선언을 헤더로 분리하는 것이 좋다.
-
-이 지시문은 C 프로그램을 실행하기 전 전처리 단계에서 처리된다. `#include`는 다른 파일의 소스 코드를 삽입한다. `#define capacity stack_capacity`는 포함된 스택 소스에서 해당 식별자를 임시로 바꾸며, `#undef capacity`는 이후 소스에서 그 치환을 끝낸다. 이 이름 조정은 컴파일을 위한 것이며, 순회의 진행 상태는 앞서 설명한 실행 시점의 문장들이 처리한다.
+빌드 명령은 저장소 루트를 포함 파일 검색 경로로 제공한다. 2장은 노드 배열과 초기화·연결 함수를 제공하고 4장은 정수 스택, `postfix`, 변환 함수와 `prec()`를 제공한다. 두 소스가 모두 `capacity`를 정의하므로 임시 매크로는 스택 쪽 이름을 `stack_capacity`로 바꾼다. `#undef`는 치환을 끝낸다. 이 작업은 전처리 단계의 이름 조정이며 실행 중 상태를 초기화하지 않는다. `.c` 파일을 직접 포함하는 것은 수업용 간편한 방식이다. 드라이버를 한 번 컴파일하고 포함된 소스를 따로 중복 링크하지 않는다.
 
 ### 세 가지 재귀 방문 위치는 어디에 있을까?
 
-현재 실습의 구현은 다음과 같다.
+현재 소스의 방문 위치는 주석으로 표시되어 있다.
 
 ```c
-int pre_data, in_data, post_data;
-
 void tree_traversal(int i) {
-    if (i < 0) {
-        return;
-    }
-    pre_data = nodes[i].data;
-    tree_traversal(nodes[i].left);
-    in_data = nodes[i].data;
-    tree_traversal(nodes[i].right);
-    post_data = nodes[i].data;
+	if (i < 0) {
+		return;
+	}
+	/* preorder */
+	tree_traversal(nodes[i].left);
+	/* inorder */
+	tree_traversal(nodes[i].right);
+	/* postorder */
 }
 ```
 
-전역 변수는 문자 코드를 저장하는 `int` 값이다. `%c`로 출력하면 해당 기호가 표시된다.
+순서를 관찰하려면 해당 주석 위치에서 `nodes[i].data`를 기록한다. 전체 순서를 보존하려면 기호를 이어서 기록해야 한다. 변수 하나를 덮어쓰면 마지막 기호만 남는다. 원래 소스에는 방문 결과 전역 변수가 없다.
 
 ### 명시적인 스택은 노드의 실행을 어떻게 재개할까?
 
 ```c
 int progress[10] = {0};
 
-void tree_traversal_proceed() {
-    int i = peek();
-    if (i < 0) {
-        pop();
-        return;
-    }
-
-    int step = progress[i]++;
-    switch (step) {
-        case 0:
-            pre_data = nodes[i].data;
-            push(nodes[i].left);
-            return;
-        case 1:
-            in_data = nodes[i].data;
-            push(nodes[i].right);
-            return;
-        case 2:
-            post_data = nodes[i].data;
-            pop();
-            return;
-    }
+void tree_traversal_proceed(int i) {
+	if (i < 0) {
+		pop();
+		return;
+	}
+	int step = progress[i]++;
+	switch (step) {
+	case 0: /* preorder */
+		push(nodes[i].left);
+		return;
+	case 1: /* inorder */
+		push(nodes[i].right);
+		return;
+	case 2: /* postorder */
+		pop();
+		return;
+	}
 }
 
-/* only single run */
 void tree_traversal_with_stack(int root_index) {
-    top = -1;
-    push(root_index);
-    while (!is_empty()) {
-        tree_traversal_proceed();
-    }
+	top = -1;
+	push(root_index);
+	while (!is_empty()) {
+		tree_traversal_proceed(peek());
+	}
 }
 ```
 
-`tree_traversal_proceed()`는 스택이 비어 있지 않을 때만 호출한다. 다시 사용하려면 다음 순회를 시작하기 전에 `progress`를 초기화해야 한다. 현재 래퍼는 이를 초기화하지 않는다.
+스택이 비어 있지 않을 때 현재 탑을 보조 함수에 전달한다. 음수 항목은 진행 상태에 접근하지 않고 제거된다. 현재 래퍼는 `top`만 초기화하므로 다시 순회하기 전에는 호출자가 `progress`를 0으로 초기화해야 한다. 새 수식 트리가 같은 노드 자리를 덮어써도 기존 진행 상태는 지워지지 않는다.
 
 ### postfix 표기식에서 자식들을 어떻게 연결할까?
 
 ```c
 int build_tree_from_postfix() {
-    top = -1;
-    nodes_size = 0;
-    for (int i = 0; postfix[i] != '\0'; i++) {
-        char c = postfix[i];
-        nodes[i].data = c;
-        if (c >= '0' && c <= '9') {
-            nodes[i].left = -1;
-            nodes[i].right = -1;
-        } else {
-            nodes[i].right = pop();
-            nodes[i].left = pop();
-        }
-        push(i);
-        ++nodes_size;
-    }
-    return pop();
+	top = -1;
+	nodes_size = 0;
+	for (int i = 0; postfix[i] != '\0'; i++) {
+		char c = postfix[i];
+		nodes[i].data = c;
+		if (c >= '0' && c <= '9') {
+			nodes[i].left = -1;
+			nodes[i].right = -1;
+		} else {
+			nodes[i].right = pop();
+			nodes[i].left = pop();
+		}
+		push(i);
+		++nodes_size;
+	}
+	return pop();
 }
 ```
 
-트리를 만드는 함수는 수식 변환, 계산, 반복문 기반 순회에서 사용하는 것과 같은 공유 스택을 초기화한다. 이 연산들은 차례로 실행하며, 어떤 연산도 이전 스택 내용이 유지된다고 가정해서는 안 된다.
+호출 전에 비어 있지 않은 유효한 postfix를 준비한다. 변환, 계산, 생성과 스택 순회는 같은 스택을 차례로 재사용한다. 다른 작업의 초기화 뒤에도 이전 스택 내용이 남는다고 가정하면 안 된다. 트리 생성은 숫자 문자와 자식 연결을 기록하며 값을 계산하지 않는다.
 
-### 현재 출력 함수는 수식을 어떻게 쓸까?
+### 출력 함수는 묶음을 유지하고 위치를 어떻게 초기화할까?
 
 ```c
-char infix[10] = "";
+char infix[20] = "";
 int infix_pos = 0;
 
-/* assume original equation did not have parenthesis*/
-void _write_infix(int i) {
-    char c = nodes[i].data;
-    if (is_digit(c)) {
-        infix[infix_pos++] = c;
-        return;
-    }
-    _write_infix(nodes[i].left);
-    infix[infix_pos++] = c;
-    _write_infix(nodes[i].right);
+int prec2(char c) {
+	if (c >= '0' && c <= '9') {
+		return 3;
+	} else {
+		return prec(c);
+	}
 }
 
-/* only single run */
+void write_char(char c) { infix[infix_pos++] = c; }
+
+void _write_infix(int i) {
+	if (i < 0) {
+		return;
+	}
+	char c = nodes[i].data;
+	if (c >= '0' && c <= '9') {
+		write_char(c);
+		return;
+	}
+	char l = nodes[nodes[i].left].data;
+	char r = nodes[nodes[i].right].data;
+
+	/* preorder */
+	if (prec2(l) < prec2(c)) {
+		write_char('(');
+	}
+	_write_infix(nodes[i].left);
+
+	/* inorder */
+	if (prec2(l) < prec2(c)) {
+		write_char(')');
+	}
+	write_char(c);
+
+	if (prec2(r) <= prec2(c)) {
+		write_char('(');
+	}
+	_write_infix(nodes[i].right);
+
+	/* postorder */
+	if (prec2(r) <= prec2(c)) {
+		write_char(')');
+	}
+}
+
 void write_infix(int root) {
-    _write_infix(root);
-    infix[infix_pos++] = '\0';
+	infix_pos = 0;
+	_write_infix(root);
+	write_char('\0');
 }
 ```
 
-`int is_digit(char c)` 보조 함수는 `c >= '0' && c <= '9'`를 반환한다. 위 출력 코드에는 우선순위 검사나 괄호 출력이 없다. 그 검사를 추가할 때는 포함된 `prec()`가 숫자에 0을 반환한다는 점을 기억하고, 숫자 자식을 명시적으로 제외해야 한다.
+`prec()`는 숫자에 0을 반환하지만 `prec2()`는 3을 반환한다. 따라서 같은 비교식으로 단말과 연산자 자식을 처리하면서 숫자에 불필요한 괄호를 붙이지 않는다. 왼쪽 비교는 `<`, 오른쪽 비교는 `<=`이다. 같은 우선순위가 왼쪽부터 묶이므로 오른쪽 서브트리 전체가 먼저 처리되는 구조를 유지하려면 등호도 필요하다. 괄호는 자식의 재귀 쓰기 전후에 열린다. `write_infix()`는 전체 쓰기 시작에서만 위치를 초기화하고 마지막에 종료 문자를 쓴다. 이 동작들은 이미 구현되어 있다.
 
 ### 현재 실습을 어떻게 실행해 볼까?
 
-`lab.c`에는 `main`이 없다. 제공된 [`code/lecture/lab_demo.c`](../code/lecture/lab_demo.c)는 두 순회를 실행하고, 4장의 기본 수식을 postfix 표기식으로 변환한 뒤 트리를 만들고 infix 표기식을 한 번 쓴다. `module_05_tree_dfs/code`에서 다음을 실행한다.
+`lab.c`에는 `main`이 없다. 제공된 [`code/lecture/lab_demo.c`](../code/lecture/lab_demo.c)는 두 순회를 실행하고 4장의 기본 수식을 변환한 뒤 트리를 만들며 전체 쓰기를 여러 번 실행한다. `module_05_tree_dfs/code`에서 실행한다.
 
 ```sh
 make lecture
+make lab-tests
 ```
 
-실습 파일 옆에서 실행하려면 아래 코드를 `student` 디렉터리의 `demo.c`로 저장한다. 드라이버가 이미 실습 코드를 포함하므로 드라이버만 컴파일한다.
+PowerShell에서는 `./build.ps1 -Target lecture`와 `./build.ps1 -Target lab-tests`를 쓴다. 컴파일러와 포함 경로 설정은 `code/README.md`를 참고하고 실제 명령과 진단을 기록한다.
 
-```c
-#include <stdio.h>
-
-/* Compile only this source; it includes the classroom lab. */
-#include "lab.c"
-
-int main(void) {
-    alphabet_init();
-    int root = tree_connect();
-    tree_traversal(root);
-    printf("Recursive last visits: %c %c %c\n",
-           pre_data, in_data, post_data);
-
-    tree_traversal_with_stack(root);
-    printf("Stack last visits: %c %c %c\n",
-           pre_data, in_data, post_data);
-
-    convert_to_postfix();
-    root = build_tree_from_postfix();
-    write_infix(root);
-    printf("%s -> %s\n", postfix, infix);
-    printf("Root: %d; nodes: %d; top: %d\n", root, nodes_size, top);
-    return 0;
-}
-```
-
-`module_05_tree_dfs/student`에서 컴파일하고 실행한다.
-
-```sh
-cc -std=c11 -Wall -Wextra demo.c -o /tmp/tree_dfs_lab
-/tmp/tree_dfs_lab
-```
-
-예상 출력은 다음과 같다.
+예상 강의 데모 출력:
 
 ```text
-Recursive last visits: G G F
-Stack last visits: G G F
+Recursive traversal complete (visit comments).
+Stack progress (A-G): 3 3 3 3 3 3 3
 123*-4+ -> 1-2*3+4
 Root: 6; nodes: 7; top: -1
+1234+++ -> 1+(2+(3+4))
+12+3* -> (1+2)*3
+831-/ -> 8/(3-1)
 ```
 
-방문을 보여 주는 줄은 전체 순회 순서가 아니라 전역 변수의 최종 값이다. 예제는 스택 순회와 infix 표기식 쓰기를 각각 한 번 실행하여 실습의 단일 실행 가정을 지킨다. 대신 `123*+`를 실행하려면 `convert_to_postfix();`를 `strcpy(postfix, "123*+");`로 바꾸고 `#include <string.h>`를 추가한다. 이 입력은 기존 버퍼에 들어가며 결과는 `1+2*3`이다.
+방문 주석 자체는 기호 순서를 출력하지 않는다. 진행 상태 줄은 스택 순회 한 번이 끝난 뒤 도달한 노드들의 완료 상태를 보여 준다. 이후 출력은 같은 실행에서 괄호 쓰기와 반복 전체 쓰기를 확인한다. 실습 테스트는 같은 소스를 직접 사용한다. 별도의 포인터 기반 복사·출력·계산 코드는 선택 비교 과제이며 다른 인터페이스와 실패 계약을 가진다.

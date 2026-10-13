@@ -1,5 +1,8 @@
 #include "module_02_binary_tree/student/lab.c"
+/* Both earlier labs call their capacity global `capacity`. */
+#define capacity stack_capacity
 #include "module_04_stack/student/lab.c"
+#undef capacity
 
 void tree_traversal(int i) {
 	if (i < 0) {

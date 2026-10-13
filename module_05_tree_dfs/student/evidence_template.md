@@ -2,32 +2,54 @@
 
 Name: ____________________  Date: ____________________
 
-## Preorder copy
+## Recursive traversal
 
-Creation trace: _________________________________________________
+Root index; initialized and reachable counts: ____________________
 
-How did you prove copied nodes have different addresses?
+Preorder, inorder, and postorder hook traces: _____________________
 
-________________________________________________________________
+Recording method (paper trace, debugger, or added hook action): ____
 
-## Inorder print
+Active calls at a leaf, including the empty-child frame: __________
 
-Exact output: ___________________________________________________
+## Stack traversal
 
-Why are parentheses required? ___________________________________
+Trace including old step, updated progress, and negative entries: __
 
-## Postorder evaluation
+Final `top` and reached-node progress: ____________________________
 
-Value trace: ____________________________________________________
+Reset needed before another traversal: ___________________________
 
-Final value: ____________________________________________________
+## Postfix construction
 
-## Failure preservation
+Input and per-token root-stack trace: ____________________________
 
-Failure tested: _________________________________________________
+Node data and child indices; returned root; final `top`: __________
 
-State proved unchanged: _________________________________________
+Why pop right before left? _______________________________________
 
-## Commands and result
+## Infix reconstruction
 
-________________________________________________________________
+Exact output, terminator index, and final `infix_pos`: _____________
+
+Example requiring left parentheses: ______________________________
+
+Example requiring right parentheses at equal precedence: _________
+
+Repeated complete write and observed reset: ______________________
+
+## Assumptions, costs, and verification
+
+Input and tree preconditions; unchecked limits: ___________________
+
+Time and auxiliary storage explanation: __________________________
+
+Three focused student cases and the claim each tests: ____________
+
+Compiler, complete commands, diagnostics, and results: ____________
+
+## Optional scaffold evidence
+
+If assigned, attach reconstruction or pointer copy/evaluation evidence
+separately and name the interface used. These do not describe guarantees
+of the unchecked array-based lab.

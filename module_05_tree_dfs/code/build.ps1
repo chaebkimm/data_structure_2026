@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("starter", "solution", "lecture", "autopsy")]
-    [string]$Target = "starter",
+    [ValidateSet("starter", "solution", "lecture", "lab-tests", "autopsy")]
+    [string]$Target = "lecture",
 
     [switch]$Extensions,
 
@@ -14,6 +14,7 @@ $ErrorActionPreference = "Stop"
 
 $codeRoot = $PSScriptRoot
 $includeDirectory = Join-Path $codeRoot "include"
+$repositoryRoot = Split-Path -Parent (Split-Path -Parent $codeRoot)
 $buildDirectory = Join-Path $codeRoot "build"
 
 New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
@@ -44,15 +45,18 @@ PowerShell, then rerun this command.
 
 $testingBuild = $false
 
-if ($Target -eq "lecture") {
+if ($Target -eq "lecture" -or $Target -eq "lab-tests") {
     if ($Extensions -or $StudentTests) {
-        throw "Lecture cannot be combined with a normal test switch."
+        throw "Lecture and lab-tests cannot be combined with the optional API test switches."
     }
 
-    $sources = @(
-        (Join-Path $codeRoot "lecture\lab_demo.c")
-    )
-    $outputName = "lab_demo"
+    if ($Target -eq "lab-tests") {
+        $sources = @((Join-Path $codeRoot "tests\test_lab.c"))
+        $outputName = "lab_tests"
+    } else {
+        $sources = @((Join-Path $codeRoot "lecture\lab_demo.c"))
+        $outputName = "lab_demo"
+    }
 } elseif ($Target -eq "autopsy") {
     if ($Extensions -or $StudentTests) {
         throw "Autopsy cannot be combined with a normal test switch."
@@ -95,7 +99,8 @@ if ($compilerKind -eq "msvc") {
         "/std:c11",
         "/W4",
         "/Zi",
-        "/I$includeDirectory"
+        "/I$includeDirectory",
+        "/I$repositoryRoot"
     )
 
     if ($testingBuild) {
@@ -116,7 +121,8 @@ if ($compilerKind -eq "msvc") {
         "-Wconversion",
         "-Wshadow",
         "-g",
-        "-I$includeDirectory"
+        "-I$includeDirectory",
+        "-I$repositoryRoot"
     )
 
     if ($testingBuild) {
