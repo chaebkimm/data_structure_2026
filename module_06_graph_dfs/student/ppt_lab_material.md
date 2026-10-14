@@ -196,17 +196,17 @@ do { 반복할내용 } while (조건);
 ```c
 /* preorder processing */
 visit_num[n] = ++visit_time;
-back[n] = visit_num[n];
+back_num[n] = visit_num[n];
 
 /* tree edge */
 parent[adj] = n;
-save_back (adj);
-if (back[n] > back[adj]) {
- back[n] = back[adj];
+save_back_num(adj);
+if (back_num[n] > back_num[adj]) {
+ back_num[n] = back_num[adj];
 }
 /* back edge to ancester */
-if (back[n] > visit_num[adj]) {
- back[n] = visit_num[adj];
+if (back_num[n] > visit_num[adj]) {
+ back_num[n] = visit_num[adj];
 }
 ```
 
