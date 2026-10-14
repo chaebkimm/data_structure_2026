@@ -1,15 +1,15 @@
 # Chapter 5 textbook and website handoff
 
-Updated: 2026-10-07.
+Updated: 2026-10-12.
 
 ## Current state
 
-The latest Chapter 5 website changes are published at https://data-structures.chaebinkim.chatgpt.site/chapter-5#thinking-1.
+Chapter 5 is now the default homepage at https://data-structures.chaebinkim.chatgpt.site/ and https://data-structures.chaebinkim.chatgpt.site/en. `/ko` also opens Chapter 5. Explicit `/chapter-5`, `/en/chapter-5`, and `/ko/chapter-5` URLs still work. Chapter 4 navigation and language switches now use `/chapter-4` and `/en/chapter-4`; canonical and alternate-language metadata match the new defaults.
 
 - Sites project: `appgprj_6a955240a2d0819191a05a6f72a08e8f`; audience remains public.
-- Published version: 176.
-- Website source commit: `840007ca90703aca61ec71181ecda17a6c85ff32`.
-- Deployment: `appgdep_6ac633dd88048191ad6740d2b8414399`, succeeded.
+- Published version: 183.
+- Website source commit: `e7427c42fcd50828ebc02cfd97db157c4f648eff`.
+- Deployment: `appgdep_6accbfcee6f48191a221bbb93de8862a`, succeeded.
 - Website checkout: `/Users/cbk/Documents/GitHub/data_structure_2026/student-textbook-web` (its own Git repository). Its working tree was clean when this note was saved.
 - Local preview servers started for verification have been stopped.
 
@@ -52,9 +52,19 @@ The four conceptual rules are:
 
 Textbook sources: `module_05_tree_dfs/student/textbook.md` and `textbook_korean.md`. Website copies: `student-textbook-web/content/chapter-five.en.md`, `chapter-five.ko.md`, and downloads under `student-textbook-web/public/chapter-5/`.
 
+Chapter 5 now has a separate bilingual Full C Code Explanation appendix with 15 topics, every current lab function, C syntax and dependency storage, the full 118-line lab, a runnable lecture driver, exact output, reset behavior, and capacity limits. Sources are `student-textbook-web/content/chapter-five-explanation.en.md` and `.ko.md`, parsed through `lib/chapter-five-explanation.ts` and rendered with the existing shared `FullCCodeExplanation` component. Shared topic hashes `full-c-code-explanation-1` through `-15` auto-expand the appendix and survive language switches. The main manuscript remains six sections and 22 topics.
+
+Code-related visuals and current downloads match the updated module lab and `ppt_lab_material.md`: traversal hooks are comments, writer grouping is implemented, `infix` has twenty slots, and each public writer call resets its cursor. Stack traversal still requires a caller reset of progress. Conceptual Thinking Logically material and its reserved-height animation layout are preserved.
+
 ## Verification
 
-Latest change passed TypeScript checking and the production build. Browser verification showed the measured panel height was 1230 px at the preview width, reduced from 1758 px. At the four-card state, scrollHeight equaled clientHeight; the following section's document position stayed at 1727 px before and after reset. Playback and pause were verified earlier. No further work is pending.
+The default-page update passed TypeScript checking, 16 Stack/Tree DFS tests, and the production build. The link audit covered all 21 routes, 496 rendered links including 315 anchors, 56 bilingual glossary destinations, 18 public assets, and all 12 Markdown links in nine downloadable documents, with no failures. Browser checks verified both homepage languages, preservation of Chapter 5 appendix hashes during language switching, and deep-link auto-expansion in Chapters 1, 2, and 5. The published homepage was confirmed to show Chapter 5.
+
+Four broken references in downloads were repaired: the Chapter 4 lab links to the published `textbook.ko.md` filename and now has its `stack_autopsy.md` companion; both Chapter 5 textbooks link to their adjacent `lab_demo.c`. Module-source Markdown links remain unchanged, and the existing Chapter 4 synchronization test accounts for its publication filename rewrite.
+
+The preceding Chapter 5 content change passed TypeScript checking, six Tree DFS tests, the production build, and a compiled C driver output comparison. Browser checks covered expand/collapse, topic links, language switching, mobile width, grouped writer output, and repeated-call state. Published English content was confirmed to contain all 15 topics and the complete 118-line lab.
+
+Earlier animation verification showed the measured panel height was 1230 px at the preview width, reduced from 1758 px. At the four-card state, scrollHeight equaled clientHeight; the following section's document position stayed at 1727 px before and after reset. Playback and pause were verified earlier; that layout was preserved in this update.
 
 ## Continuing work
 
@@ -65,7 +75,7 @@ The system Git requires an unaccepted Xcode license; use the bundled executables
 - Node: `/Users/cbk/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node`
 - Git: `/Users/cbk/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/git`
 - Python: `/Users/cbk/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`
-- Sites scripts: `/Users/cbk/.codex/plugins/cache/openai-curated-remote/sites/0.1.75/scripts/`
+- Sites scripts: `/Users/cbk/.codex/plugins/cache/openai-curated-remote/sites/1.0.1/scripts/`
 
 For the workflow process, prepend bundled Node and fallback Git directories to PATH, launch `site-workflow.mjs --project-id <existing project ID>` in the website checkout with a PTY, and send credentials through hidden stdin. First run without an archive to open source; retain the returned source object. After changes, run again with that source, necessary checks/build commands, and an absolute archive path. Save the exact pushed commit/archive through Sites, then deploy the returned saved version. Confirm deployment succeeded before reporting publication. The normal build command is `node <Sites scripts>/build-site.mjs`; the TypeScript command is `node node_modules/typescript/bin/tsc --noEmit`.
 

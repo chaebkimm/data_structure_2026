@@ -1,6 +1,16 @@
 # Chapter 5. Depth-First Traversal and Expression Trees
 
-We will process a binary tree's data in three orders, replace recursive calls with an explicit stack, reconstruct a tree from traversal orders, and build an expression tree from postfix notation.
+We will trace a binary tree's three visit positions, replace recursive calls
+with a progress-state stack, build an expression tree from postfix, and
+write infix while preserving its grouping. These are the four steps in
+[the lab slides](ppt_lab_material.md). Reconstruction from traversal orders
+is an optional transfer exercise in [the general slides](ppt_material.md).
+
+The classroom [`lab.c`](lab.c) reuses Chapter 2's `nodes[10]` and Chapter
+4's integer stack. `alphabet_init()` and `tree_connect()` create the
+`F`-rooted example: `F` has children `A, G`, `A` has `B, C`, and `B` has
+`D, E`. Its reachable count is seven although `nodes_size == 10`. The
+balanced `A`-rooted tree below is a separate conceptual example.
 
 ## Thinking Logically
 
@@ -49,20 +59,6 @@ Imagine storing a work record for each node on a stack. Each record contains one
 To carry out a task, first read the current task from the record at the top of the stack. Update the record to the next step, then carry out the current task. The records below describe the work of ancestors waiting for the current subtree to finish.
 
 The parent's work pauses while its child subtree is processed, so this works in the same way as the recursive approach.
-
-### How can traversal orders reconstruct a tree?
-
-Let us reconstruct the same A–G tree from its processing orders.
-
-Its orders are preorder ABDECFG, inorder DBEAFCG, and postorder DEBFGCA. With distinct node labels, preorder and inorder together uniquely determine the binary tree:
-
-1. The first preorder label, A, is the root.
-2. Split inorder at A: DBE belongs to the left subtree and FCG to the right subtree.
-3. The left subtree has three nodes, so its preorder segment is BDE; the remaining segment CFG belongs to the right subtree.
-4. Repeat on BDE and DBE: root B, left child D, right child E.
-5. Repeat on CFG and FCG: root C, left child F, right child G.
-
-Subtree sizes tell us where each preorder segment ends. Preorder alone cannot distinguish a sole left child from a sole right child. Repeated labels can make the inorder split ambiguous unless we have additional information identifying the nodes.
 
 ### How can a stack build a tree from postfix notation?
 
@@ -120,6 +116,20 @@ Why does the right-side rule also include equal precedence? These operators grou
 
 Our aim is to preserve the grouping represented by the tree, even when an arithmetic identity could simplify the expression. Place an opening parenthesis before reading a child subtree that needs one, and a closing parenthesis after finishing it.
 
+### Optional transfer: how can traversal orders reconstruct a tree?
+
+Let us reconstruct the same A–G tree from its processing orders.
+
+Its orders are preorder ABDECFG, inorder DBEAFCG, and postorder DEBFGCA. With distinct node labels, preorder and inorder together uniquely determine the binary tree:
+
+1. The first preorder label, A, is the root.
+2. Split inorder at A: DBE belongs to the left subtree and FCG to the right subtree.
+3. The left subtree has three nodes, so its preorder segment is BDE; the remaining segment CFG belongs to the right subtree.
+4. Repeat on BDE and DBE: root B, left child D, right child E.
+5. Repeat on CFG and FCG: root C, left child F, right child G.
+
+Subtree sizes tell us where each preorder segment ends. Preorder alone cannot distinguish a sole left child from a sole right child. Repeated labels can make the inorder split ambiguous unless we have additional information identifying the nodes.
+
 ## Calculating Efficiency
 
 ### How much work do construction and traversal require?
@@ -132,12 +142,12 @@ reachable from the supplied root.
 | `alphabet_init()` | Initialize each node slot | `O(capacity)` |
 | `tree_connect()` | Make the fixed example's six links | `O(1)` |
 | `build_tree_from_postfix()` | Create and push each token; pop twice per operator | `O(n)` |
-| `tree_traversal(root)` | Three visits per reachable node, plus empty-child calls | `O(r)` |
+| `tree_traversal(root)` | Three visit positions per reachable node, plus empty-child calls | `O(r)` |
 | `tree_traversal_with_stack(root)` | Three steps per reachable node, plus empty-child pops | `O(r)` |
-| `write_infix(root)` | Write each reachable token and a terminator | `O(r)` |
+| `write_infix(root)` | Write each reachable token, grouping parentheses, and a terminator | `O(r)` |
 
-The proposed parentheses extension adds constant work per child link and
-keeps the writer linear. Reconstruction by repeatedly scanning an inorder
+The implemented parentheses comparisons add constant work per child link;
+the writer remains linear. Optional reconstruction by scanning an inorder
 segment for its root can take `O(r²)` in a skewed tree. A precomputed map
 from distinct labels to inorder positions permits `O(r)` reconstruction.
 
@@ -153,20 +163,23 @@ progress storage in addition to its path stack.
 
 Postfix construction can require `O(n)` stack entries. For `123*+`, the
 maximum used depth is three, after the three digits. The classroom arrays
-reserve ten node slots, ten stack entries, ten progress entries, and ten
+reserve ten node slots, ten stack entries, ten progress entries, and twenty
 output characters regardless of how many are used.
 
 ### Which capacities must be checked when extending the lab?
 
 The included `postfix[8]` holds at most seven tokens plus a terminator.
-The current writer emits one character per node, so that valid input fits
-`nodes[10]` and produces at most eight output characters including `'\0'`.
-The code relies on these limits rather than checking them.
+That valid input fits `nodes[10]`. The current writer adds grouping
+parentheses, so output can be longer than input. For example, `1234+++`
+has seven tokens but writes `1+(2+(3+4))`, twelve characters including
+`'\0'`. It fits the current `infix[20]`.
 
-Adding parentheses changes the output bound. For example, `1234+++` has
-seven tokens but needs `1+(2+(3+4))`, twelve characters including `'\0'`.
-That exceeds `infix[10]`. Enlarge the buffer or check remaining capacity
-when implementing the extension.
+For a full binary expression tree of `n` tokens, there are `(n - 1) / 2`
+operator nodes. At most every non-root operator child can receive a pair of
+parentheses, so for `n >= 3` the token, parenthesis, and terminator count
+is at most `2n - 2`. Thus seven tokens need at most twelve cells. A digit
+alone needs two. The current bounds suffice for these valid inputs, but
+the code contains no capacity checks; revisit all limits when generalizing.
 
 The explicit traversal needs space for an absent-child sentinel as well
 as the real path. A manually constructed chain of ten nodes would need
@@ -220,9 +233,11 @@ is `-1`. A tree has no cycles, and every non-root node has one parent.
 not reject out-of-range positive indices or detect cycles. The stack
 traversal similarly removes negative entries without visiting them.
 
-The writer requires a nonempty expression tree: digit leaves and supported
-binary operators with two valid children. It has no empty-tree guard.
-The alphabet tree is suitable for traversal, not for infix writing.
+For a real root, the writer requires an expression tree: digit leaves and
+supported binary operators with two valid children. `_write_infix()` returns
+for a negative root, so `write_infix(-1)` creates an empty string. This guard
+does not validate an operator's children: their data is read before recursive
+calls. The alphabet tree is suitable for traversal, not for infix writing.
 Building an expression resets `nodes_size` and overwrites the shared node
 array, replacing the earlier tree.
 
@@ -277,8 +292,8 @@ as an operator and does not validate these conditions.
 During `_write_infix()`, `infix[0]` through `infix[infix_pos - 1]` contain
 the written prefix, and `infix_pos` selects the next free position. The
 wrapper appends the terminator, so after writing `1+2*3`, `infix_pos` is 6.
-The current wrapper assumes the position was zero before its one run.
-That fresh position is a precondition, not a property the wrapper restores.
+The wrapper establishes `infix_pos == 0` at the start of each complete
+write, so repeated writes replace the string from its first cell.
 Child calls preserve the prefix by writing at the shared next position;
 resetting the position inside them would overwrite earlier characters.
 
@@ -286,258 +301,248 @@ resetting the position inside them would overwrite earlier characters.
 
 1. Reuse Chapter 2's node representation and Chapter 4's stack operations.
 2. Place a negative-index base case before accessing the recursive node.
-3. Put preorder, inorder, and postorder visits around the two child calls.
-4. Replace recursive suspension with a stack and three progress steps.
-   Trace empty-child entries as well as real nodes.
-5. Reconstruct the slides' `A`-rooted tree from preorder and inorder by
-   splitting at each root and counting subtree nodes.
-6. Prepare `postfix`; create a node per token and pop right before left.
-7. Write a parenthesis-free expression in inorder and terminate the string.
-8. Extend the writer using the slides' precedence rules, excluding digits
-   from parenthesis decisions and providing enough output space.
-9. To support repeated runs, reset progress and the output position at the
-   start of their respective wrappers.
+3. Locate preorder, inorder, and postorder visit hooks around child calls.
+   Add recording actions only when assigned; comments alone record nothing.
+4. Replace recursive suspension with node indices and three progress steps.
+   Trace empty-child entries as well as real nodes; reset progress before reuse.
+5. Prepare valid `postfix`; create a node per token and pop right before left.
+6. Give digits precedence 3 using `prec2()` and compare child and parent
+   precedence to preserve grouping around recursive child writes.
+7. Reset the output position at the start of `write_infix()`, share it in
+   child calls, and append a terminator after the complete expression.
+8. Optional: reconstruct the general slides' `A`-rooted tree from distinct
+   preorder/inorder labels by splitting at each root and counting subtree nodes.
 
 ## C Code
 
 ### Which C syntax helps us express saved work?
 
-Several forms below appeared in earlier chapters. Here we combine them
-to make traversal state explicit: recursion remembers unfinished work in
-call frames, while the stack version stores node indices and progress.
+Recursion remembers unfinished work in call frames. The stack version makes
+node indices and progress explicit. The same source uses these forms:
 
 | Syntax from the lab | Meaning in this chapter |
 | --- | --- |
-| `if (i < 0) { return; }` | A guard clause finishes an empty-subtree call before accessing `nodes[i]`. |
-| `tree_traversal(nodes[i].left);` | A recursive call processes the subtree selected by the stored left-child index. |
-| `int progress[10] = {0};` | Initializes all ten entries to zero. As a global array, it retains changes between calls; initialization does not happen again on each traversal. |
-| `int step = progress[i]++;` | Copies the old progress into `step`, then increments the stored progress. The old value chooses the current action; the new value records where the node will resume. |
-| `switch (step)` and `case` | Select one traversal action using the saved step. |
-| `return;` inside a `case` | Exits the helper after one action. A `break` would exit only the `switch`; execution could continue after it. |
-| `while (!is_empty())` | Repeats while unfinished stack entries remain. `!` turns a true empty result into false, and a false result into true. |
-| `infix[infix_pos++] = c;` | Writes `c` at the current position, then advances the next-write position. |
-| `'\0'` | The null character marking a C string's end, distinct from the visible digit character `'0'`. |
+| `if (i < 0) { return; }` | Finish an empty-subtree call before accessing `nodes[i]`. |
+| `tree_traversal(nodes[i].left);` | Process the subtree selected by the left-child index. |
+| `int progress[10] = {0};` | Initialize every entry once; global changes remain between calls. |
+| `int step = progress[i]++;` | Save old progress for this action, then advance the stored next step. |
+| `switch (step)` and `case` | Select one traversal action using the old step. |
+| `return;` inside a `case` | Finish the helper after one action; `break` would leave only the switch. |
+| `tree_traversal_proceed(peek())` | Pass the current top node index to the one-step helper. |
+| `while (!is_empty())` | Continue while unfinished stack entries remain. |
+| `write_char(c)` | Write `infix[infix_pos++] = c`, advancing the shared output position. |
+| `prec2(r) <= prec2(c)` | Group a right child of lower or equal precedence. |
+| `'\0'` | Mark a C string's end, distinct from the visible digit `'0'`. |
 
-For example, if `progress[i]` is 0, `int step = progress[i]++;` leaves
-`step == 0` and `progress[i] == 1`. Case 0 therefore runs now, and case 1
-is ready when the parent resumes. If `infix_pos` is 2, the output assignment
-writes to `infix[2]` and leaves `infix_pos == 3`.
-
-The `return;` form belongs to a function returning `void`, where no result
-value is returned. In contrast, the builder's `return pop();` returns the
-root index to its caller.
+For example, old progress 0 produces `step == 0` and `progress[i] == 1`.
+The preorder step runs now; inorder is ready after the left subtree finishes.
+The builder's `return pop();` returns a root index; the traversal helper's
+`return;` returns without a result.
 
 ### How do the compilation directives reuse earlier definitions?
 
-The lab includes Chapter 2's tree and Chapter 4's stack using paths relative
-to this file:
+The classroom source includes the two earlier labs:
 
 ```c
-#include "../../module_02_binary_tree/student/lab.c"
-/* Both earlier labs use capacity; keep the stack's definition distinct. */
+#include "module_02_binary_tree/student/lab.c"
 #define capacity stack_capacity
-#include "../../module_04_stack/student/lab.c"
+#include "module_04_stack/student/lab.c"
 #undef capacity
-
-int is_digit(char c) {
-    return c >= '0' && c <= '9';
-}
 ```
 
-The first file supplies `nodes`, `nodes_size`, `alphabet_init()`, and
-`tree_connect()`. The second supplies `stack`, `top`, `push()`, `peek()`,
-`pop()`, `is_empty()`, `prec()`, and `postfix`. Both earlier files define
-`capacity`; the temporary macro renames the stack's definition and its uses
-to `stack_capacity`, avoiding a duplicate definition. The lab supplies
-`is_digit()` for the writer. This direct `.c` inclusion is a classroom
-shortcut; reusable projects should separate declarations into headers.
-
-These directives run during preprocessing, before the C program executes.
-`#include` inserts another file's source. `#define capacity stack_capacity`
-temporarily replaces that identifier in the included stack source, and
-`#undef capacity` ends the replacement for later source text. This name
-adjustment supports compilation; traversal progress is handled by the
-runtime statements above.
+The build supplies the repository root as an include-search directory.
+Chapter 2 supplies nodes and their initialization/connect functions; Chapter
+4 supplies the integer stack, `postfix`, conversion, and `prec()`. Both
+sources define `capacity`, so the temporary macro gives the stack's variable
+the distinct name `stack_capacity`. `#undef` ends the substitution. This
+name adjustment occurs during preprocessing; it does not reset runtime state.
+Direct inclusion of `.c` files is a classroom shortcut. Compile the driver
+once, rather than linking additional copies of the included sources.
 
 ### Where are the three recursive visit positions?
 
-This is the current lab implementation:
+These are the source's hooks, without an added recording action:
 
 ```c
-int pre_data, in_data, post_data;
-
 void tree_traversal(int i) {
-    if (i < 0) {
-        return;
-    }
-    pre_data = nodes[i].data;
-    tree_traversal(nodes[i].left);
-    in_data = nodes[i].data;
-    tree_traversal(nodes[i].right);
-    post_data = nodes[i].data;
+	if (i < 0) {
+		return;
+	}
+	/* preorder */
+	tree_traversal(nodes[i].left);
+	/* inorder */
+	tree_traversal(nodes[i].right);
+	/* postorder */
 }
 ```
 
-The globals are `int` values holding character codes. Displaying them with
-`%c` produces their corresponding symbols.
+To observe an order, record `nodes[i].data` at its matching comment. A trace
+must append each symbol; one overwritten value keeps only the last symbol.
+The original source does not declare visit globals.
 
 ### How does the explicit stack resume a node?
 
 ```c
 int progress[10] = {0};
 
-void tree_traversal_proceed() {
-    int i = peek();
-    if (i < 0) {
-        pop();
-        return;
-    }
-
-    int step = progress[i]++;
-    switch (step) {
-        case 0:
-            pre_data = nodes[i].data;
-            push(nodes[i].left);
-            return;
-        case 1:
-            in_data = nodes[i].data;
-            push(nodes[i].right);
-            return;
-        case 2:
-            post_data = nodes[i].data;
-            pop();
-            return;
-    }
+void tree_traversal_proceed(int i) {
+	if (i < 0) {
+		pop();
+		return;
+	}
+	int step = progress[i]++;
+	switch (step) {
+	case 0: /* preorder */
+		push(nodes[i].left);
+		return;
+	case 1: /* inorder */
+		push(nodes[i].right);
+		return;
+	case 2: /* postorder */
+		pop();
+		return;
+	}
 }
 
-/* only single run */
 void tree_traversal_with_stack(int root_index) {
-    top = -1;
-    push(root_index);
-    while (!is_empty()) {
-        tree_traversal_proceed();
-    }
+	top = -1;
+	push(root_index);
+	while (!is_empty()) {
+		tree_traversal_proceed(peek());
+	}
 }
 ```
 
-Call `tree_traversal_proceed()` only with a nonempty stack. For reuse, reset
-`progress` before starting another traversal; the current wrapper does not.
+Call the helper with the current top and a nonempty stack. It removes a
+negative entry before reading progress. Reset `progress` to zero before
+another traversal; the wrapper itself resets only `top`. Replacing nodes
+with a newly built tree does not clear old progress for those slots.
 
 ### How does postfix construction connect the children?
 
 ```c
 int build_tree_from_postfix() {
-    top = -1;
-    nodes_size = 0;
-    for (int i = 0; postfix[i] != '\0'; i++) {
-        char c = postfix[i];
-        nodes[i].data = c;
-        if (c >= '0' && c <= '9') {
-            nodes[i].left = -1;
-            nodes[i].right = -1;
-        } else {
-            nodes[i].right = pop();
-            nodes[i].left = pop();
-        }
-        push(i);
-        ++nodes_size;
-    }
-    return pop();
+	top = -1;
+	nodes_size = 0;
+	for (int i = 0; postfix[i] != '\0'; i++) {
+		char c = postfix[i];
+		nodes[i].data = c;
+		if (c >= '0' && c <= '9') {
+			nodes[i].left = -1;
+			nodes[i].right = -1;
+		} else {
+			nodes[i].right = pop();
+			nodes[i].left = pop();
+		}
+		push(i);
+		++nodes_size;
+	}
+	return pop();
 }
 ```
 
-The builder resets the same shared stack used by expression conversion,
-evaluation, and iterative traversal. These operations run sequentially;
-none may rely on retaining earlier stack contents.
+Prepare nonempty valid postfix before this call. Conversion, evaluation,
+construction, and iterative traversal reuse one stack sequentially. None
+may rely on earlier stack contents surviving another operation's reset.
+Construction records digit characters and child links, rather than values.
 
-### How does the current writer emit an expression?
+### How does the writer preserve grouping and restart its cursor?
 
 ```c
-char infix[10] = "";
+char infix[20] = "";
 int infix_pos = 0;
 
-/* assume original equation did not have parenthesis*/
-void _write_infix(int i) {
-    char c = nodes[i].data;
-    if (is_digit(c)) {
-        infix[infix_pos++] = c;
-        return;
-    }
-    _write_infix(nodes[i].left);
-    infix[infix_pos++] = c;
-    _write_infix(nodes[i].right);
+int prec2(char c) {
+	if (c >= '0' && c <= '9') {
+		return 3;
+	} else {
+		return prec(c);
+	}
 }
 
-/* only single run */
+void write_char(char c) { infix[infix_pos++] = c; }
+
+void _write_infix(int i) {
+	if (i < 0) {
+		return;
+	}
+	char c = nodes[i].data;
+	if (c >= '0' && c <= '9') {
+		write_char(c);
+		return;
+	}
+	char l = nodes[nodes[i].left].data;
+	char r = nodes[nodes[i].right].data;
+
+	/* preorder */
+	if (prec2(l) < prec2(c)) {
+		write_char('(');
+	}
+	_write_infix(nodes[i].left);
+
+	/* inorder */
+	if (prec2(l) < prec2(c)) {
+		write_char(')');
+	}
+	write_char(c);
+
+	if (prec2(r) <= prec2(c)) {
+		write_char('(');
+	}
+	_write_infix(nodes[i].right);
+
+	/* postorder */
+	if (prec2(r) <= prec2(c)) {
+		write_char(')');
+	}
+}
+
 void write_infix(int root) {
-    _write_infix(root);
-    infix[infix_pos++] = '\0';
+	infix_pos = 0;
+	_write_infix(root);
+	write_char('\0');
 }
 ```
 
-The supplied helper `int is_digit(char c)` returns
-`c >= '0' && c <= '9'`. The quoted writer contains no precedence checks
-or parenthesis output. When adding those checks, remember that the included
-`prec()` returns 0 for digits; explicitly exclude digit children.
+`prec()` gives digits 0, while `prec2()` gives them 3. This makes the same
+comparisons usable for both leaves and operator children without wrapping
+digits. The left comparison is strict; the right comparison includes equal
+precedence to preserve the tree under left associativity. Parentheses open
+before a recursive child write and close afterward. `write_infix()` resets
+the cursor only at the start of the complete write and explicitly terminates
+its output. These behaviors are already implemented.
 
 ### How can we demonstrate the current lab?
 
 `lab.c` has no `main`. The supplied
 [`code/lecture/lab_demo.c`](../code/lecture/lab_demo.c) runs both traversals,
-converts Chapter 4's default expression to postfix, builds its tree, and
-writes the infix string once. From `module_05_tree_dfs/code`, run:
+converts Chapter 4's expression, builds its tree, and performs several complete
+writes. From `module_05_tree_dfs/code`, run:
 
 ```sh
 make lecture
+make lab-tests
 ```
 
-To try the driver beside the lab, save this as `demo.c` in the `student`
-directory. Compile only the driver, since it includes the lab already:
+PowerShell uses `./build.ps1 -Target lecture` and
+`./build.ps1 -Target lab-tests`. Follow `code/README.md` for compiler and
+include-path setup; record the complete commands and actual diagnostics.
 
-```c
-#include <stdio.h>
-
-/* Compile only this source; it includes the classroom lab. */
-#include "lab.c"
-
-int main(void) {
-    alphabet_init();
-    int root = tree_connect();
-    tree_traversal(root);
-    printf("Recursive last visits: %c %c %c\n",
-           pre_data, in_data, post_data);
-
-    tree_traversal_with_stack(root);
-    printf("Stack last visits: %c %c %c\n",
-           pre_data, in_data, post_data);
-
-    convert_to_postfix();
-    root = build_tree_from_postfix();
-    write_infix(root);
-    printf("%s -> %s\n", postfix, infix);
-    printf("Root: %d; nodes: %d; top: %d\n", root, nodes_size, top);
-    return 0;
-}
-```
-
-From `module_05_tree_dfs/student`, compile and run:
-
-```sh
-cc -std=c11 -Wall -Wextra demo.c -o /tmp/tree_dfs_lab
-/tmp/tree_dfs_lab
-```
-
-The expected output is:
+Expected lecture output:
 
 ```text
-Recursive last visits: G G F
-Stack last visits: G G F
+Recursive traversal complete (visit comments).
+Stack progress (A-G): 3 3 3 3 3 3 3
 123*-4+ -> 1-2*3+4
 Root: 6; nodes: 7; top: -1
+1234+++ -> 1+(2+(3+4))
+12+3* -> (1+2)*3
+831-/ -> 8/(3-1)
 ```
 
-The visit lines report final globals, not complete traversal sequences.
-The example performs one stack traversal and one infix write, respecting
-the lab's single-run assumptions. To try `123*+` instead, replace
-`convert_to_postfix();` with `strcpy(postfix, "123*+");` and add
-`#include <string.h>`; it fits the existing buffer and yields `1+2*3`.
+The source's visit comments do not emit symbol traces. The progress line
+shows completed states of reached nodes after one iterative run. The later
+outputs demonstrate parentheses and repeated complete writes in one process.
+The supplied lab tests exercise the same source directly; the separate
+pointer-based copy/print/evaluation scaffold is optional and has a different
+interface and failure contract.
