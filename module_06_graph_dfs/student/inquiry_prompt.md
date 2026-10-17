@@ -1,5 +1,10 @@
 # Stage A — Initial Inquiry: Routes That Reconnect
 
+> This file belongs to the separate checked adjacency-matrix DFS exercise.
+> For the current array-lab activities, see the repository references
+> `module_06_graph_dfs/student/class_material.md` and
+> `module_06_graph_dfs/README.md`. These files are not bundled in this staged release.
+
 Name: ____________________________  
 Date: ____________________________
 

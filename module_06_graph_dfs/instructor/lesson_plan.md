@@ -1,64 +1,89 @@
-# Module 6 Lesson Plan — Graph DFS and Edge Blocks
+# Module 6 Lesson Plan — Question-led Graph DFS
 
-## Outcomes and materials
+## Materials and scope
 
-Use the [lab](../student/lab.c), [lecture material](../student/ppt_material.md),
-[textbook](../student/textbook.md), [models](../diagrams/dfs_models.md), and
-[chapter guide](../../instructor_guide/chapter_06.md). Students reuse Module
-3 discovery/low-link state and Module 4's stack to index undirected edges
-and extract biconnected components. The two meetings total 180 minutes.
+Follow [concept slides](../student/ppt_material.md), the
+[bilingual workbook](../student/class_material.md),
+[models](../diagrams/dfs_models.md), and
+[chapter guide](../../instructor_guide/chapter_06.md).
+Use [lab slides](../student/ppt_lab_material.md) and the current
+[lab](../student/lab.c) for the final coding connection.
+Two meetings total 180 minutes. The completed concept diagram is numbered
+by visits 1–7 from a fixed DFS; refer to vertices by those visit numbers.
+Retrace from visit 1 with ascending diagram neighbors. Original A–J coding
+verification retains its stored insertion order and separate reference.
 
 ## Meeting A — 90 minutes
 
-1. **Retrieve the graph (15 minutes).** Preserve predictions. Build A–J
-   from the included graph lab. Read insertion-order neighbor lists. Find
-   four connected groups and predict which vertices root A can reach.
-2. **Classify neighbors (20 minutes).** Trace recursive entry and the five
-   neighbor cases. Distinguish a parent reverse entry from a back edge to
-   another ancestor. Explain the simple-undirected assumption.
-3. **Index edges (20 minutes).** Follow `init_edges_list(0)`. Give each
-   reached connection one index and both lookup directions the same value.
-   Check the eight records and the missing G–H index.
-4. **Retrieve low-link values (25 minutes).** Trace `save_back_num()` from
-   Module 3. Track F's connections to B and D, child-return propagation,
-   and the final values 1/2/3/2/2/2. Preserve a hand trace before comparison.
-5. **Exit prediction (10 minutes).** Identify B as a separating vertex.
-   Predict which edges belong together and how a stack might hold them
-   until a branch's postorder processing.
+1. **Retrieve and classify (25 minutes).** Review endpoints, neighbor lists,
+   tree/back connections, and visit/earliest-reconnection numbers. Preserve
+   predictions. At visit 3 classify ancestor 1, parent 2, new child 4,
+   processed descendant 6 after 4 returns, and new child 7. Recognize the
+   parent before interpreting a smaller visit number as a back connection.
+2. **Locate action timing (20 minutes).** Assign the number at entry, set
+   a child's parent before descent, resume the parent's scan after return,
+   and identify postorder after all neighbors. Annotate the blank circles
+   with visit numbers and highlight handled connections at each stage.
+3. **Review lists and introduce two representations (25 minutes).** Review
+   the adjacency lists taught in Chapter 3. Introduce Chapter 6's new
+   endpoint-pair edge list and symmetric adjacency matrix for the same graph.
+   Compare neighbor scanning, separate connection records, and direct pair
+   lookup. Practice adding/deleting 3–6 and removing a vertex's incident pairs.
+4. **Deduplicate (20 minutes).** Collect only at child entry and non-parent
+   ancestor encounters. Write ten canonical endpoint visit pairs in order.
+   Explain why 1 → 3 adds nothing when visit 1 eventually resumes.
 
 ## Meeting B — 90 minutes
 
-1. **Retrieve and introduce blocks (15 minutes).** Define edge blocks,
-   one-edge bridge blocks, shared cut vertices, and no row for isolates.
-   Distinguish vertex components from edge blocks.
-2. **Trace the edge stack (25 minutes).** Push child tree edges and ancestor
-   back edges. Trace every stack row in the lecture material. At C, D,
-   and B returns, pop inclusive of the parent edge. Explain equality at D.
-3. **Read the two-pass wrapper (15 minutes).** Follow `find_bcc()` resets.
-   Explain why `back_num` survives the second `init_visit()` and why the
-   same graph/root/order must reproduce discovery numbers. Count indexing
-   as a separate third DFS pass in the overall pipeline.
-4. **Predict, run, compare (15 minutes).** Run `make lecture` in `code`.
-   Compare printed tables to the predictions. Locate the source statement
-   explaining any revision. Do not execute unchecked invalid-input cases.
-5. **Check scope and cost (10 minutes).** Count 16 neighbor entries per
-   reached-component pass, 100 lookup initialization cells, seven peak
-   pending edges, and five peak active calls. Inspect capacity and reset
-   assumptions, including the `/* called once */` comment.
-6. **Explain and revise (10 minutes).** Ask why C closes a one-edge block,
-   D closes on equality, and G–H is absent. Require one evidence-based
-   revision and an explanation of what a whole-graph extension must manage.
+1. **Retrieve earliest reconnection (15 minutes).** Ask for visit 6's value
+   before revealing 3. Trace 6 → 3 lowering 6 to 3 and 6 → 4 leaving it
+   unchanged. Propagate through visits 5 and 4. Finish with
+   1/1/1/3/3/3/2 for visits 1–7.
+2. **Find two blocks (25 minutes).** Define maximal groups with two
+   internally vertex-disjoint paths between every pair. Predict two
+   five-edge blocks sharing visit 3. Trace the full endpoint-pair stack
+   at every event. At 4 → 3, equality 3 ≥ 3 emits the right block;
+   at 2 → 1, equality 1 ≥ 1 emits the left block. Include the boundary pair.
+   Distinguish unfinished calls from pending connections.
+   Use workbook 6.1 to state the invariant: every handled edge is exactly
+   once either pending or assigned, including the result row being formed.
+   Check empty initialization, push/pop-and-store preservation, and final
+   empty-stack coverage. At 3 → 2, ask why the right block is already
+   assigned while five pairs remain pending; a returned subtree need not
+   leave all its edges on the stack. Explain why the qualifying suffix
+   includes its boundary and why equality closes it.
+3. **Retrieve and review (15 minutes).** Use exactly the workbook's three
+   targets for a five-minute retrieval pause and preserve first answers.
+   Review graph storage/addition/deletion and block definition/finding.
+   Reconstruct Chapter 5's separate tree from preorder `ABDECFG` and
+   inorder `DBEAFCG`; verify postorder `DEBFGCA`.
+4. **Connect to C and run (25 minutes).** Explicitly switch to A–J. Read
+   `_edge_iteration_()` before indexing/extraction specializations. Follow
+   record/push, parent assignment, recursion, then the parent's immediate
+   child-return comparison and inclusive boundary pop when required.
+   Match `init_edges_list()`'s discovery/count/lookup preparation and
+   `find_bcc()`'s five actions. Identify indexing, low-link calculation,
+   and extraction as three passes. Read the strict `<` continuation and
+   inclusive boundary pop after each child returns. Predict then run
+   `make lecture`: original eight records give sizes 1/6/1. The optional
+   [slide driver](../code/lecture/ppt_demo.c) uses internal indices 0–6 with
+   A–G data but prints actual visit-number endpoints for the two five-edge blocks.
+5. **Explain, check, and submit quiz (10 minutes).** Count 16 neighbor
+   entries per original A-started pass, three passes, 100 lookup writes,
+   five peak calls, and seven pending pairs. Compare `edges[45]`,
+   `bcc[9][45]`, and `bcc_size[9]` with the reused `stack[10]`;
+   45 records do not enlarge the pending stack. Locate the one-call reset
+   limitation and require a source-backed correction. Follow the final
+   slide's mini-quiz submission prompt using the instructor's classroom
+   instructions; no external submission is performed by these materials.
 
-## Scope and assessment boundary
+## Evidence and assignment boundary
 
-The lecture uses the unchanged array-based `student/lab.c`. Its existing
-functions are the reading and tracing target; it is not a three-TODO
-matrix-DFS assignment. The lab has no `main()`, so the lecture driver
-provides initialization and printing.
+Use the workbook and [answer key](answer_key.md). Keep concept visit pairs
+separate from C indices and original A–J rows. The lab has no entry point;
+the driver supplies it. Fixed arrays and stack helpers are unchecked.
 
-The checked matrix starter, its tests, staged inquiry worksheets, rubric,
-lab guide, and Practical 1 delivery schedule are a separate legacy track.
-If that track is assigned, use its own contracts and release gates. Do not
-apply its allocation/status or failure-preservation requirements to this
-array lab. Updating the course-wide assessment schedule is outside this
-lecture revision.
+The checked matrix starter, tests, older staged worksheets, rubric,
+lab guide, and Practical 1 schedule retain separate legacy contracts.
+Stage D textbook/model enrichment does not change Stage E's matrix exercise.
+This lesson does not alter the assessment schedule.

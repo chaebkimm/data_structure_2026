@@ -1,5 +1,10 @@
 # Stage C — Investigation Worksheet: Graph Depth-First Search
 
+> This file belongs to the separate checked adjacency-matrix DFS exercise.
+> For the current array-lab activities, see the repository references
+> `module_06_graph_dfs/student/class_material.md` and
+> `module_06_graph_dfs/README.md`. These files are not bundled in this staged release.
+
 Open this file after completing and preserving the Cognitive Pause.
 
 **Sections A–F are the core investigation. Complete them before opening

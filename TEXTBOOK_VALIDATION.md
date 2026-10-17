@@ -2,6 +2,343 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 6 Edge-Stack Invariant — October 17, 2026
+
+Both textbook editions now explain the exact-once partition of handled
+edges into pending and assigned edges at push or completed pop-and-store
+checkpoints. Assigned edges include the forming block. Initialization,
+maintenance, and termination use the existing completed visit numbers.
+The suffix explanation excludes nested blocks already emitted; the
+low-link comparison and inclusive boundary pop justify grouping, while
+the accounting invariant rules out missing or duplicate edges. C guidance
+explains the transient local edge, forming length `pos`, and delayed
+`bcc_size` update. The workbook and instructor guides carry matching
+questions and checkpoint counts. No lab/PPT input or algorithm changed.
+
+The existing webpage stack player now displays independent handled-history
+accounting and the current pending/assigned equation, including the partial
+row note. Two regression tests cover every raw/per-pop prefix for the slide
+and three original roots, reset, completion, and corrupted snapshots with
+missing, duplicate, replaced, or future edges. All 59 website tests,
+TypeScript, and production build pass. Both manuscripts, standalone
+textbooks, the workbook, and all eleven source ZIP entries agree. All 47
+local links in the invariant materials resolve and code fences balance.
+
+Browser QA verifies 8=7+1 during the first pop, 10=0+10 at completion,
+reset to 0=0+0, English/Korean rendering, desktop/mobile overflow, and
+stable measured panel/following-content positions. The main content keeps
+zero tables/lists. Independent review found no actionable correctness
+issues. Version 198, source `d7115152677718d2fa49697c2ae80ecbcc0be351`,
+deployed successfully. Proof:
+`student-textbook-web/outputs/chapter-6-invariant.jpg`.
+
+These technical/editorial checks do not establish a human reading pilot.
+
+## Chapter 6 Updated Lab and PPT Alignment — October 17, 2026
+
+The current lab/PPT source inputs are preserved. Both textbook editions,
+the class workbook, teaching guides, diagrams, and release descriptions
+now use the source's `edges[45]`, `bcc[9][45]`, `bcc_size[9]`, and separate
+ten-entry stack limit. Explanations and code excerpts show the parent
+checking a completed child immediately after the recursive call returns.
+Strictly smaller low-links leave edges pending with `continue`; equality
+or larger values call `close_bcc()` and include the boundary tree edge.
+The slide's abbreviated `back` name is distinguished from `back_num`.
+The conceptual visit-number example and separate A–J coding input remain.
+
+The new `code/tests/test_lab.c` has nine passing checks: supplied alphabet
+and slide results, isolated/self-loop scope, strict/equal child boundaries,
+root branches, a ten-node path using all nine result rows, a complete
+five-node graph using ten pending slots, and two root-sharing blocks using
+twelve records while staying inside the stack limit. Normal and
+AddressSanitizer/UndefinedBehaviorSanitizer runs pass. Both lecture drivers
+reproduce their documented raw rows and final empty stack. The host's
+system compiler/make shims require an unaccepted Xcode license, so these
+checks used the installed Command Line Tools binaries directly with the
+MacOSX SDK; inherited source warnings were not treated as errors.
+
+The website model now ends each child call before recording the parent's
+keep/close decision. Regression checks verify its active path, timing,
+per-pop conservation, boundary inclusion, unchanged groups, and focused
+edges. Extraction/storage playback has 40 states, pipeline 103, with the
+other traversal counts unchanged. All 57 website tests, TypeScript, and
+the production build pass. All eleven ZIP entries match standalone files;
+both drivers compiled and ran from an isolated extracted ZIP under both
+sanitizers. Seventy-four edited course-document links resolve.
+
+Browser checks cover English/Korean, 1440/390-pixel layouts, completion,
+reset, parent-side narration, root highlighting in second-block extraction,
+zero main-content tables/lists, no document overflow, and stable measured
+panel/following-content positions during replay after measurement. Version
+197, source `82ed2f7e10cf46d7ae98d07df602b11201c3ed4b`, deployed successfully
+and was inspected in the in-app browser. Direct unauthenticated HTTP asset
+requests returned 403 and are not counted as a successful asset audit.
+Proof: `student-textbook-web/outputs/chapter-6-updated-lab.jpg`.
+
+These are technical/editorial checks, not a new human beginner-reading pilot.
+
+## Chapter 6 Separate Back-Edge Encounters — October 14, 2026
+
+The first traversal, low-link playback, and pipeline low-link phase now expose
+every back-edge encounter as a distinct frame. A shared `traversalFrames()`
+selector preserves classification/recording behavior and prevents filter drift.
+First traversal/low-link/pipeline counts are 20/26/97 states. All four edges
+appear separately in encounter order. Low-link updates have separate steps;
+the 6→4 encounter explains why the current value 3 remains unchanged.
+
+Twenty-four targeted model/content tests, TypeScript, and production build
+pass. Tests cover all four focused encounters, no future records, no fictitious
+lowering, unchanged final state, blocks/counters, and alternate trace input.
+Browser checks confirm consecutive traversal encounters, inspection/update/
+unchanged-value steps, matching pipeline focus, both languages, mobile overflow,
+stable panel/following-section heights, completion, and reset. Published version
+196 succeeded and the live result was inspected.
+Proof: `student-textbook-web/outputs/chapter-6-back-edge-steps.jpg`.
+
+## Chapter 6 Straight Back Edges — October 14, 2026
+
+Back edges and their legend use straight dashed paths. Tree edges remain
+solid, and canonical arrows, focused endpoint roles, and found-block colors
+are preserved. Low-link labels at visits 1, 2, and 4 move beside their circles
+to clear incoming and vertical arrows. TypeScript and production build pass;
+browser checks confirm straight paths, retained dashes/roles, readable low
+values, and no desktop/mobile overflow. Published version 195 succeeded;
+the live result was inspected after reloading a transient page-load failure.
+Proof: `student-textbook-web/outputs/chapter-6-straight-back-edges.jpg`.
+
+## Chapter 6 DFS Edge Shapes and Endpoint Roles — October 14, 2026
+
+All shared Graph DFS visuals use solid straight tree arrows and dashed curved
+back arrows. Focused edges label parent/child or descendant/ancestor endpoints.
+The stored DFS direction stays consistent through reverse encounters and
+queries, while unreached child circles remain blank. Screen-reader descriptions
+name each role and its live visit number. Shapes reveal the selected frame's
+known records and persist after extraction; found-block colors apply to paths
+and arrowheads together. Endpoint badges avoid the focused connections.
+
+Twenty-three targeted model/content tests, TypeScript, and production build
+pass. Browser checks cover tree-before-entry, reverse parent/descendant scans,
+all six tree/four back edges, tricky badge placements, retained completed-block
+colors, both languages, stable measured sizing, and no overflow at 390/1440
+pixels. Published version 194 succeeded; the live result was inspected.
+Proof: `student-textbook-web/outputs/chapter-6-edge-roles.jpg`.
+
+## Chapter 6 Persistent Found-Block Colors — October 14, 2026
+
+Completed blocks keep distinct green/blue edge colors through later branches
+and completion in extraction, overview, pipeline, and storage animations.
+Forming groups stay active-colored until the inclusive boundary pop finishes.
+Legends and block-card borders use matching colors; selected-edge emphasis
+changes width without overwriting found colors. Colors reflect each selected
+snapshot, so rewind/reset hides future groups.
+
+Twenty targeted model/content tests, TypeScript, and production build pass.
+The timeline test covers persistence after later pushes and partial closes,
+completion, rewind/reset, and unchanged snapshots. Browser checks confirm
+five retained edges after first closure, ten retained edges in two colors at
+completion, matching related players, stable following content, and no mobile
+overflow. Published version 193 succeeded and the live result was inspected.
+Proof: `student-textbook-web/outputs/chapter-6-found-block-colors.jpg`.
+
+## Chapter 6 Animation Throughout the Webpage — October 14, 2026
+
+Every Thinking/Efficiency topic now has playback. Static walkthrough tables
+and lists are replaced with their visuals. Glossary definitions, coding
+plans/review, C storage mappings, and text output advance through measured
+cards; source C/shell excerpts remain intact. Both published languages have
+zero HTML tables/lists in main content. Printable sources are unchanged.
+
+The graph carries live low-link values. Extraction pops one edge per frame,
+preserves first-entry visit numbering, and marks partial blocks as forming.
+Block playback shows both groups and removal of their shared visit 3.
+The pipeline animates all three actual passes. Efficiency playback counts
+21 entries/60 inspections, 49 preparation cells then 20 scans, and peaks of
+6 active calls/8 pending edges. Representation views inspect one entry,
+record, or symmetric cell pair at a time.
+
+All 51 website tests, TypeScript, production build, and independent review
+pass. Browser checks cover all ten topic players, final low-links and block
+sizes, empty/partial/full stack states, card progression, both languages,
+stable following content, and no panel/document overflow at 390/1440 pixels.
+Efficiency figures adapt to their container width to preserve legibility.
+Published version 192 succeeded; the live page was inspected. Proof:
+`student-textbook-web/outputs/chapter-6-all-animations.jpg`.
+
+## Chapter 6 Interactive Edge Recording and Lookup — October 14, 2026
+
+The third conceptual webpage topic replaces its static edge-record table
+with DFS playback, a growing clickable edge list, and endpoint lookup.
+Directions and tree/back types remain available by selecting records.
+Lookup includes only the selected replay's recorded prefix. Both website
+languages have coherent animation lead-ins; printable tables remain intact.
+
+Eleven model tests and four content/parser tests, TypeScript, production
+build, and independent review pass. Browser checks cover recording before
+child entry, symmetric lookup, recorded/unrecorded/absent connections,
+direction/type metadata, ten unique records, automatic completion, all
+three representation views, stable following content, and 390/1440-pixel
+layouts. Published version 191 succeeded; the live animation was inspected.
+Proof: `student-textbook-web/outputs/chapter-6-record-edges.jpg`.
+
+## Chapter 6 Neighbor Classification for All Nodes — October 14, 2026
+
+The interactive classification visual has selectors for all seven completed
+visit numbers. Each selector jumps to first entry in the same traversal.
+Categories follow the active node and remember actual encounter cases;
+unexamined entries remain pending. Current-neighbor highlighting replaces
+the fixed visit-3 caption.
+
+Eight model tests and four content/parser tests, TypeScript, and production
+build pass. New model checks cover every node's final classifications,
+entry states without future scan results, and visit 3's neighbor 6 becoming
+a descendant when examined after the child branch. Browser checks cover all
+selectors, bilingual categories, current-neighbor highlighting, stable
+following content, and 390/1440-pixel overflow. Published version 190
+succeeded and the live page was inspected. Proof:
+`student-textbook-web/outputs/chapter-6-all-neighbors.jpg`.
+
+## Chapter 6 Animation-Only Web Example — October 14, 2026
+
+The first conceptual webpage example omits the static edge list and
+neighbor-order table in both languages. Its animation omits duplicate
+visit-number and active-path lists while retaining the numbered graph,
+controls, current-step explanation, and discovered count. Lead-in prose
+now refers to the animation. Later teaching examples and printable
+textbook references retain their contents.
+
+Four content/parser tests, TypeScript, and the production build pass.
+Browser checks confirm first-entry and completed numbering, absence of
+the duplicate lists, and no overflow at 390 pixels. Published version
+189 succeeded; the live page was inspected and the preview stopped.
+Proof: `student-textbook-web/outputs/chapter-6-animation-only.jpg`.
+
+## Chapter 6 Representation Progression Correction — October 14, 2026
+
+The English/Korean textbooks and teaching materials now identify adjacency
+lists as Chapter 3 review. Edge lists and adjacency matrices are introduced
+in Chapter 6. Website prose, comparison labels, textbook/workbook downloads,
+and source ZIP match that progression. Visit-number examples and C excerpts
+retain their validated contents.
+
+The four website content/parser checks, production build, and whitespace
+checks pass. Browser QA confirms the corrected published prose and comparison
+labels, no mobile document/panel overflow, and the published version 188.
+
+## Chapter 6 Visit-Number Diagram Synchronization — October 14, 2026
+
+The latest concept PPT uses 1–7 as completed DFS visit numbers. Both
+textbooks, seven class/support documents, slide driver, website, and
+source downloads now use that interpretation. Replay vertices receive
+numbers on first entry; numbered endpoints in explanations refer to the
+completed traversal. Internal 0–6 indices and A–G source characters are
+explained only in C Code. The supplied A–J lab example remains separate.
+
+Validation completed:
+
+- Visit 3's neighbor cases, visit 6's low-link value, full pair stacks,
+  and both five-edge block orders match independent simulation and C.
+  Low-links remain 1/1/1/3/3/3/2; the common vertex is identified by visit 3.
+- The updated slide driver prints computed visit numbers at edge and block
+  endpoints, alongside a separate index/visit/parent/low table. Both ZIP
+  drivers pass exact-output checks under ASan/UBSan.
+- Both editions retain five sections and 7/3/10 topics. Conceptual sections
+  have no C identifiers or obsolete vertex labels. C fences match the
+  unchanged sources. Current repository links and whitespace checks pass.
+- All 41 website Node tests, TypeScript, and production build pass. The
+  audit covers 24 routes, 679 links, 384 anchors, and 15 assets. Updated
+  concept-slide downloads match the repository's 41 H2 headings.
+- Browser checks pass first-entry numbering, completed 1–7 diagram,
+  wrapping endpoint list, exact pair blocks, stable measured heights,
+  390/1440-pixel layouts, and bilingual hash preservation. Mini-quiz
+  prompts appear in both languages. Published version 187 succeeded.
+
+## Chapter 6 Updated Concept Slides and Website — October 14, 2026
+
+Both textbooks, the bilingual class workbook, instructor materials,
+models, and website now follow the updated question-led concept slides.
+The primary graph is vertices 0–6, ten undirected edges, start 0, and
+ascending neighbors. Vertex labels and positive discovery numbers are
+explicitly distinguished. The materials cover all four neighbor cases
+at vertex 2, traversal timing, three representations, once-only recording,
+symmetric lookup, low-link propagation, full endpoint-pair stack states,
+two five-edge blocks sharing vertex 2, and the midterm review sequence.
+C names, numeric edge indices, reset details, and capacities stay in C Code.
+
+The original A–J lab and both PPT inputs are preserved. The additional
+`code/lecture/ppt_demo.c` prepares the slide graph and calls the unchanged
+lab implementation. `make lecture-ppt` runs it; the original lecture target
+continues to run the alphabet example. Website downloads include both
+drivers, the updated PPT, the class workbook, both textbooks, and a runnable
+source archive. Chapter 6 remains the default homepage in both languages.
+
+Validation completed:
+
+- Independent simulation and native C execution agree on discovery 1–7,
+  parents none/0/1/2/3/4/2, low-link 1/1/1/3/3/3/2, ten edge records,
+  rows `[7,6,5,4,3]` and `[9,8,2,1,0]`, and an empty final stack.
+- Each pass examines twenty neighbor entries; three passes make sixty
+  inspections and twenty-one vertex entries. Lookup preparation covers
+  49 active cells. Peak pending edges are eight; active recursion is six.
+- Both source-archive drivers compile and reproduce exact expected output
+  under AddressSanitizer and UndefinedBehaviorSanitizer. Original source
+  excerpts remain unchanged and source-matching in both textbooks.
+- All 41 website Node tests, TypeScript, and the production build pass.
+  The HTTP audit passes 24 routes, 679 local links, 384 anchors, and 15
+  download assets. Repository Markdown links and whitespace checks pass.
+- Browser QA passes playback completion, final pair blocks, stable following
+  content, no panel/document overflow at 390 and 1440 pixels, and a shared
+  lesson hash across language switches. Published version 186 succeeded.
+
+## Chapter 6 Lab and Both PPT Sources — October 14, 2026
+
+The English textbook and new Korean companion now follow the current
+`module_06_graph_dfs/student/lab.c`, `ppt_material.md`, and
+`ppt_lab_material.md`. The source lab and both slide inputs remain
+unchanged. The chapter includes `_edge_iteration_()` before its edge-list
+and block-extraction specializations, the source's add-edge/parent/call
+order, and the `start_node` wrapper signatures. It explains symmetric
+edge lookup, internally vertex-disjoint paths, inclusive postorder
+extraction, and preservation of saved low-link values between passes.
+
+The new `student/class_material.md` supplies predictions, edge/low-link/
+stack tables, exactly three retrieval-pause targets, runtime evidence,
+cost/reset/capacity checks, and fresh-case transfer questions. The
+instructor answer key covers those tasks. The chapter guide, lesson plan,
+technical notes, models, module/code overviews, and course links follow
+the same current teaching path.
+
+Older matrix-DFS student materials are explicitly labeled. The release
+manifest and Stage D README identify Stages A–C/E as the checked matrix
+exercise and Stage D's current textbook/models as array/BCC enrichment.
+Existing starter APIs, grading contracts, release scripts, and archives
+retain their contents. This update is repository-only; the website
+working tree remains unchanged.
+
+Validation completed:
+
+- Both textbooks preserve their five-section sequence. Their bilingual
+  C blocks match each other. The Module 6 implementation excerpts reproduce
+  the complete current lab modulo whitespace; the low-link excerpt matches
+  the included Module 3 function.
+- The lecture driver compiled directly with native Command Line Tools
+  Clang, C11 warning flags, and an explicit macOS SDK. Its complete output
+  matches the root-A reference: eight edge records; rows `[1]`,
+  `[7,6,5,4,3,2]`, and `[0]`; empty final stack.
+- A temporary harness passed six independent fresh-process cases under
+  AddressSanitizer and UndefinedBehaviorSanitizer: supplied root A, root G,
+  isolated root I, chain, triangle, and branching root. Root A also checks
+  that `_edge_iteration_()` assigns discovery/parents without recording
+  edges or blocks. The checks cover exact rows, symmetric edge indices,
+  exactly-once edge membership, and final empty stacks.
+- Markdown fences, all 76 local links/anchors across the revised teaching
+  files, and changed-file whitespace passed. Both lab/slide inputs and the
+  separate website working tree were checked for unintended changes.
+- The unchanged included sources still emit 19 strict compiler warnings:
+  11 empty-parameter-list warnings and eight integer-to-character
+  conversions. The host's system Make/tool wrappers stop at an unaccepted
+  Xcode license; direct native compilation verified the lecture recipe's
+  source and output without changing the host license state.
+
 ## Chapter 6 Array DFS and Biconnected Components — October 10, 2026
 
 The current `module_06_graph_dfs/student/lab.c` is the authority and was

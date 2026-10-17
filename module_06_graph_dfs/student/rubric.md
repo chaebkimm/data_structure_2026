@@ -1,5 +1,10 @@
 # Module 6 Lab Rubric — 100 Points
 
+> This file belongs to the separate checked adjacency-matrix DFS exercise.
+> For the current array-lab activities, see the repository references
+> `module_06_graph_dfs/student/class_material.md` and
+> `module_06_graph_dfs/README.md`. These files are not bundled in this staged release.
+
 A **rubric** is a scoring guide. **Functional correctness** means required
 code produces the required results. A **compiler** translates C code into a
 runnable program. A **compiler warning** identifies code that may be

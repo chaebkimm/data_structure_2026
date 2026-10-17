@@ -1,5 +1,10 @@
 # Stage B — Five-Minute Cognitive Pause
 
+> This file belongs to the separate checked adjacency-matrix DFS exercise.
+> For the current array-lab activities, see the repository references
+> `module_06_graph_dfs/student/class_material.md` and
+> `module_06_graph_dfs/README.md`. These files are not bundled in this staged release.
+
 Read the starting definitions with the instructor before timing begins.
 Then use no notes, slides, classmates, or coding tools for five minutes.
 You may draw, type, dictate, or answer in numbered sentences.

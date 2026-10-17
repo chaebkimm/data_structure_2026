@@ -1,5 +1,10 @@
 # Module 6 Vocabulary — Graph Depth-First Search
 
+> Legacy checked matrix-DFS vocabulary. Current discovery numbers,
+> edge indices, low-link values, and blocks are defined in the repository's
+> `module_06_graph_dfs/student/textbook.md` glossary and practiced in
+> `module_06_graph_dfs/student/class_material.md`.
+
 Open this reference after completing and preserving the Cognitive Pause.
 
 | Term | Plain-language definition |

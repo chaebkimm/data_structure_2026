@@ -1,9 +1,71 @@
 # Module 6 C Package
 
-> Legacy checked matrix-DFS exercise. The current array-based textbook and
-> lecture follow `student/lab.c` instead. See the Module 6 README for the
-> current teaching path and `make lecture` driver. The contracts below
-> apply only to the separate starter/support package.
+## Current array-based classroom lab
+
+The current [lab](../student/lab.c), [textbook](../student/textbook.md),
+[concept slides](../student/ppt_material.md),
+[lab slides](../student/ppt_lab_material.md), and
+[class material](../student/class_material.md) use the Module 3 adjacency
+lists and Module 4 integer stack. Read `_edge_iteration_()` as the
+template; `_init_edges_list()` records edges, and `_find_bcc()` stacks their
+indices and collects blocks.
+
+The lab has no `main()`. From this directory, run its supplied
+[lecture driver](lecture/lab_demo.c) with GNU Make and a C11 compiler:
+
+```sh
+make lecture
+```
+
+Plain `make` runs the same original driver. To check the array lab, run:
+
+```sh
+make lab-tests
+```
+
+The nine checks cover both supplied graphs, isolate/self-loop scope,
+strict/equal boundary comparisons, root branches, nine result rows,
+ten pending stack entries, and more than ten records with a smaller
+pending peak.
+
+The driver initializes the graph with `alphabet_nodes_init()` and
+`edges_init()`, then calls `init_edges_list(0)` and `find_bcc(0)` in a fresh
+process. Expect discovery A/B/C/D/E/F = 1/2/3/4/5/6, low-link values
+1/2/3/2/2/2, eight indexed edges, three rows `[1]`, `[7,6,5,4,3,2]`,
+`[0]`, and `top == -1`. This is the original A–J source example.
+
+The updated concept slides, textbook, class activities, and website use
+the seven-vertex graph numbered by DFS visits 1–7 as their main worked example. Run the additional
+[slide driver](lecture/ppt_demo.c) with `make lecture-ppt`. It prepares
+the slide graph without changing `lab.c` or its dependencies. With the slide traversal order, expect visit numbers 1–7, low-link values
+1/1/1/3/3/3/2, ten edge records, and two five-entry rows
+`[7,6,5,4,3]` and `[9,8,2,1,0]`. The slide driver prints edge endpoints from computed visit numbers; its array indices appear separately in the C table. Both drivers finish with an empty stack.
+Use the class material and [models](../diagrams/dfs_models.md) for the
+intermediate endpoint-pair trace.
+
+`add_edge()` records a connection already present in the graph; it does
+not insert a neighbor. `init_edges_list()` resets discovery/parents,
+sets `edges_size` to zero, fills the active `edge_index` region with -1,
+then calls its recursive helper. `find_bcc()` assumes prepared edge indices and
+does not reset `current_bcc`. The array lab is an unchecked one-call
+teaching example with fixed capacity; see its
+[technical notes](../instructor/technical_notes.md) for the contract.
+Indexing, low-link calculation, and extraction are three DFS passes.
+The latter two use the same start and neighbor order, with `back_num`
+preserved across the discovery reset before extraction. Immediately after
+a child returns, a strict `back_num[adj] < visit_num[node]` keeps its
+edges pending; otherwise `close_bcc(tree_edge)` pops through that edge.
+
+The lab now reserves 45 records in `edges`, nine 45-entry rows in `bcc`,
+and nine row lengths in `bcc_size`. The reused Module 4 stack still has
+ten entries. Input must fit every capacity, including the peak pending
+count; neither the wrappers nor raw stack operations enforce these limits.
+
+## Legacy checked matrix-DFS exercise
+
+The remainder describes the separate matrix starter/support package. Its
+headers, status codes, tests, and failure promises apply to that package.
+See [the module teaching path](../README.md) for current classroom work.
 
 This package explores a bounded graph with depth-first search (DFS). DFS
 follows one pending route deeply before returning to other unfinished work.

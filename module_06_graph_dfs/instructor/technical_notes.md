@@ -1,136 +1,256 @@
-# Module 6 Technical Notes — Array DFS and BCC Lab
+# Module 6 Technical Notes — Visit-numbered Concepts and Array Lab
 
-## Source and preconditions
+## Concept source and numbering
 
-[student/lab.c](../student/lab.c) is the authority for the current textbook
-and lecture. It includes the Module 3 graph globals/algorithms and Module 4
-integer stack. It has no entry point. See the
-[lecture driver](../code/lecture/lab_demo.c) and `make lecture`.
-
-Preconditions: a valid root in `0..nodes_size-1`, a nonempty simple
-undirected graph with symmetric valid adjacency lists, and fitting fixed
-capacities. Neighbor order is the stored order. Self-loops are ignored;
-parallel edges and directed inputs are outside the algorithm's contract.
-No checks enforce these assumptions. Globals change directly; there are no
-status codes, allocations, or transactional output guarantees.
-
-## State and reset responsibilities
-
-| State | Meaning | Reset performed by lab |
-| --- | --- | --- |
-| `visit_time`, `visit_num` | first-entry numbering, zero unvisited | `init_visit()` |
-| `parent` | DFS parent, root -1 | `init_visit()` |
-| `back_num` | saved low-link values | reached entries overwritten by `save_back_num()` |
-| `edges_size` | active edge record count | `init_edges_list()` |
-| `edge_index` | symmetric endpoint-to-index lookup | active V×V region set to -1 by `init_edges_list()` |
-| `top` | last active stack index | set to -1 by `find_bcc()` |
-| `current_bcc` | active result-row count | no wrapper reset; initially zero |
-| `bcc_size`, `bcc` | active lengths and edge-index rows | emitted rows written; no full reset |
-
-The source says `/* called once */`. For the lecture, use a fresh process,
-initialize the graph once, call `init_edges_list(root)`, then
-`find_bcc(root)`. Repeated `edges_init()` appends duplicate neighbor entries.
-Repeated `find_bcc()` appends result rows unless callers manage them.
-
-Reindexing another component overwrites `edges` and lookup indices. Old
-result rows would then refer to different edge records. A whole-graph
-extension needs persistent edge identities, traversal of every unvisited
-component, and explicit result resets/ownership. Merely wrapping both
-functions in an all-root loop does not produce a coherent global result.
-
-## Neighbor classification and low-link invariant
-
-`_init_edges_list()` records a tree edge before entering an unvisited child.
-It skips the parent entry. It records a back edge only from descendant to
-ancestor, then skips the larger-discovery reverse entry. Both lookup
-directions receive one index. Discovery-number inequalities in
-`GraphEdge`'s comments describe these recorded orientations; they are not
-a general classifier for directed graphs.
-
-The included `save_back_num()` initializes low and discovery together,
-propagates a child's low value after its return, and takes a non-parent
-visited neighbor's discovery number when it is smaller. A visited
-descendant cannot lower the current value. The result is the minimum
-number accessible through tree descent and at most one back edge,
-including the current vertex itself.
-
-`find_bcc()` computes low-link values first, resets discovery and parents,
-and repeats the same root and adjacency order for extraction. The second
-pass must reproduce discovery numbers: changing root, graph, or neighbor
-order invalidates comparisons with the saved values. `_find_bcc()` does
-not update `back_num`.
-
-## Block extraction invariant
-
-The pending-edge stack contains unassigned tree and back edges. Each
-reached undirected edge is pushed exactly once. On a qualifying return,
-the parent tree edge remains in the stack and bounds the suffix belonging
-to the current block.
-
-For a non-root child u with parent p:
+[Concept slides](../student/ppt_material.md) drive the question-led lesson.
+The diagram shows the completed visit numbering of a fixed DFS, 1–7.
+Refer to vertices by visit number; retrace from visit 1 with ascending
+diagram neighbors. Its endpoint visit pairs are:
 
 ```text
-low[u] < discovery[p]  → keep pending edges
-low[u] >= discovery[p] → pop through edge (p,u), inclusive
+1–2, 1–3, 2–3, 2–7, 3–4, 3–6, 3–7, 4–5, 4–6, 5–6
 ```
 
-The `do ... while` stores the boundary edge before testing for it.
-Short-circuit `parent[node] == -1 || ...` keeps the root from reading
-`visit_num[-1]`. Root children emit their own blocks; root postorder
-itself emits none. An isolate therefore emits no edge block.
+Blank circles and partial highlights are board prompts for visit numbers
+and processed connections at a stage. They do not change the graph.
+An unexplored neighbor is a new tree child. Recognize the parent before
+smaller visit numbers identify non-parent ancestors; larger visit numbers
+identify processed descendants. At visit 3, neighbors 1/2/4/6/7 are
+ancestor/parent/child/descendant/child at their actual encounter times.
+These four cases assume simple undirected input, not a general directed
+classifier.
 
-Equality is necessary for blocks. A bridge instead satisfies strict
-`low[u] > discovery[p]`. A non-root p is a cut vertex if any DFS child
-satisfies `low[u] >= discovery[p]`; a root needs at least two DFS children.
-These are explanation aids: the lab does not output separate bridge or
-cut-vertex arrays.
+Entry assigns a visit number; set the child's parent before descending.
+After return, resume the paused neighbor scan. Postorder follows the
+complete scan. Collect only child tree pairs and non-parent ancestor back
+pairs. Concept diagrams and stacks use endpoint visit pairs, never edge IDs.
 
-## Exact root-A reference
+## Earliest reconnection and blocks
+
+Begin from the current visit number. Compare ancestor visit numbers on
+back connections and child earliest values after return. The result is
+the earliest visit reachable by tree descent and at most one back connection,
+including self. A processed descendant cannot lower the current value.
+
+```text
+visit number          1 2 3 4 5 6 7
+parent visit          – 1 2 3 4 5 3
+earliest reconnection 1 1 1 3 3 3 2
+```
+
+Visit 6's connection to visit 3 lowers 6 to 3; neighbor 4 cannot lower 3.
+That value propagates from child 6 to parent 5, then to parent 4.
+In a maximal block with at least three vertices, every pair has two paths
+with no shared internal vertex; endpoints may be shared. Different blocks
+can share boundary vertices but no edge. This graph gives:
+
+```text
+right: 3–4, 3–6, 4–5, 4–6, 5–6
+left:  1–2, 1–3, 2–3, 2–7, 3–7
+```
+
+Both have five pairs and share visit 3. The pending stack contains pairs
+not yet assigned to a block. Push each child pair before descent and each
+ancestor pair when scanned. Immediately after a child returns, its parent
+compares the child's earliest number with its own visit number. A smaller
+value leaves the suffix pending; otherwise pop through and including the
+parent–child pair. Equality closes the right block at
+4 → 3 (3 ≥ 3) and left block at 2 → 1 (1 ≥ 1). Visit 1's own return
+emits no further row. Peak pending count is eight; peak call depth six.
+Twenty neighbor entries are scanned per pass, sixty across three passes.
+
+## Edge-stack invariant and correctness checkpoint
+
+At checkpoints after a push or a pop-and-store step, every undirected edge
+handled in the extraction pass occurs exactly once in one of two disjoint
+places: the pending stack or an assigned block. Assigned includes entries
+already written to a row still being formed. Unhandled edges belong to
+neither place. The stack, bottom to top, preserves the recording order of
+the still-unassigned edges; popping visits that order in reverse.
+
+- **Initialization:** on the fresh single-call run, no extraction edge has
+  been handled, the stack is empty, and no result edge has been assigned.
+- **Maintenance:** the tree-child and non-parent-ancestor branches each
+  push one previously unhandled edge. Reverse parent/descendant entries
+  do not push. Each pop-and-store transfers one edge from pending to
+  assigned without duplication or loss. A returned subtree may already
+  have emitted inner blocks, so only its remaining unassigned edges are
+  candidates for the enclosing block.
+- **Boundary:** immediately after a child returns, the parent compares the
+  child's earliest number with its own visit number. Strictly smaller
+  means the remaining edges still reconnect above this parent and stay
+  pending. Otherwise the remaining suffix through and including the
+  parent–child pair forms the next block. Inner blocks have already been
+  removed. Equality reconnects to the parent but cannot bypass it, so it
+  closes a block too.
+- **Termination:** the reached component's every edge has been handled
+  once, and each root-child boundary closes its remaining suffix. The
+  empty stack therefore leaves every reached edge assigned exactly once.
+  An isolated root contributes no edge block. The boundary argument is
+  needed for the block grouping; counting alone proves no loss/duplication.
+
+On the fixed visit-numbered graph, closing the right block after 4 returns
+leaves three pending pairs and five assigned of eight handled. After 3
+returns to 2 there are five pending and five assigned of ten handled: the
+five-edge right block in that returned subtree has already been removed.
+After 2 returns to 1, pending is zero and assigned is ten.
+
+In C, pending is `stack[0..top]`. Stored edge indices in `bcc` represent
+assigned edges. Inside `close_bcc()`, count the entries already written to
+the current row even though `bcc_size[cur]` is set only after its pop loop.
+State the invariant after `bcc[cur][pos++] = edge`, not between `pop()`
+and that store. The boundary is `tree_edge`, pushed before the recursive
+call; the parent tests `back_num[adj] < visit_num[node]` after that call.
+The `do ... while` stores the boundary before stopping. No parent index
+of -1 is needed. This reasoning assumes the same DFS numbering in the
+saved low-link and extraction passes and a fresh result state.
+
+Capacity is a separate precondition. Logical conservation of edges does
+not prevent an unchecked write beyond `stack[10]`; the maximum pending
+count must fit ten even with `edges[45]` and `bcc[9][45]`.
+
+## Storage and review
+
+Chapter 3 taught only adjacency lists. Review that representation here;
+edge lists and adjacency matrices are new Chapter 6 material.
+
+Neighbor lists store an undirected connection at both endpoints. An edge
+list stores one pair; a presence matrix sets both symmetric cells. Addition
+and deletion must preserve those relationships and handle duplicates.
+Deleting a vertex removes all incident connections from the stored graph.
+These are three representation choices, not three structures required by
+all graph implementations.
+
+Review storage/addition/deletion, block definition/finding, and Chapter 5
+preorder/inorder reconstruction. The final mini-quiz heading prompts the
+student to submit using classroom instructions. See the [answer key](answer_key.md)
+for the review and the [workbook](../student/class_material.md) for the activity.
+
+## Coding source and preconditions
+
+[student/lab.c](../student/lab.c) is the current authoritative source for
+C behavior. It includes Module 3 graph globals/algorithms and Module 4's
+integer stack. It has no entry point. The
+[original lecture driver](../code/lecture/lab_demo.c) initializes A–J,
+not the new visit-numbered slide graph. [Lab slides](../student/ppt_lab_material.md)
+explain this implementation separately from the revised concept prompts.
+
+Assume a valid root in `0..nodes_size-1`, nonempty simple undirected graph,
+symmetric valid stored lists, and fitting fixed capacities. Self-loop
+branches are empty. Parallel and directed inputs are outside the contract.
+No checks enforce these assumptions; globals change directly without
+status codes, allocations, or failure-preservation guarantees.
+
+`_edge_iteration_()` is a template that numbers visits and assigns parents;
+its comments do not record or push edges. `_init_edges_list()` and
+`_find_bcc()` specialize its child/ancestor branches. Extraction adds the
+boundary comparison immediately after each recursive child call returns.
+The indexing child order is `add_edge(node, adj)`, parent assignment,
+then recursion. The extraction child order is push, parent assignment,
+then recursion. `add_edge()` records existing adjacency and writes the
+same index to both endpoint lookup cells; it does not modify neighbor lists.
+Static zero lookup initialization is insufficient because index 0 is valid;
+`init_edges_list()` resets discovery and parents, clears `edges_size`,
+sets the active lookup to -1, then calls `_init_edges_list(start_node)`.
+Its source parameter is `start_node`; the edge-list slide uses `root`.
+
+## Coding resets and single-call scope
+
+| State | Meaning | Reset in lab |
+| --- | --- | --- |
+| `visit_time`, `visit_num` | discovery, zero unvisited | `init_visit()` |
+| `parent` | DFS parent, root -1 | `init_visit()` |
+| `back_num` | saved low-link values | reached cells overwritten by `save_back_num()` |
+| `edges_size` | active records | `init_edges_list()` |
+| `edge_index` | symmetric record lookup | active V×V region set to -1 by `init_edges_list()` |
+| `top` | active stack end | `find_bcc()` sets -1 |
+| `current_bcc` | active result count | no wrapper reset |
+| `bcc_size`, `bcc` | row lengths and indices | emitted rows overwritten; no full reset |
+
+Use a fresh process: `alphabet_nodes_init()`, `edges_init()`,
+`init_edges_list(0)`, then `find_bcc(0)`. Repeated `edges_init()` appends
+neighbors unless lists are reinitialized. Repeated extraction appends rows
+unless results are managed explicitly. Reindexing another component changes
+the meaning of existing row indices; a whole-graph extension needs persistent
+edge identities, component traversal, and explicit result ownership/resets.
+
+`init_edges_list()` prepares edge identities but does not compute low-link
+values or clear block results. `find_bcc()` assumes the reached edges have
+already been indexed. It computes low-link values, empties the stack, resets discovery
+and parents, then extracts using the same root/order. It retains `back_num`;
+`_find_bcc()` does not recompute it. Changing root, adjacency, or stored
+order between passes invalidates saved-number comparisons. Three overall
+passes are indexing, low-link, and extraction.
+
+Immediately after each child call, `_find_bcc()` compares
+`back_num[adj] < visit_num[node]`. A true comparison uses `continue` to
+leave that branch's edges pending. Otherwise `close_bcc(tree_edge)` emits
+the suffix. Its `do ... while` stores the boundary edge before testing,
+so the boundary is included. Declare `edge` outside the loop for use in
+its condition. The comparison runs in the parent and never indexes the
+root's parent -1. Root children can emit rows; the root's own return emits
+none. An isolate emits no edge row.
+
+## Original A–J reference and cost
 
 ```text
 discovery: A=1 B=2 C=3 D=4 E=5 F=6
 parent:    A=-1 B=0 C=1 D=1 E=3 F=4
 low:       A=1 B=2 C=3 D=2 E=2 F=2
-edges:     0:A-B 1:B-C 2:B-D 3:D-E 4:E-B 5:E-F 6:F-B 7:F-D
+edges:     0:A→B 1:B→C 2:B→D 3:D→E 4:E→B 5:E→F 6:F→B 7:F→D
 blocks:    [1] | [7,6,5,4,3,2] | [0]
 sizes:     1,6,1
 final:     edges_size=8 current_bcc=3 top=-1
 ```
 
-G/H/I/J remain unvisited; G–H is not indexed. The whole graph has four
-connected components, but only A–F is processed. B is its cut vertex;
-A–B and B–C are its bridges. The peak edge stack has seven entries, and
-peak recursive depth is five vertices (A/B/D/E/F).
+G/H/I/J remain unvisited; G–H is unindexed. The whole graph has four
+connected groups; A processes only A–F. Its three edge groups share B.
+The peak pending stack is seven and call path A/B/D/E/F has five vertices.
+Each pass reads sixteen neighbor entries. The active ten-vertex lookup
+reset writes 100 cells. Thus the complete pipeline is `O(V² + E_R)`;
+the adjacency-list traversal itself is `O(R + E_R)`.
 
-## Complexity and capacity
+Generalized recursive and pending storage is `O(R + E_R)`; lookup storage
+is `O(V²)`. Active records and emitted results each contain `E_R` edge
+entries overall. A rectangular result table with V rows and E columns
+reserves `O(VE)` cells even when only `E_R` cells hold results.
+Actual arrays are fixed:
+`nodes[10]`, `edges[45]`, `stack[10]`, `edge_index[10][10]`,
+`bcc[9][45]`, and `bcc_size[9]`. The result table reserves 405 cells plus
+nine lengths. A simple undirected graph with ten vertices
+has at most `10 * 9 / 2 = 45` edges. A reached connected group with `R`
+vertices has at most `R - 1` edge blocks, so nine rows cover the ten-vertex
+bound; an isolate has no edge block. These record/result capacities do
+not enlarge the imported ten-entry stack. Extraction is valid only when
+the maximum simultaneously pending edge count also fits ten entries.
+Raw `push()`, `pop()`, and `add_edge()` are unchecked.
 
-Let V be active vertices, R reached vertices, and E_R reached undirected
-edges. Each of the three DFS passes takes `O(R + E_R)`. Each edge is
-pushed/popped once in extraction. Discovery resets take `O(V)`; resetting
-`edge_index` takes `O(V²)`. Thus the complete pipeline takes
-`O(V² + E_R)`. The adjacency-list DFS core itself is linear in reached
-vertices and edges.
+## Verification and optional slide experiment
 
-Generalized working storage is `O(R + E_R)` for recursive calls and pending
-edges. The symmetric lookup requires `O(V²)` storage, and edge records and
-active block entries require `O(E_R)` output storage. Actual arrays are
-fixed: `nodes[10]`, `edges[10]`, `stack[10]`, `edge_index[10][10]`, and
-`bcc[10][45]`. Forty-five result columns do not increase the ten-edge or
-ten-stack limits. `push()`/`pop()` and `add_edge()` are unchecked.
+Run `make lecture` from `module_06_graph_dfs/code` for original A–J output.
+Preserve compiler/command/diagnostics and compare to the reference above.
+The driver prints final tables, not intermediate stacks or lookup cells.
+Warnings from unchanged dependencies should be reported, not edited away.
+Run `make lab-tests` for nine array-lab checks covering both supplied graphs,
+the strict/equal boundary cases, root branches, and record/result/stack limits.
 
-## Verification
+The optional [slide driver](../code/lecture/ppt_demo.c) creates the slide
+graph adjacency for the same current lab. From the repository root, compile and run:
 
-Run the lecture target from `code` with a C11 compiler. The lecture output
-must agree with the reference above. Compare hand traces for a chain,
-a triangle (equality closure), a branching root, G–H, and an isolated
-root. Reset all test-owned result state between independent cases.
-Sanitizers can check valid executions; they do not make raw helpers checked.
-Warnings from the included lab sources should be reported, not silently
-edited out of the source used as authority.
+```sh
+cc -std=c11 -I. module_06_graph_dfs/code/lecture/ppt_demo.c -o /tmp/ppt_demo
+/tmp/ppt_demo
+```
+
+Expect the slide values and two five-edge groups above. Interpret any
+printed numeric edge IDs through that driver's records. It stores neutral
+A–G data at indices 0–6, while printed edge endpoints come from actual
+visit numbers 1–7. Internal indices and record IDs belong to this coding
+experiment; concept endpoint pairs use visit numbers. This independent
+experiment does not change the original driver's graph or output.
 
 ## Legacy package boundary
 
-`code/include`, `code/support`, `code/starter`, `code/solution`, the existing
-matrix tests, and staged student worksheets belong to the earlier checked
-matrix/typed-vertex-stack package. Its public headers remain authoritative
-for that package. They do not define the current array lecture's behavior.
+The checked matrix/typed-vertex-stack API in `code/include`, `support`,
+`starter`, `solution`, matrix tests, and older staged worksheets retains
+its own public contracts. It does not define this unchecked array lab.

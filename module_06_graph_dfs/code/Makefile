@@ -1,19 +1,21 @@
 # GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
-# Override the compiler when needed: make CC=clang solution-core
+# Override the compiler when needed: make CC=clang lecture lecture-ppt lab-tests
 CC := gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
 CPPFLAGS ?= -Iinclude
+LAB_CPPFLAGS := $(CPPFLAGS) -I../..
 TEST_CPPFLAGS := $(CPPFLAGS) -DGRAPH_DFS_TESTING
 BUILD_DIR := build
 SUPPORT_SOURCES := support/graph_matrix.c support/vertex_stack.c
 STARTER_SOURCES := $(SUPPORT_SOURCES) starter/graph_dfs.c
 SOLUTION_SOURCES := $(SUPPORT_SOURCES) solution/graph_dfs.c
+LAB_DEPENDENCIES := ../student/lab.c ../../module_03_graph/student/lab.c ../../module_04_stack/student/lab.c
 
 .PHONY: all starter-core starter-extension starter-student-tests \
 	starter-self-loop solution-core solution-extension \
-	solution-self-loop self-loop autopsy clean
+	solution-self-loop self-loop lecture lecture-ppt lab-tests autopsy clean
 
-all: starter-core
+all: lecture
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -56,7 +58,14 @@ clean:
 	$(RM) -r $(BUILD_DIR)
 
 # Array-based lecture lab; the matrix-based targets above are legacy exercises.
-.PHONY: lecture
-lecture: | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -I../.. lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
+lecture: lecture/lab_demo.c $(LAB_DEPENDENCIES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(LAB_CPPFLAGS) lecture/lab_demo.c -o $(BUILD_DIR)/lab_demo
 	$(BUILD_DIR)/lab_demo
+
+lecture-ppt: lecture/ppt_demo.c $(LAB_DEPENDENCIES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(LAB_CPPFLAGS) lecture/ppt_demo.c -o $(BUILD_DIR)/ppt_demo
+	$(BUILD_DIR)/ppt_demo
+
+lab-tests: tests/test_lab.c $(LAB_DEPENDENCIES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(LAB_CPPFLAGS) tests/test_lab.c -o $(BUILD_DIR)/lab_tests
+	$(BUILD_DIR)/lab_tests

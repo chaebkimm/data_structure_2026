@@ -1,9 +1,9 @@
 # Lab — Follow Routes Without Repeating Vertices
 
-> Legacy checked matrix-DFS exercise. The current array-based textbook and
-> lecture follow `student/lab.c` instead. See the Module 6 README for the
-> current teaching path and `make lecture` driver. The contracts below
-> apply only to the separate starter/support package.
+> Legacy checked matrix-DFS exercise. For the current adjacency-list lab,
+> use `module_06_graph_dfs/student/class_material.md` and its textbook/slide
+> links in the repository. That workbook is outside this staged exercise.
+> The contracts below apply only to the separate starter/support package.
 
 ## Purpose
 

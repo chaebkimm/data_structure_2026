@@ -3,6 +3,13 @@
 Run `prepare_student_release.ps1` from this directory to create five ZIP
 archives in `../dist`. The script refuses to overwrite an existing archive.
 
+Stages A–C and E belong to the separate checked adjacency-matrix DFS
+exercise. The current Stage D textbook and models instead follow the
+array-based `student/lab.c` edge-list/BCC lab. Stage D is enrichment; it
+does not specify Stage E's implementation or assessment contracts. Use
+`student/lab.md` and the public headers for the checked exercise. The
+current array-lab classroom path is listed in the [module overview](../README.md).
+
 ## Stage A — Route-Memory Inquiry
 
 Release before Meeting A:
@@ -38,14 +45,27 @@ answer key. Sections G through I are later extensions and reflection.
 
 ## Stage D — Beginner Textbook and Models
 
-Release after the student completes and preserves the Stage C core:
+If assigning this enrichment, release after the student completes and
+preserves the Stage C core:
 
-- ultra-concise, example-first textbook;
+- array-lab textbook: edge indexing, saved low-link values, and edge-block
+  extraction;
 - diagrams with exact text equivalents.
+
+The current coding reference uses `init_edges_list()` to prepare discovery,
+edge count, and symmetric lookup before indexing. `find_bcc()` then runs
+low-link and extraction passes with a discovery reset between them.
+The source reserves 45 edge records and nine 45-entry result rows, while
+the reused pending-edge stack still has ten entries. These array-lab
+limits do not change the checked matrix exercise's capacities.
+
+The explicit stack in these files stores edge indices for block extraction.
+Stage E uses a typed vertex-ID Stack for iterative DFS. The two teaching
+paths have different outputs and contracts.
 
 ## Stage E — Lab and Evidence
 
-Release after retrieval and Stage D calibration in Meeting B:
+Release after retrieval and any assigned Stage D enrichment in Meeting B:
 
 - lab, rubric, evidence template, and Graph DFS Autopsy;
 - public headers, supplied graph and vertex-Stack support, and starter DFS;

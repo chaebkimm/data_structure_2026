@@ -1,5 +1,10 @@
 # Graph DFS Autopsy
 
+> This file belongs to the separate checked adjacency-matrix DFS exercise.
+> For the current array-lab activities, see the repository references
+> `module_06_graph_dfs/student/class_material.md` and
+> `module_06_graph_dfs/README.md`. These files are not bundled in this staged release.
+
 Complete this work before editing or running the isolated faulty program.
 
 **Depth-first search (DFS)** follows one route deeply before returning to an
