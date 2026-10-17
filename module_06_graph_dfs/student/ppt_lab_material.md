@@ -4,48 +4,11 @@
 2. 리스트에 간선 저장하기
 3. 끈끈한 그룹의 간선들을 따로 모으기
 
-# 그래프 간선을 저장할 구조체
-
-- 간선에는 양쪽 노드 정보가 들어간다.
-- 무방향 그래프이므로, 멤버를 어떻게 저장하던 상관 없지만, 탐색할 때 어느 노드의 이웃으로 찾았는지 저장한다.
-
-# 그래프 간선 만들기
-
-```c
-struct GraphEdge {
- int from, to;
-};
-struct GraphEdge edges[10];
-int edges_size = 0;
-```
-
-# 간선을 쉽게 찾게 저장하기
-
-- 이차원 배열을 만들어서, 노드 인덱스 두개를 가지고 간선 리스트에서 어디 저장되어있는지를 찾을 수 있게 만든다.
-- 무방향그래프이므로, 노드 인덱스 순서는 두가지 조합이 가능하다.
-
-# 간선 저장하기
-
-```c
-int edge_index[10][10] = {0};
-
-void add_edge(int u, int v) {
- int index = edges_size++;
- edges[index].from = u;
- edges[index].to = v;
-
- edge_index[u][v] = index;
- edge_index[v][u] = index;
-}
-```
-
-# 그래프에서 반복할 준비하기
+# 복습 - 그래프 반복에 필요한 것
 
 - 방문 시간
 - 방문 번호를 저장할 배열
 - 방문 트리에서의 부모 노드 인덱스
-
-# 복습 - 발견 순서를 번호로 저장
 
 ```c
 int visit_num[10] = {0};
@@ -53,17 +16,16 @@ int visit_time = 0;
 int parent[10] = {0};
 ```
 
-# 그래프에서 반복할 준비하기
+# 복습 - 그래프 노드
 
 ```c
-void init_visit() {
- visit_time = 0;
- for (int i = 0; i < nodes_size;
-      i++) {
-  visit_num[i] = 0;
-  parent[i] = -1;
- }
-}
+struct GraphNode {
+  char data;
+  int adj_list[10];
+  int adj_size;
+};
+struct GraphNode nodes[10];
+int nodes_size = 0;
 ```
 
 # 그래프에서 반복하기
@@ -80,104 +42,153 @@ void init_visit() {
 - 빽 간선의 조상 노드: 필요한 작업을 한다. 탐색된 노드이기 때문에 재귀 호출은 안한다.
 - 빽 간선의 후손 노드: 반대 방향에서 처리됐기 때문에 작업을 안한다.
 
-# 복습 - 그래프 노드
-
-```c
-struct GraphNode {
- char data;
- int adj_list[10];
- int adj_size;
-};
-struct GraphNode nodes[10];
-int nodes_size = 0;
-```
-
 # 간선을 재귀 함수로 탐색하기
 
 ```c
-void _edge_iteration_(int n){
- visit_num[n] = ++visit_time;
- for (int i = 0; i < nodes[n]
-      .adj_size; i++) {
-  int adj =nodes[n].adj_list[i];
-  if (visit_num[adj] == 0) {
-   /* tree edge to child */
-   parent[adj] = n;
-   _edge_iteration_(adj);
-  } else if (adj == parent[n]) {
-   /* tree edge to parent */
-  } else if (visit_num[adj]
-             < visit_num[n]){
-   /* back edge to ancester */
-  } else if (visit_num[adj]
-             > visit_num[n]) {
-   /*back edge to descendant*/
-  }
- }
- /* postorder processing */
+void _edge_iteration_(int u){
+  /* preorder 타이밍 */
+  visit_num[u] = ++visit_time;
+  for (int i = 0; i < nodes[u]
+       .adj_size; i++) {
+    int v =nodes[u].adj_list[i];
+    if (visit_num[v] == 0) {
+      /* 트리간선 자식 노드 */
+      parent[v] = u;
+      _edge_iteration_(v);
+    } else if (v == parent[u]) {
+      /* 트리간선 부모 노드 */
+    } else if (visit_num[v]
+               < visit_num[u]) {
+
+      /* 빽간선 조상 노드 */
+    } else if (visit_num[v]
+               > visit_num[u]) {
+      /* 빽간선 후손 노드 */
+    }
+  } /* postorder 타이밍 */
 }
 ```
 
-# 이웃 리스트의 간선 정보 저장
+# 간선 리스트와 이웃 행렬
+
+- 리스트를 만들어서 전체 간선을 저장한다.
+- 간선 개수 ≤ (노드 개수(노드 개수 − 1)) / 2
+- 이차원 배열을 만들어서, 노드 인덱스 두개를 가지고 간선 인덱스를 저장한다.
+
+```c
+struct GraphEdge {
+  int from, to;
+};
+struct GraphEdge edges[45];
+int edges_size = 0;
+int edge_index[10][10] = {0};
+```
+
+# 간선 하나 저장하기
+
+- 무방향 그래프 간선은 리스트에 저장할 때 한쪽 방향만 저장한다.
+- 이웃 배열에 간선을 저장할 때는 찾기 쉽게 양쪽 방향을 모두 저장한다.
+
+```c
+void add_edge(int u, int v) {
+  int index = edges_size++;
+  edges[index].from = u;
+  edges[index].to = v;
+  edge_index[u][v] = index;
+  edge_index[v][u] = index;
+}
+```
+
+# 전체 간선 저장하기
 
 - 트리 간선은 자식 노드를 방문할 때 저장한다.
 - 빽 간선은 조상 노드를 방문할 때 저장한다.
 
 ```c
-/* tree edge */
-add_edge(n, adj);
-parent[adj] = n;
-_init_edges_list(adj);
+/* 트리간선 자식 노드 */
+add_edge(u, v);
 
-/* back edge to ancester */
-add_edge(n, adj);
+/* 빽간선 조상 노드 */
+add_edge(u, v);
 ```
 
-# 간선 정보 저장 준비하고 실행하기
+# 전체 간선 저장 준비하고 실행하기
 
-1. 방문 번호와 시간 초기화
-2. 리스트 크기 0으로 설정
-3. 간선 인덱스 이차원 배열 -1로 설정.
-4. 간선 정보 저장하기
+1. 방문 시간 초기화
+2. 방문 번호 초기화
+3. 간선 리스트 크기 0으로 초기화
+4. 이웃 행렬 -1로 초기화.
+5. 간선 정보 저장 함수 실행
+
+# 그래프에서 반복할 준비하기
 
 ```c
-void init_edges_list(int root) {
- init_visit();
- edges_size = 0;
- for (int i = 0; i < nodes_size;
-      i++) {
-  for (int j = 0;
-       j < nodes_size; j++) {
-   edge_index[i][j] = -1;
+void init_visit() {
+  visit_time = 0;
+  for (int i = 0;
+       i < nodes_size; i++) {
+    visit_num[i] = 0;
+    parent[i] = -1;
   }
- }
- _init_edges_list(root);
 }
 ```
 
-# 끈끈하게 연결된 그래프
-
-- 끈끈하게 연결된 그래프는 노드가 둘 뿐이 아닌 이상 모든 노드가 두 개 이상의 서로 노드가 겹치지 않는 경로로 이어져 있다.
-- 연결된 그래프의 모든 간선은 끈끈한 그래프들로 분리된다.
-- 끈끈한 그래프 사이의 경계 노드는 컷노드다. 
+# 전체 간선 저장 준비하고 실행하기
 
 ```c
-int bcc[10][45];
-int bcc_size[10] = {0};
+void init_edges_list(int root) {
+  init_visit();
+  edges_size = 0;
+  for (int i = 0;
+       i < nodes_size; i++) {
+    for (int j = 0;
+         j < nodes_size; j++) {
+      edge_index[i][j] = -1;
+    }
+  }
+  _init_edges_list(root);
+}
+```
+
+# 복습 - 빽 번호 저장하기
+
+- 빽번호는 자신이나 후손의 빽간선 하나를 통해 도달할 수 있는 가장 먼 조상의 방문 번호.
+- 자신의 방문 번호, 조상의 방문 번호, 후손의 빽 번호 중 최소값
+
+# 복습 - 빽 번호 저장
+
+```c
+/* preorder 타이밍 */
+back[u] = visit_num[u];
+    /* 트리간선 자식 노드 */
+    /* 재귀 호출 후 */
+    if (back[u] > back[v]) {
+      back[u] = back[v];
+    }
+    /* 빽간선 조상 노드 */
+    if (back[u]
+        > visit_num[v]) {
+      back[u] = visit_num[v];
+    }
+```
+
+# 끈끈하게 연결된 그래프 리스트
+
+- 끈끈하게 연결된 그래프는 모든 노드가 두 개 이상의 서로 노드가 겹치지 않는 경로로 이어져 있다.
+- 간선 하나도 끈끈한 그래프라고 친다.
+- 간선 리스트의 리스트를 만든다.
+- 끈끈한 그룹 개수 ≤ 노드 개수 − 1
+
+```c
+int bcc[9][45];
+int bcc_size[9] = {0};
 int current_bcc = 0;
 ```
 
-# 끈끈한 그래프와 빽번호
+# 끈끈한 그래프를 찾는 방법
 
-- 빽 간선이 노드들을 끈끈하게 이어준다.
-- 빽 간선이 없으면 조상과 끈끈하지 않다.
-- 빽 번호가 자신의 방문 번호면 부모 노드와 간선 하나만으로 끈끈하다.
-- 빽 번호가 부모의 방문 번호면 부모 노드와 일부 후손들이 끈끈하다.
-
-# 끈끈한 간선들 찾기
-
-- 재귀 함수로 반복하는데, postorder로 가장 후대에서부터 확인한다. 빽번호가 자기 자신이거나 부모인 경우 간선들을 끈끈한 간선들로 분리한다.
-- preorder에서는 간선을 스택에 추가한다.
+- DFS로 뻗어나가면서 간선들을 스택에 저장한다.
+- DFS로 최대한 간 다음에 돌아오면서 끈끈한 그래프들만 스택에서 뺀다.
 
 # C 문법 - do while
 
@@ -189,57 +200,53 @@ do { 반복할내용 } while (조건);
 
 조건에서 쓸 변수는 do 전에 만들어 놓아야 한다.
 
-# 복습 - 빽 번호 저장
+# 끈끈한 그래프를 찾는 방법
 
 ```c
-/* preorder processing */
-visit_num[n] = ++visit_time;
-back_num[n] = visit_num[n];
+void close_bcc(int boundary) {
+  int cur = current_bcc++;
+  int pos = 0;
+  int edge;
+  do {
+    edge = pop();
+    bcc[cur][pos++] = edge;
 
-/* tree edge */
-parent[adj] = n;
-save_back_num(adj);
-if (back_num[n] > back_num[adj]) {
- back_num[n] = back_num[adj];
-}
-/* back edge to ancester */
-if (back_num[n] > visit_num[adj]) {
- back_num[n] = visit_num[adj];
+  } while (edge != boundary);
+  bcc_size[cur] = pos;
 }
 ```
+
+# 끈끈한 그래프와 빽번호
+
+- 빽 번호가 조상의 방문 번호면 부모 노드, 후손들, 조상들이 끈끈하다.
+- 빽 번호가 부모의 방문 번호면 부모 노드와 후손들이 끈끈하다.
+- 빽 번호가 자신의 방문 번호면 부모 노드와 간선 하나만으로 끈끈하다.
 
 # 끈끈한 간선들 찾기
 
-```c
-/* tree edge */
-push(edge_index[n][adj]);
-parent[adj] = n;
-_find_bcc(adj);
+- 트리 간선의 자식 노드에서 간선을 스택에 추가한다.
+- 자식 노드의 빽번호가 조상에 닿지 않으면 스택에서 트리 간선 이후의 간선들을 꺼내서 끈끈한 그래프로 만든다.
 
-/* back edge to ancester */
-push(edge_index[n][adj]);
+```c
+/* 트리간선의 자식 노드 */
+/* 재귀 호출 전 */
+int tree_edge
+  = edge_index[node][adj];
+push(tree_edge);
+
+/* 재귀 호출 후 */
+if (back_num[adj]
+    < visit_num[node]) {
+  continue;
+}
+close_bcc(tree_edge);
 ```
 
 ```c
-/* postorder processing */
-if (parent[n] == -1
-    || back_num[n]
-     < visit_num[parent[n]]) {
- return;
-}
-int parent_edge
- = edge_index[parent[n]][n];
-
-int cur = current_bcc++;
-int pos = 0;
-
-int edge;
-do {
- edge = pop();
- bcc[cur][pos++] = edge;
-} while (edge != parent_edge);
-
-bcc_size[cur] = pos;
+/* 빽간선 조상 노드 */
+int back_edge
+  = edge_index[node][adj];
+push(back_edge);
 ```
 
 # 끈끈한 간선 찾기 준비 및 실행
@@ -254,10 +261,10 @@ bcc_size[cur] = pos;
 
 ```c
 void find_bcc(int start_node) {
- init_visit();
- save_back_num(start_node);
- top = -1;
- init_visit();
- _find_bcc(start_node);
+  init_visit();
+  save_back_num(start_node);
+  top = -1;
+  init_visit();
+  _find_bcc(start_node);
 }
 ```

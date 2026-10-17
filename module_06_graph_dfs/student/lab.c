@@ -1,25 +1,6 @@
 #include "module_03_graph/student/lab.c"
 #include "module_04_stack/student/lab.c"
 
-struct GraphEdge {
-    int from, to; 
-    /* tree edge: visit_num[from] < visit_num[to] */
-    /* back edge: visit_num[from] > visit_num[to] */
-};
-
-struct GraphEdge edges[10];
-int edges_size = 0;
-
-int edge_index[10][10] = {0};
-
-void add_edge(int u, int v) {
-    int index = edges_size++;
-    edges[index].from = u;
-    edges[index].to = v;
-    edge_index[u][v] = index;
-    edge_index[v][u] = index;
-}
-
 void init_visit() {
     visit_time = 0;
 
@@ -52,6 +33,25 @@ void _edge_iteration_(int node) {
         }
     }
     /* postorder processing */
+}
+
+struct GraphEdge {
+    int from, to; 
+    /* tree edge: visit_num[from] < visit_num[to] */
+    /* back edge: visit_num[from] > visit_num[to] */
+};
+
+struct GraphEdge edges[45];
+int edges_size = 0;
+
+int edge_index[10][10] = {0};
+
+void add_edge(int u, int v) {
+    int index = edges_size++;
+    edges[index].from = u;
+    edges[index].to = v;
+    edge_index[u][v] = index;
+    edge_index[v][u] = index;
 }
 
 void _init_edges_list(int node) {
@@ -92,9 +92,22 @@ void init_edges_list(int start_node) {
     _init_edges_list(start_node);
 }
 
-int bcc[10][45];
-int bcc_size[10] = {0};
+int bcc[9][45];
+int bcc_size[9] = {0};
 int current_bcc = 0;
+
+void close_bcc(int boundary_edge) {
+    int cur = current_bcc++;
+    int pos = 0;
+
+    int edge;
+    do {
+        edge = pop();
+        bcc[cur][pos++] = edge;
+    } while (edge != boundary_edge);
+
+    bcc_size[cur] = pos;
+}
 
 void _find_bcc(int node) {
     visit_num[node] = ++visit_time;
@@ -102,16 +115,22 @@ void _find_bcc(int node) {
         int adj = nodes[node].adj_list[i];
         if (visit_num[adj] == 0) {
             /* tree edge add to stack and proceed */
-            push(edge_index[node][adj]);
+            int tree_edge = edge_index[node][adj];
+            push(tree_edge);
             parent[adj] = node;
             _find_bcc(adj);
+            if (back_num[adj] < visit_num[node]) {
+                continue;
+            }
+            close_bcc(tree_edge);
         }
         else if (adj == parent[node]) {
             /* tree edge to parent node (processed) */
         }
         else if (visit_num[adj] < visit_num[node]) {
             /* back edge to ancester add to stack */
-            push(edge_index[node][adj]);
+            int back_edge = edge_index[node][adj];
+            push(back_edge);
         }
         else if (visit_num[adj] > visit_num[node]) {
             /* back edge to descendant (processed) */
@@ -120,20 +139,6 @@ void _find_bcc(int node) {
             /* edge connecting node to itself */
         }
     }
-    /* postorder processing */
-    if (parent[node] == -1 || back_num[node] < visit_num[parent[node]]) {
-        return;
-    } 
-    int parent_edge = edge_index[parent[node]][node];
-    int cur = current_bcc++;
-    int pos = 0;
-
-    int edge;
-    do {
-        edge = pop();
-        bcc[cur][pos++] = edge;
-    } while (edge != parent_edge);
-    bcc_size[cur] = pos;
 }
 
 /* called once */
