@@ -182,6 +182,10 @@ through the parent–child pair, including it, to make one block.
 
 스택은 바닥부터 맨 위까지, 새 그룹은 꺼낸 순서대로 끝점 방문 번호 쌍을 적는다.
 List complete pending pairs bottom to top and each block in removal order.
+아래의 '종료' 행은 자식의 복귀를 부모가 비교한 뒤의 상태다. 6.1의
+postorder 확인 시점은 그 비교 직전이다.
+The “Finish” rows below include the parent's comparison after return;
+section 6.1 also checks postorder just before that comparison.
 
 | Event / 시점 | Complete pending pairs / 전체 대기 쌍 | New block / 새 그룹 |
 | --- | --- | --- |
@@ -233,6 +237,48 @@ the parent leaves the remaining pairs pending if the child's earliest
 number is smaller than the parent's visit number. Otherwise, the next
 block is the **unassigned** suffix through and including that child's
 boundary pair.
+
+**Postorder 확인 시점: 부모에게 돌아가기 직전 / Postorder checkpoint: just
+before returning to the parent.** 루트가 아닌 노드 `v`의 모든 이웃 확인과
+자식별 그룹 처리가 끝나면, `v`에서 뻗은 DFS 가지의 간선은 모두 처리되어
+스택에서 대기하거나 결과 그룹에 배정되어 있다. 부모에서 `v`로 들어온
+간선부터 스택 맨 위까지의 구간은 이 가지에서 아직 배정하지 않은 간선과
+들어온 간선이며, 모두 들어온 간선과 같은 최종 BCC에 속한다. 그 아래의
+오래된 대기 간선까지 같은 BCC일 필요는 없다. 같은 BCC의 다른 간선이
+이미 그 아래에 있거나 나중에 추가될 수 있으므로 이 구간을 완성된 BCC로
+보지는 않는다.
+When a nonroot vertex `v` finishes all neighbors and all decisions for its
+children, every edge in its completed DFS branch has been handled and is
+either pending or assigned. The stack suffix from the incoming parent edge
+through the top consists exactly of that edge and the branch's still-unassigned edges;
+all belong to the same eventual BCC as the incoming edge. The older prefix
+below it may contain another BCC. The suffix need not yet be the full BCC:
+other edges of that BCC may lie below it or be added later.
+
+방문 4의 postorder에서, 부모 3이 비교하기 **전**의 스택을 두 부분으로
+나누어 적는다. 아래 구간 `1–2, 2–3, 1–3`과 위 구간
+`3–4, 4–5, 5–6, 3–6, 4–6`은 서로 다른 BCC다. 방문 4가 돌아오면
+부모 3은 `3 ≥ 3`을 확인해 위 구간을 경계 `3–4`까지 포함해 꺼낸다.
+At visit 4's postorder, **before** parent 3 compares, the older prefix is
+`1–2, 2–3, 1–3` and the suffix is `3–4, 4–5, 5–6, 3–6, 4–6`.
+These belong to different BCCs. After return, parent 3 tests `3 ≥ 3` and
+pops the suffix through boundary `3–4`, including it.
+
+방문 3의 postorder에서 전체 대기는 다섯 간선이지만, 들어온 간선 `2–3`부터의
+구간은 `2–3, 1–3, 3–7, 2–7`이다. 더 아래의 `1–2`도 같은 BCC에 속한다.
+루트에는 들어온 부모 간선이 없으며, 모든 자식의 경계 처리를 마친 postorder에는
+스택이 비어 있다.
+At visit 3's postorder, five edges are pending in the whole stack, but its
+suffix begins at `2–3`: `2–3, 1–3, 3–7, 2–7`. The older `1–2` below it
+belongs to the same BCC. A root has no incoming parent edge; at its
+postorder, all child boundaries have been handled and the stack is empty.
+
+방문 4의 postorder와 부모의 비교 직후는 어떻게 다른가? 방문 3의 위 구간이
+완성된 BCC 전체가 아닌 이유는? / How does visit 4's postorder differ from
+the state after its parent's comparison? Why is visit 3's suffix not the
+entire BCC?
+
+____________________________________________________________________
 
 | Checkpoint / 확인 시점 | Handled pairs / 처리한 수 | Pending / 대기 수 | Assigned, including forming row / 결과 수 |
 | --- | --- | --- | --- |

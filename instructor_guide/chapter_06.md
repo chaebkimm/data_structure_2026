@@ -87,6 +87,29 @@ assigned even though it lies in the returned subtree. After 2 returns
 to 1, zero are pending and all ten are assigned. Keep fitting the fixed
 stack as a separate capacity precondition, outside the logical invariant.
 
+Also stop at **postorder before the parent's comparison**: immediately
+before a nonroot call returns, its full neighbor scan and all child
+boundary decisions are complete. Every edge in that DFS branch has been
+handled and is pending or assigned. The suffix from its still-pending
+incoming parent edge through the top contains exactly that edge and the branch's
+unassigned edges; all are in the same eventual BCC as the incoming edge.
+The older stack prefix may contain other BCCs or other edges of that BCC,
+and future scans may add more. Do not identify the suffix with the whole
+stack or with a necessarily complete BCC.
+
+루트가 아닌 노드의 postorder에서, 이웃과 자식의 처리는 모두 끝났지만
+부모의 복귀 후 비교는 아직이다. 들어온 부모 간선부터 맨 위까지 남은
+구간의 간선은 모두 그 부모 간선과 같은 최종 BCC에 속한다. 그 아래의
+오래된 대기 간선과 구별하며, 이 구간이 BCC 전체라고 단정하지 않는다.
+
+At visit 4's postorder, the suffix is `3–4, 4–5, 5–6, 3–6, 4–6`;
+older prefix `1–2, 2–3, 1–3` is in a different BCC. After 4 returns,
+parent 3 tests `3 ≥ 3` and closes the suffix inclusively. At visit 3's
+postorder, suffix `2–3, 1–3, 3–7, 2–7` omits older `1–2`, which is
+in the same BCC. Parent 2's `1 < 2` leaves this work pending. A root has
+no incoming parent edge and reaches postorder with the stack empty after
+all child closures.
+
 ## Midterm review and mini-quiz
 
 Explain graph storage/insertion/deletion in all three representations,

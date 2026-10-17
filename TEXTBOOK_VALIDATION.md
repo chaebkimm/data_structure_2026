@@ -2,6 +2,41 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
+## Chapter 6 Postorder Parent-Edge Invariant — October 17, 2026 (Local)
+
+The English/Korean textbooks and teaching materials now distinguish the
+non-root postorder checkpoint from its parent's subsequent boundary test.
+At that checkpoint all branch edges have been handled: they are assigned
+or pending. The pending suffix starting at the incoming parent edge shares
+that edge's eventual BCC. Earlier stack entries can belong to other BCCs;
+the suffix may be only part of the whole BCC. The root has no incoming
+edge and its postorder stack is empty. Visit 4 and visit 3 demonstrate the
+different-prefix and partial-block cases respectively.
+
+The website's `postorderStack()` derives this split from return snapshots.
+Captions and the invariant panel expose the boundary, older prefix, and
+branch suffix before the parent decides. Two regression tests check all
+four-vertex simple graphs at every root in raw and per-pop traces, incoming
+boundary presence, completed-subtree edge accounting, membership in the
+parent edge's final BCC, prior nested block removal, and the root exception.
+A triangle behind a single connecting edge prevents conflating the whole
+stack with one BCC. A separate read-only model check covered 1,098 simple
+graphs on 2–5 vertices and 3,651 non-root returns with no violation.
+
+All 61 website tests, TypeScript, and production build pass. Bilingual
+repository/web/download manuscripts, the workbook, and all eleven ZIP
+entries agree. All 47 local links in affected materials resolve; fences
+balance and whitespace checks pass. Browser QA at 1440/390 pixels covers
+English/Korean return narration, prefix/suffix examples, root state, zero
+main-content tables/lists, no overflow, and stable measured panel/following
+content positions. Source C and PPT inputs are unchanged.
+
+The revision is local: website commit
+`23f7c4fb1eabbe5842b46b9be3c32616b7a5bade` is not published or pushed.
+Version 198 remains live. GitHub pushes remain stopped at the user's
+request. Proof: `student-textbook-web/outputs/chapter-6-postorder-local.jpg`.
+These are technical/editorial checks, not a human reading pilot.
+
 ## Chapter 6 Edge-Stack Invariant — October 17, 2026
 
 Both textbook editions now explain the exact-once partition of handled

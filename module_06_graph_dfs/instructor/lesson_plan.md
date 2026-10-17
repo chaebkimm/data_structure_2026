@@ -52,6 +52,18 @@ verification retains its stored insertion order and separate reference.
    assigned while five pairs remain pending; a returned subtree need not
    leave all its edges on the stack. Explain why the qualifying suffix
    includes its boundary and why equality closes it.
+   Add the postorder checkpoint **before** the node returns and its parent
+   compares: after all neighbors and child boundaries, every branch edge
+   is pending or assigned. For a nonroot node, the suffix from its incoming
+   parent edge through the top is exactly that edge and its branch's
+   unassigned edges, all in the same eventual BCC as the incoming edge.
+   At visit 4, separate older prefix `1–2, 2–3, 1–3` from suffix
+   `3–4, 4–5, 5–6, 3–6, 4–6`; parent 3 closes only after return.
+   At visit 3, suffix `2–3, 1–3, 3–7, 2–7` excludes older `1–2`,
+   which is in the same BCC. The whole stack need not be one BCC, and a
+   suffix need not yet be the full BCC. Root postorder has an empty stack.
+   판서 확인: 부모에게 복귀하기 전, 들어온 부모 간선부터 위의 구간은 모두
+   그 부모 간선과 같은 최종 BCC다. 전체 스택이나 완성된 BCC와 구별한다.
 3. **Retrieve and review (15 minutes).** Use exactly the workbook's three
    targets for a five-minute retrieval pause and preserve first answers.
    Review graph storage/addition/deletion and block definition/finding.

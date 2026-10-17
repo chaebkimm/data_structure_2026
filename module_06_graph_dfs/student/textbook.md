@@ -178,6 +178,22 @@ The child's incoming tree edge stays pending until its parent closes that bounda
 
 In the example, eight handled edges initially give eight pending and zero assigned. After the first pop, eight equals seven pending plus one assigned to the forming row. After the first block closes, eight equals three pending plus five assigned. At the end, ten equals zero pending plus ten assigned. These statements assume the input and all storage capacities satisfy the lab's preconditions.
 
+#### What remains on the stack at postorder?
+
+Accounting shows that no handled edge is lost. We also need to explain why the remaining edges can wait together. Check the current vertex at postorder, after all its neighbors and child-boundary decisions finish, just before its call returns. Its parent has not yet made the boundary decision for this call.
+
+For a non-root vertex, include its incoming parent edge with the edges handled in its DFS branch. **Every one of these edges has been processed: it is either assigned to a completed block or still pending on the stack. Among these branch edges, only edges in the same eventual block as the incoming parent edge remain pending.** They occupy the suffix from that parent edge through the top of the stack.
+
+Why? A child's branch that cannot reconnect above the current vertex has already been removed as a block. A child's branch that can reconnect above it stays pending. That reconnection creates a cycle through the current vertex's incoming edge, so the remaining child edges belong with that edge. A back edge from the current vertex to an ancestor also creates such a cycle. If none of these edges remains, the incoming edge waits by itself.
+
+This claim concerns the branch's suffix. Older edges below the incoming edge may belong to other blocks. The suffix also need not contain the whole eventual block: some of its edges may be older entries below the boundary or may be handled later from an ancestor's unfinished scan.
+
+At visit 4's postorder, its branch's pending suffix is 3–4, 4–5, 5–6, 3–6, 4–6. All five edges belong to the block containing its parent edge 3–4. Older entries 1–2, 2–3, 1–3 remain below that suffix and belong to the other block. The call then returns to visit 3, which compares the finished child's low-link and removes the suffix through 3–4.
+
+At visit 3's postorder, the right-hand block has already been assigned. Its remaining suffix begins at parent edge 2–3 and contains 2–3, 1–3, 3–7, 2–7. These four edges share the eventual block with the older edge 1–2 below the suffix. The parent at visit 2 keeps them pending because the branch reconnects above it.
+
+The root has no incoming parent edge. By the root's postorder, each child has already triggered its boundary removal, so the edge stack is empty. An isolated root also finishes with an empty stack.
+
 ### What must be ready before grouping edges?
 
 The stack must distinguish every reached edge. The block-boundary decision also needs a completed low-link summary for every reached vertex.
@@ -527,6 +543,8 @@ void find_bcc(int start_node) {
 Check the accounting invariant after each `push()` or complete pop-and-store pair. In `close_bcc()`, the first `pos` cells of `bcc[cur]` belong to the forming row. Each `edge = pop()` temporarily holds one removed edge in the local variable; `bcc[cur][pos++] = edge` finishes the transfer. While another loop iteration is needed, `boundary_edge` remains in the pending stack. Popping and storing it ends the loop.
 
 `current_bcc` increases when the row opens. `bcc_size[cur]` is written only after the row is complete. During this helper, use `pos` for the forming length; a row count alone does not mean every row is complete. Read completed output rows through their saved sizes after the helper returns. This invariant does not add bounds checks to the source's unchecked stack operations.
+
+The stronger postorder invariant applies at the end of `_find_bcc(node)`'s neighbor loop, before that function returns. For a non-root, its incoming edge is `edge_index[parent[node]][node]`. That edge and the pending entries above it share one eventual BCC. The caller then tests `back_num[adj] < visit_num[node]` and either keeps or closes the returned child's suffix. A root has `parent[node] == -1`; do not use that value as an array index to look for an incoming edge.
 
 ### How do the passes share and reset state?
 

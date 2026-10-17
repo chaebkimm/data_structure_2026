@@ -95,6 +95,38 @@ returns to 2 there are five pending and five assigned of ten handled: the
 five-edge right block in that returned subtree has already been removed.
 After 2 returns to 1, pending is zero and assigned is ten.
 
+### Postorder before the parent's comparison / 부모 비교 전 postorder
+
+Fix the checkpoint just before a nonroot `_find_bcc(v)` returns, after its
+complete neighbor scan and every decision for its children. Every edge
+in this completed DFS branch has been handled and is pending or assigned.
+The incoming parent edge is still on the stack. The suffix from it through the top
+contains exactly that edge and the branch's unassigned edges, all in the
+same eventual BCC as the incoming edge. Inner blocks have already been
+removed. This is a statement about the suffix, not the entire pending
+stack or a necessarily complete BCC. An older prefix may contain other
+BCCs, or more edges of the same BCC; future scans may add more of that BCC.
+
+루트가 아닌 노드의 postorder는 모든 이웃과 자식의 그룹 처리를 마치고 부모에게
+돌아가기 직전이다. 이 가지의 간선은 대기 또는 결과에 모두 배정되어 있다.
+들어온 부모 간선부터 맨 위까지 남은 구간만 보면, 모두 그 부모 간선과 같은
+최종 BCC다. 스택 아래의 오래된 구간이나 완성된 BCC 전체와 혼동하지 않는다.
+
+At visit 4's postorder, before parent 3's `3 ≥ 3` test, the whole stack is:
+
+```text
+older prefix: 1–2, 2–3, 1–3
+branch suffix: 3–4, 4–5, 5–6, 3–6, 4–6  <- top
+```
+
+The suffix is the right block; the prefix belongs to the left block.
+Parent 3 closes the suffix only after 4 returns. At visit 3's postorder,
+the branch suffix is `2–3, 1–3, 3–7, 2–7`; the older `1–2` below it is
+also in the left block. Thus four branch edges are pending within a
+five-edge pending stack. Parent 2's `1 < 2` keeps them pending. A root
+has no incoming edge: its postorder follows all root-child closures,
+so the stack is empty.
+
 In C, pending is `stack[0..top]`. Stored edge indices in `bcc` represent
 assigned edges. Inside `close_bcc()`, count the entries already written to
 the current row even though `bcc_size[cur]` is set only after its pop loop.

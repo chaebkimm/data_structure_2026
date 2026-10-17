@@ -8,12 +8,45 @@ Chapter 6 is the default homepage at https://data-structures.chaebinkim.chatgpt.
 
 - Sites project: `appgprj_6a955240a2d0819191a05a6f72a08e8f`; audience remains public.
 - Published version: 198.
-- Website source commit: `d7115152677718d2fa49697c2ae80ecbcc0be351`.
+- Published website source commit: `d7115152677718d2fa49697c2ae80ecbcc0be351`.
+- Local website source commit: `23f7c4fb1eabbe5842b46b9be3c32616b7a5bade` (postorder revision, not published).
+- Keep GitHub commits local at the user's request. Do not retry GitHub push unless the user requests it.
 - Deployment: `appgdep_6ad393aeaa008191a973d26184203814`, succeeded.
 - Website checkout: `/Users/cbk/Documents/GitHub/data_structure_2026/student-textbook-web` (its own Git repository). Its working tree was clean when this note was saved.
 - Local preview servers started for verification have been stopped.
 
 ## Chapter 6
+
+### Postorder parent-edge invariant — 2026-10-17 (local)
+
+The textbooks and course notes now state the stronger BCC invariant at the
+end of a non-root call, before it returns and before its parent's decision.
+All edges handled in the finished branch are assigned or pending. The
+pending suffix from the incoming parent edge through the top contains only
+edges in the same eventual BCC as that edge. Older entries below it can
+belong to other BCCs; the suffix need not be the whole eventual block.
+The root has no incoming edge and finishes with an empty edge stack.
+
+Visit 4's postorder has older prefix `1–2, 2–3, 1–3` and suffix
+`3–4, 4–5, 5–6, 3–6, 4–6`. Its parent then closes that suffix.
+Visit 3's postorder has prefix `1–2` and suffix `2–3, 1–3, 3–7, 2–7`;
+all five share a BCC, illustrating that the suffix can be partial.
+
+`postorderStack()` splits only return snapshots. The stack player shows
+the incoming edge, older prefix, and branch suffix at that checkpoint;
+return captions explicitly precede the parent's keep/close test. Both
+manuscripts, the workbook, downloads, and eleven ZIP members are in sync.
+All 61 website tests, TypeScript, production build, 47 local Markdown
+links, and whitespace checks pass. Browser QA confirms visit 4/3/root
+snapshots, bilingual desktop/mobile layout, no main-content lists/tables,
+no overflow, and stable panel/following-content positions. An additional
+read-only model check covered all 1,098 simple graphs on 2–5 vertices and
+3,651 non-root postorder frames without a violation.
+
+This follow-up is local. Version 198 remains the live publication; neither
+repository was pushed for this revision. The original course commit
+`9f16cf7` remains local as requested. Proof:
+`student-textbook-web/outputs/chapter-6-postorder-local.jpg`.
 
 ### Edge-stack invariant — 2026-10-17
 

@@ -92,6 +92,8 @@ connections and children's earliest numbers only after their return.
 ## 6. Complete pending pairs and two blocks
 
 Write every stack bottom to top; blocks are in removal order.
+The “Finish” rows include the parent's comparison after return. The
+postorder checkpoint below is just before returning to that parent.
 
 | Event | Complete pending pairs | New block |
 | --- | --- | --- |
@@ -142,8 +144,10 @@ forming row: seven pairs remain pending and one is assigned. Five such
 steps include boundary 3–4, leaving three pending and five assigned.
 
 When 3 returns to 2, the right block has already been emitted within 3's
-subtree. Only its five still-unassigned pairs remain pending; they stay
-because 1 < 2. On 2's return, 1 ≥ 1 closes that suffix including 1–2.
+subtree. The whole stack has five pending pairs; the four-edge suffix
+beginning at incoming edge 2–3 belongs to 3's branch, while the older 1–2
+lies below it. All five belong to the left block and stay because 1 < 2.
+On 2's return, 1 ≥ 1 closes that suffix including 1–2.
 In general the qualifying parent's pop uses the remaining unassigned
 suffix, not every edge in the returned subtree. Inner blocks have been
 removed. Equality permits reconnection to the parent but none above it.
@@ -154,6 +158,29 @@ reached edge. The low-link boundary argument justifies why each assigned
 group is a block. The invariant alone is a conservation statement.
 Separately require the peak pending count to fit `stack[10]`; a 45-record
 edge array does not establish that capacity precondition.
+
+**Postorder checkpoint / Postorder 확인 시점.** Immediately before a
+nonroot call returns, every neighbor and every child boundary has been
+processed. Every edge in the completed branch has been handled and is
+pending or assigned. Its incoming parent edge is still pending; from that
+edge through the stack top, the suffix consists exactly of the incoming edge
+and the branch's unassigned edges. They all belong to the same eventual
+BCC as that parent edge. The older prefix need not be in that BCC, and
+the suffix need not contain the full BCC yet.
+
+루트가 아닌 노드가 부모에게 돌아가기 직전, 들어온 부모 간선부터 맨 위까지
+남은 간선은 모두 그 부모 간선과 같은 최종 BCC다. 이 가지의 다른 간선은
+이미 안쪽 그룹에 배정되었다. 전체 스택 또는 BCC 전체에 대한 주장으로
+넓히지 않는다. 부모는 복귀 후 비교하여 남겨 두거나 경계까지 포함해 꺼낸다.
+
+At visit 4's postorder, the pending suffix is
+`3–4, 4–5, 5–6, 3–6, 4–6`, above older prefix `1–2, 2–3, 1–3`.
+The two parts belong to different BCCs. Parent 3 has not yet popped;
+after return it tests `3 ≥ 3` and closes the suffix. At visit 3's
+postorder, suffix `2–3, 1–3, 3–7, 2–7` excludes older `1–2`, although
+that edge belongs to the same BCC. This is why a suffix need not be the
+whole eventual block. At root postorder there is no incoming parent edge,
+and all child closures leave the stack empty.
 
 ## 7. Exact three-target retrieval pause
 
