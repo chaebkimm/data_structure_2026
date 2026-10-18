@@ -53,11 +53,14 @@ Correction and evidence / 수정과 근거: ______________________________
 
 ## 2. 작업은 언제 하는가? / When does each action happen?
 
-preorder에서 방문 번호를 붙인다. 새 자식에게 부모를 정해 준 뒤 내려간다.
+한 호출은 preorder 작업, 이웃 반복, postorder 작업 순서로 진행한다.
+preorder에서 방문 번호를 붙인 뒤 이웃 반복을 시작한다.
+새 자식에게 부모를 정해 준 뒤 내려간다.
 자식의 탐색이 끝나면 부모의 멈춰 있던 이웃 확인을 이어간다.
 postorder는 현재 노드의 모든 이웃을 확인한 뒤다.
-Assign the visit number at entry. Set a new child's parent before
-exploring it. After return, resume the parent's paused neighbor scan.
+Each call performs preorder work, the neighbor loop, then postorder work.
+Assign the visit number at entry before the loop. Set a new child's parent
+before exploring it. After return, resume the parent's paused neighbor scan.
 Postorder occurs after scanning all of the current vertex's neighbors.
 
 | Visit number / 방문 번호 | Parent visit number / 부모 방문 번호 |
@@ -228,15 +231,20 @@ the row being formed. These sets are disjoint. Bottom to top preserves the
 recording order of unassigned pairs; removal reverses it. Reverse parent
 and descendant entries never push another copy.
 
-자식이 돌아왔어도 그 아래의 모든 간선이 대기하지는 않는다. 안쪽 그룹은 이미
-꺼냈을 수 있다. 부모가 자식의 빽번호를 비교할 때 값이 더 작으면 남겨 두고,
+자식이 돌아왔어도 그 아래의 모든 간선이 대기하지는 않는다. 따로 분리되는 안쪽
+그룹은 더 깊은 호출의 자식 복귀 비교에서 이미 꺼냈다.
+부모가 자식의 빽번호를 비교할 때 값이 더 작으면 남겨 두고,
 같거나 크면 **아직 배정하지 않은** 맨 위 구간을 부모–자식 경계 간선까지 포함해
-꺼낸다. 그 구간이 다음 그룹이다.
-A returned subtree may already have emitted inner blocks. After return,
+꺼낸다. 이 조건에서는 남은 가지가 부모보다 먼저 방문한 조상으로 우회할 수 없다.
+따로 분리할 안쪽 그룹도 남아 있지 않으므로 이 구간이 하나의 완성된 그룹이다.
+A returned subtree has already emitted any separately closing inner blocks
+at deeper child-return comparisons. After return,
 the parent leaves the remaining pairs pending if the child's earliest
 number is smaller than the parent's visit number. Otherwise, the next
 block is the **unassigned** suffix through and including that child's
-boundary pair.
+boundary pair. The remaining branch cannot bypass the parent to an earlier
+ancestor, and no separately closing inner block remains in that suffix.
+These facts make the qualifying suffix one complete block.
 
 **Postorder 확인 시점: 부모에게 돌아가기 직전 / Postorder checkpoint: just
 before returning to the parent.** 루트가 아닌 노드 `v`의 모든 이웃 확인과
@@ -339,18 +347,30 @@ A:[B] B:[A,C,D,E,F] C:[B] D:[B,E,F] E:[B,D,F] F:[B,D,E]
 G:[H] H:[G] I:[] J:[]
 ```
 
-`_edge_iteration_()`는 방문·부모를 기록하는 틀이다. `_init_edges_list()`의 자식
+먼저 실습 슬라이드의 '간선 탐색 준비하기'를 확인한다. `init_visit()`는
+`visit_time = 0`과 활성 노드마다 `visit_num[i] = 0`, `parent[i] = -1`을 준비한다.
+간선 기록·조회·빽번호·스택·결과를 초기화하는 함수는 아니다.
+Before edge storage, read the lab slides' traversal preparation.
+`init_visit()` resets the time to 0, active discovery cells to 0, and
+active parent cells to -1. It does not clear edge records, lookup cells,
+saved low-link values, the stack, or results.
+
+`_edge_iteration_()`는 방문·부모를 기록하는 틀이다. preorder 번호 기록,
+이웃 반복, postorder 자리의 세 부분을 찾는다. `_init_edges_list()`의 자식
 분기는 `add_edge(node, adj)`, 부모 설정, 재귀 호출 순서다. `add_edge()`는 이미
 존재하는 연결의 기록과 대칭 조회 셀을 만들며, 이웃 목록을 바꾸지 않는다.
-The traversal template records discovery/parents. The indexing child
+The traversal template records discovery/parents. Locate entry numbering,
+the neighbor loop, and the postorder position in that order. The indexing child
 branch records the edge, sets its parent, then recurses. It does not construct adjacency.
 
-`init_edges_list(start_node)`는 방문 시간·번호·부모를 초기화하고, `edges_size`를
-0으로 만든다. 활성 `edge_index` 칸을 -1로 채운 뒤 `_init_edges_list()`를 실행한다.
+`init_edges_list(start_node)`를 실습 슬라이드의 네 단계와 맞춘다:
+`init_visit()` 호출, `edges_size`를 0으로 초기화, 활성 `edge_index` 칸을 -1로 초기화,
+`_init_edges_list()` 실행이다.
 간선 인덱스 0도 유효하므로, 기록하지 않은 연결을 0으로 표시할 수 없다.
-The indexing wrapper resets discovery and parents, clears the record count,
-fills the active lookup region with -1, then records reached edges. Edge
-index 0 is valid, so -1 distinguishes an unrecorded connection.
+Match the wrapper to the lab slide's four steps: call `init_visit()`,
+clear `edges_size` to 0, fill active `edge_index` cells with -1, then call
+`_init_edges_list()`. Edge index 0 is valid, so -1 distinguishes an
+unrecorded connection.
 
 `find_bcc(start_node)`는 방문 초기화, 빽번호 저장, 스택 초기화, 방문 재초기화,
 추출의 다섯 작업을 한다. 저장한 `back_num`은 보존한다. 같은 시작점과 같은

@@ -32,7 +32,9 @@ Refer to every vertex by its visit number.
 A parent has a smaller visit number too. Test its role first so the
 reverse tree entry is not mistaken for a new ancestor back connection.
 
-Assign the visit number at entry; set a child's parent before descent.
+The order within a call is preorder work, the neighbor loop, then postorder
+work. Assign the visit number before the loop; set a child's parent before
+descent.
 Visit 3 waits for visit 4's whole exploration, then resumes at neighbor 6,
 and afterward checks 7. Postorder follows the entire neighbor scan.
 Calls remember the current vertex, paused neighbor position, and return
@@ -150,7 +152,12 @@ lies below it. All five belong to the left block and stay because 1 < 2.
 On 2's return, 1 ≥ 1 closes that suffix including 1–2.
 In general the qualifying parent's pop uses the remaining unassigned
 suffix, not every edge in the returned subtree. Inner blocks have been
-removed. Equality permits reconnection to the parent but none above it.
+removed by deeper child-return comparisons. Each remaining suffix edge is
+in the boundary edge's eventual BCC; when the comparison prevents bypassing
+the parent to an earlier ancestor, that suffix is the complete block.
+Equality permits reconnection to the parent but none above it. Without
+the qualifying comparison, the postorder suffix may still be only part of
+that BCC.
 
 Once the reached component is fully scanned, root-child closures leave
 the stack empty; the invariant then gives exactly one assignment per
@@ -221,10 +228,14 @@ A–J with the Chapter 3 initializers and retains stored insertion order.
 not record edges or emit blocks. `_init_edges_list()` adds `add_edge()`
 to child/ancestor positions. The child sequence is add, set parent, recurse.
 `add_edge()` writes an edge record and both symmetric lookup cells, without
-changing adjacency lists. `init_edges_list()` resets discovery/parents,
-clears `edges_size`, fills the active lookup with -1, then calls the
-indexing helper. Index 0 is a valid record. Source parameter `start_node` is `root`
-in that wrapper's slide excerpt.
+changing adjacency lists. The lab slides now isolate `init_visit()` before
+edge storage: it sets `visit_time = 0`, active `visit_num[i] = 0`, and
+active `parent[i] = -1`. It leaves edge/lookup, low-link, stack, and result
+state alone. `init_edges_list()` reuses that preparation, then
+clears `edges_size`, fills the active lookup with -1, and calls the
+indexing helper. Those are the slide's four wrapper steps. Index 0 is a
+valid record. Source parameter `start_node` is `root` in that wrapper's
+slide excerpt.
 
 ```text
 vertex       A B C D E F

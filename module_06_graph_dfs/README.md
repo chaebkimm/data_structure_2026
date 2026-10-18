@@ -6,6 +6,10 @@ fixed DFS. Refer to vertices by visit number and retrace from visit 1
 with ascending diagram neighbors. The current [lab.c](student/lab.c)
 and [lab slides](student/ppt_lab_material.md) retain the original A–J
 coding example with a separate reference trace.
+The revised lab slides order each call as preorder work, a neighbor loop,
+then postorder work. They teach `init_visit()` separately before edge
+storage and explain the boundary pop using inner blocks already removed
+by deeper child-return comparisons. The lab's behavior is unchanged.
 
 ## Current teaching path
 

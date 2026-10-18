@@ -2,7 +2,39 @@
 
 The validation date is August 14, 2026. The targets are the introductory textbook and the student textbooks from Chapters 1 to 16.
 
-## Chapter 6 Postorder Parent-Edge Invariant — October 17, 2026 (Local)
+## Chapter 6 Revised Lab-Slide Synchronization — October 18, 2026
+
+The supplied `lab.c` and conceptual PPT material are unchanged since the
+previous alignment. The revised lab slides clarify preorder → neighbor
+loop → postorder, introduce `init_visit()` before edge storage, and give
+the stack-pop proof. Both textbook editions, the class workbook, module
+overview, and instructor materials now follow that sequence. The proof
+uses the inability to reach an ancestor visited before the parent while
+retaining equality as a closing boundary. The postorder suffix invariant
+and root exception remain precise.
+
+All 61 website tests, TypeScript, and the production build pass. The nine
+C lab checks and both original/slide drivers pass under AddressSanitizer
+and UndefinedBehaviorSanitizer. The drivers reproduce their documented
+rows and finish with an empty stack. All 65 local links in the eight
+changed teaching documents resolve, code fences balance, and whitespace
+checks pass. Independent final review found no substantive correctness
+issue. The bilingual web manuscripts, standalone downloads, updated lab
+slides, workbook, dependencies, and all eleven ZIP entries agree.
+
+Desktop/mobile browser QA confirms the new preparation sequence and slide
+link, English/Korean content, non-root postorder suffix, root empty stack,
+no document overflow, and stable panel/following-content positions across
+return states. Version 199, source
+`0772f4c2b8b9e0ff8948d546e7f3c8eb333ba66c`, deployed successfully as
+`appgdep_6ad4b64b177c819194d532a81966a5bf`. The live updated explanation
+and postorder panel were inspected. It also publishes the previously local
+postorder revision below. GitHub pushes remain stopped at the user's request.
+Proof: `student-textbook-web/outputs/chapter-6-oct18-sync.jpg` and
+`student-textbook-web/outputs/chapter-6-oct18-postorder.jpg`.
+These are technical/editorial checks, not a human reading pilot.
+
+## Chapter 6 Postorder Parent-Edge Invariant — October 17, 2026
 
 The English/Korean textbooks and teaching materials now distinguish the
 non-root postorder checkpoint from its parent's subsequent boundary test.
@@ -31,10 +63,10 @@ English/Korean return narration, prefix/suffix examples, root state, zero
 main-content tables/lists, no overflow, and stable measured panel/following
 content positions. Source C and PPT inputs are unchanged.
 
-The revision is local: website commit
-`23f7c4fb1eabbe5842b46b9be3c32616b7a5bade` is not published or pushed.
-Version 198 remains live. GitHub pushes remain stopped at the user's
-request. Proof: `student-textbook-web/outputs/chapter-6-postorder-local.jpg`.
+The revision was initially local in website commit
+`23f7c4fb1eabbe5842b46b9be3c32616b7a5bade`; it is now included in
+published version 199. GitHub pushes remain stopped at the user's
+request. Original proof: `student-textbook-web/outputs/chapter-6-postorder-local.jpg`.
 These are technical/editorial checks, not a human reading pilot.
 
 ## Chapter 6 Edge-Stack Invariant — October 17, 2026

@@ -28,8 +28,9 @@ diagram neighbors. Preserve predictions before revealing completed traces.
    earliest-reconnection numbers. At visit 3 identify ancestor 1, parent 2,
    child 4, descendant 6 after 4 returns, and child 7. The parent also has
    a smaller visit number, so recognize it before the ancestor case.
-2. Number at entry, set a child's parent before descending, resume the
-   paused scan on return, and use postorder after all neighbors. Blank
+2. Follow preorder work, the neighbor loop, then postorder work. Number at
+   entry before scanning any neighbor, set a child's parent before descending,
+   resume the paused scan on return, and use postorder after all neighbors. Blank
    circles ask students to fill visit numbers at the current stage;
    partially highlighted connections show progress through the same graph.
 3. Review Chapter 3's adjacency lists. Introduce endpoint-pair edge lists
@@ -79,6 +80,12 @@ after a child returns, its parent closes the remaining unassigned suffix
 through and including the parent–child pair when the child's earliest
 number is at least the parent's visit number. A smaller value leaves it
 pending; equality closes it. Inner blocks may already have been removed.
+Explain the new lab slide's suffix argument: separately closing inner
+blocks were popped by deeper child-return comparisons. Every remaining
+suffix edge belongs with the boundary edge, and the qualifying low-link
+comparison prevents reconnection above the parent. Only then does that
+suffix form the whole block; without the condition it can remain part of
+a larger BCC.
 
 After 4 returns and closes its block, eight edges have been handled:
 three pending and five assigned. After 3 returns to 2, ten have been
@@ -128,8 +135,10 @@ instructions. The workbook supplies the activity prompt.
 Only here introduce C names, internal indices, and record IDs. `lab.c`
 includes the Chapter 3 A–J graph and Chapter 4 integer stack; it does not
 initialize the slide graph. Read `_edge_iteration_()` before specializing
-its child/ancestor positions with `add_edge()` or `push()`. Child order is
-record or push, assign parent, recurse. `add_edge()` records existing
+its branches. Follow the lab slide order by isolating `init_visit()` before
+edge-list storage: it resets time, discovery, and parents only. Then read
+the template's child/ancestor specializations with `add_edge()` or `push()`.
+Child order is record or push, assign parent, recurse. `add_edge()` records existing
 adjacency, without constructing it. The source names the `init_edges_list()`
 parameter `start_node`; its slide excerpt uses `root`.
 That wrapper resets discovery/parents, clears the record count, fills the

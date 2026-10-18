@@ -123,7 +123,7 @@ At visit 7, a back edge reaches ancestor 2, giving low-link value 2. Vertex 3 it
 
 Being connected does not guarantee that a graph stays connected after one vertex is removed. Removing the vertex with visit number 3 separates vertices 1/2/7 from vertices 4/5/6. We want the largest groups whose remaining vertices stay connected after any one vertex inside the group is removed.
 
-Within vertices 3/4/5/6, any two vertices have two paths that share only their endpoints. For vertices 3 and 6, use 3–6 and 3–4–6. The vertices between the endpoints do not overlap. Such paths are **internally vertex-disjoint**. For a group with at least three vertices, this property for every pair expresses resistance to losing one vertex. A maximal group with that property is a **biconnected component**, or **block**.
+Within vertices 3/4/5/6, any two vertices have two paths that share only their endpoints. For vertices 3 and 6, use 3–6 and 3–4–6. The vertices between the endpoints do not overlap. Such paths are **internally vertex-disjoint**. For a group with at least three vertices, this property for every pair expresses resistance to losing one vertex. A maximal group with that property is a **biconnected component (BCC)**, or **block**.
 
 The graph has two blocks. One contains the five edges among vertices 3/4/5/6. The other contains the five edges among vertices 1/2/3/7. They share the vertex with visit number 3, but share no edge. That vertex is a cut vertex. A single edge and its endpoints can also form a block in other graphs. An isolated vertex has no edge to group.
 
@@ -133,6 +133,8 @@ When a child's branch finishes, compare its low-link value with its parent's dis
 
 - A smaller value means the branch reconnects above the parent. Leave its edges pending.
 - An equal or larger value means the branch cannot reconnect above the parent. Remove edges from the top through the parent-to-child tree edge, including that edge. These edges form one block.
+
+When this boundary closes, blocks separated farther down have already been removed. The remaining portion at the top of the stack belongs to the incoming edge's BCC. The branch cannot reconnect to an ancestor visited before the parent, so this BCC cannot extend below that boundary. Removing from the top through the parent-to-child edge therefore yields exactly one complete block.
 
 Equality closes a block. Vertex 4's branch reconnects to parent 3 through 6 → 3, but cannot bypass that parent. Its low-link value 3 equals the parent's visit number 3. Remove the pending edges through 3–4.
 
@@ -273,6 +275,8 @@ The graph globals and `save_back_num()` come from Chapter 3. The integer stack a
 #include "module_03_graph/student/lab.c"
 #include "module_04_stack/student/lab.c"
 ```
+
+The [lab slides](ppt_lab_material.md) first follow one call in preorder → neighbor loop → postorder order. Before studying edge records, read `init_visit()` as a separate traversal-preparation step. It resets `visit_time`, `visit_num`, and `parent`. `init_edges_list()` reuses that preparation, then clears the edge count, fills the active lookup with -1, and starts recording.
 
 ### How does the source represent the example?
 

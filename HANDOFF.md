@@ -1,23 +1,55 @@
 # Textbook website handoff
 
-Updated: 2026-10-17.
+Updated: 2026-10-18.
 
 ## Current state
 
 Chapter 6 is the default homepage at https://data-structures.chaebinkim.chatgpt.site/ and https://data-structures.chaebinkim.chatgpt.site/en. `/ko` also opens Chapter 6. Explicit `/chapter-6`, `/en/chapter-6`, and `/ko/chapter-6` URLs remain available. Chapter 5 now uses `/chapter-5` and `/en/chapter-5` in navigation and language switches. Explicit Chapter 0–6 routes remain available; canonical URLs and language alternates follow the new homepage mapping.
 
 - Sites project: `appgprj_6a955240a2d0819191a05a6f72a08e8f`; audience remains public.
-- Published version: 198.
-- Published website source commit: `d7115152677718d2fa49697c2ae80ecbcc0be351`.
-- Local website source commit: `23f7c4fb1eabbe5842b46b9be3c32616b7a5bade` (postorder revision, not published).
+- Published version: 199.
+- Published and local website source commit: `0772f4c2b8b9e0ff8948d546e7f3c8eb333ba66c`.
 - Keep GitHub commits local at the user's request. Do not retry GitHub push unless the user requests it.
-- Deployment: `appgdep_6ad393aeaa008191a973d26184203814`, succeeded.
+- Deployment: `appgdep_6ad4b64b177c819194d532a81966a5bf`, succeeded.
 - Website checkout: `/Users/cbk/Documents/GitHub/data_structure_2026/student-textbook-web` (its own Git repository). Its working tree was clean when this note was saved.
 - Local preview servers started for verification have been stopped.
 
 ## Chapter 6
 
-### Postorder parent-edge invariant — 2026-10-17 (local)
+### Revised lab-slide synchronization — 2026-10-18
+
+Reviewed the latest supplied `student/lab.c`, `ppt_material.md`, and
+`ppt_lab_material.md`. The executable lab and conceptual slides are
+unchanged; the lab slides now introduce preorder → neighbor loop →
+postorder, separate `init_visit()` preparation from edge recording, and
+explain why the boundary pop yields one BCC. Both textbooks, the class
+workbook, module overview, and instructor materials follow that sequence.
+The compact proof distinguishes an ancestor visited before the parent
+from the parent itself, preserving the equality case and inclusive pop.
+
+Website content and all source downloads match the current teaching
+files, including the revised lab slides. All eleven ZIP entries match
+their standalone files. The new textbook link opens the downloadable lab
+slides. Version 199 also publishes the previously local postorder revision
+described below, with the incoming edge, older prefix, and pending suffix
+visible in the stack player.
+
+All 61 website tests, TypeScript, and the production build pass. Nine C lab
+checks and both supplied drivers pass under AddressSanitizer and
+UndefinedBehaviorSanitizer, with documented output and empty final stacks.
+All 65 local links in the eight changed teaching documents resolve;
+fences and whitespace checks pass. Independent review found no substantive
+correctness issue. Desktop/mobile browser checks confirm bilingual content,
+the slide link, postorder/root states, no document overflow, and stable
+player/following-content positions. The live English page and postorder
+panel were inspected after the successful version 199 deployment.
+
+Proof: `student-textbook-web/outputs/chapter-6-oct18-sync.jpg` and
+`student-textbook-web/outputs/chapter-6-oct18-postorder.jpg`.
+GitHub commits remain local; the separate Sites source was pushed to
+publish the requested webpage update.
+
+### Postorder parent-edge invariant — 2026-10-17 (published in version 199)
 
 The textbooks and course notes now state the stronger BCC invariant at the
 end of a non-root call, before it returns and before its parent's decision.
@@ -43,9 +75,9 @@ no overflow, and stable panel/following-content positions. An additional
 read-only model check covered all 1,098 simple graphs on 2–5 vertices and
 3,651 non-root postorder frames without a violation.
 
-This follow-up is local. Version 198 remains the live publication; neither
-repository was pushed for this revision. The original course commit
-`9f16cf7` remains local as requested. Proof:
+This follow-up was initially kept local in website commit `23f7c4f`.
+It is now included in version 199. GitHub pushes remain stopped at the
+user's request. Original local proof:
 `student-textbook-web/outputs/chapter-6-postorder-local.jpg`.
 
 ### Edge-stack invariant — 2026-10-17

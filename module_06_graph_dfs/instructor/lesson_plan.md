@@ -20,7 +20,8 @@ verification retains its stored insertion order and separate reference.
    predictions. At visit 3 classify ancestor 1, parent 2, new child 4,
    processed descendant 6 after 4 returns, and new child 7. Recognize the
    parent before interpreting a smaller visit number as a back connection.
-2. **Locate action timing (20 minutes).** Assign the number at entry, set
+2. **Locate action timing (20 minutes).** Follow preorder work, the neighbor
+   loop, then postorder work. Assign the number before the loop, set
    a child's parent before descent, resume the parent's scan after return,
    and identify postorder after all neighbors. Annotate the blank circles
    with visit numbers and highlight handled connections at each stage.
@@ -51,7 +52,10 @@ verification retains its stored insertion order and separate reference.
    empty-stack coverage. At 3 → 2, ask why the right block is already
    assigned while five pairs remain pending; a returned subtree need not
    leave all its edges on the stack. Explain why the qualifying suffix
-   includes its boundary and why equality closes it.
+   includes its boundary and why equality closes it. Tie the new lab-slide
+   explanation to this trace: deeper comparisons already removed separate
+   inner groups; the qualifying remaining suffix cannot reconnect above
+   the parent and forms one complete block.
    Add the postorder checkpoint **before** the node returns and its parent
    compares: after all neighbors and child boundaries, every branch edge
    is pending or assigned. For a nonroot node, the suffix from its incoming
@@ -70,10 +74,14 @@ verification retains its stored insertion order and separate reference.
    Reconstruct Chapter 5's separate tree from preorder `ABDECFG` and
    inorder `DBEAFCG`; verify postorder `DEBFGCA`.
 4. **Connect to C and run (25 minutes).** Explicitly switch to A–J. Read
-   `_edge_iteration_()` before indexing/extraction specializations. Follow
+   `_edge_iteration_()`, then the newly separate `init_visit()` preparation
+   before edge storage. Check time 0, discovery 0, and parents -1;
+   distinguish these resets from edge count/lookup and result state. Follow
+   the indexing/extraction specializations:
    record/push, parent assignment, recursion, then the parent's immediate
    child-return comparison and inclusive boundary pop when required.
-   Match `init_edges_list()`'s discovery/count/lookup preparation and
+   Match the four `init_edges_list()` steps: `init_visit()`, clear count,
+   initialize lookup, recurse. Match
    `find_bcc()`'s five actions. Identify indexing, low-link calculation,
    and extraction as three passes. Read the strict `<` continuation and
    inclusive boundary pop after each child returns. Predict then run

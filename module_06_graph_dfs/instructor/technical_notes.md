@@ -20,7 +20,9 @@ ancestor/parent/child/descendant/child at their actual encounter times.
 These four cases assume simple undirected input, not a general directed
 classifier.
 
-Entry assigns a visit number; set the child's parent before descending.
+Each call proceeds through preorder work, the neighbor loop, and postorder
+work in that order. Entry assigns a visit number before any neighbor scan;
+set the child's parent before descending.
 After return, resume the paused neighbor scan. Postorder follows the
 complete scan. Collect only child tree pairs and non-parent ancestor back
 pairs. Concept diagrams and stacks use endpoint visit pairs, never edge IDs.
@@ -81,8 +83,11 @@ the still-unassigned edges; popping visits that order in reverse.
   means the remaining edges still reconnect above this parent and stay
   pending. Otherwise the remaining suffix through and including the
   parent–child pair forms the next block. Inner blocks have already been
-  removed. Equality reconnects to the parent but cannot bypass it, so it
-  closes a block too.
+  removed by deeper child-return comparisons. Every remaining suffix edge
+  belongs to the boundary edge's eventual BCC, and the qualifying comparison
+  prevents that branch from bypassing the parent to an earlier ancestor.
+  Thus no separate inner block remains to mix into the completed suffix.
+  Equality reconnects to the parent but cannot bypass it, so it closes too.
 - **Termination:** the reached component's every edge has been handled
   once, and each root-child boundary closes its remaining suffix. The
   empty stack therefore leaves every reached edge assigned exactly once.
@@ -172,6 +177,14 @@ symmetric valid stored lists, and fitting fixed capacities. Self-loop
 branches are empty. Parallel and directed inputs are outside the contract.
 No checks enforce these assumptions; globals change directly without
 status codes, allocations, or failure-preservation guarantees.
+
+The revised lab slides introduce `init_visit()` before edge-list storage.
+Teach it as shared traversal preparation: time 0, active discovery cells 0,
+and active parents -1. It does not clear edge storage, lookup, low-link
+values, the pending stack, or block results. The four indexing-wrapper
+steps are that preparation, record-count reset, active lookup initialization,
+and recursive indexing. `find_bcc()` reuses the same preparation before
+low-link calculation and again before extraction.
 
 `_edge_iteration_()` is a template that numbers visits and assigns parents;
 its comments do not record or push edges. `_init_edges_list()` and
