@@ -2,7 +2,7 @@
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 14-week course
+## Required scope for the 13-week course
 
 Module 12 supplies the Dijkstra model, but **Practical 2 is the sole Week 11
 submission**. Students complete the bounded relaxation/frontier core and path-
@@ -158,8 +158,8 @@ lab and a separate Spiral 4 comparison are not added as extra work.
 
 ## Sources
 
-- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Original Weeks 8–14 question bank](02_weeks_08_14_questions.md)
+- [Original Weeks 8–13 question bank](02_weeks_08_13_questions.md)
 - [Module 12 Practical 2 role](../module_12_graph_dijkstra/README.md)
 - [Module 12 vocabulary reference](../module_12_graph_dijkstra/student/vocabulary.md)

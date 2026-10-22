@@ -1,13 +1,13 @@
 # Instructor Lesson Plan - Module 11 baseline Priority Queue
 
-## 14-week delivery override - Week 10 baseline (40 of 180 minutes)
+## 13-week delivery override - Week 10 baseline (40 of 180 minutes)
 
 Use this package only to establish the service contract and a simple cost
 baseline before the 140-minute Module 11 Heap block. Supply the completed
 unsorted-array implementation; do not assign its starter as a project and do
 not collect a Module 11 baseline submission. The longer plan below remains an optional
 resource. See the
-[14-week delivery guide](../../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 
 | Minutes | Required live work |
 |---:|---|

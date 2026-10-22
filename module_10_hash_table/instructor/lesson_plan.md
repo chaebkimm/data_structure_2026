@@ -1,9 +1,9 @@
 # Module 10 Instructor Lesson Plan - Sparse Indicator Hash Table
 
-## 14-week delivery override - Week 9 (180 minutes)
+## 13-week delivery override - Week 9 (180 minutes)
 
 This is the authoritative Week 9 sequence; see the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 It produces one hash-table submission. Students have completed graph BFS,
 but have not yet studied priority queues, binary heaps, or Dijkstra. Explain
 array allocation, growth, and averaging rebuild work within this unit.
@@ -33,7 +33,7 @@ allocation-failure injection, maximum-capacity cases, deep-validator cases,
 long churn, and the complete autopsy are supplied tests or optional resource
 work. They must not be converted into a separate lab or extra homework. The
 full-package sequence below is retained only for instructors who have time
-outside the 14-week required path.
+outside the 13-week required path.
 
 ## Purpose
 

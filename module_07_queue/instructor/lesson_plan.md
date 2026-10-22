@@ -1,4 +1,9 @@
-# Instructor Lesson Plan — Module 7: Queue and Circular Buffer
+# Module 7 — Full circular-array reference plan
+
+> **Current course:** use the [Week 7 linked-Queue plan](../week_07/instructor.md).
+> The two-meeting circular-array sequence below is optional reference material;
+> only its supplied-code trace/comparison is required in the current week.
+
 
 ## Purpose and limits
 

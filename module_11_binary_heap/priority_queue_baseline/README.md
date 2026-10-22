@@ -5,7 +5,7 @@
 This optional package supplies the Linear baseline within the fourth
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
-## 14-week delivery role
+## 13-week delivery role
 
 This package supplies the contract and reference baseline for the combined
 **Week 10 Priority Queue → Binary Heap** unit. The instructor supplies the
@@ -15,7 +15,7 @@ Module 11 baseline assignment. The full package remains available as an instruct
 resource.
 
 See the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
 for the 40-minute baseline block within Module 11. Where the targets,
 release order, or submission list below are broader, the guide and this
 delivery-role note control the required path.

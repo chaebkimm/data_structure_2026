@@ -1,5 +1,7 @@
 # Chapter 15. Fixing a Search Tree that Collapses to One Side
 
+> This combined BST-to-AVL lesson is taught in Week 12. Use the [180-minute plan](../module_15_bst_avl/instructor/lesson_plan.md); BST and AVL deletion are optional.
+
 ## Starting Question
 
 > "If putting in the exact same keys makes the search tree become a single line because of the order they arrived, how can we fix its shape while keeping the sorting rule?"
@@ -12,7 +14,7 @@ A binary search tree's sorting rule only decides the direction of the search. If
 
 A search tree that keeps the height difference of all its nodes strictly to `-1`, `0`, or `1` is called an "AVL tree." The action of fixing only the shape using links while leaving the sorting order exactly as it is, is called a "rotation."
 
-In week 13, we cover height, balance difference, rotation, and AVL insertion and checking. We do not code AVL deletion.
+In Week 12, we cover height, balance difference, rotation, and AVL insertion and checking. We do not code AVL deletion.
 
 ## Board Walkthrough
 

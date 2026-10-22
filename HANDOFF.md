@@ -1,6 +1,108 @@
-# Textbook website handoff
+# Course materials and textbook website handoff
 
-Updated: 2026-10-18.
+Updated: 2026-10-23.
+
+## Repository handoff — 2026-10-23
+
+The user explicitly requested saving the completed curriculum work to this
+handoff, committing all changes, and pushing the course repository to GitHub.
+This supersedes the earlier local-only instruction for this course-repository
+update. Target: `main` at `https://github.com/chaebkimm/data_structure_2026.git`.
+The separate website repository and Sites deployment are outside this request.
+
+### Materials and decisions to preserve
+
+Weeks 1–6 are complete. The accepted upcoming sequence is:
+
+| Week | Required focus |
+|---:|---|
+| 7 | Linked lists through a linked Queue; supplied circular-array comparison |
+| 8 | Tree-to-graph BFS, distances, predecessors, and path reconstruction |
+| 9 | Hash tables with probing, tombstones, and scaffolded resizing |
+| 10 | Priority Queue contract and Binary Heap |
+| 11 | Dijkstra, assessed through Practical 2 only |
+| 12 | Combined BST-to-AVL; deletion remains optional |
+| 13 | Introduce Union-Find, then apply it immediately in Kruskal; Prim demonstration |
+
+Each week retains the 180-minute limit and one programming submission.
+There are eleven lab artifacts and two practicals. Capstone integration is
+incremental and folds into Week 13; the defense uses the separate final period.
+Original module numbers remain unchanged. Full package labs omitted from the
+weekly path remain optional resources, not additional required homework.
+
+The current schedule and entry points are `COURSE_MANUSCRIPT.md`,
+`Data_Structures_Course_2026_13_Week_Delivery_Guide.md`, and
+`Data_Structures_Course_2026_Spiral_Curriculum.md`. The old 14-week guide and
+renamed question-bank pages retain compatibility pointers. Instructor plans,
+student scope notices, assessment counts, capstone milestones, weekly vocabulary,
+and consolidated question banks have been reconciled with the new calendar.
+
+Week 7 has a new lesson, lab/rubric, instructor plan, linked-Queue starter,
+faculty reference, supplied lifecycle helpers, and core/student tests.
+Students implement enqueue and dequeue; destruction is supplied and explained.
+Week 8 explicitly supplies its circular-array BFS Queue backend, preserving
+the FIFO contract without requiring another Queue implementation.
+
+Week 13 has a new combined lesson, lab/rubric, instructor plan, bounded DSU
+starter and tests, and a build that combines DSU with the existing Kruskal
+starter. Exactly three TODOs are required: find, union by size, and Kruskal
+edge selection. Make-set, graph loading, sorting, checked totals, validation,
+and complete Prim are supplied. A C11 array-qualifier mismatch in the shared
+MST validator was corrected so warnings-as-errors builds pass.
+
+### Reproducing student releases and checks
+
+From the repository root:
+
+```sh
+python module_07_queue/week_07/prepare_release.py
+python module_16_prim_kruskal/week_13/prepare_release.py
+make -C module_07_queue/week_07/code solution-core starter-compile
+make -C module_16_prim_kruskal/week_13/code solution-core starter-compile
+make -C module_15_bst_avl/code solution-core
+```
+
+The release scripts generate `dist/week_07_linked_queue.zip` and
+`dist/week_13_dsu_kruskal.zip` inside their respective weekly directories.
+Archives and build outputs follow the repository's existing ignore rules;
+tracked sources and scripts reproduce them. Student archives exclude faculty
+solutions; complete Prim is intentionally included as supplied comparison code.
+Unfinished starters compile but are expected to fail behavioral tests.
+
+Both releases were extracted into independent temporary directories and
+checked without repository-relative dependencies. Replacing only the advertised
+TODO source files with faculty references made both release suites pass with
+C11 warnings as errors and AddressSanitizer/UndefinedBehaviorSanitizer.
+Existing AVL core tests also passed. The calendar, minute-budget, local-link,
+anchor, and whitespace results are recorded below. No tests need rerunning
+solely for this handoff update.
+
+Website content remains at its previously published state described below;
+the new curriculum has not been published to Sites. No pending curriculum
+implementation work remains from this request.
+
+## Curriculum revision — local repository, 2026-10-22
+
+The current course has 13 instructional weeks. The authoritative schedule is
+[the 13-week delivery guide](Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
+Week 7 combines linked lists and Queue, Week 12 combines BST and AVL,
+and Week 13 introduces DSU immediately before Kruskal. Prim is a supplied
+demonstration; capstone defense remains in the separate final period.
+
+New required lessons, labs, reference/starter code, tests, and release scripts
+are in `module_07_queue/week_07/` and `module_16_prim_kruskal/week_13/`.
+Existing full packages remain optional resources. The course map, instructor
+entry points, question banks, and assignment boundaries follow this revision.
+No website source or publication was changed by this curriculum update.
+
+Validation: both new student releases were generated and extracted independently.
+Untouched starters compile and fail the intended behavioral tests; completing
+only the advertised TODO files passes the supplied suites. Linked Queue and
+the combined DSU/MST reference pass C11 warnings-as-errors and ASan/UBSan.
+The existing AVL core suite passes. Both calendars contain Weeks 1–13 exactly
+once; new weekly budgets total 180 minutes. All 315 local links and six heading
+anchors in changed/new Markdown resolve; whitespace checks pass.
+
 
 ## Current state
 
@@ -9,7 +111,7 @@ Chapter 6 is the default homepage at https://data-structures.chaebinkim.chatgpt.
 - Sites project: `appgprj_6a955240a2d0819191a05a6f72a08e8f`; audience remains public.
 - Published version: 199.
 - Published and local website source commit: `0772f4c2b8b9e0ff8948d546e7f3c8eb333ba66c`.
-- Keep GitHub commits local at the user's request. Do not retry GitHub push unless the user requests it.
+- Historical website instruction: keep separate website GitHub commits local unless requested. On 2026-10-23 the user explicitly authorized committing and pushing the course-repository curriculum update; see the repository handoff above.
 - Deployment: `appgdep_6ad4b64b177c819194d532a81966a5bf`, succeeded.
 - Website checkout: `/Users/cbk/Documents/GitHub/data_structure_2026/student-textbook-web` (its own Git repository). Its working tree was clean when this note was saved.
 - Local preview servers started for verification have been stopped.

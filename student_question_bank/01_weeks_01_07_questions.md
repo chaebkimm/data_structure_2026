@@ -1,10 +1,12 @@
-# Student Question Bank — Weeks 1–7
+# Consolidated Weeks 1–7 Questions
 
-> This is the consolidated question-only view. The canonical weekly pages,
-> including vocabulary and required-scope notes, are linked from the
-> [all-week bank index](../Data_Structures_Course_2026_Student_Question_Bank.md).
+These questions match the current weekly pages. Optional clusters remain optional.
 
 ## Week 1 — Keeping Data Together in One Place
+
+[Weekly vocabulary and scope](week_01_arraylist.md)
+## Core questions
+
 
 ### Memory and access
 
@@ -37,7 +39,10 @@
 - What does `int_list_find` return for a missing value or duplicate matches?
 - What does `const` promise about the array passed to `int_list_find`?
 
-### Lab and testing questions
+## Lab and testing questions
+
+These questions connect the textbook actions to the required lab. Extra
+boundary and operation-sequence tests are the optional extension.
 
 - How do the textbook's array, size, and capacity map to the function arguments?
 - Which test distinguishes an unused array slot from a valid list index?
@@ -48,6 +53,9 @@
 - How does the guard-slot autopsy expose a bad full check without accessing outside its physical array?
 
 ## Week 2 — Array-Index Expression Trees
+
+[Weekly vocabulary and scope](week_02_binary_tree.md)
+
 
 ### Meaning and mental model
 
@@ -121,7 +129,8 @@
 
 ## Week 3 — Directed Adjacency Matrices
 
-## Anticipated student questions
+[Weekly vocabulary and scope](week_03_graph_representations.md)
+
 
 ### Meaning and mental model
 
@@ -207,6 +216,9 @@
 
 ## Week 4 — Integer Stack and Postfix Evaluation
 
+[Weekly vocabulary and scope](week_04_stack.md)
+
+
 ### Meaning and mental model
 
 - Why must the newest saved item leave before older items?
@@ -216,23 +228,23 @@
 
 ### Representation and invariants
 
-- Which indexes are active when `size == 3`, and how many items are stored?
-- Why does push write `stack[size]` before incrementing, while peek reads `stack[size - 1]`?
+- Which indexes are active when `top == 2`, and how many items are stored?
+- Why does push increment `top` before writing, while peek reads `stack[top]`?
 - Why may an inactive cell still contain a character after pop?
-- Why are `size == 0` and `size == 10` the empty and full states respectively?
+- Why are `top == -1` and `top == 9` the empty and full states respectively?
 
 ### Operations and C API
 
 - Why must callers avoid full push even though `is_full()` exists?
 - Which out-of-bounds index would empty peek/pop select, and why is no return value promised?
-- Why does `pop()` decrement `size` before reading `stack[size]`, without erasing the old cell?
+- Why does `pop()` read `stack[top]` before decrementing, without erasing the old cell?
 - How does `capacity` control the full check without resizing the actual ten-position array?
 
 ### Tracing
 
 - What indexes and states result from pushing `'A'`, `'B'`, and `'C'`?
 - What do peek and two pops return after those three pushes?
-- Why does `size` equal the count, while the nonempty top index is `size - 1`?
+- Why is `top` the last active index, while `top + 1` is the item count?
 - How can a snapshot show that a boundary predicate preserves state without calling an invalid operation?
 
 ### Expression conversion and evaluation
@@ -240,15 +252,18 @@
 - How does `1-2*3+4` become `123*-4+` before any numeric evaluation occurs?
 - Why does incoming `+` cause both waiting `*` and `-` to be emitted?
 - Why must evaluation pop right operand `num2` before left operand `num1`?
-- How do shared global `size`, local output cursor `pos`, and token length describe different state?
-- Why does conversion count the sentinel in `size` and finish with `pos == 8`?
+- How do shared global `top`, local output cursor `pos`, and token length describe different state?
+- Why does the explicit terminator write change `pos` from 7 to 8 after the Stack is already empty?
+- Why does the closing-parenthesis loop pop `(` before `break`, without writing it?
+- Why does `1+(2+3)` produce five postfix tokens `123++` and evaluate to 6?
+- Why are balanced parentheses required even though the dedicated converter handles grouping?
 
 ### Tests and debugging
 
 - Which tests distinguish empty, one-item, and full Stack states?
 - How can `8-3-2+1` distinguish left associativity from right associativity?
 - Why can a faulty top read stay inside the physical array and still be wrong?
-- Why do repeated seven-character conversions and prior active items test shared-state reset and termination?
+- Why do repeated conversions of different lengths and prior active items test shared-state reset and termination?
 
 ### Complexity
 
@@ -259,10 +274,10 @@
 
 ### Safety and interpretation
 
-- Why do the fixed seven-iteration loops require exactly seven token characters, even for a shorter valid mathematical expression?
+- Why do the null-terminated scans accept a one-digit expression such as `7`?
 - Which syntax restrictions are assumptions rather than validated rejections in this source?
 - Why must divisors be nonzero and intermediate integer results be representable?
-- How does the stored `'\0'` sentinel prevent an empty peek during valid conversion?
+- How does `!is_empty()` prevent conversion from peeking or popping an empty Stack?
 
 ### Assignment and evidence
 
@@ -273,7 +288,7 @@
 
 ### Transfer and prerequisites
 
-- How does this active prefix reuse Chapter 1's count and next-insertion convention?
+- How does this top-index representation differ from Chapter 1's stored item count?
 - How can a later Stack use pointer items while preserving the same LIFO rule?
 - How does delaying operators illustrate remembering unfinished work?
 - Why does `c - '0'` turn a digit character into a numeric operand?
@@ -282,16 +297,13 @@
 
 - How could explicit error reporting safely reject unsupported characters and missing operands?
 - What additional parsing rules and buffers would multi-digit operands require?
-- How would parentheses change the operator-Stack algorithm?
 - How does the optional legacy caller-owned integer API share the active-prefix layout but differ in ownership and error reporting?
 
 ## Week 5 — Tree DFS and Expression Trees
 
-Use the current [lab](../module_05_tree_dfs/student/lab.c) and
-[lab slides](../module_05_tree_dfs/student/ppt_lab_material.md).
-The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
+[Weekly vocabulary and scope](week_05_tree_dfs.md)
+## Representation and recursive visits
 
-### Representation and recursive visits
 
 - Why are child links integers while node data is a character?
 - Why is root 5 `F`, and why is `nodes_size` 10 when seven nodes are reachable?
@@ -306,7 +318,7 @@ The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 - How many real-node frames and extra empty-child frames can be active?
 - What assumptions exclude cycles, shared children, and invalid positive indices?
 
-### Explicit traversal
+## Explicit traversal
 
 - Why must an explicit traversal remember both node index and progress?
 - What do steps 0, 1, and 2 do, and why advance before pushing a child?
@@ -319,7 +331,7 @@ The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 - How many stack entries does a ten-node chain need with its sentinel?
 - How does progress storage differ from used path storage?
 
-### Postfix construction
+## Postfix construction
 
 - Why must the initially empty `postfix` be prepared before building?
 - What does Chapter 4's default expression convert to?
@@ -332,7 +344,7 @@ The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 - Why need two roots per operator and exactly one before returning?
 - Does the builder validate malformed input, empty input, or capacity?
 
-### Precedence-aware inorder output
+## Precedence-aware inorder output
 
 - What does the current writer output for `123*+`, `12+3*`, and `123--`?
 - How would omitting parentheses lose grouping in the latter two examples?
@@ -346,7 +358,7 @@ The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 - Why can the alphabet tree be traversed but not passed to the writer?
 - How does `write_infix(-1)` produce an empty string, and why does that not validate malformed operator nodes?
 
-### State, capacity, and efficiency
+## State, capacity, and efficiency
 
 - How does `write_infix()` reset `infix_pos` before each complete output?
 - Why must child calls share the advancing position?
@@ -361,7 +373,7 @@ The [weekly page](week_05_tree_dfs.md) supplies vocabulary and input scope.
 - How do fixed reserved arrays differ from used space and generalized bounds?
 - What do the demo's completion and progress lines show, and how can breakpoints recover visit orders?
 
-### Supplemental reconstruction
+## Supplemental reconstruction
 
 The companion [concept slides](../module_05_tree_dfs/student/ppt_material.md)
 use an `A`-rooted tree for this activity.
@@ -373,7 +385,15 @@ use an `A`-rooted tree for this activity.
 - Is reconstruction implemented in the current lab?
 - Why can reconstruction by inorder scans take quadratic time, and how does a map help?
 
+Use nonempty valid postfix of up to seven single-character tokens, digits
+and binary `+ - * / %`, with no spaces. Keep implemented parentheses and
+writer resets separate from proposed validation/progress-reset extensions
+and the legacy pointer-based exercise's contracts.
+
 ## Week 6 — Graph DFS and Practical 1
+
+[Weekly vocabulary and scope](week_06_graph_dfs.md)
+
 
 ### Meaning and mental model
 
@@ -391,7 +411,7 @@ use an `A`-rooted tree for this activity.
 
 ### Operations, C API, and ownership
 
-- Which DFS form is the required Week 6 implementation in the 14-week path?
+- Which DFS form is the required Week 6 implementation in the 13-week path?
 - Why does iterative DFS inspect outgoing neighbors in descending index order?
 - Why must `out_order` or `out_component_count` remain unchanged on every failure?
 - Why does connected-component counting reject directed graphs under this API?
@@ -445,74 +465,59 @@ use an `A`-rooted tree for this activity.
 - What additional failure risk does recursion introduce on a very deep graph?
 - Is recursive graph DFS required in Practical 1 or explicitly extension work?
 
-## Week 7 — Queue and Circular Buffer
 
-### Meaning and mental model
+## Week 7 — Linked Lists and Queue
 
-- What behavior makes a collection a Queue regardless of its storage representation?
-- Why does first-in, first-out remove the event that has waited longest?
-- How does Queue order differ from Stack order for the same arrival sequence?
-- Why can logical Queue order differ from left-to-right physical array order?
+[Weekly vocabulary and scope](week_07_queue.md)
 
-### Representation and invariants
 
-- Which relationships among `data`, `capacity`, `head`, and `size` define a valid Queue?
-- What is the required canonical state of an empty Queue after initialization or complete draining?
-- How is the next tail position derived from `head`, `size`, and `capacity`?
-- What visible properties can `event_queue_validate` check, and which allocation and ownership facts remain unprovable?
+### Meaning and representation
 
-### Operations, C API, and ownership
+- What behavior makes both the linked and circular representations Queues?
+- How do FIFO and LIFO differ for the same arrivals?
+- Why do linked-node addresses not need to be adjacent?
+- How do head, tail, next, and size describe the linked Queue?
+- Why does a singleton have the same head and tail pointer?
 
-- Why does positive-capacity initialization allocate once while enqueue and dequeue allocate nothing?
-- Which object fields, array slots, and output values must remain unchanged when an operation fails?
-- Why must a dequeue or peek output pointer not point inside the Queue’s owned allocation?
-- What is the difference between `peek` and `dequeue` in both behavior and permitted state changes?
+### Operations and ownership
 
-### Tracing
+- Why must allocation succeed before enqueue changes any existing links?
+- Which pointers change when adding to an empty Queue?
+- Which pointer changes when adding to a nonempty Queue?
+- Why must dequeue save the value and following link before release?
+- Why must removing the final node clear both head and tail?
+- Why does the Queue return an integer instead of transferring a node?
+- Why can copying a live Queue struct cause double release?
+- How does supplied destruction visit and release every node?
+- Why must an output pointer refer to storage outside the Queue?
 
-- How do I compute the physical position of logical item `k` using modular arithmetic?
-- What fields and slots result after filling, dequeuing several items, wrapping, and enqueuing again?
-- When the final item is removed, what canonical empty fields should be restored?
-- What should a trace show when enqueue is attempted on a full Queue under the reject-newest policy?
+### Tracing, tests, and debugging
 
-### Tests and debugging
+- What changes during empty → singleton → empty → singleton?
+- How can allocation failure be tested without relying on real memory exhaustion?
+- What state and links must stay unchanged after failed enqueue?
+- What must remain unchanged after empty dequeue?
+- Which later write becomes unsafe if final dequeue leaves a dangling tail?
+- How do the three original tests add evidence beyond the supplied fixture?
+- How can live-node counts and sanitizers help check cleanup?
 
-- Which three required student-test categories cover validation, reuse, and failure preservation?
-- How can one test prove the Queue can fill, drain, wrap, and then repeat the cycle correctly?
-- What test distinguishes a full Queue from an empty Queue when head and tail positions coincide?
-- In the Queue Autopsy, which missing modulo or boundary check first produces an invalid physical index?
+### Circular comparison and costs
 
-### Complexity
+- Why can circular physical order differ from logical FIFO order?
+- When is the circular tail-index formula valid?
+- How does size distinguish full from empty in a circular Queue?
+- How does a linked tail pointer differ from the circular derived tail index?
+- Why do both implementations avoid shifting surviving values?
+- Why is linked pointer work constant per operation but traversal O(n)?
+- Why is the O(n) validator excluded from an O(1) operation claim?
+- How do allocation costs, pointer overhead, and locality differ?
+- Why does a linked Queue still have memory and representable-size limits?
 
-- Why are validation, enqueue, dequeue, and peek `O(1)` in this fixed-capacity design?
-- Why would shifting all surviving events after every dequeue make removal `O(n)`?
-- What storage cost is paid at initialization even when the Queue is initially empty?
-- How would a linked Queue change capacity policy, allocation costs, locality, and ownership complexity?
+### Assignment and transfer
 
-### Cybersecurity and interpretation
-
-- What information-loss risk comes with reject-newest, discard-oldest, and backpressure policies?
-- Why is silently overwriting the oldest event inappropriate for this course’s contract?
-- How could a wrap-around bug corrupt or misorder security-event records?
-- Why do correct Queue mechanics not guarantee that incoming event codes are authentic or correctly prioritized?
-
-### Assignment and evidence
-
-- Which validation, enqueue, and dequeue TODOs are required in the Week 7 core?
-- Must the student tests assert exact fields and physical slots as well as returned values?
-- What warning, test, and autopsy evidence must accompany the Queue implementation?
-- Why is there one ordinary Week 7 lab even though the Queue will immediately be reused in Week 8?
-
-### Transfer and prerequisites
-
-- Which array-index, invariant, ownership, and failure-preservation skills from Weeks 1 and 4 are reused here?
-- How will FIFO ordering produce nondecreasing depth during tree level-order traversal?
-- Why will graph BFS need both this Queue and a visited or distance record?
-- Which circular-buffer defect might reappear as a Practical 2 repair question?
-
-### Extension questions — optional
-
-- How would a dynamically growing circular Queue preserve logical order during reallocation?
-- How could a linked Queue achieve unbounded logical capacity, and what allocation failures would appear?
-- What synchronization would a Queue need if producers and consumers ran concurrently?
-- Are discard-oldest, backpressure, dynamic growth, and concurrent Queue implementations required for Week 7?
+- Which two functions are the required Week 7 TODOs?
+- Why are peek, destruction, and validation supplied?
+- Do I implement the circular Queue or a complete general list library?
+- Which code, tests, traces, and correction evidence form the one artifact?
+- Why does BFS need discovery state in addition to FIFO ordering?
+- Why does a correct Queue not guarantee authentic, persistent event records?

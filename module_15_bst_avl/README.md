@@ -2,10 +2,10 @@
 
 ## BST-to-AVL Synthesis
 
-## 14-week delivery role - Week 13
+## 13-week delivery role - Week 12
 
-This is the required Week 13 tree unit and produces **one submission**; see
-the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+This is the required Week 12 tree unit and produces **one submission**; see
+the [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 The complete inquiry, rotation, insertion, measurement, and validation path
 fits one 180-minute contact block. Edge-height, stored height, and balance
 factor receive their first required formal introduction here; Week 8 uses
@@ -246,7 +246,7 @@ archives: 26 Markdown files, 3 PowerShell files, 2 Makefiles, 9 C files, and
 7. Keep `instructor/`, `code/solution/`, and
    `code/tests/test_extension.c` instructor-only until revisions close.
 
-## Week 13 submission
+## Week 12 submission
 
 Students submit:
 
@@ -262,7 +262,7 @@ Students submit:
 - a completed evidence record and Tree-Rotation Autopsy; and
 - a concise explanation of the operation-cost threat and its limits.
 
-These items form one Week 13 artifact. Optional extension tests and unsafe
+These items form one Week 12 artifact. Optional extension tests and unsafe
 autopsy execution are not additional submissions.
 
 ## Cost and security boundary

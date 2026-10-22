@@ -5,7 +5,7 @@
 This package is the Tree stage of the fourth
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
-## 14-week delivery role
+## 13-week delivery role
 
 This module combines Priority Queue behavior, an unsorted-array baseline,
 and a binary Heap in one **Week 10, 180-minute unit**. The first 40 minutes
@@ -19,7 +19,7 @@ is retained for optional practice and instructor reference. Its starter and
 full five-stage sequence are not a second required assignment.
 
 Use the scoped release and full 180-minute sequence in the
-[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 Where the full-package release order or submission list below is broader,
 the guide and this delivery-role note control the required path.
 

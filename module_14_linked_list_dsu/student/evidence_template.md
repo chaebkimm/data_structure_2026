@@ -1,5 +1,10 @@
 # Module 14 Evidence Record
 
+> **Current course scope:** linked nodes are introduced in
+> [Week 7](../../module_07_queue/week_07/README.md); DSU is taught with Kruskal in
+> [Week 13](../../module_16_prim_kruskal/week_13/README.md). This original combined
+> List/DSU material is a resource library, not another required lab or packet.
+
 Name: ____________________________
 Date: ____________________________
 Revision label: __________________

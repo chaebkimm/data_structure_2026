@@ -1,9 +1,9 @@
 # Instructor Lesson Plan - Module 12 Dijkstra
 
-## 14-week delivery override - Week 11 Practical 2 (180 minutes)
+## 13-week delivery override - Week 11 Practical 2 (180 minutes)
 
-This is the authoritative required sequence for the 14-week course; see the
-[delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+This is the authoritative required sequence for the 13-week course; see the
+[delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 Practical 2 is the sole Week 11 submission. Prepare a bounded release in
 which the weight parser, weighted-graph setup/cleanup and integration frame,
 Heap frontier, and their boundary tests are supplied. Do not assign the
@@ -350,7 +350,7 @@ Use only after core correctness:
 
 ## Submission check
 
-For the 14-week path, require only the single Practical 2 artifact:
+For the 13-week path, require only the single Practical 2 artifact:
 
 - preserved Stage A and Cognitive Pause;
 - canonical BFS/Dijkstra contrast;

@@ -5,7 +5,7 @@
 This package is the Graph stage of the third
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
-## 14-week delivery role
+## 13-week delivery role
 
 This is the main lab for the combined **Week 8 BFS** unit. After the short
 Module 8 tree trace, students implement graph BFS with discovery state,
@@ -14,9 +14,15 @@ unit's **single combined submission**; there is no separate Module 8
 submission. The full package remains available for a longer treatment.
 
 Use the scoped release and 145-minute sequence in the
-[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 Where the full-package release order or submission list below is broader,
 the guide and this delivery-role note control the required path.
+
+Week 7 implemented a linked Queue. This BFS package supplies its bounded
+circular-array Queue backend; students preserve the same FIFO contract and
+trace its indexing without implementing a second Queue. Queue entries are
+node/vertex IDs, separate from discovery/distance state. No general list or
+circular-Queue implementation is added to the Week 8 submission.
 
 ## Beginner-first rule
 

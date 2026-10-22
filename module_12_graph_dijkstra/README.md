@@ -2,10 +2,10 @@
 
 ## Dijkstra with a Lazy-Duplicate Minimum Frontier
 
-## 14-week delivery role - Week 11 Practical 2
+## 13-week delivery role - Week 11 Practical 2
 
-This package supplies the **sole Week 11 submission** in the 14-week course.
-Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+This package supplies the **sole Week 11 submission** in the 13-week course.
+Follow the [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 The required contact block is capped at 180 minutes and is one integrated
 Practical 2 artifact, not a Dijkstra lab followed by a second practical.
 
@@ -212,7 +212,7 @@ and additional Stage E tests are optional resources after the practical.
 
 Weighted-graph ownership and the typed frontier are supplied.
 
-For the 14-week path, TODO 1 is supplied complete, and setup/cleanup around
+For the 13-week path, TODO 1 is supplied complete, and setup/cleanup around
 TODOs 2 and 3 is scaffolded. Students implement only the bounded algorithm
 core and reconstruction described in the Week 11 submission above.
 

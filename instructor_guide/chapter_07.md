@@ -1,5 +1,7 @@
 # Chapter 7. How to Take Out the First Value First
 
+> Use the [Week 7 linked-Queue plan](../module_07_queue/week_07/instructor.md). The circular-array walkthrough below is the supplied comparison, not a second implementation lab.
+
 ## Starting Question
 
 > "To take values out in the order they arrived without moving them, what do we need to remember?"

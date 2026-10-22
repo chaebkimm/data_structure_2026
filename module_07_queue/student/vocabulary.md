@@ -1,5 +1,10 @@
 # Module 7 Vocabulary
 
+> **Current Week 7 scope:** the required lesson, lab, tests, and rubric are in
+> [Linked Lists and Queue](../week_07/README.md). This original circular-array
+> material is supplied comparison/reference; its implementation lab and
+> evidence packet are optional, not a second required submission.
+
 Use this page after Stage A. Each definition is written for a first course.
 
 | Term | Working definition |

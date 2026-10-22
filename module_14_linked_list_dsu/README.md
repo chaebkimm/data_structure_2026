@@ -2,21 +2,20 @@
 
 ## Linked-List Retrieval Clinic and Union-Find Bridge
 
-## 14-week delivery role - Week 12
+## 13-week delivery role — resources for Weeks 7 and 13
 
-This package supplies one bounded Week 12 submission in the 14-week course;
-see the [delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Students repair and verify one linked-list ownership case: first-match
-deletion of the middle node in the canonical list. The instructor supplies
-or demonstrates front insertion, destruction, the remaining list operations,
-and their boundary tests. The main implementation work is DSU make-set,
-iterative two-pass find, and union by component size.
+Linked-list fundamentals are taught through the
+[Week 7 linked Queue](../module_07_queue/week_07/README.md).
+DSU is introduced with Kruskal in the
+[combined Week 13 lab](../module_16_prim_kruskal/week_13/README.md).
+There is no standalone Module 14 assignment or Week 12 list-repair/DSU week.
 
-The edge-list builder and comparator are instructor demonstration/run
-material; students read the contract and supplied output but do not implement
-or separately test them. Additional list operations, the unsafe autopsy,
-and the complete Stage E sequence remain optional resources and must not
-become extra homework. The required contact path is capped at 180 minutes.
+The current Week 13 scaffold supplies make-set and exposes find and union
+as the two DSU TODOs; its tests, rubric, and submission replace this full
+package's combined List/DSU lab. The original list repair, complete lifecycle,
+and extended DSU activities below remain optional instructor resources.
+
+## Full-package reference
 
 This package is the Linear stage of the fifth
 Linear -> Tree -> Graph spiral in **Data Structures Course 2026**. It returns
@@ -252,7 +251,7 @@ archives: 26 Markdown files, 3 PowerShell files, 2 Makefiles, 9 C files, and
 7. Keep `instructor/`, `code/solution/`, and
    `code/tests/test_extension.c` instructor-only until revisions close.
 
-## Week 12 submission
+## Optional full-package submission example
 
 Students submit:
 
@@ -267,7 +266,7 @@ Students submit:
 - supplied boundary-suite output for allocation, invalid ID, and same-set
   cases;
 - one edge-builder/comparator demo observation from supplied output;
-- a completed Week 12 evidence record; and
+- a completed full-package evidence record; and
 - a corrected Cognitive Pause.
 
 ## Full-package TODO inventory
@@ -280,10 +279,8 @@ Students submit:
 
 The public headers and the undirected edge-list builder are supplied.
 
-For the 14-week path, the instructor supplies `push_front`, `destroy`, and
-their tests from cluster 1. Students complete only the bounded canonical
-`remove_first` ownership repair, then complete clusters 2 and 3 as the main
-implementation. The full list lifecycle and autopsy remain extensions.
+For the current course, use only the selected resources named by the weekly
+Week 7 and Week 13 guides. The full TODO inventory is not required homework.
 
 ## Fixed course conventions
 

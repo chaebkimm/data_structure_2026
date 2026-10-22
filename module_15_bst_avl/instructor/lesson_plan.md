@@ -1,11 +1,11 @@
 # Module 15 Instructor Lesson Plan - BST-to-AVL Synthesis
 
-## 14-week delivery role - Week 13 (180 minutes)
+## 13-week delivery role - Week 12 (180 minutes)
 
-This lesson is the authoritative Week 13 path; see the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+This lesson is the authoritative Week 12 path; see the
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 Meeting A uses 70 minutes and Meeting B uses 110 minutes, for exactly 180
-contact minutes. All assessed work is assembled into one Week 13 artifact.
+contact minutes. All assessed work is assembled into one Week 12 artifact.
 Do not schedule an additional Stage E lab.
 
 Introduce edge-height (`NULL=-1`, leaf `0`), stored height, and balance factor
@@ -148,7 +148,7 @@ Expected distinction: BST ordering survives; AVL height balance is restored.
 
 ## Meeting B - Investigate, implement, and verify
 
-Required time: 110 minutes, completing the same Week 13 contact block.
+Required time: 110 minutes, completing the same Week 12 contact block.
 
 ### 1. Worksheet Sections A-C - 20 minutes
 
@@ -308,7 +308,7 @@ repair a lost pointer, authenticate input, or prove the whole system secure.
 - Stage C: 100-point reasoning path including exactly three later test
   designs.
 - Stage E: rubric weights implementation, traces, safety, cost, and scope.
-- Stage A through Stage E evidence is submitted once as the Week 13 artifact;
+- Stage A through Stage E evidence is submitted once as the Week 12 artifact;
   no separate lab submission is added.
 - Full AVL deletion is not required.
 

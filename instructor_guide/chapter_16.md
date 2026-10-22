@@ -1,5 +1,7 @@
 # Chapter 16. Connecting All Vertices at the Lowest Cost
 
+> Use the [Week 13 combined DSU/Kruskal plan](../module_16_prim_kruskal/week_13/instructor.md). Introduce DSU in the same week. Prim is a brief supplied demonstration, with no student implementation checkpoints.
+
 ## Starting Question
 
 > "Why is the result of gathering the cheapest paths from one starting point different from the result where the total cost of edges connecting all vertices is the smallest?"
@@ -12,7 +14,7 @@ Dijkstra's algorithm finds cheap paths from vertex A to each other vertex. The s
 
 The result of connecting all vertices without any loops (cycles) is called a "spanning tree." The one with the smallest sum of edges is called a "minimum spanning tree." The method of looking at all edges in order from cheapest to most expensive is called "Kruskal's algorithm." The method of growing the connection by picking the cheapest edge going outward from the currently connected group is called "Prim's algorithm."
 
-In week 14, we code Kruskal's algorithm all the way to the end. For Prim's algorithm, we only complete limited decision points in the provided code. We put the comparison of the two results and the final integration check into a single submission.
+In Week 13, introduce DSU find and union by size, then implement the Kruskal selection loop. Make-set, sorting, graph loading, totals, and complete Prim are supplied. Prim is a brief instructor demonstration. DSU/Kruskal tests, individual synthesis, and the final integration checkpoint form one submission.
 
 ## Board Walkthrough
 

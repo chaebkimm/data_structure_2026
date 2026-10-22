@@ -1,35 +1,12 @@
 # Instructor Lesson Plan - Module 14
 
-## 14-week delivery override - Week 12 (180 minutes)
+## Current course: split resources, no standalone teaching week
 
-This is the authoritative required path; see the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-It produces one Week 12 artifact. Supply front insertion and destruction;
-students repair only the canonical middle-node deletion, then implement the
-DSU core. Demonstrate and run the edge-list builder/comparator; students read
-the contract and supplied output without a separate implementation or test.
-
-| Required contact activity | Minutes |
-|---|---:|
-| Linked-node inquiry and canonical ownership-repair reasoning | 15 |
-| Informal DSU grouping inquiry | 12 |
-| Reveal list ownership and DSU representations | 18 |
-| Cognitive Pause and calibration | 10 |
-| Complete the canonical union/find/compression trace | 15 |
-| Read supplied list and DSU contracts | 10 |
-| Implement and verify the one bounded deletion repair | 15 |
-| Implement make-set and iterative two-pass find | 25 |
-| Implement union by component size and same-set result | 25 |
-| Author bounded core tests and record evidence | 15 |
-| Break and build reset | 10 |
-| Instructor edge-list/comparator demo/run and student output reading | 5 |
-| Cost/scope check and submit the one artifact | 5 |
-| **Total** | **180** |
-
-Other linked-list operations, extended boundary cases, and the autopsy are
-supplied demonstrations or optional resources. Do not assign them as work
-outside this block. The fuller sequence retained below is not part of the
-required 14-week path.
+Use the [Week 7 plan](../../module_07_queue/week_07/instructor.md) for linked
+nodes and Queue, and the [Week 13 plan](../../module_16_prim_kruskal/week_13/instructor.md)
+for DSU with Kruskal. The sequence below is an optional full-package reference,
+not a required 180-minute List/DSU assignment. Make-set is supplied in Week 13;
+students implement find and union before the Kruskal loop in one artifact.
 
 ## Module identity
 
@@ -52,7 +29,7 @@ for Kruskal without changing the capstone graph representation.
    through F.
 4. **Gate D:** release the short textbook and exact-equivalent models.
    Students add labeled corrections rather than erasing earlier work.
-5. **Gate E:** release the bounded Week 12 scaffold, evidence, rubric,
+5. **Gate E:** release the optional full-package scaffold, evidence, rubric,
    visible tests, and supplied edge-builder demonstration. Keep the full lab and
    isolated autopsy as optional instructor resources.
 
@@ -365,5 +342,5 @@ concurrent mutation, or Kruskal implementation to the core module.
   output students read.
 - [ ] Complexity describes the actual validation strategy.
 - [ ] Trust and DSU limitations are explicit.
-- [ ] All evidence is contained in one Week 12 artifact; no autopsy or extra
+- [ ] All evidence is contained in one optional full-package artifact; no autopsy or extra
   list-operation submission is required.

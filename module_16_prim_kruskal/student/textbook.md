@@ -1,5 +1,10 @@
 # Chapter 16. Connecting All Locations at the Lowest Cost
 
+> **Current Week 13 scope:** use the [combined DSU/Kruskal lesson and lab](../week_13/README.md).
+> DSU is taught in the same week; Prim is supplied demonstration code only.
+> This original full-package material does not add Prim TODOs, a second lab,
+> or another evidence packet to the required weekly assignment.
+
 ## Thinking Logically
 
 ### Does collecting the cheapest individual routes make the cheapest overall connection?

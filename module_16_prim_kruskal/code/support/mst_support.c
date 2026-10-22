@@ -353,10 +353,10 @@ static MstStatus initialize_dsu(Dsu *sets, size_t vertex_count)
 
 static bool forest_path_maximum(
     const size_t degree[UNDIRECTED_EDGE_LIST_MAX_VERTICES],
-    const size_t
+    size_t
         neighbor[UNDIRECTED_EDGE_LIST_MAX_VERTICES]
                 [MST_MAX_SELECTED_EDGES],
-    const int64_t
+    int64_t
         neighbor_weight[UNDIRECTED_EDGE_LIST_MAX_VERTICES]
                        [MST_MAX_SELECTED_EDGES],
     size_t start,

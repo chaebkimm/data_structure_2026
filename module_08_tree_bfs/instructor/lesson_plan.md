@@ -1,11 +1,11 @@
 # Instructor Lesson Plan — Module 8: Tree Breadth-First Traversal
 
-## 14-week delivery override - Week 8 bridge (35 of 180 minutes)
+## 13-week delivery override - Week 8 bridge (35 of 180 minutes)
 
 Use only this short bridge before the 145-minute Module 9 graph-BFS block.
-There is no standalone Module 8 lab or submission in the 14-week path. The
+There is no standalone Module 8 lab or submission in the 13-week path. The
 full plan below remains an optional instructor resource. See the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 
 | Minutes | Required live work |
 |---:|---|

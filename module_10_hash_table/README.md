@@ -2,10 +2,10 @@
 
 ## Sparse Indicator Index with a Hash Table
 
-## 14-week delivery role - Week 9
+## 13-week delivery role - Week 9
 
 This is the required Week 9 hash-table unit and produces **one submission**.
-Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+Follow the [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 The 180-minute path keeps bounded probing, lookup, insertion/update, and
 removal as the student-written core. Transactional same-capacity compaction
 and growth are supplied as a nearly complete scaffold: students finish the
@@ -195,7 +195,7 @@ range at every step.
    growth, allocate a fresh slot array, reinsert only occupied entries, and
    commit only after success.
 
-In the 14-week path, students complete clusters 1 and 2. For cluster 3, the
+In the 13-week path, students complete clusters 1 and 2. For cluster 3, the
 instructor supplies allocation, reinsertion, rollback, and cleanup code;
 students complete the bounded maintenance-choice and commit checkpoints and
 verify them with the supplied preservation tests. Students author exactly

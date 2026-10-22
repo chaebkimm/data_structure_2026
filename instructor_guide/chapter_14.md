@@ -1,5 +1,7 @@
 # Chapter 14. Connecting Scattered Nodes and Managing Connected Groups
 
+> This resource is split: linked nodes belong to [Week 7](../module_07_queue/week_07/instructor.md), and DSU is introduced with Kruskal in [Week 13](../module_16_prim_kruskal/week_13/instructor.md). There is no standalone Week 12 List/DSU lesson.
+
 ## Starting Question
 
 > "To safely delete one node from a list connected by addresses, and to quickly know if two vertices are already connected, what do we need to remember?"
@@ -12,11 +14,11 @@ A list connected by addresses changes links instead of moving values. A line tha
 
 We also need to reduce the work of searching the whole graph again every time a new undirected relationship comes in. Groups that have no overlapping items are called "disjoint sets." The structure that manages these groups by saving the path to the representative is written for short as "DSU" (Disjoint Set Union).
 
-In week 12, we only code fixing the ownership (pointers) to delete one middle node, and the DSU. We trace other list actions using provided code. For the provided edge list maker and safe comparison function, we just check the running results.
+Linked-node ownership is taught through the linked Queue in Week 7. The deletion example below is optional review. In Week 13, use the supplied make-set and helpers, implement DSU find and union, and immediately apply them in Kruskal. Edge-list construction and sorting are supplied; there is no separate list-repair submission.
 
 ## Board Walkthrough
 
-First, let's delete Q.
+Optional linked-list review: delete Q. For the required Week 13 path, start with the DSU trace below.
 
 ```text
 R(17) -> Q(23) -> P(31) -> NULL

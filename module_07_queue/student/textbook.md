@@ -1,5 +1,10 @@
 # Chapter 7. Taking Out the First-In Data First
 
+> **Current Week 7 scope:** the required lesson, lab, tests, and rubric are in
+> [Linked Lists and Queue](../week_07/README.md). This original circular-array
+> material is supplied comparison/reference; its implementation lab and
+> evidence packet are optional, not a second required submission.
+
 ## Thinking Logically
 
 ### Why do we remember the arrival order?

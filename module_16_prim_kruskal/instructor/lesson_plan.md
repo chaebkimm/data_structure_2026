@@ -1,35 +1,16 @@
 # Instructor Lesson Plan - Module 16 Prim and Kruskal
 
-## 14-week delivery override - Week 14 (180 minutes)
+## Current Week 13 path — Union-Find and Kruskal, 180 minutes
 
-This is the authoritative required path; see the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Prepare Kruskal as the one student-completed MST core and provide Prim as a
-nearly complete annotated scaffold with bounded decision checkpoints to
-finish and test. Week 14
-produces one artifact that also contains the individual synthesis and
-capstone integration checkpoint.
+The [combined Week 13 plan](../week_13/instructor.md) controls required scope.
+Teach DSU here and use it immediately in Kruskal. Supply make-set, helpers,
+graph loading, sorting, checked totals, validation, and complete Prim.
+There are exactly three TODOs: find, union, and Kruskal selection.
+One artifact includes tests, synthesis, and integration; defense is separate.
 
-| Required contact activity | Minutes |
-|---|---:|
-| Retrieve shortest-path, Heap, and DSU distinctions | 10 |
-| Derive the two informal MST construction rules | 15 |
-| Reveal MST/MSF, cut, cycle, and representation terms | 18 |
-| Trace canonical Prim and Kruskal decisions | 17 |
-| Cognitive Pause and calibration | 10 |
-| Read the Kruskal contract and supplied Prim scaffold | 10 |
-| Break and build reset | 10 |
-| Complete and checkpoint the Kruskal core | 35 |
-| Finish/test Prim scaffold checkpoints and compare both strategies | 20 |
-| Run focused tests and explicit validation | 15 |
-| Write individual synthesis and capstone integration checkpoint | 15 |
-| Numeric/resilience check and submit the one artifact | 5 |
-| **Total** | **180** |
-
-Do not add a second implementation submission, a separate synthesis, or an
-extra capstone checkpoint. The capstone defense is held in the separate
-final-assessment period. The complete two-core sequence below is retained as
-optional instructor material only and is not asynchronous student work.
+The full sequence below is optional reference material. Its Prim checkpoints,
+extra traces, autopsy, and full-package submission checklist are not required
+work in the 13-week course.
 
 ## Module question
 
@@ -43,7 +24,7 @@ optional instructor material only and is not asynchronous student work.
 3. Gate C releases paired investigation worksheets after pause correction.
 4. Gate D releases textbook and models after Sections A through F are
    preserved.
-5. Gate E releases the bounded Kruskal core, supplied Prim scaffold,
+5. Gate E in the optional full-package sequence releases the Kruskal core, Prim scaffold,
    evidence, rubric, headers, and visible tests after retrieval. The full
    two-core lab and autopsy remain optional resources.
 
@@ -300,7 +281,7 @@ Use only after core correctness:
 
 ## Submission check
 
-For the 14-week path, require one Week 14 artifact containing:
+Optional full-package submission example (for the current course use the combined Week 13 lab):
 
 - preserved Stage A and pause;
 - exact canonical Prim and Kruskal traces;
@@ -316,4 +297,4 @@ For the 14-week path, require one Week 14 artifact containing:
 
 The full Prim implementation, safe autopsy, and extra boundary suite are
 optional resources. The defense occurs in the final period and is not a
-Week 14 submission.
+Week 13 submission.

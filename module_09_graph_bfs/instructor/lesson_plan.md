@@ -1,11 +1,11 @@
 # Instructor Lesson Plan — Module 9 Graph BFS
 
-## 14-week delivery override - Week 8 main lab (145 of 180 minutes)
+## 13-week delivery override - Week 8 main lab (145 of 180 minutes)
 
 Run this block immediately after the 35-minute Module 8 level-order bridge.
 Module 9 provides the combined week's only submission. The longer plan below
 remains an optional resource. See the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 
 | Combined-week minutes | Required live work |
 |---:|---|

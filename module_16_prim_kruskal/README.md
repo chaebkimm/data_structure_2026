@@ -4,19 +4,20 @@ This final graph module asks one question in two ways: how can every site in
 each connected part of a weighted, undirected graph be joined at minimum
 total weight?
 
-## 14-week delivery role - Week 14
+## 13-week delivery role — Week 13
 
-This package closes the 14 teaching weeks in one 180-minute block; see the
-[delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Students trace both MST strategies, complete one algorithm core (Kruskal),
-and finish/test bounded decision checkpoints in a supplied Prim scaffold.
-Their individual synthesis and
-capstone integration checkpoint are embedded in the same Week 14 artifact.
-There is no second MST, synthesis, or capstone-checkpoint submission.
+Use the [combined Union-Find and Kruskal unit](week_13/README.md) and its
+[180-minute plan](week_13/instructor.md). DSU is new learning in this week:
+find/compression and union by size lead directly into the Kruskal loop.
+Make-set, graph construction, sorting, totals, and validation are supplied.
+Prim is an instructor demonstration with no student implementation TODOs.
 
-The capstone defense occurs in the separate final-assessment period. The
-full two-core Stage E lab, additional tests, and autopsy remain instructor
-resources and must not be assigned as hidden work after Week 14.
+One artifact contains DSU/Kruskal code and tests, brief individual synthesis,
+and capstone integration. The defense uses the separate final-assessment
+period. This full two-algorithm package remains an optional resource library;
+its original complete Stage E lab is not the required weekly assignment.
+
+## Full-package reference
 
 The package is beginner-first. A **graph** stores items called **vertices**
 and relationships called **edges**. An **undirected edge** works both ways.
@@ -144,8 +145,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File `
 The script checks the exact 47-file source inventory and refuses to
 overwrite an existing archive.
 
-For 14-week delivery, use Stage E as a source library to prepare the bounded
-Week 14 scaffold. Do not release the untouched two-core lab as required work.
+For 13-week delivery, use Stage E as a source library to prepare the bounded
+Week 13 scaffold. Do not release the untouched two-core lab as required work.
 
 ## Package map
 
@@ -223,8 +224,7 @@ module_16_prim_kruskal/
   [linear equivalent](student/investigation_worksheet_linear.md).
 - Calibrate with [the textbook](student/textbook.md) and
   [the model set](diagrams/mst_models.md).
-- Use the bounded Week 14 scaffold to complete Kruskal and finish/test the
-  selected Prim checkpoints,
+- Use the [bounded Week 13 scaffold](week_13/README.md) to implement DSU and Kruskal,
   preserve [evidence](student/evidence_template.md), and apply
   [the rubric](student/rubric.md). The full
   [lab](student/lab.md) and [cycle autopsy](student/mst_cycle_autopsy.md) are
@@ -235,24 +235,12 @@ Instructor-only support consists of the
 [answer key](instructor/answer_key.md), and
 [technical notes](instructor/technical_notes.md).
 
-## Week 14 artifact boundary
+## Week 13 artifact boundary
 
-The single required artifact contains:
-
-- canonical Prim and Kruskal decision traces;
-- the completed Kruskal core and its focused tests;
-- completed selected checkpoints, output, and an explanation from the
-  supplied Prim scaffold;
-- structural/minimum validation and resilience evidence;
-- an individually authored comparison of shortest-path and spanning-tree
-  objectives; and
-- a capstone integration checkpoint showing how validated sparse identifiers,
-  dense graph IDs, edge-list construction, DSU, and MST output meet at named
-  ownership and API boundaries.
-
-Team integration evidence may be shared, but the synthesis paragraph is
-individual and included in this artifact. The later defense is assessed in
-the final period, not inside the Week 14 contact budget.
+Follow the [combined lab and rubric](week_13/lab.md): completed DSU find/union,
+Kruskal selection loop, focused tests, parent/edge traces, one Prim demonstration
+observation, brief synthesis, and the capstone integration checkpoint.
+The cumulative report and defense occur in the separate final period.
 
 ## Build boundary
 

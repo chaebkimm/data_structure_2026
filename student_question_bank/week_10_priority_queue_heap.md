@@ -2,7 +2,7 @@
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 14-week course
+## Required scope for the 13-week course
 
 Module 11 contains the stable-minimum Priority Queue contract, comparator,
 tie rule, unsorted-array trace, and cost baseline. The instructor supplies its
@@ -169,9 +169,9 @@ baseline, followed by 140 minutes for Heap work, tests, comparison, and evidence
 
 ## Sources
 
-- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Original Weeks 8–14 question bank](02_weeks_08_14_questions.md)
+- [Original Weeks 8–13 question bank](02_weeks_08_13_questions.md)
 - [Module 11 supplied baseline](../module_11_binary_heap/priority_queue_baseline/README.md)
 - [Module 11 baseline vocabulary reference](../module_11_binary_heap/priority_queue_baseline/student/vocabulary.md)
 - [Module 11 main-lab role](../module_11_binary_heap/README.md)

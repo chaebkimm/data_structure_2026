@@ -1,12 +1,12 @@
 # Instructor Lesson Plan - Module 11 Binary Heap
 
-## 14-week delivery - Week 10 combined unit (180 minutes)
+## 13-week delivery - Week 10 combined unit (180 minutes)
 
 Teach the Priority Queue contract and supplied scan baseline in the first
 40 minutes. Continue with the Heap implementation for 140 minutes. This is
 one Module 11 unit with one submission. The longer two-meeting plan below
 is optional. See the
-[14-week delivery guide](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+[13-week delivery guide](../../Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
 
 | Minutes | Required live work |
 |---:|---|

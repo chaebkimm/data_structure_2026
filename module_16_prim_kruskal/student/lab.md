@@ -1,5 +1,10 @@
 # Stage E - C Lab: Prim and Kruskal Minimum Spanning Forests
 
+> **Current Week 13 scope:** use the [combined DSU/Kruskal lesson and lab](../week_13/README.md).
+> DSU is taught in the same week; Prim is supplied demonstration code only.
+> This original full-package material does not add Prim TODOs, a second lab,
+> or another evidence packet to the required weekly assignment.
+
 ## Purpose
 
 Complete and test two algorithms that connect every available vertex at

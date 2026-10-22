@@ -5,6 +5,16 @@
 This package is the Linear stage of the third
 Linear → Tree → Graph spiral in **Data Structures Course 2026**.
 
+## 13-week delivery role — Week 7
+
+The required assignment is [Linked Lists and Queue](week_07/README.md),
+with its own [180-minute instructor plan](week_07/instructor.md). Students
+implement a linked Queue, explain node ownership and destruction, and trace
+this package's supplied circular-array Queue for comparison. One submission
+uses the weekly lab/rubric; the full circular-Queue lab below is optional.
+
+## Full circular-array package reference
+
 ## Beginner-first rule
 
 Students are not expected to know Queue vocabulary, circular indexing, or

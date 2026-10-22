@@ -1,5 +1,10 @@
 # Module 7 Staged Release Manifest
 
+> **Current Week 7 scope:** the required lesson, lab, tests, and rubric are in
+> [Linked Lists and Queue](../week_07/README.md). This original circular-array
+> material is supplied comparison/reference; its implementation lab and
+> evidence packet are optional, not a second required submission.
+
 Run `prepare_student_release.ps1` from this directory to create five ZIP
 archives in `../dist`. The script refuses to overwrite an existing archive.
 

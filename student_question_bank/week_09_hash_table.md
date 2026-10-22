@@ -2,7 +2,7 @@
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-> **Required scope (14-week path; one submission):** Students implement capacity-bounded probing, exact lookup, insert/update, deletion, and tombstone reuse. They complete and test the maintenance-choice and commit checkpoints in an instructor-supplied transactional growth/compaction scaffold; they do not build every rebuild mechanism from scratch. Required student-authored tests cover collision and wraparound, tombstone-safe mutation and duplicate prevention, and scaffolded growth/compaction with one forced maintenance-allocation failure and state preservation. Additional capacity-policy, adversarial, deep-validator, and long-churn work is supplied or optional.
+> **Required scope (13-week path; one submission):** Students implement capacity-bounded probing, exact lookup, insert/update, deletion, and tombstone reuse. They complete and test the maintenance-choice and commit checkpoints in an instructor-supplied transactional growth/compaction scaffold; they do not build every rebuild mechanism from scratch. Required student-authored tests cover collision and wraparound, tombstone-safe mutation and duplicate prevention, and scaffolded growth/compaction with one forced maintenance-allocation failure and state preservation. Additional capacity-policy, adversarial, deep-validator, and long-churn work is supplied or optional.
 
 Extension questions below are enrichment only and do not enlarge the required Week 9 artifact.
 Separate-chaining and AVL comparisons are instructor-supported previews,
@@ -150,8 +150,8 @@ revisited after Modules 14–15; their implementations are not prerequisites.
 
 ## Sources
 
-- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md#week-9--hash-table-within-180-minutes)
+- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md#week-9--hash-table-within-180-minutes)
 - [Master curriculum, Module 10](../Data_Structures_Course_2026_Spiral_Curriculum.md#module-10--supporting-adt-hash-table)
 - [Module 10 package](../module_10_hash_table/README.md)
 - [Module 10 vocabulary reference](../module_10_hash_table/student/vocabulary.md)
-- [Consolidated Weeks 8–14 question bank](02_weeks_08_14_questions.md#week-9-hash-table-module-10)
+- [Consolidated Weeks 8–13 question bank](02_weeks_08_13_questions.md#week-9--hash-table)

@@ -2,7 +2,7 @@
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 14-week course
+## Required scope for the 13-week course
 
 Module 8 is a short bridge: students trace a Queue of tree nodes through a
 left-first level-order visit, explain why Queue order produces nondecreasing
@@ -137,7 +137,7 @@ generalization, not the required Week 8 implementation.
 ### Assignment and evidence
 
 - What belongs in the single combined Week 8 submission?
-- Why is there no separate Module 8 programming submission in the 14-week course?
+- Why is there no separate Module 8 programming submission in the 13-week course?
 - Which evidence demonstrates correct distance, predecessor, path reconstruction, cycles, unreachable vertices, and representation equivalence?
 - How should the brief tree trace and the main graph-BFS code be connected in the synthesis explanation?
 
@@ -157,9 +157,9 @@ generalization, not the required Week 8 implementation.
 
 ## Sources
 
-- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Original Weeks 8–14 question bank](02_weeks_08_14_questions.md)
+- [Original Weeks 8–13 question bank](02_weeks_08_13_questions.md)
 - [Module 8 bridge role](../module_08_tree_bfs/README.md)
 - [Module 8 vocabulary reference](../module_08_tree_bfs/student/vocabulary.md)
 - [Module 9 main-lab role](../module_09_graph_bfs/README.md)
