@@ -1,0 +1,19 @@
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -g
+BUILD_DIR := build
+LAB_DIR := ../student
+REPOSITORY_ROOT := ../..
+LAB_SOURCES := $(LAB_DIR)/lab_driver.c $(LAB_DIR)/lab.c $(LAB_DIR)/queue.c $(LAB_DIR)/tree_bfs.c \
+	$(REPOSITORY_ROOT)/module_02_binary_tree/student/lab.c \
+	$(REPOSITORY_ROOT)/module_07_linked_list/student/lab.c
+.PHONY: all core student-tests clean
+all: core
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+$(BUILD_DIR)/lab_core: $(LAB_SOURCES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(REPOSITORY_ROOT) $(LAB_DIR)/lab_driver.c -o $@
+core: $(BUILD_DIR)/lab_core
+	$(BUILD_DIR)/lab_core
+student-tests: core
+clean:
+	$(RM) -r $(BUILD_DIR)

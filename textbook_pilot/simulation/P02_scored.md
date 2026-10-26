@@ -52,14 +52,14 @@
 | 4 | 가장 큰 물리 위치를 스택 맨 위로 봄 | `module_04_stack/student/textbook.md:69-75,87` | 판정 보류 |
 | 5 | 노드 기록을 활성 호출 완료로 봄 | `module_05_tree_dfs/student/textbook.md:51-61` | 판정 보류 |
 | 6 | `visited=true`를 처리 완료로 봄 | `module_06_graph_dfs/student/textbook.md:25-34` | 판정 보류 |
-| 7 | 물리 배열 0번과 논리 첫 값을 같게 봄 | `module_07_queue/student/textbook.md:39,75` | 판정 보류 |
-| 8 | 큐에 든 대기 작업을 방문 완료로 봄 | `module_08_tree_bfs/student/textbook.md:17` | 판정 보류 |
-| 9 | 특별값 16의 역할, `discovered`와 완료 혼동 | `module_09_graph_bfs/student/textbook.md:17-23` | 판정 보류 |
+| 7 | 물리 배열 0번과 논리 첫 값을 같게 봄 | Retired Queue edition (historical Module 7, lines 39/75) | 판정 보류 |
+| 8 | 큐에 든 대기 작업을 방문 완료로 봄 | Retired Tree BFS edition (historical Module 8, line 17) | 판정 보류 |
+| 9 | 특별값 16의 역할, `discovered`와 완료 혼동 | Historical Module 9 Graph BFS edition, lines 17–23; current package: `module_08_graph_bfs/` | 판정 보류 |
 | 10 | 물리 배열 위치를 우선순위 비교 규칙으로 봄 | `module_10_priority_queue/student/textbook.md:15,83,96` | 판정 보류 |
 | 11 | 루트가 최소라는 사실을 배열 전체 정렬로 확대 | `module_11_binary_heap/student/textbook.md:23-37` | 판정 보류 |
 | 12 | 힙 삽입을 거리 확정으로 보고 옛 기록 삭제를 요구 | `module_12_graph_dijkstra/student/textbook.md:15,49-56` | 판정 보류 |
 | 13 | `DELETED`에서 검색·삽입을 끝냄 | `module_13_hash_table/student/textbook.md:71-78` | 판정 보류 |
-| 14 | 해제 뒤 `next` 읽기, 경로 줄이기를 묶음 변경으로 봄 | `module_14_linked_list_dsu/student/textbook.md:58,93` | 판정 보류 |
+| 14 | 해제 뒤 `next` 읽기, 경로 줄이기를 묶음 변경으로 봄 | Historical Module 14 edition, lines 58/93; current package: `module_07_linked_list/` | 판정 보류 |
 | 15 | 회전이 중위 순서를 바꾼다고 보고 M 주소를 덮음 | `module_15_bst_avl/student/textbook.md:52-59` | 판정 보류 |
 | 16 | 힙 후보를 선택 완료로 보고 `key`를 누적 거리로 봄 | `module_16_prim_kruskal/student/textbook.md:38-48` | 판정 보류 |
 

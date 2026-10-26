@@ -21,20 +21,21 @@ Check if the student can explain all three of these parts in their own words:
 2. The easy new idea and its formal name.
 3. How the state changes in a main example and why it happens that way.
 
-## Relationship Between the 13-Week Course and the Chapters
+## Relationship Between the 14-Week Course and the Chapters
 
 | Class Week | Chapters | Teaching Rules |
 | --- | --- | --- |
 | 1–6 | Chapters 1–6 | Completed sequence; existing materials retained. |
-| 7 | Chapter 7 + linked nodes from Chapter 14 | Linked Queue implementation; supplied circular-array comparison. |
-| 8 | Chapters 8–9 | Chapter 8 is a short tree walkthrough, and Chapter 9 is the main coding practice. |
-| 9 | Chapter 10 | Hash Table: probing, mutations, and scaffolded rebuilding. |
-| 10 | Chapter 11 | Priority Queue contract and supplied linear baseline, followed by the Binary Heap lab; one submission. |
-| 11 | Chapter 12 | Dijkstra in the Practical 2 scaffold. |
-| 12 | Chapter 15 | Combined BST-to-AVL lesson; deletion optional. |
-| 13 | DSU from Chapter 14 + Chapter 16 | DSU and Kruskal in one lab; Prim demonstration only. |
+| 7 | Chapter 7 | Index links, predecessor insertion/detachment, and free-chain reuse; a linked FIFO queue as a linked-list application in one lab following `student/lab.c`. |
+| 8 | Chapter 8 | Retrieve Module 7's linked queue, compare linear/circular array queues, and use the same linked queue for tree BFS and graph/maze BFS with distances, shortest predecessors, and path recovery in one lab. |
+| 9 | Chapter 9 | Hash Table: pooled collision chains, signed hashing, and two sum. |
+| 10 | Chapter 10 | Fixed integer min/max Heap, bottom-up construction, and two indexed ID Heaps for common on-time; one lab-driver submission. |
+| 11 | Chapter 11 | Indexed-Heap Dijkstra traces and tests in Practical 2. |
+| 12 | Chapter 12 | Combined BST-to-AVL lesson; deletion optional. |
+| 13 | Chapter 13 | Linear and first-match binary search, stable insertion/merge sorting, and consolidation through a workload-selection memo; one artifact. |
+| 14 | DSU reference from Module 7 + Chapter 14 | Introduce DSU and Kruskal in one lab; Prim demonstration only. |
 
-Module 13 is retired; Modules 14–16 retain their existing numbers.
+The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 uses a linked queue as an example of linked lists. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS.
 
 The total class time for a single week must not go over 180 minutes. The board walkthroughs in these files are just one piece of the core explanation. Manage the time so it stays under 180 minutes by adding in your separate coding practice and test times.
 
@@ -48,14 +49,13 @@ The total class time for a single week must not go over 180 minutes. The board w
 | 4 | [Take Out the Last Added Value First](chapter_04.md) |
 | 5 | [Depth-First Traversal and Expression Trees](chapter_05.md) |
 | 6 | [How Not to Get Lost in a Graph](chapter_06.md) |
-| 7 | [How to Take Out the First Value First](chapter_07.md) |
-| 8 | [Looking at Nodes Closest to the Root First](chapter_08.md) |
-| 9 | [Finding the Path with the Fewest Edges](chapter_09.md) |
-| 10 | [Finding Large Numbers in a Small Table](chapter_10.md) |
-| 11 | [Priority Queues and Binary Heaps](chapter_11.md) |
-| 12 | [Finding the Path with the Smallest Cost](chapter_12.md) |
-| 14 | [Connecting Scattered Nodes and Managing Connected Groups](chapter_14.md) |
-| 15 | [Fixing a Search Tree that Collapses to One Side](chapter_15.md) |
-| 16 | [Connecting All Vertices at the Lowest Cost](chapter_16.md) |
+| 7 | [Linking Array Nodes and Reusing Slots](chapter_07.md) |
+| 8 | [Queues, Tree BFS, and Graph BFS](chapter_08.md) |
+| 9 | [Finding Large Numbers in a Small Table](chapter_09.md) |
+| 10 | [Binary Heaps and Common On-Times](chapter_10.md) |
+| 11 | [Finding the Path with the Smallest Cost](chapter_11.md) |
+| 12 | [Fixing a Search Tree that Collapses to One Side](chapter_12.md) |
+| 13 | [Searching, Sorting, and Consolidation](chapter_13.md) |
+| 14 | [Connecting All Vertices at the Lowest Cost](chapter_14.md) |
 
-The required scope of what to teach is decided by the [13-Week Delivery Guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md). The order of the vocabulary terms follows the [Korean Textbook Style Guide](../TEXTBOOK_STYLE_GUIDE.md).
+The required scope of what to teach is decided by the [14-Week Delivery Guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md). The order of the vocabulary terms follows the [Korean Textbook Style Guide](../TEXTBOOK_STYLE_GUIDE.md).

@@ -1,6 +1,6 @@
 # Korean Data Structures Course Materials
 
-Students read the textbook. The instructor uses the teaching guide in the same row to ask the first question and walk through the board examples. The required scope for the classes is decided by the [13-Week Delivery Guide](Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
+Students read the textbook. The instructor uses the teaching guide in the same row to ask the first question and walk through the board examples. The required scope for the classes is decided by the [14-Week Delivery Guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](module_00_datastructure/textbook.md).
 
@@ -12,15 +12,15 @@ Before starting the course, first read about what data structures and efficiency
 | 4 | 4 | [Taking Out the Last Value First](module_04_stack/student/textbook.md) | [Chapter 4 Guide](instructor_guide/chapter_04.md) |
 | 5 | 5 | [Following One Path to the End](module_05_tree_dfs/student/textbook.md) | [Chapter 5 Guide](instructor_guide/chapter_05.md) |
 | 6 | 6 | [Graph DFS, Edge Lists, and Biconnected Components](module_06_graph_dfs/student/textbook.md) · [Korean](module_06_graph_dfs/student/textbook_korean.md) | [Chapter 6 Guide](instructor_guide/chapter_06.md) · [Class workbook](module_06_graph_dfs/student/class_material.md) |
-| 7 | 7 + 14 (linked nodes) | [Linked Lists and Queue](module_07_queue/week_07/README.md) | [Chapter 7 Guide](instructor_guide/chapter_07.md) |
-| 8 | 8 | [Visiting Nodes Closest to the Root First](module_08_tree_bfs/student/textbook.md) | [Chapter 8 Guide](instructor_guide/chapter_08.md) |
-| 8 | 9 | [Finding the Path with the Fewest Edges](module_09_graph_bfs/student/textbook.md) | [Chapter 9 Guide](instructor_guide/chapter_09.md) |
-| 9 | 10 | [Finding Large Keys in a Small Array](module_10_hash_table/student/textbook.md) | [Chapter 10 Guide](instructor_guide/chapter_10.md) |
-| 10 | 11 | [Priority Queues and Binary Heaps](module_11_binary_heap/student/textbook.md) | [Chapter 11 Guide](instructor_guide/chapter_11.md) |
-| 11 | 12 | [Finding the Path with the Smallest Total Cost](module_12_graph_dijkstra/student/textbook.md) | [Chapter 12 Guide](instructor_guide/chapter_12.md) |
-| 12 | 15 | [Fixing a Leaning Search Tree](module_15_bst_avl/student/textbook.md) | [Chapter 15 Guide](instructor_guide/chapter_15.md) |
-| 13 | 14 (DSU) + 16 | [Union-Find and Kruskal](module_16_prim_kruskal/week_13/README.md) | [Week 13 plan](module_16_prim_kruskal/week_13/instructor.md) |
+| 7 | 7 | [Linked Lists](module_07_linked_list/student/textbook.md) · [Korean](module_07_linked_list/student/textbook_korean.md) | [Chapter 7 Guide](instructor_guide/chapter_07.md) · [Class workbook](module_07_linked_list/student/class_material.md) · [Slides](module_07_linked_list/student/ppt_material.md) · [Lab slides](module_07_linked_list/student/ppt_lab_material.md) |
+| 8 | 8 | [Queues, Tree BFS, and Graph BFS](module_08_graph_bfs/student/textbook.md) · [Korean](module_08_graph_bfs/student/textbook_korean.md) | [Chapter 8 Guide](instructor_guide/chapter_08.md) · [Class workbook](module_08_graph_bfs/student/class_material.md) · [Slides](module_08_graph_bfs/student/ppt_material.md) · [Lab slides](module_08_graph_bfs/student/ppt_lab_material.md) |
+| 9 | 9 | [Finding a Pair with a Hash Table](module_09_hash_table/student/textbook.md) | [Chapter 9 Guide](instructor_guide/chapter_09.md) |
+| 10 | 10 | [Integer Heaps and Shared On-Time](module_10_binary_heap/student/textbook.md) | [Chapter 10 Guide](instructor_guide/chapter_10.md) |
+| 11 | 11 | [Minimum-Cost Routes with an Indexed Heap](module_11_graph_dijkstra/student/textbook.md) | [Chapter 11 Guide](instructor_guide/chapter_11.md) |
+| 12 | 12 | [Fixing a Leaning Search Tree](module_12_bst_avl/student/textbook.md) | [Chapter 12 Guide](instructor_guide/chapter_12.md) |
+| 13 | 13 | [Searching, Sorting, and Consolidation](module_13_search_sort_consolidation/student/textbook.md) · [Korean](module_13_search_sort_consolidation/student/textbook_korean.md) | [Chapter 13 Guide](instructor_guide/chapter_13.md) · [Class workbook](module_13_search_sort_consolidation/student/class_material.md) |
+| 14 | 14 | [Union-Find, Prim, and Kruskal](module_14_prim_kruskal/week_14/README.md) | [Chapter 14 Guide](instructor_guide/chapter_14.md) · [Week 14 plan](module_14_prim_kruskal/week_14/instructor.md) |
 
-There are 15 teaching chapters. Module 13 is retired; Modules 14–16 keep their existing numbers. The priority queue contract and supplied linear baseline are part of Module 11.
+The 14 teaching chapters and packages are numbered consecutively from 1 to 14. Module 7 covers linked lists and uses a linked queue as an application. Module 8 compares queue representations, then reuses that linked queue for tree BFS and graph BFS in one lesson. Module 10 follows its fixed integer min/max Heap and ten-device shared-on-time lab. Its alert-record Priority Queue and linear baseline remain optional references.
 
 The writing style and the order of concepts follow the [Textbook Style Guide](TEXTBOOK_STYLE_GUIDE.md). Actual testing with beginners will be done using the [Textbook Pilot Guide](textbook_pilot/README.md) once we have participants.

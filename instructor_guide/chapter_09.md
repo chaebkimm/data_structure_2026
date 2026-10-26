@@ -1,70 +1,99 @@
-# Chapter 9. Finding the Path with the Fewest Edges
+# Chapter 9. Finding Earlier Values with a Hash Table
 
 ## Starting Question
 
-> "To find the path with the fewest edges in a graph, what do we need to remember for each vertex?"
+> "Which two different positions contain values that add up to the target, and how can we avoid searching every earlier position again?"
 
-**Expected Answer:** If students say we need to remember whether it was put in the queue, how many moves it took from the starting point, and which vertex it came from, write it down.
+**Expected answer:** Keep earlier values in small groups selected by a
+repeatable calculation. Search only the group that could contain the needed
+value. Compare the actual value before accepting a match.
 
-## Why We Need This
+## Required source and scope
 
-In a tree, there is only one path to a node. In a graph, multiple paths can meet at one vertex and go back to a vertex we already passed. If we just copy the level-by-level traversal of a tree, we will put the same vertex in many times.
+Teach [Module 09's lab.c](../module_09_hash_table/student/lab.c), which
+includes [Module 07's linked-node pool](../module_07_linked_list/student/lab.c).
+Students trace the supplied code and write a separate test driver. They do
+not implement a dynamic map, deletion, tombstones, resizing, or rehashing.
+The older open-addressing library remains an optional comparison.
 
-To process the closest vertices first, we need a queue. We also need a record so we do not put the same vertex in again. To make the path later, we must also keep track of where it first came from.
+Retrieve integer `next` links, -1, `free_head`, and `new_lnode` from Module
+07. Module 08 practiced preserving the meaning of array indices. Here,
+bucket indices, linked-node indices, and input indices have different roles.
 
-## Board Walkthrough
+## Board walkthrough
 
-The starting vertex of the graph in the text is 0.
+First count the brute-force pairs. `two_sum_bf` visits each `i` from 0
+through 9 and each earlier `j<i`. A complete miss tests 45 pairs. The
+answer contains input indices, not the input values.
 
-```text
-0:[1,2]  1:[3,4]  2:[4,5]  3:[6]
-4:[6]    5:[4]    6:[1]    7:[]
+Next show `hashtable[10]`, initially all -1, and the separate pool
+`lnodes[10]`. Call `init_lnodes_pool()` before first use. The bucket heads do
+not initialize the pool. Do not reinitialize the pool while bucket chains
+still own nodes.
 
-```
+The hash function takes the remainder on division by 10 and adds 10 only
+when that remainder is negative. Thus -16 selects 4, -8 selects 2, and 2
+also selects 2. A shared bucket is a collision. The stored nodes form a
+linked chain, called separate chaining. They do not spill into neighboring
+bucket heads.
 
-We attach `(distance, previous vertex)` to the newly discovered vertex. Cover the next lines and ask first:
+After a fresh initialization, save payloads 12, 22, and -8 into bucket 2.
+The final chain is `2(-8)→1(22)→0(12)→-1`. A find for 12 compares three
+payloads and returns node index 0. A missing 32 reaches -1. Saving another
+22 creates another node; `find_data` returns the newest match. The helper
+does not enforce unique keys or perform updates.
 
-* Prediction 1: After processing 0, what two values will be recorded for 1 and 2?
-* Prediction 2: When 2 meets 4, how will the queue and 4's record change?
-* Prediction 3: If we follow 6's previous vertices backward, what numbers will come out?
+Then trace `two_sum_ht(0)` with the supplied `nums`. At `i=5`, value 1
+needs complement -1. Bucket 9 points to node 4, whose payload is input
+index 4. The equality test is `nums[4] == -1`, so the answer is `{5,4}`.
+Only earlier positions are stored because lookup precedes insertion.
 
-| Processed Vertex | Queue | Newly Fixed Record |
-| --- | --- | --- |
-| Before start | `0` | `0:(0, 16)` |
-| 0 | `1, 2` | `1:(1, 0)`, `2:(1, 0)` |
-| 1 | `2, 3, 4` | `3:(2, 1)`, `4:(2, 1)` |
-| 2 | `3, 4, 5` | `5:(2, 2)` |
-| 3 | `4, 5, 6` | `6:(3, 3)` |
-| 4 | `5, 6` | None |
-| 5 | `6` | None |
-| 6 | Empty | None |
+Trace target 100. No pair of supplied values reaches 100. Both algorithms
+report `{-1,-1}`. The hash version leaves all ten input indices stored and
+`free_head=-1`. Its next call runs `init_hashtable()` to recycle the old
+chains. Reset clears bucket heads and reconnects nodes to the free chain;
+it does not call C `free` and does not reset `answer`.
 
-Since 4, which we met from 2, is already discovered, we do not put it in again. Reversing `6 ← 3 ← 1 ← 0` becomes `0 → 1 → 3 → 6`. The search finishes normally with 7 in an undiscovered state.
+## One 180-minute submission
 
-## Common First Thoughts
+Use the [lesson plan](../module_09_hash_table/instructor/lesson_plan.md) for
+Stage A inquiry, Stage B representation and three-target Cognitive Pause,
+Stage C investigation, Stage D textbook calibration, and Stage E driver
+work. Preserve predictions before revealing answers.
 
-* "We can mark it as discovered when we take it out of the queue." But while it is waiting, another edge could put the same vertex in again.
-* "If we meet 4 later, we can just change the distance and previous vertex." But when we count every edge as one move, we fix the first discovery record and do not change it.
-* "If we can't reach 7, the whole search fails." But a vertex that cannot be reached just stays in the normal result as undiscovered.
-* "Even if each edge has a different cost, the same queue can find the cheapest path." But a regular queue does not compare the sizes of those costs.
+Require exactly three original test groups: hashing and chains; pool
+lifecycle and exhaustion; two-sum comparison with brute force. Evidence
+includes a hit, a miss, repeated calls, and distinct-index protection.
+Check exact chain state and unchanged failed insertion. For duplicate input
+values, accept different valid earlier indices because brute force scans
+oldest first while prepended chains scan newest first.
 
-## Neutral Questions
+A driver beside `lab.c` includes it once and defines `main`. From the
+repository root, compile with `-I.` for the Module 07 include. The current
+Make targets are `make -C module_09_hash_table/code lab-compile`, `core`,
+and `student-tests`. See the [lab instructions](../module_09_hash_table/student/lab.md).
 
-* The moment vertex 2 meets 4, what records do we need to check?
-* What is left in vertex 7's discovery status, distance, and previous vertex, respectively?
-* How can we make the order from 0 to 6 by only looking at the previous vertex array?
-* How can we compare the results of searching the same graph using two different storage methods?
+## Cost and limits
 
-## Vocabulary Rules
+Count visited nodes before naming the cost. Saving one node is constant
+work. Finding a payload walks its selected chain. With `n` entries, `b`
+buckets, and adequately distributed values, lookup has expected
+`O(1+n/b)` work. Hash two sum is expected `O(n)` with bounded load,
+`b=Θ(n)`, sufficient pool capacity, and linear reset work. All-colliding
+values can make total search work quadratic. The actual program fixes the
+input, bucket array, and pool at ten; it does not grow.
 
-**Words we can use:** Graph, vertex, edge, loop (cycle), starting vertex, reachability, discovery and processing, queue, and breadth-first search for trees.
+`init_hashtable` visits all bucket heads and all returned nodes. Valid
+chains must be disjoint and acyclic. Bucket helpers require indices 0–9.
+Test sums and complement subtractions must fit in `int`. The code checks
+pool exhaustion, but does not validate these other preconditions.
 
-**Names we will introduce in this chapter:** One hop, unweighted graph, graph breadth-first search, `discovered`, `distance`, `predecessor`, first discovered distance, and path reconstruction.
+## Questions to use in class
 
-**Words we won't use yet:** We won't use the names for the procedure in a later chapter that compares different costs for each edge to fix the cheapest path. We also won't name the next data structure that picks what to take out first using a separate rule.
-
-## Final Check
-
-> "Can you explain why vertex 6's distance is fixed at 3, and the process of making `0 → 1 → 3 → 6` using the previous vertex records?"
-
-**Minimum Expected Answer:** Students should mention that the queue processes smaller distances first, the first discovery record is not changed, and we reverse `6 ← 3 ← 1 ← 0`.
+- Why does -8 select bucket 2 rather than array position -8?
+- What differs between a bucket index, a node index, and a stored input index?
+- Why is `find_data(bucket,complement)` unsuitable when payloads are input indices?
+- Why must the complement search occur before saving the current index?
+- What remains stored after an early successful return?
+- How can the pool be full while some buckets are empty?
+- Which distribution and capacity conditions support the expected linear claim?

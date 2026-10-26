@@ -1,83 +1,106 @@
-# Chapter 12. Finding the Path with the Smallest Cost
+# Chapter 12. Repairing an Ordered Tree with Integer Links
 
-## Starting Question
+Use the [Module 12 source](../module_12_bst_avl/student/lab.c) and
+[180-minute lesson plan](../module_12_bst_avl/instructor/lesson_plan.md).
+Students trace supplied complete code and write tests. One Week 12
+submission collects the investigation and evidence. AVL deletion and the
+older pointer-library starter are optional.
 
-> "If the path with the fewest edges and the path with the smallest total cost are different, which vertex's path should we check next?"
+## Starting question
 
-**Expected Answer:** Students should say that we must take out the waiting record with the smallest cost found so far, and record cheaper candidates that pass through that vertex.
+> If the same labels form a long line because of arrival order, how can we
+> shorten its routes while preserving their smaller-to-larger order?
 
-## Why We Need This
+Expected reasoning: reconnect a small local region, keep every record
+reachable, and promote a middle label. Introduce the formal names after
+students preserve their initial model.
 
-Breadth-first search counts the number of edges. If each edge has a different cost, a path with three edges like `A-C-D-E` (cost 6) can be cheaper than a path with just one edge like `A-E` (cost 14). We need a process that updates the total sum of the cost instead of just counting the number of edges.
+## Source contract to establish
 
-We take out the vertex with the smallest cost found so far. If there is a cheaper candidate path going through that vertex, we update the record. This checking step is called "relaxation." The records waiting to be processed are called the "frontier." This overall flow is called "Dijkstra's Algorithm."
+Module 2 supplies `nodes[10]`, with character `data` and integer `left`
+and `right` IDs. Module 12 adds a separate `height[10]`. A missing link
+or empty root is -1; missing height is -1 and leaf height is 0. IDs, data,
+and heights are three different quantities.
 
-In the week 11 practice, we only complete the core parts of relaxation and the frontier within the provided framework of a weighted graph, heap, and path reconstruction. We will not add a separate full practice project.
+`_add(root,id)` inserts an existing fresh ID with two -1 child links.
+Save its return value with `root = _add(root,id)`. The routine assumes a
+valid AVL input and valid IDs, does no allocation, and supplies no error
+statuses, duplicate rejection, search function, or capacity guard.
 
-## Board Walkthrough
+Equality descends left through `<=`, but a rotation may place equal keys
+on either side. The lasting ordering rule is nondecreasing inorder, with
+left-region keys `<=` the current key and right-region keys `>=` it.
+Do not import the optional library's unique-key rule into the required lab.
 
-Let's look at the following directed edges in the written order:
+## Board walkthrough
 
-```text
-A->B 9   A->C 2   A->E 14
-B->D 0   B->E 8
-C->B 2   C->D 2
-D->E 2
-
-```
-
-We write the heap records in the order of `Vertex/Cost`. `dist` is the currently cheapest cost, and `pred` is the vertex right before it. `INF` is a mark showing we haven't found a path yet. We change these values line by line.
-
-```text
-Take out A/0: B=9, C=2, E=14
-Take out C/2: B=4, D=4
-Take out B/4: D candidate 4 is the same, E=12
-Take out D/4: E=6
-Take out E/6: no outgoing edges
-Take out B/9: old
-Take out E/12: old
-Take out E/14: old
-
-```
-
-This is the final state:
+Use stable IDs A=0, B=1, ..., G=6. Inserting C, A, B produces LR:
 
 ```text
-dist       0, 4, 2, 4, 6, INF
-pred       -, C, A, C, D, -
-Confirmed  A, C, B, D, E
-
+       C                      B(h1)
+      /                      /     \
+     A          ->        A(h0)    C(h0)
+      \
+       B
 ```
 
-Ask these questions before showing the next line:
+The caller captures both inner child IDs before calling
+`rotate_lr(i,l,lr,lrl,lrr)`. The helper directly rewires the four links;
+it does not call two single-rotation helpers or refresh heights. `_add`
+then refreshes the two lower nodes i and l before the promoted node lr.
 
-* When we take out `C/2`, what are the candidate costs for B and D?
-* If D's candidate cost going through B is exactly the same as its current value, what record is kept?
-* When we take out `B/9`, what value do we compare it with to decide that it is an old record?
+| Input | Case | Height refresh order |
+| --- | --- | --- |
+| C B A | LL | i, l |
+| A B C | RR | i, r |
+| C A B | LR | i, l, lr |
+| A C B | RL | i, r, rl |
 
-## Common First Thoughts
+Every result is root ID1 B, left ID0 A, right ID2 C, with heights 1/0/0.
+Explain why the recursive return may replace a child root and why the
+chained assignment updates both the actual link and the local l/r cache.
 
-* "Fewer edges mean the total cost is also smaller."
-* "Every record taken out of the heap is the current minimum distance."
-* "A candidate with the exact same cost still changes the previous vertex and the heap record."
-* "Even if there are negative costs, we can just fix the smallest current value as it is."
+## Compare the same seven labels
 
-## Neutral Questions
+| Arrival order | Plain height | Plain present/missing counts | AVL root/height/counts |
+| --- | ---: | --- | --- |
+| A B C D E F G | 6 | G/H: 7/7 | D / 2 / 3,3 |
+| G F E D C B A | 6 | A/@: 7/7 | D / 2 / 3,3 |
+| D B F A C E G | 2 | G/H: 3/3 | D / 2 / 3,3 |
 
-* What do the current heap records and the `dist` array each show?
-* After calculating the candidate cost, which values and actions change?
-* What decides whether we should look at the outgoing edges from the taken-out record?
+The driver supplies plain insertion, lookup, independent height
+measurement, and validation. They are not exported by the lab. The final
+AVL links are D(B(A,C),F(E,G)). Missing @ sorts before A and H after G in
+the lab builds. Count one comparison per visited record, not per missing
+link.
 
-## Vocabulary Rules
+## Questions that expose understanding
 
-**Words we can use:** Weighted graph, breadth-first search, previous vertex, path reconstruction, priority queue, and min-heap.
+- What changes in the arrays during a rotation, and what stays in its slot?
+- Why is `get_height(-1)` safe while `height[-1]` is not?
+- Which saved middle ID would become unreachable if a link were overwritten?
+- Why must demoted nodes have their heights refreshed before the new root?
+- What happens to three fresh IDs that all hold B?
+- Why can a test with an empty middle subtree miss a broken rotation?
 
-**Names we will introduce in this chapter:** Starting point, temporary distance, relaxation, frontier, lazy duplication, old record, and Dijkstra's algorithm.
+Use `F D G B E A` for a concrete LL repair with retained middle E. The
+result is D(B(A,-1),F(E,G)); D has height 2, B/F height 1, leaves height 0.
 
-**Words we won't use yet:** Other procedures that solve negative edges, paths for all pairs of vertices, or the total connection cost from Chapter 16.
+## Assessment and limits
 
-## Final Check
+Require three original test groups: rotation/metadata, order/measurement,
+and duplicate/valid-boundary behavior. Check exact links, reachability,
+nondecreasing inorder, independently derived heights, and balance after
+insertion. The capacity is ten distinct IDs; invalid IDs and repeated live
+IDs are outside the source contract, not expected rejection tests.
 
-> "Even though B's cost dropped from 9 to 4, why do we leave `B/9` in there and still get the correct answer?"
+For a generalized tree, insertion and lookup take O(h), each rotation
+O(1), and AVL height gives O(log n) operation cost. The ten-slot lab is
+fixed in size. A visit-once diagnostic scan takes O(n) and belongs outside
+the insertion measurement.
 
-**Minimum Expected Answer:** Students should mention the reason for adding a new record instead of finding and changing the old one, the comparison between the taken-out value and the current `dist`, and the action of skipping old records.
+Sorted valid arrival order can force linear plain-BST work. AVL repairs
+this shape-based slowdown; it does not provide input validation or prove
+system-wide security. A lost array link loses reachability, not allocated
+heap storage. The retained 64-node pointer API and actual leak autopsy
+are separate optional references.

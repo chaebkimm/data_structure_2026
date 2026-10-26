@@ -1,61 +1,42 @@
-# Chapter 7. How to Take Out the First Value First
+# Chapter 7. Change Order by Changing Links
 
-> Use the [Week 7 linked-Queue plan](../module_07_queue/week_07/instructor.md). The circular-array walkthrough below is the supplied comparison, not a second implementation lab.
+Use the [Module 7 instructor plan](../module_07_linked_list/instructor/lesson_plan.md) for the 180-minute lesson and [student/lab.c](../module_07_linked_list/student/lab.c) for exact behavior. Module 7 teaches linked lists, using a linked queue as an applied example.
 
 ## Starting Question
 
-> "To take values out in the order they arrived without moving them, what do we need to remember?"
+> If records stay in their numbered slots, how can we change their order?
 
-**Expected Answer:** If students say we need to remember the position of the value that waited the longest and the current number of values, write it down. Let them find out the position after reaching the end of the array during the board walkthrough.
-
-## Why We Need This
-
-A stack takes out the last added value first. If we take out the value at position 0 of an array and move the rest forward every time, we keep the arrival order, but the more values we have, the more moving we have to do.
-
-If we reuse the empty spaces at the front for the next additions, we don't have to move the values. We need to store the position of the oldest value and the current number of values together.
+Compare shifting an ArrayList's active suffix with remembering the following record's index. Introduce a node and a singly linked list after students describe that link.
 
 ## Board Walkthrough
 
-Draw an array with a capacity of 4. Show the old values left in the array and the current queue values in different colors. Cover the next lines and ask first:
+Initialize `lnodes[10]` with `init_lnodes_pool()`. Draw free chain 0→1→2→3→4→5→6→7→8→9→-1. Allocate 17,23,31 with `new_lnode(value,-1)`; expect indices 0,1,2 and free head 3. The second argument is stored directly as next.
 
-* Prediction 1: If we put in four values and take out two, what will `head` and `size` be?
-* Prediction 2: In that state, what is the physical position (array slot) where we should put 62?
-* Prediction 3: After putting in 5, what will the physical array and the take-out order be?
+From 0→2→-1 and detached 1, `link_lnode(0,1)` first saves successor 2 in 1.next, then writes 0.next=1. Trace the two writes separately. Reversing them creates a self-link.
 
-| Finished Request | Physical Array | `head` | `size` | `tail` | Logical Order or Result |
-| --- | --- | --- | --- | --- | --- |
-| Initialization | `Empty, Empty, Empty, Empty` | 0 | 0 | 0 | Empty |
-| Put 31, 8, 47, 19 | `31, 8, 47, 19` | 0 | 4 | 0 | `31, 8, 47, 19` |
-| Take out twice | `31 old, 8 old, 47, 19` | 2 | 2 | 0 | `31`, then returns `8` |
-| Put 62 | `62, 8 old, 47, 19` | 2 | 3 | 1 | `47, 19, 62` |
-| Put 5 | `62, 5, 47, 19` | 2 | 4 | 2 | `47, 19, 62, 5` |
-| Try to put 90 | Same as before | 2 | 4 | 2 | `EVENT_QUEUE_FULL` |
-
-Calculate `tail = (head + size) % capacity` for every state. If the capacity is 0, we don't use the formula. In a full state, we reject the new value and keep all states exactly as they were.
-
-## Common First Thoughts
-
-* "Reading from the left of the array gives the take-out order." But the physical position and the logical order can be different.
-* "The old numbers in the taken-out slots are still in the queue." But `head` and `size` decide what the current active values are.
-* "If `head` and `tail` are the same, it's an empty queue." But the same exact position also appears when the queue is completely full.
-* "If it's full, we just throw away the oldest value." But our rule for this chapter is to reject the new value and keep the existing ones.
+`delete_next_lnode(0)` returns 1 and leaves 0→2→-1. The removed next remains 2 and free head remains 3. `free_lnode(1)` puts 1 before 3. `new_lnode(8,-1)` reuses 1 with new data and requested next.
 
 ## Neutral Questions
 
-* What information can we use to read the physical array and the take-out order, respectively?
-* How can we tell the difference between the two states where `head` and `tail` point to the same position?
-* After failing to put 90 in, which values and fields should we check to see if the state was saved?
+- Which number is an index, and which is stored data?
+- What exactly remains unchanged after an exhausted allocation?
+- Which write preserves the predecessor's old successor?
+- Is the detached slot already in the free chain?
+- Why does a numeric range check fail to prove membership?
+- Who changes the first-node index when removing the first node?
 
-## Vocabulary Rules
+## Vocabulary and Costs
 
-**Words we can use:** Array, size, capacity, stack, ownership, and keeping the state after a failure.
-
-**Names we will introduce in this chapter:** First-In-First-Out (FIFO), queue, `enqueue`, `dequeue`, `peek`, circular array, `head`, `size`, calculated `tail`, physical position, and logical order.
-
-**Words we won't use yet:** We won't name the search method that looks at the closest nodes or vertices first. We will also save the explanation of applying a queue to that specific search for the next chapter.
+Use node, integer next link, singly linked list, traversal, node pool, free chain, allocation, detachment, recycling, and caller precondition through the actions above. Follow exact `lnodes`/`*_lnode` names. Initialization visits every slot; known-predecessor mutations change fixed fields; predecessor search may inspect all live nodes.
 
 ## Final Check
 
-> "Can you explain why the take-out order is `47, 19, 62, 5` in the physical array `[62, 5, 47, 19]`, and what state must remain after we fail to put 90 in?"
+Require exact pool/list states, allocation exhaustion and tail-deletion boundaries, valid membership conditions, three original safe tests, reproducible output, and one corrected prediction. Use the [rubric](../module_07_linked_list/student/rubric.md).
 
-**Minimum Expected Answer:** Students should mention that `head == 2` and `size == 4`, explain how to calculate the wrap-around position using the remainder (modulo), and state that the array and fields must stay exactly the same before and after the failure.
+Module 8 reuses this linked queue for tree BFS and graph BFS and compares array queue representations. Pointer lists and DSU stay optional references; DSU assessment belongs to Week 14.
+
+## Linked Queue Example
+
+Requests 17, 23, and 31 must leave in arrival order. Ask students which end receives new records and which end supplies the next record. Remember both ends, then name FIFO and linked queue. In a fresh independent pool reset `head = tail = -1`. Public `enqueue(value)` allocates with next -1 and reports success. Check its boolean result after the call. Trace head/tail after all additions and the singleton removal.
+
+Compare a raw helper removal, which returns an index and leaves recycling to its caller, with public `dequeue()`, which returns data and recycles internally. Check `is_empty_queue()` before public removal, check bool enqueue status, and execute enqueue outside assert. Reusing index 0 behind waiting nodes must preserve arrival order. Module 8 imports these exact functions with vertex IDs as payloads. Keep this example inside the existing lab and lifecycle test group.

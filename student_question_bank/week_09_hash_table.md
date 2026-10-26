@@ -1,157 +1,168 @@
-# Week 9 — Hash Table: Vocabulary and Questions
+# Week 09 — Chained Hashing and Two Sum: Vocabulary and Questions
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-> **Required scope (13-week path; one submission):** Students implement capacity-bounded probing, exact lookup, insert/update, deletion, and tombstone reuse. They complete and test the maintenance-choice and commit checkpoints in an instructor-supplied transactional growth/compaction scaffold; they do not build every rebuild mechanism from scratch. Required student-authored tests cover collision and wraparound, tombstone-safe mutation and duplicate prevention, and scaffolded growth/compaction with one forced maintenance-allocation failure and state preservation. Additional capacity-policy, adversarial, deep-validator, and long-churn work is supplied or optional.
-
-Extension questions below are enrichment only and do not enlarge the required Week 9 artifact.
-Separate-chaining and AVL comparisons are instructor-supported previews,
-revisited after Modules 14–15; their implementations are not prerequisites.
+These questions follow [Module 09's lab.c](../module_09_hash_table/student/lab.c)
+and its included [Module 07 node pool](../module_07_linked_list/student/lab.c).
+Use the supplied ten-element `nums` unless a question specifies a separate
+fixture. Preserve a prediction before running code. These prompts support
+one Week 9 submission; they are not extra implementation assignments.
 
 ## Vocabulary students will learn
 
 | Term | Working meaning |
-|---|---|
-| Algorithmic-complexity denial of service | Valid attacker-chosen inputs force an operation to do far more work than intended. |
-| Allocation | Storage reserved while the program runs. |
-| Amortized cost | The total cost of occasional expensive operations spread across a sequence of operations. |
-| AVL tree | An ordered, height-balanced search tree previewed here and studied formally in Module 15. |
-| Bucket | A possible starting location selected by the hash function; in this table, one array slot. |
-| Capacity | The number of slots in the allocated table array. |
-| Collision | Two different keys receive the same home slot. |
-| Compaction | Rebuilding at the same capacity to remove tombstones. |
-| Cryptographic hash | A hash designed for cryptographic properties; the course hash is not one. |
-| Deleted slot | A formerly occupied slot that cannot terminate a probe through its cluster. |
-| Dense internal graph ID | A validated consecutive identifier suitable for safe graph-array indexing. |
-| Direct indexing | Using the key itself as an array index. |
-| Effective occupancy | Live entries plus tombstones, including a proposed new entry when maintenance is considered. |
-| Empty slot | A never-used-since-rehash slot that may end an unsuccessful lookup. |
-| Exact lookup | Retrieving a value only when the requested key matches exactly. |
-| Expected cost | Average behavior under stated distribution and load assumptions, not a per-operation guarantee. |
-| Failure preservation | A failed operation leaves the earlier valid table and caller outputs unchanged. |
-| Hash function | A repeatable computation mapping a key to a starting slot. |
-| Hash flooding | Supplying many colliding keys to make table operations expensive. |
-| Hash table | A key-to-value structure using a hash function and a collision rule. |
-| Home slot | The first slot selected for a key. |
-| Insert-or-update | Add a missing key or replace the value of an existing key without duplicating it. |
-| Invariant | A rule that holds in every valid completed table state. |
-| Key | The value used to identify and retrieve an entry. |
-| Linear probing | After a collision, inspect consecutive slots and wrap at the array boundary. |
-| Live entry | An occupied key/value pair currently stored in the table. |
-| Load factor | Live-entry count divided by capacity. |
-| Map | An abstract data type associating each unique key with one value. |
-| Occupied slot | A slot currently holding one live key/value pair. |
-| Open addressing | Storing all entries in the main slot array and resolving collisions by probing. |
-| Probe | One inspection of a candidate slot. |
-| Probe bound | The rule that one operation inspects no more than `capacity` slots. |
-| Probe cluster | Occupied and deleted slots connected without an empty slot between them. |
-| Rehash | Place every occupied entry into a fresh slot array using the new array's capacity. |
-| Separate chaining | A previewed alternative that resolves collisions with a collection, often a linked list, at each bucket. |
-| Shallow copy | Copy an owning pointer without copying its allocation, creating conflicting apparent owners. |
-| Slot | One position in the table's array. |
-| Sparse key space | A key universe in which most possible values are absent. |
-| Status | A named outcome returned by an operation. |
-| Tombstone | The marker stored in a deleted slot so later colliding keys remain reachable. |
-| Tombstone count | The number of deleted-slot markers currently in the table. |
-| Transactional rebuild | Prepare a replacement table completely and commit it only after every fallible step succeeds. |
-| `uint32_t` | C's unsigned integer type with exactly 32 bits. |
-| Validator | A diagnostic operation that checks representation rules. |
-| Value | Information associated with a key. |
-| Worst-case cost | The greatest work allowed by the input and operation contract. |
-| Wraparound | Continuing a probe at slot 0 after the final slot. |
+| --- | --- |
+| target | The requested sum of two input values. |
+| pair | Two different input positions chosen together. |
+| input index | A position in `nums`, distinct from its stored value. |
+| brute force | Testing all earlier positions for each current position. |
+| hash function | A repeatable calculation selecting a small bucket index from a value. |
+| normalized remainder | A remainder adjusted into 0–9 even when the input is negative. |
+| bucket | One selected group of candidate entries. |
+| bucket head | The first node index in a bucket's chain, or -1. |
+| collision | Different values selecting the same bucket. |
+| separate chaining | Keeping colliding entries in a linked chain for their bucket. |
+| node | One pool record containing `data` and `next`. |
+| node index | A position in `lnodes`, distinct from an input index. |
+| payload | The meaning assigned by the caller to a node's `data`. |
+| next link | A node index leading to the next record, or -1 at the end. |
+| sentinel | A special value such as -1 marking an empty head, an end, or failure. |
+| node pool | The fixed ten-node array shared by the active and free chains. |
+| free chain | Nodes available for future allocation. |
+| free head | `free_head`, the first available node index or -1. |
+| pool exhaustion | The state in which no free node remains. |
+| prepend | Make a new node the first node of a chain. |
+| lookup | Follow a selected chain to find an equal payload or value. |
+| complement | `target-nums[i]`, the earlier value needed for a pair. |
+| recycling | Returning a detached active chain to the free chain. |
+| earlier-index invariant | At iteration entry, every stored two-sum index is smaller than the current `i`. |
+| load factor | Stored entry count divided by bucket count, used to describe average chain length. |
+| expected cost | Work averaged under a stated distribution assumption. |
+| worst-case cost | The largest work among allowed inputs of a given size. |
+| ownership | The rule assigning each pool node to one active chain, free chain, or temporary caller. |
 
-### Optional-only vocabulary for extension questions
+## Find two different positions
 
-| Term | Working meaning |
-|---|---|
-| Keyed hash | A hash computation influenced by a secret key so outsiders cannot easily predict collision patterns. |
-| Mixed-operation churn | A long sequence interleaving insertions, updates, removals, and rebuilds. |
-| Resize thrashing | Repeated growth and shrinking caused by thresholds that are too close together. |
-| Shrink policy | Rules deciding when a table may safely reduce its capacity. |
+1. For target 0, trace the order of `i` and `j` in `two_sum_bf`. Which pair
+   is returned? Give both the indices and values.
+2. Why does `j<i` prevent using the same input position twice? How many
+   additions does a complete miss require for ten values?
+3. For target 100, why is even the largest possible pair insufficient? What is written
+   into both elements of `answer` on a miss?
+4. Does `two_sum_bf` alter bucket heads or the node pool? Design an
+   assertion that distinguishes its answer from its storage side effects.
 
-## Anticipated student questions
+## Select a bucket
 
-### Meaning and mental model
+5. Calculate `hash_func` for -16, -8, -1, 0, 2, 10, and 16. Show the C
+   remainder and the returned index separately.
+6. Why is the negative-remainder adjustment necessary before indexing
+   `hashtable`? Why does a value divisible by 10 need no adjustment?
+7. -8 and 2 select the same bucket. Does that make them equal? Which
+   later comparison decides equality?
+8. Why can a small bucket array represent values outside the range 0–9?
+   Explain which numbers are array indices and which are stored values.
+9. A caller passes `hash=10` to `save_data`. Does that function correct
+   or reject the index? State the caller precondition without running an
+   invalid access.
 
-- What service does a key-to-value map provide independently of its storage representation?
-- Why is direct array indexing wasteful when legal external keys are sparse and very large?
-- What does a hash function contribute to lookup, and what does it not guarantee?
-- What is a collision, and why can a correct hash table never assume collisions will not occur?
-- How does linear probing search for another usable slot after a collision?
+## Follow collision chains
 
-### Representation and invariants
+For questions 10–15, begin with empty bucket heads and a fresh
+`init_lnodes_pool()`. Save payloads 12, 22, and -8 into bucket 2 in that order.
 
-- Why must each slot distinguish `EMPTY`, `OCCUPIED`, and `DELETED` states?
-- How can key 0 remain legal when inactive slots contain zeroed key and value fields?
-- What relationships must hold among `size`, `tombstones`, and `capacity`?
-- Why must every occupied key be unique and reachable from its home slot without crossing an `EMPTY` slot?
-- Which capacities are legal, and what does the canonical destroyed state look like?
-- Why must every probe loop inspect at most `capacity` slots?
+10. Record each returned node index, each node's `data` and `next`, bucket
+    2's head, and `free_head` after every save.
+11. Why does the final data order differ from insertion order? Does any
+    collision move an entry into bucket 1?
+12. List the visited node indices for `find_data(2,12)`,
+    `find_data(2,22)`, and `find_data(2,32)`. Give each return value.
+13. What does `-1` mean as a bucket head, a `next`, an allocation result,
+    and a lookup result? Why must it never be used as an array index?
+14. Save another payload 22 into bucket 2. Is the existing node updated?
+    Which node does the next `find_data(2,22)` return?
+15. Does `find_data(1,12)` search every bucket? Explain why its caller must
+    select the bucket that was used for storage.
 
-### Operations, C API, and ownership
+## Reuse the fixed pool
 
-- What is the difference between inserting a new key and updating an existing key in `hash_table_put`?
-- Why must insertion remember the first tombstone but continue probing before committing there?
-- How does `hash_table_remove` preserve the lookup reachability of later colliding keys?
-- What table state and result output must be preserved if allocation or maintenance fails?
-- Why is shallow copying a live `HashTable` prohibited, and what storage does `hash_table_destroy` release?
+16. What is the initial value of `free_head` before `init_lnodes_pool()` runs?
+    Why is an all--1 bucket array insufficient for the first insertion?
+17. After ten successful saves, try an eleventh valid save. State its
+    return value and which bucket, node, and free-chain fields must remain
+    unchanged. Can the pool be exhausted with nine buckets still empty?
+18. Starting from the three-node collision fixture, trace
+    `init_hashtable()`. Give the complete new free chain. Are node data
+    fields cleared?
+19. What does a second reset do? Does reset clear `nums` or `answer`?
+20. Why is `free_lnode_chunk` slower for a longer chain even though it
+    changes only two links? Why must its input chain be acyclic?
+21. Explain how calling `init_lnodes_pool()` while bucket heads still point
+    into the pool can give one node two owners. Predict on paper; do not
+    execute corrupted-state experiments.
+22. If the Module 07 linked queue reused in Module 08 shares this pool, which ownership condition must
+    hold before hash-table reset or allocation is valid?
 
-### Tracing
+## Store indices and compare values
 
-- At capacity 8, how do keys 10, 18, and 26 occupy their collision cluster?
-- After removing key 18, which indexes must lookup for key 26 inspect, and which state appears at each?
-- Which indexes must a missing-key lookup for 34 inspect before absence is established?
-- Why must an update of key 26 continue past the tombstone instead of inserting a duplicate there?
-- How can a new key 34 reuse the tombstone only after the search proves that 34 is not already present?
-- How do keys with home slot 7 demonstrate wraparound from the last slot to index 0?
+23. In `save_data(hash_func(nums[i]),i)`, what selects the bucket and what
+    becomes the node payload? Give all three numbers for input index 1.
+24. At `i=5` for target 0, calculate `j_num`, the bucket, the candidate node,
+    the stored `j`, and `nums[j]`. What becomes `answer`?
+25. Why is `lnodes[j_node].data == j_num` incorrect in two sum? Give a
+    bounded example where an index and a value differ.
+26. Why is `find_data(hash_func(j_num),j_num)` not a substitute for the
+    supplied complement-search loop?
+27. State the table's meaning at the beginning of outer iteration `i`.
+    Use that statement to prove a returned pair has different positions.
+28. Predict the defect if the current index is saved before searching.
+    Explain the target-2 self-pair risk at `i=5` without changing the supplied code.
+29. After a fresh successful target-0 call, which input indices remain
+    stored? Has the current index 5 been saved? What is `free_head`?
+30. After a fresh target-100 miss, list the nonempty buckets and their node
+    chains. Which payload and physical-node numbers happen to coincide?
+31. Run target 0 again after the target-100 run. Why can the returned input
+    indices remain the same even when physical-node indices change?
+32. Explain why `two_sum_ht` uses `break` after an allocation failure.
+    Does `answer={-1,-1}` distinguish exhaustion from a genuine miss?
 
-### Testing and debugging
+## Compare valid results and work
 
-- What exact-probe test covers both a collision cluster and wraparound?
-- What test sequence proves tombstone-safe update, tombstone reuse, and duplicate prevention?
-- How can a test force growth or same-capacity compaction and verify the selected maintenance action?
-- What evidence proves that a forced maintenance-allocation failure preserves the old pointer, records, counts, and caller output?
-- How would the full validator detect an unreachable occupied key, duplicate key, invalid state, or inconsistent count?
+33. Use a separate bounded input fixture containing duplicate values. Must
+    both algorithms return the identical earlier `j`? Compare ascending
+    brute-force search with newest-first chain traversal.
+34. What assertions establish pair validity without requiring the same
+    `j`? How should a test decide whether both algorithms agree that no
+    pair exists?
+35. Explain why all tested sums and complement subtractions must fit in
+    `int`. Does the supplied source check signed overflow?
+36. Count the work for `save_data`, `find_data`, `free_lnode_chunk`, and
+    `init_hashtable`. Separate node visits from link changes.
+37. Let `n` be stored items and `b` bucket heads. Explain average chain
+    length `n/b`. Which distribution condition gives expected
+    `O(1+n/b)` lookup?
+38. Which bucket-count and pool-capacity conditions justify expected
+    `O(n)` hash two sum? Why does fixing `b=10` while increasing `n` not
+    preserve that claim?
+39. If every stored value selects one bucket, how many previous candidates
+    might a complete sequence inspect? Compare with brute force.
+40. Does the current source allocate heap memory or resize its arrays?
+    Distinguish recycling pool nodes from calling C `free`.
 
-### Complexity
+## Build evidence
 
-- Under which distribution and load assumptions do `get`, `put`, and `remove` have expected `O(1)` probe work?
-- Why can one lookup require `O(m)` probes in a table of capacity `m`?
-- What work and temporary space does a transactional rebuild require?
-- Why does expected amortized `O(1)` growth not automatically describe arbitrary deletion/insertion churn with repeated compaction?
+41. A driver beside `lab.c` includes it and defines `main`. Why must a
+    repository-root compile use `-I.`? Why must the included `.c` files not
+    also be compiled separately?
+42. Propose exactly three original test groups: hashing/chains, pool
+    lifecycle, and two sum. For each, state a claim, a smallest fixture,
+    exact assertions, and a reset strategy.
+43. Which failed-operation assertions would detect a bucket head changing
+    after exhausted insertion? Which repeated-call test would detect lost
+    pool nodes?
+44. Explain one correction to your initial model using a specific returned
+    value or before/after state. Keep the original prediction visible.
 
-### Security and interpretation
-
-- How can attacker-chosen colliding keys cause algorithmic-complexity denial of service?
-- Why does increasing capacity alone not defeat deliberately chosen collisions under the teaching hash?
-- Why is `key % capacity` neither a cryptographic hash nor an authentication mechanism?
-- What validation must occur before an external label mapped by the table becomes a dense graph ID used for indexing?
-
-### Assignment and evidence
-
-- Which probing, lookup, insertion/update, removal, and scaffold checkpoints belong in the single Week 9 submission?
-- What three student-authored test categories are required in the bounded Week 9 artifact?
-- Which maximum-capacity, long-churn, deep-validator, and additional allocation-failure work is supplied or optional rather than a second assignment?
-- What traces and tool output demonstrate collision, wraparound, tombstone, growth, compaction, and failure preservation?
-
-### Transfer
-
-- In the supplied comparison preview, when is a hash table preferable to an AVL tree for exact lookup?
-- In that preview, when do ordered iteration, range queries, or worst-case lookup requirements favor an AVL tree instead?
-- How can the hash table bridge sparse external identifiers to dense internal graph IDs?
-- How can transactional rehashing prepare you to preserve state when the later Heap backend grows?
-
-### Extension questions
-
-- How would separate chaining change collision storage, ownership, and worst-case traversal?
-- What capacity policy could shrink a table without causing resize thrashing?
-- How could a keyed production hash reduce predictable collision attacks?
-- What proof or test strategy could strengthen confidence in long mixed-operation churn?
-
-## Sources
-
-- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md#week-9--hash-table-within-180-minutes)
-- [Master curriculum, Module 10](../Data_Structures_Course_2026_Spiral_Curriculum.md#module-10--supporting-adt-hash-table)
-- [Module 10 package](../module_10_hash_table/README.md)
-- [Module 10 vocabulary reference](../module_10_hash_table/student/vocabulary.md)
-- [Consolidated Weeks 8–13 question bank](02_weeks_08_13_questions.md#week-9--hash-table)
+The retained open-addressing library and delete-to-empty autopsy use a
+different representation. Tombstones, compaction, growth, and map updates
+are optional comparisons, not required answers for this source-based lesson.

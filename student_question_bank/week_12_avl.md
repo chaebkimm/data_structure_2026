@@ -1,152 +1,164 @@
-# Week 12 — BST-to-AVL Synthesis: Vocabulary and Questions
+# Week 12 — BST-to-AVL with the Supplied Indexed Lab
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-> **Required scope (13-week path; one submission):** This week formally introduces edge height, stored height, balance factor, and rotations; those ideas were not required in the compressed Week 8 BFS bridge. Students use the supplied complete BST baseline, implement left and right rotations, the LL/RR/LR/RL rebalance decisions, and recursive AVL insertion with validation and failure preservation. Full AVL deletion and package extensions remain optional.
+## Required scope for the 14-week course
 
-Extension questions below are enrichment only and do not enlarge the required Week 12 artifact.
+The supplied [Module 12 lab](../module_12_bst_avl/student/lab.c) is complete.
+Students predict and trace its states, write assertion tests, and compare
+plain BST and AVL behavior in one Week 12 artifact within 180 minutes.
+There are no required implementation TODOs or AVL deletion assignment.
+
+The source reuses Module 2's ten character records and integer child IDs,
+with -1 for a missing link and a separate `height[10]` array. Equal keys
+descend left, but rotations preserve nondecreasing inorder and may place
+equals on either side. The four helpers rewire links; `_add` refreshes
+heights and returns the new local root. The driver supplies baseline
+insertion, lookup, measurement, and validation. The retained allocated
+64-node unique-key library is a separate optional reference.
 
 ## Vocabulary students will learn
 
 | Term | Working meaning |
 |---|---|
-| Algorithm | A defined sequence of steps for solving a problem. |
-| Algorithmic-complexity denial of service | Valid attacker-chosen inputs make an operation much slower than intended. |
-| Allocation | Storage reserved while a program runs. |
-| Assertion | A test check that must evaluate as true. |
-| AVL tree | A BST whose balance factor at every node is `-1`, `0`, or `1`. |
-| Balance factor | Left-subtree height minus right-subtree height. |
-| Binary Heap | A priority structure with parent-child order rather than global subtree search order. |
-| Binary Search Tree (BST) | A binary tree with every left-subtree key smaller and every right-subtree key larger than the node key. |
-| Binary tree | A branching structure with at most two children per node. |
-| Cached or stored height | A node field containing that node's current computed edge height. |
-| Child | A node directly below another node. |
-| Comparison | One test that orders or matches two keys. |
-| Complexity | How resource use grows as input size grows. |
-| Denial of service | Preventing or delaying intended service. |
-| Duplicate key | A key equal to one already stored; the strict policy rejects its insertion. |
-| Edge height | Links on a longest downward route, with `height(NULL) = -1` and `height(leaf) = 0`. |
-| Failure preservation | A rejected or failed insertion leaves root, links, size, keys, and ownership unchanged. |
-| Global search-order invariant | Every key in an entire left subtree is smaller and every key in an entire right subtree is larger. |
-| Inorder traversal | Visit the left subtree, current node, then right subtree. |
-| Invariant | A rule that must hold for every valid tree state. |
-| Key | The value used to order and find a record. |
-| Leaf | A node with no children. |
-| LL / RR case | A single-rotation imbalance caused by insertion into the outer side of a child subtree. |
-| LR / RL case | A double-rotation imbalance caused by insertion into the inner side of a child subtree. |
-| Memory corruption | An invalid memory read, write, or release. |
-| Memory leak | Owned allocated storage that can no longer be reached and released. |
-| Metadata | Values describing other data, such as a node's stored height. |
-| Node | One stored record containing a key, height, and child links. |
-| Ownership | Responsibility for releasing allocated storage. |
-| Pointer | A C value that stores a memory address. |
-| Postcondition | A rule guaranteed after a successful operation. |
-| Precondition | A rule the caller must satisfy before an operation. |
-| Range query | Retrieval of all keys within an ordered interval. |
-| Rebalance | Repair an AVL imbalance after a mutation. |
-| Recursion | An operation calls itself on a smaller part of the problem. |
-| Regression test | A test checking that a repaired defect does not return. |
-| Relink | Change a pointer so it refers to a different object. |
-| Resource exhaustion | Use up memory, storage, processing time, or another finite resource. |
-| Root | The first node of a tree or subtree. |
-| Rotation | Local pointer relinking that changes shape while preserving inorder key order. |
-| Sanitizer | A runtime checker for defects such as invalid memory access. |
-| Skewed | Shaped mostly as one long branch. |
-| Strict unique-key policy | Equal-key insertion is rejected. |
-| Subtree | A node together with every node reachable below it. |
-| Validator | A diagnostic operation checking ordering, height, balance, size, and ownership rules. |
+| binary tree | Records with at most two child links each. |
+| node | One record in `nodes[10]`, holding character data and child IDs. |
+| node ID | The record's integer array position, distinct from its key and height. |
+| key | The character data used to choose a search direction. |
+| root | The first record's ID, or -1 for an empty tree. |
+| child | A next record reached through a left or right link. |
+| subtree | A record and all records reachable below it. |
+| link | An integer child ID in this lab, rather than an allocated-node pointer. |
+| sentinel | A reserved marker; -1 means no child or root here. |
+| binary search tree (BST) | A tree whose whole left and right regions follow the search-order rule. |
+| whole-subtree ordering | Every left-region key is no larger, and every right-region key no smaller, than the current key. |
+| invariant | A property required of every valid tree state. |
+| inorder traversal | Visit the left subtree, current key, then right subtree. |
+| nondecreasing | Each next key is at least the previous key, allowing equals. |
+| duplicate key | Equal character data in distinct records; accepted by this lab. |
+| edge height | The longest downward route counted in links; missing height is -1. |
+| leaf | A record with two -1 child links and height 0. |
+| stored height | The cached value in `height[id]`, which must match link-derived height. |
+| metadata | Information about other data, such as a record's stored height. |
+| balance factor | Left subtree height minus right subtree height. |
+| AVL tree | A search tree whose balance factors are all -1, 0, or 1. |
+| rotation | Local link changes that preserve inorder while repairing shape. |
+| LL case | Left-heavy shape repaired by promoting the left child. |
+| RR case | Right-heavy shape repaired by promoting the right child. |
+| LR case | Left-heavy inner shape repaired by promoting the left child's right child. |
+| RL case | Right-heavy inner shape repaired by promoting the right child's left child. |
+| middle subtree | A region transferred between the demoted and promoted records during repair. |
+| capture | Save a child or grandchild ID before overwriting its old link. |
+| relink | Assign a child field to a different record ID. |
+| recursion | A function calls itself for a smaller subtree. |
+| base case | The missing-link case that installs a fresh leaf and stops descent. |
+| recursive unwind | Returning through the earlier calls while reconnecting and repairing. |
+| local root | The possibly changed root ID of the current subtree. |
+| caller precondition | A condition the driver must establish because the source does not check it. |
+| capacity | The ten available record IDs; insertion does not enforce this limit. |
+| reachability | A record can be followed from the root through stored links. |
+| cycle | A link route returns to a record already on that route. |
+| validator | A diagnostic traversal checking IDs, reachability, order, heights, and balance. |
+| assertion | An executable check of a test's expected property. |
+| regression test | A test that detects the return of a previously identified defect. |
+| comparison count | One key comparison per visited record in the driver's lookup. |
+| skewed | Shaped mainly as one long branch. |
+| algorithmic-complexity denial of service | Valid chosen input forces excessive operation work. |
+| memory corruption | An invalid memory read, write, or release, distinct from slow valid work. |
+| resource exhaustion | A finite resource such as memory or processing time is used up. |
 
-### Optional-only vocabulary for extension questions
+### Optional reference vocabulary
 
 | Term | Working meaning |
 |---|---|
-| AVL deletion | Removal followed by height repair and any needed rebalancing back toward the root. |
-| Parent pointer | A node link that points upward to its parent. |
-| Red-black tree | A BST using color rules to maintain a looser logarithmic height bound. |
+| AVL deletion | Remove a record and repair heights and balance toward the root. |
+| parent pointer | An upward memory-address link in a different tree representation. |
+| red-black tree | A search tree with color rules that enforce a looser logarithmic height bound. |
 
 ## Anticipated student questions
 
 ### Meaning and mental model
 
-- What global ordering rule defines a strict binary search tree?
-- Why can the same set of keys produce very different BST shapes?
-- What does edge-height count, and why are `height(NULL) = -1` and `height(leaf) = 0` consistent?
-- What does a node's left-minus-right balance factor reveal?
-- How does an AVL tree repair local shape without changing sorted key order?
+- Why can the same seven labels produce a chain or a short plain BST?
+- Which whole-subtree ordering rule permits directed lookup with duplicate keys?
+- What does edge height count, and why are missing height -1 and leaf height 0 consistent?
+- What does left height minus right height reveal about a node's shape?
+- How does an AVL rotation repair shape while preserving nondecreasing inorder?
 
 ### Representation and invariants
 
-- Which links, key, and cached-height fields belong to each AVL node?
-- What ordering relationship must hold across every node's entire left and right subtrees?
-- What exact relationship must hold between a node's cached height and its children's heights?
-- Which balance-factor values are valid in an AVL tree?
-- Why must the tree's `size` equal the number of uniquely owned reachable nodes?
-- How does a Heap's parent-child priority invariant differ from an AVL tree's global search-order invariant?
+- Which declarations come from Module 2, and how do a node ID, character key, and separate stored height differ?
+- What does -1 mean for a child or root, and why does `get_height(-1)` avoid invalid array access?
+- Why can rotations place equal data on either side even though new equal keys descend left?
+- What exact height formula and balance-factor bounds must hold for every reachable record?
+- Why must each inserted ID remain reachable exactly once, and why does `_add` not maintain `nodes_size`?
+- How does Heap parent-child priority differ from the lab's whole-subtree search order?
 
-### Operations, C API, and ownership
+### Operations and source behavior
 
-- Which complete BST baseline operations are supplied rather than rewritten in Week 12?
-- What link changes must a left rotation make while preserving the middle subtree?
-- In what bottom-up order must cached heights be refreshed after a rotation?
-- How must recursive `avl_insert` handle a duplicate, full tree, or allocation failure?
-- What storage does the `Tree` own, and what must destruction restore?
+- Which fresh-ID, child-link, capacity, and initial-AVL conditions must the caller establish?
+- Why must the caller save `root = _add(root,id)` rather than ignore the return?
+- What link changes do LL and RR make while preserving a captured middle subtree?
+- Why do LR and RL capture two inner grandchildren and directly rewire four links?
+- Why are recursive child-root assignments and lower-node-before-root height updates both necessary?
 
-### Tracing
+### Canonical tracing
 
-- Why does insertion order `30, 20, 10` require an LL repair, and which rotation resolves it?
-- Why does `10, 20, 30` require an RR repair?
-- Which two rotations resolve `30, 10, 20`, and why is it an LR case?
-- Which two rotations resolve `10, 30, 20`, and why is it an RL case?
-- How do inorder sequence, subtree ownership, and final stored heights compare before and after each repair?
-- Why do ascending and descending 15-key streams produce height 14 in a plain BST but height 3 in the required AVL experiment?
+- Why do CBA and ABC select LL and RR respectively?
+- Why do CAB and ACB select LR and RL respectively?
+- With stable alphabet IDs, what root, child IDs, heights, and inorder finish all four canonical repairs?
+- In `F D G B E A`, where does middle record E end up, and which records' heights change?
+- How do three fresh IDs holding B illustrate the difference between equal data and a repeated live ID?
+- Why do the three seven-label orders yield plain heights 6/6/2 but AVL root D and height 2?
 
 ### Testing and debugging
 
-- Which focused test should isolate each of LL, RR, LR, and RL rotation behavior?
-- How can a test verify duplicate rejection without relying only on the returned status?
-- What evidence proves allocation failure leaves root, links, size, keys, and ownership unchanged?
-- How can `tree_validate_avl` distinguish an ordering defect, stale height, excessive balance factor, size mismatch, or shared node?
-- What sanitizer or allocation-count evidence can reveal a lost middle subtree after a faulty rotation?
+- Which exact link and height assertions should isolate the four repairs and a nonempty middle subtree?
+- How can a driver derive actual heights and check order, balance, and the inserted-ID set independently?
+- Which valid empty, singleton, duplicate-data, ten-ID, and repeated-build cases belong in tests?
+- Why are an eleventh ID or repeated live ID not valid tests expecting source rejection?
+- Which defects can sanitizers reveal, and why do sorted order and exact height still require assertions?
 
 ### Complexity
 
-- Why do BST and AVL search both take `O(h)` time for tree height `h`?
-- How can an unbalanced BST make search and insertion `O(n)`?
-- Why does the AVL balance invariant keep search and insertion at `O(log n)`?
-- Why is a single rotation `O(1)` while full traversal, measurement, and destruction remain `O(n)`?
+- Why do insertion and directed lookup take O(h), with O(h) recursive insertion stack space?
+- How can a plain BST reach O(n), while AVL limits operation cost to O(log n)?
+- Why is each rotation O(1) even when its transferred middle region has many records?
+- Why should O(n) diagnostic scans and generalized bounds be separated from operation work and the fixed ten-ID cap?
 
 ### Security and interpretation
 
-- How can attacker-controlled insertion order create algorithmic-complexity denial of service in a plain BST?
-- Why is degraded operation cost not the same as memory corruption?
-- Why does AVL balancing not eliminate allocation failure, bounds, ownership, or input-validation risks?
-- Why is using all available memory a different failure category from performing too many comparisons?
+- How can attacker-controlled valid arrival order force excessive plain-BST work?
+- Why is degraded cost different from memory corruption and complete resource exhaustion?
+- Which index, capacity, and input-validation risks remain caller responsibilities after AVL balancing?
+- Why does a lost array link lose reachability without leaking allocated heap storage?
 
 ### Assignment and evidence
 
-- What code, tests, four rotation traces, measurement table, and validation output belong in the single Week 12 submission?
-- Why are edge-height and balance factor formally assessed here rather than in the compressed Week 8 tree-BFS bridge?
-- Which three implementation clusters form the required AVL core?
-- Why are AVL deletion, optional extension tests, and unsafe autopsy execution outside the Week 12 requirement?
+- Which driver, output, four traces, measurements, and explanations belong in the single Week 12 submission?
+- What evidence establishes the exact heights and G/H, A/@, G/H lookup counts in the three required orders?
+- Which three original test groups replace implementation TODOs in this complete-source lab?
+- Why are AVL deletion, optional reference tests, and unsafe pointer autopsy execution outside the requirement?
 
 ### Transfer
 
-- When would an AVL index be a better capstone choice than the Week 9 hash index?
-- How does inorder DFS provide sorted evidence for the BST invariant?
-- How do local AVL rotations differ from the global edge-selection decisions used by MST algorithms?
-- Which failure-preservation and ownership rules carry over from linked lists and hash tables to AVL insertion?
+- When could an AVL index be preferable to a hash index for the capstone?
+- How does inorder DFS connect the ordering evidence to Module 5?
+- How do local AVL repairs differ from the global edge-selection choices of MST algorithms?
+- Which driver-supplied baseline and validation operations would become public-API work in a reusable container?
 
-### Extension questions
+### Optional extension questions
 
-- What additional cases and repair steps would AVL deletion require?
-- How could parent pointers change rotation code and ownership validation?
+- What additional cases would AVL deletion need during recursive unwind?
+- How would allocated nodes and parent pointers change the current ID-based contract and cleanup responsibilities?
 - How might a red-black tree trade a weaker balance rule for different update behavior?
-- What experiment would compare hash-table and AVL lookup under ordinary and adversarial inputs?
+- How would the separate pointer API reject duplicates and preserve failed insertions under adversarial inputs?
 
 ## Sources
 
-- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md#week-12--bst-to-avl-within-180-minutes)
-- [Master curriculum, Module 15](../Data_Structures_Course_2026_Spiral_Curriculum.md#module-15--tree-bst-to-avl-synthesis)
-- [Module 15 package](../module_15_bst_avl/README.md)
-- [Module 15 vocabulary reference](../module_15_bst_avl/student/vocabulary.md)
-- [Consolidated Weeks 8–13 question bank](02_weeks_08_13_questions.md#week-12--bst-to-avl-synthesis)
+- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+- [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
+- [Module 12 current source](../module_12_bst_avl/student/lab.c)
+- [Module 12 vocabulary reference](../module_12_bst_avl/student/vocabulary.md)
+- [Module 12 lab and submission](../module_12_bst_avl/student/lab.md)
+- [Models with linear equivalents](../module_12_bst_avl/diagrams/bst_avl_models.md)

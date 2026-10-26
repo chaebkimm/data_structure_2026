@@ -1,77 +1,79 @@
-# Chapter 10. Finding Large Numbers in a Small Table
+# Chapter 10. Integer Heaps and a Shared On-Time
 
 ## Starting Question
 
-> "If the possible numbers are very large but we only have a few actual records, how can we find the number we want in a small array?"
+> How can we keep the smallest or largest value ready, and use both choices
+> to find when ten devices are all on?
 
-**Expected Answer:** Students should say that we must calculate a starting slot using the number, and if the spot is already taken, we must look at the next slots using a set rule until we reach the end of the search.
+Expected answer: arrange a complete binary tree in an array and preserve
+parent-child order. One Heap supplies the latest start; another supplies
+the earliest finish. The current intervals overlap when the latest start
+is no later than the earliest finish.
 
 ## Why We Need This
 
-If we use the number we want to find directly as the array position, we might waste almost all the slots. We call this number a "key." When we gather them in a small array, different keys might start at the exact same slot. We call this a "collision." We need rules for calculating the starting slot, moving to the next slot after a collision, and finding things after a deletion all together.
+A FIFO Queue chooses by arrival order. Selecting a numeric extreme needs a
+different rule. A scan finds an extreme but repeats work on every selection.
+A complete tree keeps an extreme at position 0 and repairs one affected path.
+This is the Heap implementation of priority selection.
 
-This chapter follows graph BFS. Retrieve dense vertex indexing and circular-array remainder calculations. Introduce array allocation, growth, and the distinction between expected and amortized cost here; priority queues and heaps come next.
-
-In week 9, we will directly handle checking slots one by one, finding, putting in, changing existing values, and deleting. For "rebuilding" (rehashing), we only complete the decision points and final changes within the provided framework. We do not build the entire rebuild process from scratch.
+The required [lab.c](../module_10_binary_heap/student/lab.c) uses ten fixed
+integer slots, not the optional alert-record library. `is_min_heap` chooses
+min or max comparison. It is not a validation result. Equal values have no
+stored arrival sequence. Functions do not reject full insertion or empty
+removal; callers prevent those operations.
 
 ## Board Walkthrough
 
-The basic slot we look at first is called `home`. The capacity is 8, and `home = key % 8` (the remainder when dividing the key by 8). The structure that calculates the basic slot using a key and stores it in an array is called a "hash table." The rule of looking at the next slots one by one after a collision is called "linear probing."
+Add `7,3,5,1,9,4` in min mode. The final active prefix is
+`[1,3,4,7,9,5]`. Removing the root returns 1 and leaves
+`[3,5,4,7,9]`. Ask students to choose the better child before swapping and
+to identify the remaining left-only child. Change to max mode, then call
+`heapify()`; changing the flag alone does not restore order.
 
-```text
-10: Look at 2 and store it in 2.
-18: Look at 2, 3 and store it in 3.
-26: Look at 2, 3, 4 and store it in 4.
+Load ID0 `[1,3],[7,10]`; ID1 `[2,5],[8,12]`;
+IDs2–9 `[4,9]` each. Intervals include both endpoints. Initially the latest
+on is 4 and the earliest off is 3. Advance ID0, giving 7 and 5. Advance
+ID1, giving 8 and 9. Return 8.
 
-Position   0  1  2   3   4   5  6  7
-Key              10  18  26
-
-```
-
-After deleting 18, we leave slot 3 as a "deleted mark" (tombstone).
-
-| Position | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| State | Empty | Empty | In Use | Deleted Mark | In Use | Empty | Empty | Empty |
-| Key |  |  | 10 |  | 26 |  |  |  |
-
-`put(key, value)` is a request to put in a new key or change the value of an existing key. Let's follow two requests starting from this exact same state.
-
-```text
-put(26, 999): Look at 2, 3, 4 and change the value in 4.
-put(34, 340): Look at 2, 3, 4, 5 and then reuse the remembered slot 3.
-
-```
-
-Ask these questions before showing each result:
-
-* After deleting 18, which slot do we have to check up to when finding 26?
-* If `put(26, 999)` stops at the deleted mark in slot 3, what check do we miss?
-* If the capacity changes from 8 to 16, how do we calculate the starting slot for key 18?
-
-## Common First Thoughts
-
-* "We should use the key value directly as the array position."
-* "We can mark a deleted slot exactly the same as an empty slot that was never used."
-* "When inserting a new key, we should write the record down immediately when we meet the first deleted mark."
-* "The expected `O(1)` fast time is guaranteed for all keys and in all states."
+Both full heaps store IDs. Accessors obtain the current endpoints through
+`epoch[id]`. A function pointer stores the comparison operation chosen for
+that Heap. Its swap operation updates an inverse map from ID to position.
+After each epoch change, locate and repair that ID separately in both heaps.
 
 ## Neutral Questions
 
-* In this request, what state allows us to stop looking (probing)?
-* How did we separately record the position of the first deleted mark we saw and the position of the exact same key?
-* What request results must remain exactly the same before and after rebuilding the table?
+- Which positions are active, and when does a child return `-1`?
+- Does `proper_parent` return an integer value or a position?
+- Why can the min root be correct while the array is not sorted?
+- What must happen after changing the min/max flag?
+- Which ID prevents the current intervals from overlapping?
+- Why are the two root values IDs rather than times?
+- Which map belongs to each heap, and what changes during a swap?
+- Why does a single epoch change require two repairs?
+- When should `_reheapify` go up, and when should it go down?
+- Why does equality of latest on and earliest off count as success?
 
-## Vocabulary Rules
+## Vocabulary Boundary
 
-**Words we can use:** Array position, remainder calculation (modulo), empty slot, keeping the state after a failure, and capacity.
+Retrieve arrays, active prefix, fixed bounds, binary tree, parent, child,
+root, and FIFO. Introduce priority selection, complete tree, min/max Heap,
+comparison rule, bottom-up construction, repair up/down, closed interval,
+epoch, function pointer, and inverse position map as needed. Explain the
+new C callback declarations before tracing their calls.
 
-**Names we will introduce in this chapter:** Key and value, map, hash function, hash table, collision, linear probing, deleted mark, array allocation and growth, rebuilding to reduce deleted marks, rehashing, expected cost, and amortized cost.
-
-**Words we won't use yet:** Names of other collision handling methods, the full implementation of rebuilding from scratch, or attack defense designs for real-world services.
+Dynamic allocation and stable alert-record queues remain optional reference
+material. Do not assess their ownership/status contracts in the current lab.
+The ten-device source assumes 1–5 chronologically ordered disjoint valid
+intervals per ID. Use nonnegative times. No input validator enforces this.
 
 ## Final Check
 
-> "Why must we leave slot 3 as a 'deleted mark' after deleting 18, and why must we keep looking even when putting in a new key?"
-
-**Minimum Expected Answer:** Students should mention both the flow of finding 26 (which is stored further down) and the flow of checking to make sure we don't put the exact same key in twice.
+Students explain the parent-child invariant and both map identities, trace
+one repair in each direction, justify the interval-advancement rule, and
+state the return values for overlap, endpoint equality, and exhaustion.
+For generalized n and A advances the search uses O(n + A log n) work and
+O(n) auxiliary storage. The literal lab fixes ten IDs and at most five
+intervals per ID. Use the
+[180-minute plan](../module_10_binary_heap/instructor/lesson_plan.md)
+and current [rubric](../module_10_binary_heap/student/rubric.md).

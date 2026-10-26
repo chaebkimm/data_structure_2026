@@ -2,25 +2,27 @@
 
 > Scope: This bank catalogs distinct, useful question intents that can arise across the course. It is comprehensive by topic, but it does not repeat every possible wording of the same question. It contains questions only, not answers.
 
-## Course Structure and the 13-Week Map
+## Course Structure and the 14-Week Map
 
-- Why are there 15 numbered teaching packages but only 13 instructional weeks?
+- Which teaching packages are included in the 14-week course?
+- How does Week 13 combine searching, sorting, and earlier structure choices before Week 14 MST work?
+- Why does ordered edge processing prepare Kruskal without replacing the connectivity decision taught with DSU?
 - Does a module number always match the week in which we use it?
-- Which document controls if a package README and the 13-week delivery guide appear to disagree?
+- Which document controls if a package README and the 14-week delivery guide appear to disagree?
 - Where can I find the definitive list of required work for the current week?
-- Why are linked lists and Queue combined in Week 7?
-- Why are Union-Find and Kruskal combined in Week 13?
-- Why are Modules 8 and 9 combined into one BFS week?
-- Why does Module 11 combine the Priority Queue contract and Binary Heap implementation?
-- Why does Module 10 Hash Table bridge the BFS and priority/weighted-exploration spirals?
+- How does Week 7's value-based linked-queue API hide allocation and recycling while the same implementation is reused for tree and graph BFS in Week 8?
+- Why are Union-Find and Kruskal combined in Week 14?
+- How does Week 8 progress from FIFO queues through tree level order to minimum-hop graph reachability?
+- Why does Module 10 combine the Priority Queue contract and Binary Heap implementation?
+- Why does Module 9 Hash Table bridge the BFS and priority/weighted-exploration spirals?
 - What does the Linear-to-Tree-to-Graph spiral organization mean for how I should study?
 - Are concepts introduced as previews expected knowledge when they return later?
 - Do I need to complete the packages strictly in numerical order?
 - Which weeks use two packages within the same 180-minute contact-time budget?
 - What does the 180-minute weekly cap include?
-- Is the capstone defense part of the 13 teaching weeks?
+- Is the capstone defense part of the 14 teaching weeks?
 - Which weeks replace an ordinary lab with a practical?
-- When does the capstone begin, and why is it not introduced for the first time in Week 13?
+- When does the capstone begin, and why is it not introduced for the first time in Week 14?
 - What prior C knowledge does the course assume, and where can I get help if my background is different?
 
 ## Required Work, Extensions, and Staged Releases
@@ -44,10 +46,10 @@
 ## Weekly Submissions, Deadlines, and Workload
 
 - Is there ever more than one required programming submission in a teaching week?
-- What belongs in the single combined Week 8 BFS submission?
+- What belongs in the single Week 8 queue, tree BFS, and graph BFS submission?
 - What belongs in the single combined Week 10 Priority Queue and Heap submission?
 - Why is there no separate ordinary lab submission in Weeks 6 and 11?
-- How is the Week 13 MST, synthesis, and capstone-integration work folded into one artifact?
+- How is the Week 14 MST, synthesis, and capstone-integration work folded into one artifact?
 - Does each capstone milestone require a second weekly submission?
 - What files and evidence must be included in an ordinary weekly lab artifact?
 - Where are due dates and late-work rules published?
@@ -74,7 +76,7 @@
 - How much credit can an expert-model correction recover on a practical?
 - Where are the five spiral synthesis checks graded if they are not separate submissions?
 - Are Segfault Autopsies and Micro-CTFs additional projects or embedded parts of existing work?
-- How is the same code prevented from being scored twice in the Week 13 lab and capstone grades?
+- How is the same code prevented from being scored twice in the Week 14 lab and capstone grades?
 
 ## Practical Assessments
 
@@ -111,7 +113,7 @@
 - Can the defense be written, recorded, extended-time, or otherwise adapted?
 - What happens if a partner withdraws, becomes unavailable, or contributes unevenly?
 - When and where does the defense occur if the institution has no separate final-assessment period?
-- How are integration, the report, and the individual defense distinguished from the Week 13 lab grade?
+- How are integration, the report, and the individual defense distinguished from the Week 14 lab grade?
 
 ## Attendance, Make-Up Work, Accessibility, and Psychological Safety
 

@@ -1,8 +1,287 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-10-23.
+Updated: 2026-10-25.
 
-## Repository handoff — 2026-10-23
+## Module 11 current-lab alignment — 2026-10-25
+
+Week 11 now follows the unchanged `module_11_graph_dijkstra/student/lab.c`:
+ten-node adjacency lists from Module 3, a separate positive `int` weight
+matrix, `-1` distances, and an indexed minimum Heap of node IDs. Improvements
+repair a queued node through its live inverse position. Student materials,
+models, instructor guides, question banks, course maps, and release tooling
+match the actual source. Required work is one focused original regression,
+state traces, and a supplied BFS/linear-selection/Heap comparison in the sole
+180-minute Practical 2 artifact. The older lazy-duplicate API is optional.
+
+Current targets are `lab-compile`, `core`, `student-tests`, and `comparison`.
+Core checks cover live-map/order invariants, both repair directions, ties,
+singletons, capacity, repeated runs, disconnected/nonzero sources, and 80
+positive-weight graphs against an independent repeated-relaxation oracle.
+The supplied comparison separately implements BFS and linear-minimum-selection
+Dijkstra. Exact-source compiler instrumentation verified the canonical
+`[0,5,2,4,6,-1]` result, heap states, A,C,D,B,E order, five adds/removals,
+two updates, eight adjacency inspections, and peak pending size three.
+Normal and AddressSanitizer/UndefinedBehaviorSanitizer runs pass, including
+an independently extracted archive. Retained optional library core,
+extension, and unsigned autopsy checks also pass. The supplied old-style
+prototypes and Module 3 label conversion still produce six warnings.
+
+`release/prepare_student_release.py` creates the standalone
+`dist/module_11_graph_dijkstra.zip` with 28 entries, including the exact
+Module 3 dependency and three current-source drivers. Inventory, source bytes,
+manifest hashes, deterministic regeneration, overwrite refusal, and
+32 packaged local links pass. The source-document audit checks 224 resolving
+links across 34 current documents; standard/linear worksheets have 31 matching
+prompts, the pause has three targets, and the rubric totals 100 points.
+PowerShell scripts received static inspection; PowerShell is unavailable here.
+The lab SHA256 remains
+`85884ccd5a99fb827e177d10cd608670b650c7544399f33f735e41a08f623703`.
+The archive SHA256 is
+`506bc2340e3156e3364048443b89d08817f0c63c4d12d51d0e77e81ca742d275`.
+Earlier uncommitted repository work is preserved. This entry supersedes the
+older required-lazy-frontier and path-scaffold descriptions below.
+
+## Module 10 current-lab alignment — 2026-10-25
+
+Week 10 now follows `module_10_binary_heap/student/lab.c`: a ten-integer
+min/max Heap, bottom-up construction, and ten-device common-on-time search
+with max-on/min-off ID Heaps, epochs, comparator/swap callbacks, and inverse
+position maps. The English and Korean textbooks, workbook, concept/lab slide
+outlines, student support, diagrams, instructor keys/plans, assessment,
+question banks, and current course maps match this source. One submission
+contains an assertion driver, three original test groups, and trace evidence.
+The alert-record Heap and linear baseline remain optional references.
+Dijkstra guidance now distinguishes the ten-value lab, optional 64-record
+alert library, and its own 241-entry frontier; stable frontier ties belong
+to the supplied Dijkstra support rather than this integer lab.
+
+The default module build tests the supplied lab. Run
+`make -C module_10_binary_heap/code lab-compile core student-tests`.
+Seven core groups include 1,000 deterministic interval-oracle cases,
+min/max operations, mode rebuild, missing-child/singleton cases, both
+indexed repair directions and map invariants, closed endpoints including
+`[5,5]`, repeated calls, and exhaustion through all five intervals.
+Normal and AddressSanitizer/UndefinedBehaviorSanitizer builds pass.
+Optional scan-baseline core and Heap core/extension/autopsy checks pass.
+The unchanged lab retains six inherited no-prototype warnings.
+
+`release/prepare_student_release.py` creates one standalone archive,
+`dist/module_10_binary_heap.zip`, with 25 entries. The PowerShell entry
+point delegates to it; A–E readmes are optional classroom checkpoints.
+Byte equality, exact inventory, deterministic regeneration, overwrite
+refusal, 59 packaged local links, and extracted standalone compile/core/
+student runs pass. Source/document QA checks 58 current documents and
+301 resolving local links; both textbook C blocks exactly match the lab.
+PowerShell is unavailable, so its wrappers received static inspection only.
+The lab SHA256 remains
+`2d2885728d2825fa749a8669f4ea3dca74fd29821b7b93dbe9a59b3907e5791a`.
+The archive SHA256 is
+`d343f9cbbd139a4cfd9855704d8633c996757e77a65296b0ac1700af4f223f72`.
+These local changes preserve the earlier uncommitted repository work.
+
+## Module 09 current-lab alignment — 2026-10-24
+
+Week 9 now follows `module_09_hash_table/student/lab.c`: ten bucket heads,
+Module 07's ten-node pool, separate chaining, and two sum. Textbook, activities,
+instructor answers, rubric, questions, course maps, and active pilot prompts
+match the actual source. Required work is one assertion driver and evidence,
+with three original groups: hashing/chains, pool lifecycle, and two sum.
+The two supplied lab sources are unchanged; the old open-addressed library
+and deletion demo remain optional.
+
+The default module build runs current-source tests. Use
+`make -C module_09_hash_table/code lab-compile core student-tests`.
+Normal and sanitizer tests pass, including an 81-target oracle and repeated
+calls. Clang still reports the supplied sources' old-style declarations and
+shadowed names. The retained optional map core/extension suites also pass.
+
+`release/prepare_student_release.py` creates five A–E ZIPs with 3/4/3/3/12
+entries; the PowerShell entry point calls it. The Stage E layout includes
+sibling Module 09 and Module 07 directories so the exact include works.
+Reproducibility, byte equality, overwrite refusal, and an independent extracted
+build were verified in temporary directories. Stage C is hand prediction;
+source inspection/execution begins in Stage E. The former strict 38-file
+inventory and older Stage E contents below are superseded by this entry.
+
+## Consecutive module numbering — 2026-10-24
+
+The thirteen teaching packages and chapters now run consecutively from
+1 to 13. Binary Heap is `module_10_binary_heap/`, Dijkstra is
+`module_11_graph_dijkstra/`, BST/AVL is `module_12_bst_avl/`, and
+Prim/Kruskal is `module_13_prim_kruskal/`. Their instructor guides are
+`chapter_10.md` through `chapter_13.md`. Course maps, vocabulary boundaries,
+question banks, staged release names, test output labels, and active pilot
+templates use this numbering.
+
+Existing core and extension suites pass for Heap, its supplied linear
+baseline, Dijkstra, AVL, and MST. The Week 13 reference tests and starter
+build pass using the renamed repository dependencies. Checks of 289 local
+document links and all 26 staged/opening release maps pass. Test builds
+used temporary directories, preserving existing repository build artifacts.
+
+This entry supersedes earlier numbering and retired-number claims below.
+Dated historical narratives retain their original module numbers;
+actionable package paths use the current directory names. Historical
+simulation responses preserve their assessed editions.
+
+## Hash Table renumbered to Module 9 — 2026-10-24
+
+Renamed `module_10_hash_table/` to `module_09_hash_table/` and the teaching
+guide to `instructor_guide/chapter_09.md`. Hash Table is now Module/Chapter 9
+in Week 9. Course indexes, curriculum references, vocabulary boundaries,
+question banks, and staged release filenames follow the new numbering.
+There are thirteen teaching packages: 1–9, 11–12, and 15–16; numbers 10,
+13, and 14 are unused. Earlier dated entries retain their historical numbering.
+
+The existing Hash Table core and extension suites pass from the new
+directory. The C implementation and public API are unchanged. All 199 local
+links checked in changed or moved documents resolve, and the strict 38-file
+source inventory and five staged release maps pass static validation.
+
+## Module 7 directory consolidation — 2026-10-24
+
+Removed the redundant `module_07_linked_list/week_07/` subtree. The current
+lab and rubric are `student/lab.md` and `student/rubric.md`; the 180-minute
+plan is `instructor/lesson_plan.md`. The unique test harness now lives in
+`code/tests/test_lab_core.c`, `test_lab_student.c`, and `lab_test_support.h`.
+Run `make -C module_07_linked_list/code core student-tests` from the repository
+root. The default module build also runs these current-lab tests.
+
+The packager is `release/prepare_student_release.py`, producing the module's
+`dist/module_07_linked_list.zip`. It packages the canonical `student/` and
+`code/` layout. Course and release references use these paths. The actual
+`student/lab.c`, optional library, and DSU paths used by Module 16 are
+preserved. Earlier entries below describe the superseded weekly layout.
+
+Current core/student tests, sanitizer builds, and the optional library core
+pass. The extracted 25-entry release builds and passes, matches all 24 mapped
+source files, has an exact manifest and 42 resolving local document links,
+and refuses overwrite without changing the archive. PowerShell is unavailable;
+its wrappers were reviewed statically. These changes remain local.
+
+## Module 8 Graph BFS replacement — 2026-10-24
+
+Removed the standalone Tree BFS package and renamed `module_09_graph_bfs/`
+to `module_08_graph_bfs/`. Graph DFS remains Module 6. The Graph BFS teaching
+guide is now `instructor_guide/chapter_08.md`; its former Chapter 9 path is
+retired. There are thirteen teaching packages: 1–8, 10–12, and 15–16.
+
+Week 8 retrieves Week 7's FIFO rule directly and teaches graph discovery,
+minimum-hop distance, predecessors, and path reconstruction in one 180-minute
+unit with one submission. The former required tree bridge is removed.
+Course maps, vocabulary boundaries, question banks, dependent-module
+references, and staged release names follow the new numbering. Historical
+pilot records retain their original chapter identities and identify retired
+editions explicitly. Current verification is recorded in `TEXTBOOK_VALIDATION.md`.
+
+## Module 7 lab synchronization — 2026-10-23 (directory layout superseded)
+
+The current required source is `module_07_linked_list/student/lab.c`, unchanged
+in this revision. It uses `nodes[10]` with integer `data`/`next`, `-1` as the
+ending marker, and a free chain. Allocation removes a free slot; list
+removal detaches a successor; recycling is a separate caller action.
+Linked FIFO uses `head`/`tail`. The linear array queue initially fits ten
+values, while the circular convention reserves one slot and fits nine.
+Queue array mutations are unchecked and require matching caller predicates.
+The older `LinkedList`/DSU code under `module_07_linked_list/code/` remains
+an optional, distinct library. DSU is still introduced in Week 13.
+
+Current reading starts at `module_07_linked_list/student/textbook.md` or
+`textbook_korean.md`. Both follow the five-section textbook style and
+reproduce the full current lab code in order. The same student directory
+contains a bilingual `class_material.md`, `ppt_material.md`, and
+`ppt_lab_material.md`, plus updated inquiry, pause, investigation, evidence,
+rubric, vocabulary, and index-link autopsy materials. Weekly entry points,
+instructor guides, diagrams, course maps, and Week 7 question banks use
+this scope. Week 8 reuses FIFO for BFS rather than introducing it.
+
+Week 7 now asks for traces, guarded callers, and three original safe test
+groups; the supplied code has no implementation TODO or `main`. The five
+core test cases and student smoke driver include the actual lab. The
+canonical rubric totals 100: pool20, list20, linked FIFO20, arrays25,
+tests/cost/revision15. The contact plan remains 180 minutes.
+
+`week_07/prepare_release.py` preserves the `student/` and `week_07/` layout
+in a self-contained 16-entry archive. It includes the unchanged lab,
+bilingual textbook, workbook, both slide manuscripts, lab/rubric and tests.
+`release/prepare_student_release.ps1` delegates to it; the historic five
+combined List/DSU ZIPs are superseded. Stage readmes are now facilitation
+checkpoints, not additional release products. Release Make/PowerShell
+helpers target the current weekly tests.
+
+Verification: normal and AddressSanitizer/UndefinedBehaviorSanitizer runs
+pass all five core groups and the smoke test. An independently extracted
+archive also builds and passes; manifest, exact source/document bytes,
+relative links, exclusion of faculty/legacy code, and overwrite refusal
+were checked. Both textbook C sections match the lab exactly; 52 changed
+or directly related Markdown files contain 271 resolving local links.
+The source retains nine Clang non-prototype warnings; no source was altered
+to suppress them. PowerShell is unavailable, so its wrappers received
+static inspection only. Technical/editorial checks do not replace a human
+beginner reading pilot.
+
+For this Mac, use real CLT binaries and an explicit SDK if the system
+shims report an Xcode license problem:
+
+```sh
+/Library/Developer/CommandLineTools/usr/bin/make -C module_07_linked_list/week_07/code core student-tests CC=/Library/Developer/CommandLineTools/usr/bin/clang CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk'
+```
+
+For sanitizers choose a separate `BUILD_DIR` and add
+`-fsanitize=address,undefined -fno-omit-frame-pointer` to those flags.
+Use the bundled Python/Git paths documented below when their system shims
+fail. Lab SHA256:
+`46985a83c37e60471324a7afbb73aa8e279f4861cb7a08905341c4f6d0f1d6ac`.
+These changes are local and uncommitted. No website was changed or published;
+the existing web implementation currently covers Chapters 0–6 only.
+
+## Historical Module 7 replacement — 2026-10-23 (superseded by the lab synchronization above)
+
+The user requested deleting the Queue package, renumbering the former Module 14
+linked-list package as Module 7, fixing both review findings, and verification.
+The current package is `module_07_linked_list/`. The old `module_07_queue/` and
+`module_14_linked_list_dsu/` directories are removed. Chapters 13 and 14 are
+retired; Chapters 15 and 16 retain their numbers. There are fourteen teaching
+packages across thirteen instructional weeks.
+
+Week 7 now uses `module_07_linked_list/week_07/README.md` and one linked-list
+artifact: front insertion, first-match deletion, destruction, ownership traces,
+and failure tests. The original combined List/DSU resources remain in this
+renamed package as optional faculty material. DSU is first taught and assessed
+with Kruskal in Week 13, whose reference build points to the renamed package.
+FIFO is introduced with the supplied Tree BFS Queue in Week 8, followed by
+Graph BFS. No replacement Queue implementation is assigned.
+
+The legacy Module 16 release inventory excludes its separate `week_13/` subtree
+and still validates the original 47-file package. The Tree BFS README describes
+its actual borrowed node-pointer/depth records; Graph BFS stores vertex IDs.
+The Week 13 DSU header also includes the full caller-output and API contracts.
+The course maps, vocabulary boundaries, teaching guides, question banks, and
+release names follow the new package numbering. Earlier entries below describe
+previous editions and may cite their historical paths or assignment scope.
+
+Reproduce the current bounded releases and core checks from the repository root:
+
+```sh
+python module_07_linked_list/week_07/prepare_release.py
+python module_13_prim_kruskal/week_13/prepare_release.py
+make -C module_07_linked_list/week_07/code solution-core starter-compile
+make -C module_13_prim_kruskal/week_13/code solution-core starter-compile
+```
+
+The archives are `dist/week_07_linked_list.zip` and
+`dist/week_13_dsu_kruskal.zip` inside their respective weekly directories.
+The linked-list packager refuses overwrite; use its `--output PATH` option
+for repeat checks. Both extracted releases pass strict C11/sanitizer checks
+when only their three advertised TODO bodies are completed. Tree/Graph BFS
+core checks, original package inventory/maps, all 581 local links and nine
+anchors, calendar budgets, and question-bank totals also pass. PowerShell
+itself is unavailable; its release maps/inventory were verified statically.
+
+Verification results are recorded in `TEXTBOOK_VALIDATION.md`. These changes
+are local and uncommitted; this request does not publish the separate website.
+
+## Historical repository handoff — 2026-10-23 (superseded by the Module 7 replacement above)
 
 The user explicitly requested saving the completed curriculum work to this
 handoff, committing all changes, and pushing the course repository to GitHub.
@@ -56,10 +335,10 @@ From the repository root:
 
 ```sh
 python module_07_queue/week_07/prepare_release.py
-python module_16_prim_kruskal/week_13/prepare_release.py
+python module_13_prim_kruskal/week_13/prepare_release.py
 make -C module_07_queue/week_07/code solution-core starter-compile
-make -C module_16_prim_kruskal/week_13/code solution-core starter-compile
-make -C module_15_bst_avl/code solution-core
+make -C module_13_prim_kruskal/week_13/code solution-core starter-compile
+make -C module_12_bst_avl/code solution-core
 ```
 
 The release scripts generate `dist/week_07_linked_queue.zip` and
@@ -81,7 +360,7 @@ Website content remains at its previously published state described below;
 the new curriculum has not been published to Sites. No pending curriculum
 implementation work remains from this request.
 
-## Curriculum revision — local repository, 2026-10-22
+## Historical curriculum revision — local repository, 2026-10-22
 
 The current course has 13 instructional weeks. The authoritative schedule is
 [the 13-week delivery guide](Data_Structures_Course_2026_13_Week_Delivery_Guide.md).
@@ -90,7 +369,7 @@ and Week 13 introduces DSU immediately before Kruskal. Prim is a supplied
 demonstration; capstone defense remains in the separate final period.
 
 New required lessons, labs, reference/starter code, tests, and release scripts
-are in `module_07_queue/week_07/` and `module_16_prim_kruskal/week_13/`.
+are in `module_07_queue/week_07/` and `module_13_prim_kruskal/week_13/`.
 Existing full packages remain optional resources. The course map, instructor
 entry points, question banks, and assignment boundaries follow this revision.
 No website source or publication was changed by this curriculum update.
@@ -504,3 +783,147 @@ The system Git requires an unaccepted Xcode license; use the bundled executables
 For the workflow process, prepend bundled Node and fallback Git directories to PATH, launch `site-workflow.mjs --project-id <existing project ID>` in the website checkout with a PTY, and send credentials through hidden stdin. First run without an archive to open source; retain the returned source object. After changes, run again with that source, necessary checks/build commands, and an absolute archive path. Save the exact pushed commit/archive through Sites, then deploy the returned saved version. Confirm deployment succeeded before reporting publication. The normal build command is `node <Sites scripts>/build-site.mjs`; the TypeScript command is `node node_modules/typescript/bin/tsc --noEmit`.
 
 This handoff is a local repository note; it does not require another website publication.
+
+
+## 2026-10-26 — Module 7 linked lists; Module 8 queues and BFS
+
+This entry records the initial split. The linked-queue revision below supersedes its placement and BFS queue choices.
+
+The requested teaching split is now linked lists only in Module 7, followed by
+queues → tree BFS → graph BFS in Module 8. The delivery guide, spiral map,
+manuscript/index, vocabulary sequence, instructor guides, question banks,
+and current textbook-pilot prompts agree. Each week retains one artifact and
+180 contact minutes. Week 7 uses 20/35/40/35/30/20 minutes; Week 8 uses
+60 minutes for queues, 30 for tree BFS, 60 for graph/maze BFS, and 30 for
+checks, costs, and synthesis.
+
+Module 7's `student/lab.c` retains the existing ten-record `lnodes` pool and
+its exact `init_lnodes`, `new_lnode(data,next)`, `free_lnode`, `link_lnode`,
+and `delete_next_lnode` implementation. Its former queue tail moved intact
+to `module_08_graph_bfs/student/queue.c`. The linear queue permits 25 total
+writes per reset; the circular convention permits 24 waiting values.
+Module 7's bilingual teaching/release materials and tests now assess only
+lists, detachment, recycling, and reuse. The optional pointer-list/DSU
+library is retained; DSU teaching remains in Week 13.
+
+Module 8 adds `student/tree_bfs.c` using Module 2's indexed tree. The F-root
+fixture processes F,A,G,B,C,D,E. The maze lab imports its local queue and
+no longer imports the unused DFS lab. `student/lab_driver.c` checks queues,
+tree order/empty/single-node cases, all maze mappings and shortest
+predecessors, canonical distance 8 and three routes, independent searches,
+and an isolated-start unreachable-passage case. Default builds run this
+combined driver. Its Python release packager supplies the exact Module 2
+and Module 7 dependencies with repository-relative paths. The older checked
+graph library and staged reference exercises remain optional.
+
+Verification: Module 7 core/student tests and textbook demos passed; its
+extracted release passed. Module 8 combined/default and extracted-release
+checks passed ASan/UBSan. An independent sanitizer harness also verified
+all valid maze starts, repeated circular wraparound, and an open 25-passage
+interior. Module 9 core/student tests passed after the queue relocation.
+The final repository audit checked 464 local links across 84 current files
+without a broken destination. Existing old-style C prototype and Module 2
+unused-demo-variable warnings remain. Use direct CLT clang with
+`-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk` on this host;
+the system compiler shim still requires the Xcode license.
+
+
+## 2026-10-26 — Linked queue as the Module 7 example and Module 8 worklist
+
+The follow-up restores the linked queue as a required application of linked
+lists in Module 7. Module 7's guarded `student/lab.c` contains the original
+pool and original `head`, `tail`, `enqueue_lnode`, `dequeue_lnode`, and
+`is_empty_lnode` implementation. The queue example traces allocation,
+endpoint transitions, FIFO order, reading a returned slot's payload, and
+separate recycling. Array queue comparisons and BFS remain in Module 8.
+
+Module 8 imports this exact linked implementation through `student/queue.c`.
+Both `tree_bfs.c` and maze `lab.c` now use it. Each pop returns a pool slot;
+BFS copies its payload ID and recycles the slot before adding children or
+neighbors. Callers initialize the otherwise unowned pool and reset
+`head = tail = -1` before an independent traversal; maze callers also reset
+`info`. Array `front/rear` resets apply only to array comparisons.
+
+The ten-slot pool bounds pending work, not total discoveries. Peaks are
+three for the supplied tree, four for canonical maze start {1,1}, six over
+all starts on the supplied maze, and ten over all starts on the optional
+fully open 5-by-5 interior. Completed searches restore all ten free slots.
+Allocation assertions expose violated initialization/capacity preconditions.
+
+Bilingual teaching materials, assessments, course maps, question banks, and
+current pilot prompts follow this sequence. Week 7 uses
+20/35/35/30/35/25 minutes; Week 8 uses 60/30/60/30. Each retains one artifact.
+Module 7 core/student tests, four textbook callers, and extracted release
+passed. Module 8 actual BFS/driver and extracted release passed ASan/UBSan;
+its exact-once/FIFO/live-free partition checks cover current and open-maze
+starts. Independent pilot checks also exercised both uninstrumented BFS
+functions. Module 9 core/student tests passed with the restored queue/pool.
+All 464 local links across 84 current files resolve. PowerShell scripts
+were not executed; original C warning style is preserved.
+
+
+## 2026-10-26 — Module 13 searching/sorting/consolidation; MST moved to Module 14
+
+The course now has 14 teaching modules/weeks. The authoritative schedule is
+`Data_Structures_Course_2026_14_Week_Delivery_Guide.md`; the former 13-week
+filename is a compatibility redirect. Earlier linked-queue decisions remain:
+Module 7 teaches the list example and Module 8 reuses it for both BFS loops.
+
+`module_13_search_sort_consolidation/` is the new bounded lesson. It supplies
+linear search, first-match binary search, stable insertion sort, and stable
+merge sort for up to 64 integers with caller-owned disjoint scratch. The
+common input [31,23,17,8,17,42] distinguishes original first-match index 2
+from sorted first-match index 1. Consolidation selects earlier structures
+from their workload, invariant, costs, and capacity. Students trace/test
+supplied code and submit one artifact with a selection memo. The plan is
+35/55/25/45/20 minutes, 180 total. Bilingual textbooks, class/PPT/lab materials,
+assessment, instructor guide, tests, and a self-contained release are present.
+
+The former `module_13_prim_kruskal/` is now `module_14_prim_kruskal/`; its
+bounded `week_13/` unit is `week_14/`. Chapter guide 14, internal labels,
+archive names/scripts, all current cross-references, question-bank aggregates,
+and current pilot materials follow that move. DSU find/union and Kruskal
+remain student TODOs; Prim remains a supplied comparison. Algorithms are
+preserved. Module 14 retains one 180-minute artifact and final integration;
+the capstone defense remains in the separate final-assessment period.
+
+Verification: Module 13 core/student/demo and extracted 18-file release pass
+ASan/UBSan and warning-as-error checks; source excerpts, manifest fidelity,
+local links, and overwrite protection pass. Independent oracle/canary tests
+also pass. Module 14 full reference core/extension and bounded/reference
+checks pass ASan/UBSan; extracted starter scaffold compiles and passes after
+temporary reference injection. Original student-authored test placeholders
+are intentionally unfinished, not reported as passing. PowerShell inventory
+checks pass, but PowerShell runners were not executed. Final audit resolves
+521 local links in 114 current files and verifies calendar/index rows 1–14.
+
+
+## 2026-10-26 — User value-based queue API
+
+The latest user-edited Module 7 lab is authoritative and remains guardless.
+It now uses `struct Linked_Node`, `init_lnodes_pool(void)`,
+`is_empty_queue(void)`, `enqueue_lnode`, and `dequeue_lnode(void)`.
+Raw helpers exchange pool indices; raw empty dequeue returns -1. Public
+`bool enqueue(value)` owns allocation and reports exhaustion without mutation.
+Public `int dequeue(void)` returns the payload and recycles its node. It
+requires a nonempty queue; its assertion disappears under NDEBUG. Payload
+-1 is valid data. Never free a public dequeue result as if it were a node.
+
+Both Module 8 BFS loops now call the public value API, with enqueue calls
+outside assertions. Array comparisons use distinct `*_linear` names and
+unchanged `*_circular` names. Module 9 continues using the raw pool interface;
+its tests/docs use the new struct and initializer names. Single-inclusion
+protection lives around the Module 7 imports in Modules 8/9 using
+`MODULE_07_LINKED_LIST_SOURCE_IMPORTED`, preserving the user's source body.
+The combined Module 8 driver imports queue.c before observer macros.
+
+Bilingual materials, assessments, root curriculum/style rules, question
+banks, and current pilot examples are synchronized. Module 7 tests/demos
+and release pass sanitizers/-Werror, including NDEBUG value callers.
+Module 8 combined driver, NDEBUG valid-caller harness, and extracted release
+pass sanitizers. Module 9 core/student tests and fresh Stage E release pass.
+A combined tree-BFS/hash/maze-BFS harness passes both source-include orders
+with ASan/UBSan in debug and NDEBUG builds. Final archive copies for Modules
+7/8/9 exactly match the latest user source; 672 local links across
+155 current files resolve. PowerShell runners were not executed.
+The 14-module sequence and both weekly submission/time budgets are retained.

@@ -411,7 +411,7 @@ and the legacy pointer-based exercise's contracts.
 
 ### Operations, C API, and ownership
 
-- Which DFS form is the required Week 6 implementation in the 13-week path?
+- Which DFS form is the required Week 6 implementation in the 14-week path?
 - Why does iterative DFS inspect outgoing neighbors in descending index order?
 - Why must `out_order` or `out_component_count` remain unchanged on every failure?
 - Why does connected-component counting reject directed graphs under this API?
@@ -466,58 +466,46 @@ and the legacy pointer-based exercise's contracts.
 - Is recursive graph DFS required in Practical 1 or explicitly extension work?
 
 
-## Week 7 — Linked Lists and Queue
+## Week 7 — Linked Lists with a Linked Queue Example
 
-[Weekly vocabulary and scope](week_07_queue.md)
+[Weekly vocabulary and scope](week_07_linked_list.md)
 
+### Representation and free-chain initialization
 
-### Meaning and representation
+- How does a linked sequence in `lnodes[10]` differ from an ArrayList's active prefix even though both use contiguous arrays?
+- Why is a node's index different from the integer stored in its `data` field?
+- What chain does `init_lnodes_pool()` create, and why does slot 9 end in `-1`?
+- Why must traversal stop at `-1` before indexing `lnodes[]`?
+- What happens to live links if `init_lnodes_pool()` is called while the pool is still in use?
+- Why does initialization visit every reserved slot while one allocation uses a fixed number of updates?
 
-- What behavior makes both the linked and circular representations Queues?
-- How do FIFO and LIFO differ for the same arrivals?
-- Why do linked-node addresses not need to be adjacent?
-- How do head, tail, next, and size describe the linked Queue?
-- Why does a singleton have the same head and tail pointer?
+### Allocation, detachment, and recycling
 
-### Operations and ownership
+- How do `free_head` and the chosen node change when `new_lnode(17, -1)` succeeds?
+- What remains unchanged when an eleventh allocation returns `-1` from an exhausted pool?
+- Why does `free_lnode(node)` change the free chain without releasing C array storage?
+- Why must a node leave every live list before it is recycled?
+- Why can recycling the same valid index twice corrupt the free chain even though the bounds check passes?
+- Which returned index is used next after allocating slots 0 and 1, recycling slot 0, and allocating again?
 
-- Why must allocation succeed before enqueue changes any existing links?
-- Which pointers change when adding to an empty Queue?
-- Which pointer changes when adding to a nonempty Queue?
-- Why must dequeue save the value and following link before release?
-- Why must removing the final node clear both head and tail?
-- Why does the Queue return an integer instead of transferring a node?
-- Why can copying a live Queue struct cause double release?
-- How does supplied destruction visit and release every node?
-- Why must an output pointer refer to storage outside the Queue?
+### Predecessor link changes
 
-### Tracing, tests, and debugging
+- Why must `link_lnode(prev, node)` copy the predecessor's old next link before replacing it?
+- Which links change when a new node is inserted between two existing nodes?
+- What does `delete_next_lnode(prev)` return when the predecessor has no following node?
+- Why does `delete_next_lnode(prev)` neither recycle the detached node nor clear its old next link?
+- Why must the caller manage a separate list-head change instead of passing `-1` as a predecessor?
+- Why are known-predecessor insertion and detachment constant work while finding that predecessor can take O(n)?
 
-- What changes during empty → singleton → empty → singleton?
-- How can allocation failure be tested without relying on real memory exhaustion?
-- What state and links must stay unchanged after failed enqueue?
-- What must remain unchanged after empty dequeue?
-- Which later write becomes unsafe if final dequeue leaves a dangling tail?
-- How do the three original tests add evidence beyond the supplied fixture?
-- How can live-node counts and sanitizers help check cleanup?
+### Linked queue as a linked-list example
 
-### Circular comparison and costs
-
-- Why can circular physical order differ from logical FIFO order?
-- When is the circular tail-index formula valid?
-- How does size distinguish full from empty in a circular Queue?
-- How does a linked tail pointer differ from the circular derived tail index?
-- Why do both implementations avoid shifting surviving values?
-- Why is linked pointer work constant per operation but traversal O(n)?
-- Why is the O(n) validator excluded from an O(1) operation claim?
-- How do allocation costs, pointer overhead, and locality differ?
-- Why does a linked Queue still have memory and representable-size limits?
-
-### Assignment and transfer
-
-- Which two functions are the required Week 7 TODOs?
-- Why are peek, destruction, and validation supplied?
-- Do I implement the circular Queue or a complete general list library?
-- Which code, tests, traces, and correction evidence form the one artifact?
-- Why does BFS need discovery state in addition to FIFO ordering?
-- Why does a correct Queue not guarantee authentic, persistent event records?
+- How does FIFO order differ from the Stack's LIFO order for values 17, 23, and 31?
+- How does the first `enqueue(value)` allocate a node and set both `head` and `tail` to its pool slot?
+- Why does public `enqueue` allocate with next `-1`, and what remains unchanged when it returns `false` from an exhausted pool?
+- Which tail link changes when `enqueue_lnode` appends another detached node, and why is no tail search needed?
+- How does removing the only queued value restore both endpoints to `-1` and return its slot to the free chain?
+- How do the raw `dequeue_lnode()` pool-slot result and the public `dequeue()` value result differ, especially when the stored value is `-1`?
+- Why does public `dequeue()` copy the payload before recycling, and why must the caller avoid recycling that slot a second time?
+- Why must the caller check `is_empty_queue()` before public dequeue even though a debug assertion diagnoses an empty request?
+- Why must `enqueue(value)` run outside an `assert` expression when builds may define `NDEBUG`?
+- Which endpoint, live-chain, free-chain, and full-queue traces show public FIFO behavior and automatic slot reuse in the single Week 7 artifact?

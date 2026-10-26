@@ -1,88 +1,89 @@
-# Chapter 14. Connecting Scattered Nodes and Managing Connected Groups
+# Chapter 14. Connecting All Vertices at the Lowest Cost
 
-> This resource is split: linked nodes belong to [Week 7](../module_07_queue/week_07/instructor.md), and DSU is introduced with Kruskal in [Week 13](../module_16_prim_kruskal/week_13/instructor.md). There is no standalone Week 12 List/DSU lesson.
+> Use the [Week 14 combined DSU/Kruskal plan](../module_14_prim_kruskal/week_14/instructor.md). Introduce DSU in the same week. Prim is a brief supplied demonstration, with no student implementation checkpoints.
+
+Retrieve the searching/sorting comparison from [Chapter 13](chapter_13.md).
+The edge list is supplied in sorted order. Ask why choosing every next cheap
+edge still needs a separate check for joining different components.
 
 ## Starting Question
 
-> "To safely delete one node from a list connected by addresses, and to quickly know if two vertices are already connected, what do we need to remember?"
+> "Why is the result of gathering the cheapest paths from one starting point different from the result where the total cost of edges connecting all vertices is the smallest?"
 
-**Expected Answer:** Students should say that we must save the next address before cutting the node, and for each vertex, we must remember the path to the representative (leader) of its group.
+**Expected Answer:** Students should say that finding the cheapest paths from a starting point and finding the smallest sum of edges to connect everything are two completely different goals.
 
 ## Why We Need This
 
-A list connected by addresses changes links instead of moving values. A line that points only to one next node is called a "singly linked list." If we do the steps in the wrong order, we might lose the address of the next node or try to read a deleted node again.
+Dijkstra's algorithm finds cheap paths from vertex A to each other vertex. The sum of those previous vertex edges (AB, AC, CD, CE) is 13. However, the sum of the edges AB, BC, CD, and CE, which also connects all vertices, is only 10. We need a separate rule for choosing edges to reduce the total connection cost.
 
-We also need to reduce the work of searching the whole graph again every time a new undirected relationship comes in. Groups that have no overlapping items are called "disjoint sets." The structure that manages these groups by saving the path to the representative is written for short as "DSU" (Disjoint Set Union).
+The result of connecting all vertices without any loops (cycles) is called a "spanning tree." The one with the smallest sum of edges is called a "minimum spanning tree." The method of looking at all edges in order from cheapest to most expensive is called "Kruskal's algorithm." The method of growing the connection by picking the cheapest edge going outward from the currently connected group is called "Prim's algorithm."
 
-Linked-node ownership is taught through the linked Queue in Week 7. The deletion example below is optional review. In Week 13, use the supplied make-set and helpers, implement DSU find and union, and immediately apply them in Kruskal. Edge-list construction and sorting are supplied; there is no separate list-repair submission.
+In Week 14, introduce DSU find and union by size, then implement the Kruskal selection loop. Make-set, sorting, graph loading, totals, and complete Prim are supplied. Prim is a brief instructor demonstration. DSU/Kruskal tests, individual synthesis, and the final integration checkpoint form one submission.
 
 ## Board Walkthrough
 
-Optional linked-list review: delete Q. For the required Week 13 path, start with the DSU trace below.
+We use the same edge list for both methods.
 
 ```text
-R(17) -> Q(23) -> P(31) -> NULL
-
-previous  = R
-victim    = Q
-successor = P
-
-R(17) -> P(31) -> NULL
+ID0 AB4  ID1 AC4  ID2 BC1  ID3 BD5
+ID4 CD2  ID5 CE3  ID6 DE3  ID7 AE10
 
 ```
 
-While Q is still alive, we save the `successor` (the next node) first. After changing the link to P, we delete Q.
-
-Next, we process these mergers step by step. `parent` is the parent ID to follow. `component_size` saves the group's size only at the representative root. `components` is the current number of connected parts.
+Kruskal's evaluates all edges sorted by cost, then by smaller endpoint, larger endpoint, and finally edge ID.
 
 ```text
-A-B, C-D, A-C, E-F, G-H, E-G, A-E
-
-parent          [A,A,A,C,A,E,E,G]
-component_size  [8,0,0,0,0,0,0,0]
-components      1
+ID2 BC1  Picked   Sum 1
+ID4 CD2  Picked   Sum 3
+ID5 CE3  Picked   Sum 6
+ID6 DE3  Skipped because it makes a cycle
+ID0 AB4  Picked   Sum 10
+ID1 AC4  Skipped because it makes a cycle
+ID3 BD5  Skipped because it makes a cycle
+ID7 AE10 Skipped because it makes a cycle
 
 ```
 
-Finding H follows `H->G->E->A`, and then makes only that path shorter.
+`key[v]` is the cost of the single cheapest edge going outward from the current connection to vertex `v`. `A/0` is written in the order of `Vertex/key`. In the provided Prim's code, we only follow these decision points:
 
 ```text
-parent          [A,A,A,C,A,E,A,A]
-component_size  [8,0,0,0,0,0,0,0]
+A/0: B=4/A, C=4/A, E=10/A
+B/4: Pick ID0 AB, C=1/B, D=5/B
+C/1: Pick ID2 BC, D=2/C, E=3/C
+D/2: Pick ID4 CD, E's same cost 3 stays as is
+E/3: Pick ID5 CE
 
 ```
 
-A cycle (loop) is a path that comes back to the starting point without repeating any other vertices. If D and H have the same representative root, adding a D-H edge makes a cycle using the existing path and the new edge.
+Ask these questions before showing the next line:
 
-Ask these questions before doing the next action:
-
-* Before deleting Q, which address must we save separately?
-* After finding H, which positions in the `parent` array change?
-* After checking the representative roots of D and H, what state do we leave exactly as it is?
+* After picking ID2 and ID4, which group are the two endpoints of ID5 in?
+* When looking at ID6, how do we check the representative roots (leaders) of its two endpoints?
+* In Prim's, when D is picked, if E's new candidate cost is the exact same as the current `key`, what do we keep?
 
 ## Common First Thoughts
 
-* "We can delete Q first and then read `Q->next` afterwards."
-* "If we just copy the `head`, the two lists will have completely different nodes."
-* "If we find H, all parents in the DSU change to A at the same time."
-* "Knowing they are in the same group also tells us the actual path between them."
+* "All paths from the starting point inside a minimum spanning tree are also the cheapest paths."
+* "If an edge is the cheapest overall, we pick it regardless of whether it makes a cycle."
+* "Prim's `key` is the total distance added up from the starting point."
+* "Prim's and Kruskal's must always pick the exact same edge IDs."
 
 ## Neutral Questions
 
-* What is the address that can only be reached through the node we are about to delete right now?
-* Which IDs did this search actually pass through?
-* What are the states of the two representative roots and the group sizes right before merging?
+* Which two groups does the edge we are trying to pick right now connect?
+* If we add this edge, what kind of path is created between the already selected edges?
+* What values must be exactly the same in the two results, and what values can be different?
 
 ## Vocabulary Rules
 
-**Words we can use:** Node address, ownership, `NULL`, undirected graph, connected component, cycle, and array ID.
+**Words we can use:** Undirected weighted graph, min-heap, old record, edge list, logical edge ID, DSU (Disjoint Set Union), and representative root.
 
-**Names we will introduce in this chapter:** Singly linked list, traversal, insert at front, use-after-free, disjoint set, DSU, representative root, path compression, and union by size.
+**Names we will introduce in this chapter:** Spanning tree, minimum spanning tree, minimum spanning forest, cut, crossing edge, Prim's algorithm, and Kruskal's algorithm.
 
-**Words we won't use yet:** Full list feature implementation, structures that support deleting relationships, or the minimum connection method and selection reasons from Chapter 16.
+**Words we won't use yet:** Full implementation of Prim's algorithm outside the provided code, cheapest paths for all pairs of vertices, or detailed methods for fault-tolerant design.
 
 ## Final Check
 
-> "How do we decide the order of deleting Q, and the range of parents to change after finding H?"
+> "Which edges does Kruskal's pick and in what order, and why do we skip an edge when the representative roots of its two endpoints are the same?"
 
-**Minimum Expected Answer:** Students should mention the exact moment to save the next address, and that we only compress the path of parents we actually passed through.
+**Minimum Expected Answer:** Students should mention the sorting rules, checking groups using the DSU, preventing loops (cycles), and finding the lowest total cost of the selected edges.

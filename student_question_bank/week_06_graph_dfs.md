@@ -2,7 +2,7 @@
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 13-week course
+## Required scope for the 14-week course
 
 Required work is one complete graph DFS implementation: the iterative version
 using a supplied vertex-ID Stack that preserves Week 4's LIFO behavior under
@@ -90,7 +90,7 @@ part of the required Week 6 implementation.
 
 ### Operations, C API, and ownership
 
-- Which DFS form is the required Week 6 implementation in the 13-week path?
+- Which DFS form is the required Week 6 implementation in the 14-week path?
 - Why does iterative DFS inspect outgoing neighbors in descending index order?
 - Why must `out_order` or `out_component_count` remain unchanged on every failure?
 - Why does connected-component counting reject directed graphs under this API?
@@ -146,7 +146,7 @@ part of the required Week 6 implementation.
 
 ## Sources
 
-- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
+- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
 - [Original Weeks 1–7 question bank](01_weeks_01_07_questions.md)
 - [Module 6 delivery role](../module_06_graph_dfs/README.md)

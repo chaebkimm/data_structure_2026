@@ -1,0 +1,83 @@
+# GNU Make recipe for Git Bash, MSYS2, WSL, Linux, or macOS.
+# Override the compiler when needed: make CC=clang core
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?= -Iinclude
+TEST_CPPFLAGS := $(CPPFLAGS) -DTREE_TESTING
+SANITIZER_FLAGS ?= -fsanitize=address,undefined -fno-omit-frame-pointer
+BUILD_DIR ?= build
+LAB_DIR ?= ../student
+TREE_ROOT ?= ../..
+TREE_SOURCE := $(TREE_ROOT)/module_02_binary_tree/student/lab.c
+LAB_SUPPORT := tests/lab_test_support.h
+SUPPORT_SOURCE := support/tree_support.c
+STARTER_SOURCES := starter/avl_rotations.c starter/avl_tree.c
+SOLUTION_SOURCES := solution/avl_rotations.c solution/avl_tree.c
+
+.PHONY: all lab-compile core student-tests comparison starter-compile starter-core starter-extension \
+	starter-student-tests solution-core solution-extension \
+	solution-student-tests autopsy autopsy-unsafe clean
+
+all: core student-tests
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+lab-compile: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(TREE_ROOT) -c $(LAB_DIR)/lab.c -o $(BUILD_DIR)/lab.o
+
+$(BUILD_DIR)/lab_core: tests/test_lab_core.c $(LAB_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/test_lab_core.c -o $@
+
+core: $(BUILD_DIR)/lab_core
+	$(BUILD_DIR)/lab_core
+
+$(BUILD_DIR)/lab_student: tests/test_lab_student.c $(LAB_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/test_lab_student.c -o $@
+
+student-tests: $(BUILD_DIR)/lab_student
+	$(BUILD_DIR)/lab_student
+
+$(BUILD_DIR)/lab_comparison: tests/compare_lab.c $(LAB_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/compare_lab.c -o $@
+
+comparison: $(BUILD_DIR)/lab_comparison
+	$(BUILD_DIR)/lab_comparison
+
+# Named targets below retain the optional 64-node pointer library.
+starter-compile: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(STARTER_SOURCES) tests/test_core.c -o $(BUILD_DIR)/starter_core
+
+starter-core: starter-compile
+	$(BUILD_DIR)/starter_core
+
+starter-extension: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(STARTER_SOURCES) tests/test_extension.c -o $(BUILD_DIR)/starter_extension
+	$(BUILD_DIR)/starter_extension
+
+starter-student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(STARTER_SOURCES) tests/test_student.c -o $(BUILD_DIR)/starter_student_tests
+	$(BUILD_DIR)/starter_student_tests
+
+solution-core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(SOLUTION_SOURCES) tests/test_core.c -o $(BUILD_DIR)/solution_core
+	$(BUILD_DIR)/solution_core
+
+solution-extension: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(SOLUTION_SOURCES) tests/test_extension.c -o $(BUILD_DIR)/solution_extension
+	$(BUILD_DIR)/solution_extension
+
+solution-student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_CPPFLAGS) $(SUPPORT_SOURCE) $(SOLUTION_SOURCES) tests/test_student.c -o $(BUILD_DIR)/solution_student_tests
+	$(BUILD_DIR)/solution_student_tests
+
+autopsy: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -DAUTOPSY_INSPECT_ONLY autopsy/faulty_left_rotation.c -o $(BUILD_DIR)/left_rotation_autopsy_inspect
+	$(BUILD_DIR)/left_rotation_autopsy_inspect
+
+autopsy-unsafe: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SANITIZER_FLAGS) autopsy/faulty_left_rotation.c -o $(BUILD_DIR)/left_rotation_autopsy_unsafe
+	@echo "Unsafe autopsy compiled but not run: $(BUILD_DIR)/left_rotation_autopsy_unsafe"
+
+clean:
+	$(RM) -r $(BUILD_DIR)

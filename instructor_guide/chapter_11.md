@@ -1,120 +1,104 @@
-# Chapter 11. Priority Queues with a Binary Heap
+# Chapter 11. Minimum Costs with an Indexed Heap
 
 ## Starting Question
 
-> "To process urgent alerts first, but keep arrival order for alerts with the same urgency, what rule do we need? How can we follow that rule without scanning every alert?"
+> BFS finds a route with the fewest edges. Which unfinished node should we
+> choose when the goal is the smallest total cost?
 
-**Expected Answer:** First compare priority. If priorities match, compare successful insertion order. Then keep the first record in a fixed position and repair only the path affected by insertion or removal. Picking the smaller priority number first is the rule for this chapter.
+Expected answer: choose the node with the smallest current cost, then test
+whether its outgoing edges improve other costs. Positive edge costs make
+that chosen minimum final.
 
 ## Why We Need This
 
-A normal queue takes out the first arrived value first. It cannot move an urgent alert ahead of earlier alerts. Comparing only priority leaves the order of equally urgent alerts undecided.
+A direct A→E edge can cost 14 while A→C→D→E costs6. BFS optimizes edge count;
+Dijkstra optimizes the sum of weights. The required
+[lab.c](../module_11_graph_dijkstra/student/lab.c) reuses Module 03 adjacency
+lists and Module 10 heap ideas. The graph rows store neighbor IDs, a separate
+matrix stores edge lengths, and a minimum heap stores one pending copy of
+each discovered node. Its key is read from `node_dist`.
 
-We need a behavioral rule for inserting, inspecting, and removing records. Compare priority first. For a tie, compare successful insertion order, called arrival order. This is a stable minimum priority queue. `insert` adds a record, `peek-min` inspects the first record, and `extract-min` removes it. The rule does not prescribe a storage layout.
-
-An unsorted array can follow this rule by checking every record before choosing the first one. Adding a record is easy, but each removal repeats the full search. Students first read the supplied array baseline and count its comparisons. They do not implement a separate baseline assignment.
-
-To avoid the repeated scan, keep the first record at array position 0. Fill the array level by level without gaps. This is a complete binary tree. Require every parent to come before its children under the same priority-then-arrival comparison. This is a min-heap. After adding or removing one record, only one path can need repair.
-
-In week 10, the priority-queue contract, the supplied unsorted-array baseline, and the student-written binary heap form one unit. Students submit their heap code and comparison results once. Retrieve array growth and failure preservation from the hash-table scaffold in Chapter 10; do not require another growth implementation from scratch.
+All functions are supplied. Students trace and test the actual source, then
+compare it with BFS and an instructor-supplied linear minimum-selection
+reference. Their driver, trace, comparison, and corrections form the one
+Week 11 Practical 2 submission. No new parser, path reconstruction, or separate
+standalone Dijkstra implementation is required.
 
 ## Board Walkthrough
 
-### Establish the priority-queue contract with the supplied baseline
-
-Use the unsorted array exactly as supplied. Write each record as `ID/P/S`. `P` is priority and `S` is successful insertion order. Compare `P` first, then `S`.
+Use these directed edges in this adjacency order:
 
 ```text
-71/3/0, 88/1/1, 42/2/2, 17/1/3,
-26/4/4, 9/2/5, 63/1/6
+A->B9  A->C2  A->E14
+B->D1  B->E8
+C->B3  C->D2
+D->E2
+E and F have no outgoing edges
 ```
 
-Scan the array from the left and underline the current first candidate.
+Initialize the imported nodes, set `nodes_size=6`, and install both adjacency
+IDs and matching weights. Do not also call Module 03's different `edges_init`.
+Only listed adjacency entries are traversed; a matrix cell does not itself
+create an edge.
 
-* Among the seven alerts, which one will be announced first?
-* After taking out 88 and moving 63 to its empty spot, which alert is next?
-* When taking out all seven records, how many new comparisons will we make?
+| After processing | Distances A..F | Live heap IDs |
+|---|---|---|
+| initialize | `0,-1,-1,-1,-1,-1` | `[A]` |
+| A | `0,9,2,-1,14,-1` | `[C,B,E]` |
+| C | `0,5,2,4,14,-1` | `[D,E,B]` |
+| D | `0,5,2,4,6,-1` | `[B,E]` |
+| B | `0,5,2,4,6,-1` | `[E]` |
+| E | `0,5,2,4,6,-1` | `[]` |
 
-| State Looked At | First Candidate |
-| --- | --- |
-| Start | `71/3/0` |
-| After comparing with 88 | `88/1/1` |
-| After comparing with 42, 17, 26, 9, 63 | `88/1/1` |
+The removal/finalization order is A,C,D,B,E. B9→5 and E14→6 are in-place
+updates, not duplicate insertions. B's proposals D6 and E13 change nothing.
+F stays `-1`; source A remains0. The manually checked A,C,D,E route costs6,
+but the current lab stores no predecessors or returned path.
 
-The first `peek-min` makes 6 comparisons. After removing 88, the physical ID array is `[71,63,42,17,26,9]`. The next alert is 17. Its priority ties with 63, but its arrival order 3 precedes 6. Array position does not decide the tie.
-
-Reset the comparison count to 0. Extracting all seven records makes 21 new comparisons:
-
-```text
-6 + 5 + 4 + 3 + 2 + 1 + 0 = 21
-```
-
-Including the initial `peek-min` gives 27 comparisons. Keep the counter boundary explicit when comparing implementations.
-
-### Keep the same contract with a binary heap
-
-Insert the same records in the same arrival order. Reveal the ID array one line at a time:
-
-```text
-[71]
-[88,71]
-[88,71,42]
-[88,17,42,71]
-[88,17,42,71,26]
-[88,17,42,71,26,9]
-[88,17,63,71,26,9,42]
-```
-
-Empty that heap:
-
-```text
-88 -> [17,42,63,71,26,9]
-17 -> [63,42,9,71,26]
-63 -> [42,71,9,26]
-42 -> [9,71,26]
-9  -> [71,26]
-71 -> [26]
-26 -> []
-```
-
-Ask these questions before showing the next state:
-
-* When we add 17 to `[88,71,42]`, which path's relationships do we check?
-* If we take out 88 and move 42 to position 0, which child do we compare with first?
-* If we check the heap rule for all 7 records, how many parent-child comparisons do we make?
-* Why do the baseline and heap remove the records in the same order despite their different arrays?
-
-## Common First Thoughts
-
-* "Smaller priority numbers are always more urgent." The direction is a program rule.
-* "For equal priorities, choose the leftmost array record." Arrival order decides the tie, independently of position.
-* "An unsorted array cannot follow a priority rule." A full scan can find the first record under that rule.
-* "Taking out one item takes one comparison." The baseline compares its candidate with `n - 1` other records.
-* "The entire heap array is sorted in processing order." The invariant only orders each parent before its children.
-* "An insertion requires fixing every branch." Only the new record's ancestor path can need repair.
-* "Moving down always moves the left child up." Compare both children and choose the one that comes first.
-* Students may count full heap validation as part of one insertion or removal. Keep these measurements separate.
+After C, position 0 holds D, numeric ID 3, and its key is4. Position1 holds
+E/key 14; position 2 holds B/key 5. Require the live inverse identity
+`node_heap_pos[heap[i]]==i`. The heap array need not be globally sorted.
+`comp` and `swap` receive positions; `update_value` receives a node ID.
+`heap_parent` avoids a name conflict with Module 03's `parent[10]` array.
 
 ## Neutral Questions
 
-* Which record fields decide priority, and in what order?
-* How do the positions and arrival orders of 63 and 17 differ?
-* How does the baseline scan count change with the number of remaining records?
-* Which parent-child relationship could have become invalid in this operation?
-* Which child comes first under the same comparison rule?
-* Where did you count repair comparisons, and where did you count validation comparisons?
-* How does the balance of insertions, inspections, and extractions affect your choice of storage?
+- Why can A,E be the BFS answer while its cost 14 exceeds6?
+- What does `-1` mean, and which function initializes every distance?
+- Why does improving B change its one queued entry rather than add another?
+- Which map entries must a swap update?
+- Why is the selected child cached before a downward swap?
+- Does `found` prevent a later update, or does the positive-weight proof do that?
+- After removal, can a nonnegative map value still refer to an absent node?
+- What does the strict `<` comparator promise about equal-key removal order?
 
-## Vocabulary Rules
+## Source Boundaries
 
-**Words we can use:** Array-based list, size and capacity, array growth and failure preservation from Chapter 10, queue arrival order, array position, parent, child, and root.
+The source fixes ten node slots and assumes valid IDs, bounded rows, positive
+`int` weights, and candidate sums that fit in `int`. It does not validate
+those conditions or check overflow. Callers prevent duplicate/full insertion,
+empty removal, and updates to removed nodes.
 
-**Names we will introduce in this chapter:** Priority queue behavioral rule, priority, arrival order, stable tie-breaking, comparison rule, minimum priority queue, `insert`, `peek-min`, `extract-min`, unsorted-array baseline, complete binary tree, min-heap, move up (bubble up), and move down (bubble down).
+`found` is written on removal and never checked. A removed minimum cannot
+improve under the stated assumptions, so the code never uses its stale map.
+Only live map entries are authoritative; removal does not reset its map to
+`-1`. Equal keys may swap, and no arrival-order guarantee exists.
 
-**Words we won't use yet:** The path-cost procedure in Chapter 12 or other heap shapes. Establish the contract before introducing the heap representation.
+The optional library under `code/include`, `starter`, `solution`, and `support`
+uses a different lazy-duplicate strategy, parser, stable snapshots, sentinels,
+and predecessor/path API. Those features are not guarantees of this lab.
 
-## Final Check
+## Vocabulary and Final Check
 
-> "Why do 88, 17, and 63 leave in that order in both implementations? How does the heap avoid the baseline's full scan?"
+Retrieve BFS, adjacency lists, arrays, active prefixes, parent/child order,
+and inverse maps. Introduce path cost, tentative/finalized distance, strict
+relaxation, indexed minimum heap, shared key, and decrease-key when needed.
+No stale-snapshot mechanism is required in this implementation.
 
-**Minimum Expected Answer:** Priority 1 comes first; arrival orders 1, 3, and 6 decide the tie. The baseline scans the remaining records, making `6+5+4+3+2+1+0 = 21` comparisons for seven extractions. The heap keeps the first record at the root through the complete shape and parent-child rule. Only one affected path needs repair after insertion or removal.
+Students explain why finalization is safe, trace a key decrease and both
+map updates, test a nonzero or isolated source, and state caller assumptions.
+For generalized V and E, the indexed run uses `O(V + (V+E) log V)` work and
+`O(V)` heap-related state; the matrix separately reserves `O(V²)` storage.
+The literal source bounds remain ten nodes. Use the
+[180-minute plan](../module_11_graph_dijkstra/instructor/lesson_plan.md)
+and current [rubric](../module_11_graph_dijkstra/student/rubric.md).

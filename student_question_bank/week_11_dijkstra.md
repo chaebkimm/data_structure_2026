@@ -1,165 +1,160 @@
-# Week 11 — Dijkstra and Practical 2: Vocabulary and Questions
+# Week 11 — Indexed-Heap Dijkstra and Practical 2
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 13-week course
+## Required scope for the 14-week course
 
-Module 12 supplies the Dijkstra model, but **Practical 2 is the sole Week 11
-submission**. Students complete the bounded relaxation/frontier core and path-
-reconstruction decisions inside a supplied weighted-graph, parser, Heap, setup,
-cleanup, validation, and integration scaffold. The linear-Priority-Queue
-comparison uses an instructor-supplied reference. The full standalone Stage E
-lab and a separate Spiral 4 comparison are not added as extra work.
+**Practical 2 is the sole Week 11 submission.** The supplied
+[Module 11 lab](../module_11_graph_dijkstra/student/lab.c) is complete.
+Students predict and trace its state, write an assertion driver, run supplied
+checks, and compare BFS, linear minimum-selection Dijkstra, and indexed-heap
+Dijkstra on the same positive weighted graph. The evidence and comparison
+belong in that single artifact within the 180-minute contact block.
+
+The current source uses ten fixed nodes, `int` distances with `-1` for
+undiscovered nodes, a heap of node IDs, and an inverse position map. Each
+pending node appears once; a shorter route edits its existing key. The
+retained lazy-duplicate C library is an optional reference with a separate
+API, not another required implementation or path-reconstruction assignment.
 
 ## Vocabulary students will learn
 
 | Term | Working meaning |
 |---|---|
-| graph | A set of vertices connected by stored edges. |
-| vertex | One item in a graph. |
-| directed edge (arc) | A connection usable only from its stated start to its stated destination. |
-| source | The vertex where a shortest-path run begins. |
-| destination | A requested goal vertex. |
-| path | A sequence of vertices that follows stored directed edges. |
-| weight | The numeric cost assigned to an edge. |
-| weighted directed graph | A directed graph in which every edge carries a cost. |
-| path cost | The sum of all edge weights along a path. |
-| breadth-first search (BFS) | A Queue-based algorithm that minimizes hop count in an unweighted graph. |
-| Dijkstra's algorithm | An algorithm that finds least-total-cost paths when every edge weight is nonnegative. |
-| nonnegative weight | An edge cost that is zero or greater. |
-| distance | Modeled total path cost from the source in this week. |
-| tentative distance | The best cost known so far for a vertex, still allowed to improve. |
-| finalized distance | A current cost accepted as unable to improve later under Dijkstra's assumptions. |
-| predecessor | The previous vertex on the recorded source-to-vertex path. |
-| finalized array | One Boolean per vertex recording whether its distance has been finalized. |
-| finalized order | The order in which nonstale vertices become finalized. |
-| adjacency list | Outgoing weighted edges stored together for every vertex. |
-| frontier | Pending vertex/cost work not yet finalized. |
-| Priority Queue | An ADT that removes the waiting record ranked first. |
-| minimum Heap | The Week 10 Priority Queue backend that exposes the smallest-ranked frontier record. |
-| snapshot | One saved vertex-and-cost pair in the frontier. |
-| lazy duplicate | A new improved snapshot inserted without editing an older queued snapshot. |
-| stale snapshot | A popped snapshot whose saved cost differs from the vertex's current distance. |
-| stale-pop skipping | Discarding a stale snapshot before finalizing it or inspecting its outgoing edges. |
-| relaxation | Testing whether one outgoing edge creates a better distance to its destination. |
-| candidate distance | The current vertex's distance plus one outgoing edge weight. |
-| strict relaxation | Updating distance and predecessor only when the candidate is smaller. |
-| equal-cost alternative | A second route with the same total cost, which strict relaxation does not use to replace the predecessor. |
-| sentinel | A reserved value representing a special case rather than an ordinary cost. |
-| `DIJKSTRA_INF` | The course sentinel meaning no finite representable path is currently known. |
-| `SIZE_MAX` | The largest `size_t` value, reserved here as `DIJKSTRA_INF`. |
-| `size_t` | C's nonnegative whole-number type for counts, indexes, weights, and distances. |
-| parser | Code that converts textual input into checked stored values. |
-| unsigned conversion | Conversion to a type that cannot represent negative values. |
-| overflow | An arithmetic result beyond the range of its type. |
-| subtraction guard | The pre-addition check that proves a candidate cost will not overflow or equal the infinity sentinel. |
-| cost-range failure | Explicit failure when a path cost cannot be represented safely. |
-| unreachable | Having no stored directed path from the source. |
-| path reconstruction | Following predecessors backward and reversing them to produce a forward path. |
-| source-only path | The one-vertex path returned when source and destination are the same reachable vertex. |
-| path certificate | A returned path whose edges and summed cost can be checked independently. |
-| failure preservation | A failed operation leaves the caller's prior protected result or path unchanged. |
-| capacity | The maximum number of entries a storage object can hold. |
-| frontier limit `arc_count + 1` | Space for the source snapshot plus at most one successful relaxation per arc. |
-| simple graph | A graph without parallel edges or self-loops. |
-| parallel edge | A second edge repeating an existing start and destination. |
-| self-loop | An edge whose start and destination are the same vertex. |
-| model assumption | A condition required for an algorithmic or real-world interpretation to be valid. |
-| lazy-strategy time bound | `O(V + E log(E + 1))` for the implemented Heap frontier with lazy duplicates. |
-| `O(E)` frontier space | The possible pending-snapshot storage used by the implemented lazy strategy. |
-| Practical 2 | The cumulative Week 11 assessment that replaces the ordinary Dijkstra lab. |
+| graph | Nodes and their stored connections. |
+| node or vertex | One graph item, represented by an integer ID in this lab. |
+| source | The node where one shortest-distance run begins. |
+| directed edge or arc | A connection usable in its stored direction. |
+| adjacency list | The neighbor IDs stored in one node's outgoing row. |
+| weight | The positive `int` cost stored separately in `edge_length[u][v]`. |
+| path cost | The sum of weights along a valid route. |
+| breadth-first search (BFS) | Queue-based traversal that minimizes edge count. |
+| Dijkstra's algorithm | Repeatedly finalize the smallest current unfinished cost and test outgoing edges. |
+| positive weight | A cost strictly greater than zero, as required by the current lab contract. |
+| tentative distance | The best source cost known so far, still able to improve before removal. |
+| finalized distance | A removed minimum that cannot improve under the stated weight assumptions. |
+| frontier | Discovered nodes still waiting to be processed. |
+| Priority Queue | An ADT that removes the waiting item with the selected priority. |
+| minimum heap | An array-based complete tree whose parent keys are no larger than child keys. |
+| node ID | The identity stored in a heap cell; it is not that cell's position. |
+| heap position | An index into the live prefix of `heap`. |
+| live prefix | Positions `0` through `size-1`, the entries currently in the heap. |
+| root | Position0, holding a node with a minimum current distance. |
+| parent and child | Related heap positions returned by `heap_parent`, `left`, and `right`. |
+| shared key | A node's distance read through `node_dist[heap[i]]`, rather than copied into a heap record. |
+| inverse position map | `node_heap_pos`, which locates each live node's current heap position. |
+| swap | Exchange two heap positions and update both moved IDs' map entries. |
+| upward repair | Move a changed entry toward the root while required by key order. |
+| downward repair | Move a changed entry toward the smaller existing child while required. |
+| decrease-key | Lower the key of an entry already queued and repair its heap position. |
+| strict relaxation | Accept a candidate only on first discovery or when it is strictly smaller. |
+| candidate distance | Current node distance plus one listed outgoing edge weight. |
+| sentinel | A reserved marker; `-1` means undiscovered/unreachable in this lab. |
+| unreachable | Having no route from the source using the loaded directions. |
+| caller precondition | A condition the calling driver must establish because the function does not check it. |
+| overflow | Arithmetic outside `int`'s range; the lab requires callers to prevent it. |
+| Practical 2 | The one integrated Week 11 trace, test, and comparison submission. |
 
-### Optional vocabulary for extension questions
+### Optional reference vocabulary
 
 | Term | Working meaning |
 |---|---|
-| decrease-key | Lowering the priority of an entry already stored in a Priority Queue. |
-| eager decrease-key frontier | A frontier that edits an existing queued entry instead of inserting a lazy duplicate. |
-| negative-weight shortest-path algorithm | An algorithm designed for graphs that may contain negative edge weights; Dijkstra is not one. |
-| parser fuzz/boundary testing | Trying signs, whitespace, malformed text, and range endpoints beyond the supplied core suite. |
-| dynamically sized graph | A graph whose limits and allocations are determined at runtime instead of the course bound of 16 vertices. |
+| lazy duplicate | Insert an improved copied snapshot rather than editing the queued entry. |
+| stale snapshot | An old copied cost that differs from the node's current distance. |
+| stable priority queue | Equal keys leave by a promised arrival rule; the current lab promises none. |
+| predecessor | A stored prior node used to describe a route; absent from this lab. |
+| path reconstruction | Build a route from stored predecessor state in the separate optional API. |
+| dynamic frontier | Heap storage whose capacity grows at runtime in the optional implementation. |
+| weight parser | Convert checked textual input to a number; the required lab has no parser. |
+| `SIZE_MAX` infinity | The optional API's reserved unsigned sentinel, distinct from this lab's `-1`. |
+| negative-edge algorithm | A different shortest-path method needed when Dijkstra's assumptions fail. |
 
 ## Anticipated student questions
 
 ### Meaning and mental model
 
-- Why can BFS return the wrong route when edge costs are unequal?
-- What does a tentative distance mean before a vertex is finalized?
-- What does relaxation ask about one outgoing arc?
-- Why does Dijkstra remove the smallest tentative snapshot next?
-- What is a stale frontier entry in the lazy-duplicate strategy?
+- Why can BFS return A,E at cost 14 while a three-edge route costs6?
+- What does a tentative distance mean before its node is removed?
+- Why does choosing the smallest queued distance allow finalization under positive weights?
+- What question does relaxation ask about one outgoing adjacency?
+- What does `-1` mean before and after the run finishes?
 
 ### Representation and invariants
 
-- What do `distance`, `predecessor`, `finalized`, and `finalized_order` represent?
-- Why is `SIZE_MAX` reserved as `DIJKSTRA_INF` rather than permitted as a reachable cost?
-- What relationship must hold between a nonstale popped snapshot and the current distance array?
-- Why does strict relaxation leave an existing predecessor unchanged on an equal-cost route?
-- Why is the dedicated frontier limit `arc_count + 1` rather than the Module 11 teaching cap of 64?
+- Why do adjacency rows store only IDs while `edge_length` stores weights separately?
+- Does assigning `edge_length[u][v]` create a connection without an adjacency entry?
+- How do a node ID, heap position, and distance key differ after C is processed?
+- What does `comp(i,j)` read before it compares two costs?
+- Which inverse-map identity holds for every live heap position?
+- Why must a swap update two map entries?
+- Why can a removed node retain a nonnegative map value that no longer proves membership?
+- Why is `[D,E,B]` a valid heap for keys `[4,14,5]` even though the keys are not sorted?
 
-### Operations, C API, and ownership
+### Operations and source behavior
 
-- Which parser, weighted-graph, Heap-frontier, setup, cleanup, and validation parts are supplied in Practical 2?
-- Which bounded Dijkstra run-loop and path-reconstruction decisions must students complete?
-- What must `dijkstra_shortest_paths` preserve if validation, allocation, capacity, or arithmetic fails?
-- What must `dijkstra_reconstruct_path` return for a reachable source-only path and preserve for an unreachable destination?
-- Which object owns the graph arcs, frontier entries, result arrays, and reconstructed path at each stage?
+- Which arrays does `init_dist` reset, and which graph data does it retain?
+- Why is the source explicitly inserted with distance0?
+- Why does first discovery call `add_node`, while a later improvement calls `update_value`?
+- How does `update_value` find the node and choose upward or downward repair?
+- Why must downward repair keep the selected child position across its swap?
+- Why is a singleton removal valid even though downward repair is called after `size` becomes0?
+- Why is the heap helper called `heap_parent` rather than `parent` in this combined source?
 
-### Tracing
+### Canonical tracing
 
-- How do distances, predecessors, frontier entries, and finalized state change during the canonical A-through-F trace?
-- Which canonical frontier pops are stale, and why must their outgoing arcs be skipped?
-- How does a zero-cost arc participate in strict relaxation?
-- How is the path `A, C, D, E` reconstructed from predecessor state?
-- What state shows that F is unreachable from A?
-- How would a nonstrict relaxation change the predecessor trace when two equal-cost routes exist?
+- After A, why are the distances B9,C2,E14 and the live heap `[C,B,E]`?
+- After C, how do B9→5 and the insertion of D4 produce `[D,E,B]`?
+- Why does D leave before B, and how does D improve E14→6?
+- Why do B's candidate costs D6 and E13 cause no change?
+- Which five nodes are removed, and why does F never enter the heap?
+- How can the cost 6 route A,C,D,E be checked manually when the lab stores no predecessor array?
 
 ### Testing and debugging
 
-- What single focused regression test should isolate a core error in the student's bounded implementation?
-- Which supplied tests establish negative-input rejection, stale-pop skipping, unreachable handling, and cost-range protection?
-- What failure would appear if a stale snapshot were finalized or expanded?
-- How can the reconstructed path cost be checked independently of the algorithm's reported distance?
-- How can a same-graph comparison distinguish BFS, linear-Priority-Queue Dijkstra, and Heap-Dijkstra results?
+- What focused regression distinguishes a node ID from its heap position?
+- How can a driver check active heap order and inverse maps after every operation?
+- What should tied-key tests assert when the source promises no stable removal order?
+- Which fixtures exercise a left-only child, a singleton, and active-key changes in both directions?
+- How can an independent linear shortest-distance reference check all final distances?
+- Why should repeated runs and nonzero or isolated sources appear in the test evidence?
 
-### Complexity
+### Assumptions and interpretation
 
-- Why does lazy-duplicate Dijkstra use `O(V + E log(E + 1))` time with this frontier strategy?
-- Why can the lazy frontier require `O(E)` entries?
-- Under what simple-graph assumption can the bound be written as `O(V + E log V)`?
-- Why must the analysis describe the implemented lazy strategy rather than assume decrease-key?
+- Which ID, row-size, heap-capacity, and active-entry conditions must the caller establish?
+- Why must every candidate addition fit in `int`, even when that candidate will be rejected as too large?
+- Where is `found` written, and why does correctness rely on the positive-weight argument rather than a `found` guard?
+- Why should negative weights or signed overflow not be executed as tests expecting rejection from this source?
+- What does F's unreachable result say about the loaded model, and what does it not establish about real availability?
 
-### Security and interpretation
+### Complexity and comparison
 
-- Why must a negative textual weight be rejected before conversion to `size_t`?
-- How does the subtraction guard prevent overflow or collision with the reserved infinity value?
-- Why does a least-cost path not prove authorization, trust, availability, or low security risk?
+- Why is each reachable node inserted and removed at most once in the indexed strategy?
+- Why do the canonical counts give five adds, five removals, two updates, and eight adjacency inspections?
+- Why can generalized indexed-heap Dijkstra use `O(V + (V+E) log V)` work and `O(V)` heap-related state?
+- How does the separate weight matrix contribute `O(V²)` storage?
+- How do BFS, a linear minimum scan, and a heap differ in objective, selection work, and representation?
+- Why should fixed ten-node storage be distinguished from a generalized asymptotic analysis?
 
-### Assignment and evidence
+### Assignment and transfer
 
-- Why is Practical 2 the sole Week 11 programming artifact?
-- What code, canonical trace, regression test, boundary evidence, and comparison belong in the integrated Practical 2 submission?
-- Why must the full standalone Module 12 Stage E lab not be added as homework?
-- How should the submission distinguish the Priority Queue ADT from its linear and Heap implementations?
+- Which supplied functions must students trace rather than reimplement for Practical 2?
+- Which driver, output, trace, same-graph comparison, and corrected explanation belong in the single submission?
+- Why do the five teaching checkpoints not create five assignments or extra contact time?
+- Which Week 10 heap and inverse-map ideas transfer to the changing distance keys?
+- Which Priority Queue properties describe the ADT, and which depend on the indexed-heap implementation?
+- How does Dijkstra's source-to-node objective differ from a minimum-spanning-tree objective in Week 14?
 
-### Transfer
+### Optional extension questions
 
-- Which Week 8 predecessor-path ideas transfer directly from BFS to Dijkstra?
-- Which Week 10 Heap and stable-frontier ideas does Dijkstra reuse?
-- How is Dijkstra's objective different from the objective of Prim or Kruskal?
-- When would BFS be simpler and sufficient despite the availability of Dijkstra?
-
-### Extension questions
-
-- How would an eager decrease-key frontier change the implementation and complexity argument?
-- Which algorithmic family would be needed if negative edges were permitted?
-- How could the full parser be tested against signs, whitespace, malformed text, and range boundaries?
-- What additional evidence would be needed to run Dijkstra safely on a larger, dynamically sized graph?
+- How would a lazy-duplicate frontier replace the inverse map and change pending storage?
+- Which stale-snapshot check would the optional strategy need before inspecting outgoing arcs?
+- What additional state and API would be needed to return predecessor paths from this lab?
+- What validation and arithmetic checks would be needed before accepting untrusted graph input?
 
 ## Sources
 
-- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
+- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Original Weeks 8–13 question bank](02_weeks_08_13_questions.md)
-- [Module 12 Practical 2 role](../module_12_graph_dijkstra/README.md)
-- [Module 12 vocabulary reference](../module_12_graph_dijkstra/student/vocabulary.md)
+- [Module 11 current source](../module_11_graph_dijkstra/student/lab.c)
+- [Module 11 vocabulary reference](../module_11_graph_dijkstra/student/vocabulary.md)
+- [Module 11 Practical 2 role](../module_11_graph_dijkstra/README.md)

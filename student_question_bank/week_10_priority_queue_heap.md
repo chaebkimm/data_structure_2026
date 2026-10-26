@@ -1,178 +1,143 @@
-# Week 10 — Priority Queue Contract to Binary Heap: Vocabulary and Questions
+# Week 10 — Integer Heaps and Shared On-Time: Vocabulary and Questions
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 13-week course
+## Required scope
 
-Module 11 contains the stable-minimum Priority Queue contract, comparator,
-tie rule, unsorted-array trace, and cost baseline. The instructor supplies its
-verified unsorted-array implementation; students inspect it rather than complete
-or submit a separate baseline project. In the same Module 11 lab, students
-implement the Heap backend, test sifting and stable ties, check the Heap
-invariant, and compare its work with the supplied reference. These parts form
-**one combined Week 10 artifact**, with one rubric and one due date.
-The 180-minute budget allocates 40 minutes to the contract and supplied
-baseline, followed by 140 minutes for Heap work, tests, comparison, and evidence.
+The required source is [student/lab.c](../module_10_binary_heap/student/lab.c).
+Students trace and test the supplied fixed integer min/max Heap, bottom-up
+construction, and ten-device dual-Heap interval search. They submit one
+driver/evidence artifact. The alert-record Heap and unsorted-array baseline
+are optional references with separate contracts. They do not add required
+allocation, stable-arrival, status, checker, or counter implementation tasks.
+Use nonnegative closed intervals, with 1–5 ordered disjoint intervals for
+each ID 0–9. The supplied code does not validate caller preconditions.
 
 ## Vocabulary students will learn
 
 | Term | Working meaning |
 |---|---|
-| abstract data type (ADT) | Public behavior and operations described independently of one storage method. |
-| Priority Queue | An ADT that reports or removes the waiting record ranked first. |
-| priority | A number used to rank service; this course serves smaller numbers first. |
-| minimum-priority rule | The record with the smaller numeric priority is selected first. |
-| record | One value grouping related named fields. |
-| field | One named part of a record. |
-| insert | Add one record to the Priority Queue. |
-| `peek_min` | Report the selected minimum record without removing it. |
-| `extract_min` | Remove and report the selected minimum record. |
-| tie | Two records having equal priority. |
-| stable tie behavior | Equal-priority records leave in their successful arrival order. |
-| arrival sequence | An increasing number assigned at successful insertion to break priority ties. |
-| comparator | The exact rule deciding which of two records comes first. |
-| deterministic | Producing the same public result from the same completed state and ordering rule. |
-| backend | A storage and implementation method used to provide an ADT. |
-| supplied reference implementation | Instructor-provided working code used as a baseline and expected-result model. |
-| unsorted array | Contiguous storage not maintained in service order. |
-| physical position | One actual array index. |
-| logical service order | The order promised by the ADT, independent of physical positions. |
-| scan | Inspect live positions one by one. |
-| candidate minimum | The best record found so far during a baseline scan. |
-| comparison count | The number of times the record comparator is applied. |
-| workload | A selected mixture and order of operations used for comparison. |
-| binary tree | A hierarchy with at most two child positions per node. |
-| complete binary tree | A tree whose levels are full except possibly the last, which fills left to right without gaps. |
-| binary Heap | A complete binary tree stored compactly and arranged by a priority rule. |
-| minimum Heap (min-Heap) | A Heap whose first-ranked record is at the root. |
-| root | The top Heap node, stored at array index 0. |
-| parent | The Heap node directly above a child. |
-| child | A Heap node directly below a parent. |
-| array index relationship | A parent or child location calculated from its 0-based array index. |
-| implicit relationship | A tree relationship calculated from positions rather than stored with pointers. |
-| Heap-order invariant | No child record comes before its parent under the comparator. |
-| partial order | Only required parent-child relationships are ordered; the full array need not be sorted. |
-| globally sorted array | An array whose every record is in total comparator order. |
-| append | Place a new record at the end of the live Heap array. |
-| swap | Exchange two complete records. |
-| sift-up | Repair Heap order from a newly appended record toward the root. |
-| better child | The existing child that comes first under the comparator. |
-| sift-down | Repair Heap order from the root toward a leaf. |
-| leaf | A Heap node with no children. |
-| one-child case | The complete-tree case in which a node has a left child but no right child. |
-| invariant checker | A diagnostic operation that checks every required Heap relationship. |
-| mutation | An operation that changes stored state. |
-| instrumentation | Extra measurement or checking added for study and debugging. |
-| normal-operation count | Comparator work measured separately from diagnostic checker work. |
-| differential test | A test that applies the same requests to two implementations and compares public results. |
-| reference model | A simpler implementation used to supply expected results in a differential test. |
-| geometric growth | Increasing array capacity by a multiplying factor when more storage is needed. |
-| ownership | Responsibility for releasing allocated storage exactly once. |
-| failure preservation | A failed operation leaves protected prior state and caller output unchanged. |
-| integrity | Stored state still obeys all required rules. |
-| corruption | An unintended state change that breaks a required rule. |
-| `O(1)` | Work bounded independently of the number of live records. |
-| `O(log n)` | Work proportional to the height of a complete binary tree. |
-| `O(n)` | Work that may inspect all `n` live records. |
-| starvation | A waiting item is postponed indefinitely because other items continue to rank ahead of it. |
-| C dynamic-memory heap | The allocation region used by C; it is different from the binary Heap data structure. |
-| combined artifact | The single Week 10 submission containing Heap code, tests, traces, and backend comparison. |
+| Priority Queue | A collection that selects by a comparison rule rather than FIFO arrival. |
+| binary Heap | A complete binary tree whose parent-child order keeps an extreme at the root. |
+| complete binary tree | Levels fill from left to right without gaps in the active array. |
+| active prefix | The positions from 0 through size-1 currently in use. |
+| min Heap | Each parent value is no greater than either child value. |
+| max Heap | Each parent value is no less than either child value. |
+| mode flag | is_min_heap selects <= for nonzero or >= for zero; it is not a checker. |
+| root | Position 0, containing an extreme under the current valid Heap order. |
+| parent index | (i-1)/2 for a valid non-root position i. |
+| left-child index | 2*i+1, if that position exists. |
+| right-child index | 2*i+2, if that position exists. |
+| sentinel | The value -1 marks an absent position in relation helpers. |
+| comparator | A function deciding whether the first value may remain above the second. |
+| proper_parent | The helper selecting a winning position, with absent-position handling. |
+| swap | Exchange the values at two positions. |
+| Heap-order invariant | Every active parent-child pair follows the selected comparison rule. |
+| partial order | Parent-child order does not require sorted siblings or a sorted full array. |
+| sift-up | Repair one changed position along its ancestors; heapify_up in the lab. |
+| sift-down | Repair toward the better existing child; heapify_down in the lab. |
+| bottom-up construction | Build order by repairing internal nodes backward with heapify. |
+| one-child case | A parent has a left child but no right child. |
+| caller precondition | A required valid state that the supplied function does not enforce. |
+| fixed capacity | Storage reserves ten positions and never grows. |
+| closed interval | An on/off range that includes both endpoints. |
+| endpoint | One on-time or off-time of an interval. |
+| device ID | An integer 0–9 identifying one row of interval input. |
+| epoch | The selected interval number for one ID, starting at 0. |
+| interval count | interval_size[id] counts intervals, not endpoint cells. |
+| accessor | A helper such as get_on_time that reads the current endpoint for an ID. |
+| function pointer | A stored function choice, used for a Heap comparator or swap callback. |
+| ID Heap | An array storing IDs whose priorities are obtained from current interval state. |
+| inverse position map | An array mapping each ID back to its position in one Heap. |
+| priority update | A key change requiring repair even though the stored ID stays the same. |
+| direction-aware repair | Use the parent relationship to choose upward or downward repair. |
+| latest on-time | The greatest current on endpoint, supplied by max_on_heap. |
+| earliest off-time | The smallest current off endpoint, supplied by min_off_heap. |
+| overlap | The chosen closed intervals share a time when latest on <= earliest off. |
+| exhaustion | Advancing an ID beyond its last interval causes all_on_time to return -1. |
+| O(log n) | A repair path grows with complete-tree height for generalized n. |
+| O(n + A log n) | Generalized two-Heap construction and A epoch advances. |
 
-### Optional vocabulary for extension questions
+### Optional reference vocabulary
 
 | Term | Working meaning |
 |---|---|
-| student-written unsorted backend | An optional reimplementation of the supplied Module 11 baseline, which is supplied in the required path. |
-| bottom-up heap construction | Building a Heap by sifting internal nodes downward instead of repeatedly inserting every record. |
-| decrease-key | Lowering a priority already stored in a Priority Queue and repairing its backend. |
-| maximum Heap (max-Heap) | A Heap whose comparator places the greatest-ranked record at the root. |
-| mutable priority | A priority allowed to change while its record waits. |
+| stable alert record | Optional library record with priority and insertion-sequence tie-breaking. |
+| unsorted baseline | Optional reference library that scans for its next alert. |
+| dynamic allocation | Optional library storage obtained and later released through C allocation. |
+| comparison counter | Optional library instrumentation absent from student/lab.c. |
+| decrease-key interface | A possible extension for changing a selected stored priority. |
 
 ## Anticipated student questions
 
-### Meaning and mental model
+### Meaning and representation
 
-- How is a Priority Queue different from the FIFO Queue used for BFS?
-- What does "minimum" mean under the course's alert-priority convention?
-- What makes the Priority Queue stable when two priorities are equal?
-- Why can two storage backends implement the same Priority Queue ADT?
-- What does a binary Heap promise that a globally sorted array does not?
+- How does priority selection differ from FIFO arrival order?
+- What complete-tree shape does the active array prefix represent?
+- Why can a valid min Heap have siblings in either numeric order?
+- What does is_min_heap select, and why is it not an invariant checker?
+- How do parent, left, and right distinguish a missing position with -1?
+- Why does proper_parent return a position rather than a stored value?
+- What does the first-argument tie behavior guarantee, and why is FIFO stability not guaranteed?
 
-### Representation and invariants
+### Integer operations and tracing
 
-- Which public record fields and service rules must remain identical across the supplied unsorted backend and the Heap backend?
-- What makes the array representation a complete binary tree?
-- How are a nonroot node's parent and its possible child indexes calculated?
-- What exact parent-child relationship defines the stable minimum-Heap invariant?
-- Why can a valid minimum Heap contain an array that is not globally sorted?
-- Which Queue fields describe owned storage, logical size, capacity, arrival sequence, and diagnostic comparison work?
+- Where does add place a new value before heapify_up begins?
+- Which parent relationships change while adding 1 after 7,3,5?
+- What active prefix results from adding 7,3,5,1,9,4?
+- Which replacement and child choices produce the first root removal?
+- How does heapify_down avoid reading a missing right child?
+- Why does singleton removal safely call heapify_down with size zero?
+- Why must a caller prevent empty removal and insertion into ten live slots?
+- Why must changing the min/max flag on existing values be followed by heapify?
+- Why does bottom-up heapify begin at parent(size-1)?
 
-### Operations, C API, and ownership
+### Interval input and Heap callbacks
 
-- Why is Module 11's unsorted-array baseline supplied rather than student-written in Week 10?
-- What happens to a complete Heap and caller output if growth allocation fails during insertion?
-- Why can Heap `peek_min` return the root without performing record comparisons?
-- What steps must extraction perform before and during sift-down?
-- Why must output storage for a returned record not point inside the Queue's allocation?
-- What does `alert_priority_queue_destroy` own, release, and reset?
+- What do the paired cells in toggle_info[id] contain?
+- How do interval_size and epoch differ?
+- Why must every ID have one through five chronologically ordered valid intervals?
+- What do max_on_heap.array and min_off_heap.array store?
+- Why do full-Heap comparators receive IDs while basic comp receives positions?
+- What function choices are stored in Heap_Full.comp and Heap_Full.swap?
+- Why are the fixed full-Heap child helpers different from the size-based helpers?
 
-### Tracing
+### Maps and local repair
 
-- How does the supplied unsorted baseline insert, inspect the minimum, and remove the minimum?
-- Given an insertion sequence, where is each new Heap record appended and which comparisons cause it to sift upward?
-- Given a root extraction, which record moves to index 0 and how is the smaller child chosen during sift-down?
-- How should sift-down behave when a node has a left child but no right child?
-- How do equal priorities and arrival sequences determine swaps during a Heap trace?
-- Which fields may change during extraction even though the public service behavior remains unchanged?
+- What does array[position_map[id]] == id assert?
+- Why does each Heap need its own inverse position map?
+- Which two map entries must __swap__ update?
+- How can stale maps break a later repair even when current Heap order looks valid?
+- Why does one epoch change require repairs in both Heaps?
+- When does _reheapify choose up, and when does it choose down?
+- What assumptions make one-direction repair sufficient after a key change?
 
-### Testing and debugging
+### Overlap and correctness
 
-- Which focused tests isolate sift-up, sift-down, stable ties, and the one-child case?
-- How can `alert_priority_queue_is_min_heap` expose a local order violation after a mutation?
-- Why must checker comparisons be measured separately from normal-operation comparisons?
-- How can randomized differential testing compare the Heap against the supplied unsorted reference without assuming identical internal arrays?
-- What bug would occur if sift-down compared only priorities and ignored arrival sequence?
+- Why do the latest current on-time and earliest current off-time decide overlap?
+- Why does equality count as success for closed intervals?
+- Which ID must advance when latest on is greater than earliest off?
+- Why can advancing an earliest-off interval not skip a valid common time?
+- Which bounds occur in the canonical trace before the answer 8?
+- Why does exhaustion return before reading the next endpoint?
+- Why must callers avoid current-time accessors after an exhaustion return?
+- What does a fresh all_on_time call reset?
 
-### Complexity
+### Testing, costs, and transfer
 
-- What are the insertion, minimum-inspection, and minimum-removal costs of the supplied unsorted-array baseline?
-- Why are Heap insertion and extraction `O(log n)` while Heap minimum inspection is `O(1)`?
-- Why is a Heap's height logarithmic in its number of records?
-- Which workload would make the unsorted baseline competitive, and which workload would favor the Heap?
-
-### Security and interpretation
-
-- How can an incorrect priority calibration cause unfairness or starvation even when the data structure is correct?
-- Why is stable tie handling a policy guarantee rather than a security authorization decision?
-- How could unchecked index arithmetic or a missing-child read corrupt Heap behavior or memory?
-
-### Assignment and evidence
-
-- What belongs in the single combined Week 10 submission?
-- Why is there no separate student implementation or submission for the unsorted baseline in Module 11?
-- Which traces and tests demonstrate the complete-tree indexes, stable comparator, sift behavior, and Heap invariant?
-- What comparison evidence fairly distinguishes the supplied baseline's costs from the Heap backend's costs?
-
-### Transfer
-
-- Why can Dijkstra use the Priority Queue contract without depending on whether its backend is an unsorted array or Heap?
-- How does Heap order differ from the strict ordering rule of a BST or AVL tree?
-- How do comparison counts provide evidence about backend choice without proving wall-clock performance on every machine?
-- What failure-preservation ideas transfer from dynamic arrays to both Priority Queue backends?
-
-### Extension questions
-
-- How would you implement the unsorted-array Priority Queue while preserving the same public contract?
-- How could bottom-up heap construction differ from repeated insertion?
-- What interface changes would a decrease-key Heap require?
-- How would a maximum-oriented Heap change the comparator and invariant while retaining the same array geometry?
+- Which tests check duplicates, max mode, singleton removal, and a left-only child?
+- How can a driver check both Heap order and inverse-map consistency?
+- Which ten-ID fixtures distinguish immediate overlap, delayed overlap, endpoint equality, and exhaustion?
+- Why is bottom-up build O(n) while repeated insertion can take O(n log n)?
+- Why is the generalized search O(n + A log n) with O(n) auxiliary storage?
+- How do fixed ten-ID storage and at most five intervals bound the literal program?
+- How does Heap parent-child order differ from the BST search order taught later?
+- What belongs in the single Week 10 driver, trace, test, and correction submission?
+- Which allocation, stable-tie, and counter claims belong only to the optional alert library?
 
 ## Sources
 
-- [13-week delivery guide](../Data_Structures_Course_2026_13_Week_Delivery_Guide.md)
-- [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Original Weeks 8–13 question bank](02_weeks_08_13_questions.md)
-- [Module 11 supplied baseline](../module_11_binary_heap/priority_queue_baseline/README.md)
-- [Module 11 baseline vocabulary reference](../module_11_binary_heap/priority_queue_baseline/student/vocabulary.md)
-- [Module 11 main-lab role](../module_11_binary_heap/README.md)
-- [Module 11 vocabulary reference](../module_11_binary_heap/student/vocabulary.md)
+- [Current Module 10 lab](../module_10_binary_heap/student/lab.c)
+- [Teaching package](../module_10_binary_heap/README.md)
+- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+- [Module vocabulary](../module_10_binary_heap/student/vocabulary.md)

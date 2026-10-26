@@ -1,69 +1,33 @@
-# Chapter 8. Looking at Nodes Closest to the Root First
+# Chapter 8. Queues, Tree BFS, and Graph BFS
 
-## Starting Question
+Follow the [Module 8 plan](../module_08_graph_bfs/instructor/lesson_plan.md) for one 180-minute lesson: queues 60 minutes, tree BFS 30, maze graph BFS 60, testing/cost/synthesis 30. Module 7 introduces FIFO through a linked-list example. Module 8 reuses that implementation for both BFS traversals.
 
-> "To look at all nodes close to the root before going down to deeper nodes, in what order should we take out the waiting nodes?"
+The [English textbook](../module_08_graph_bfs/student/textbook.md), [Korean textbook](../module_08_graph_bfs/student/textbook_korean.md), [workbook](../module_08_graph_bfs/student/class_material.md), [concept slides](../module_08_graph_bfs/student/ppt_material.md), and [lab slides](../module_08_graph_bfs/student/ppt_lab_material.md) use the same three-part sequence. Submit once through the [lab](../module_08_graph_bfs/student/lab.md) and [rubric](../module_08_graph_bfs/student/rubric.md).
 
-**Expected Answer:** If students say we should take out the first found node first, write it down. We will check why we need to save the depth together during the short board walkthrough.
+## Starting question
 
-## Why We Need This
+Requests 17, 23, 31 arrived in that order. How can we process them in arrival order? Retrieve Module 7's FIFO linked-list example and contrast its known rule with the Stack. Read [queue.c](../module_08_graph_bfs/student/queue.c) after the link/array traces.
 
-Depth-first search follows one path to the end, so you might meet a far-away node first. This does not fit when we need to see nodes closest to the root first.
+Trace linked head/tail through empty, first insertion, and final removal. `enqueue(value)` allocates and appends a node, returning `false` without queue changes when the pool is exhausted. `dequeue()` returns the oldest value and automatically recycles its node. Check `is_empty_queue()` before dequeue; `-1` is a valid payload, not an empty-result sentinel. BFS uses those wrappers and never frees a queue node itself. The raw helper returns indices and leaves recycling to the wrapper. Array functions have distinct `_linear`/`_circular` names and remain unchecked. Initialize the otherwise unowned pool with `init_lnodes_pool()` and reset head/tail before independent BFS runs.
 
-If we process the first discovered children first, we can look at all nodes at the same depth before moving down to the next depth. If we put the node's address and depth together into the queue, we don't have to calculate the depth again.
+For the linear 25-slot queue, fill 0..24 and drain: front 25, rear 24 is both empty and full. For circular modulo 25, one reserved position leaves 24 values. Fill 0..23, remove 0/1, append 24/25: front 2, rear 0; draining gives 2..25.
 
-## Board Walkthrough
+## Tree board walkthrough
 
-Draw only the top three levels of the tree from the main text.
+Reuse [Module 2's tree](../module_02_binary_tree/student/lab.c), with root F(index 5), children A/G, A→B/C, B→D/E. Enqueue the root and then enqueue existing left children before right children after processing each index. Pending after F, A, G, B is [0,6], [6,1,2], [1,2], [2,3,4]. The output F, A, G, B, C, D, E has depths 0, 1, 1, 2, 2, 3, 3.
 
-```text
-C0(42)
-├─ C1(17)
-│  ├─ C3(23)
-│  └─ C4(91)
-└─ C2(68)
-   ├─ C5(17)
-   └─ C6(5)
+[tree_bfs(root, order)](../module_08_graph_bfs/student/tree_bfs.c) returns 7 here and 0 for root -1. The output has room for ten indices. A valid tree has no cycles or shared children; each reached node enters once without a discovery array. Ask what changes when two graph routes reach the same waiting vertex.
 
-```
+## Graph board walkthrough
 
-Write the queue from front to back order. Cover the next lines and ask first:
+The maze [lab.c](../module_08_graph_bfs/student/lab.c) is graph BFS. Passages are vertices; orthogonal moves are equal-cost edges. Start (1,1), target (5,5). Trace right, left, down, up. Coordinates are{x, y}; access is [y][x]; ID is 7*y+x. ID 25 is valid, while distance 25 means unseen.
 
-* Prediction 1: Right after visiting C0, what will be left in the queue?
-* Prediction 2: After visiting C1, which will come out first between C2 at depth 1 and C3 at depth 2?
-* Prediction 3: Right after visiting C2, what will be the order in the queue?
+First discovery sets distance before enqueue. An equal-distance arrival appends a predecessor without another enqueue. An earlier distance is skipped. The goal distance is 8, with predecessors (5,4),(4,5). The two choices at (3,5), namely(3,4),(2,5), give three complete shortest routes. One recovered route contains nine cells/eight moves. The source records predecessors without printing routes.
 
-| Finished Visiting | Queue |
-| --- | --- |
-| Before start | `C0@0` |
-| C0 | `C1@1, C2@1` |
-| C1 | `C2@1, C3@2, C4@2` |
-| C2 | `C3@2, C4@2, C5@2, C6@2` |
+Before each maze run call init_info, initialize the otherwise unowned pool with init_lnodes_pool, and set head=tail=-1. The start must be an interior passage and the zero wall border remains intact. The shared neighbor iterator completes each cell before starting another. Twenty passages enter once; the linked frontier peaks at four entries, and every supplied start peaks at most six. Public dequeue returns the cell ID and recycles its node before neighbors are added. Final head/tail are -1 and all ten pool slots return. Tree and maze include the same guarded local queue; the combined driver compiles directly without a prepared copy.
 
-Check if the depth ever gets smaller (it shouldn't). Because we put the left child in first, the left node comes out first even at the same depth. Read the provided short code and just run it to see if it makes the same state.
+## Pause and final evidence
 
-## Common First Thoughts
+Use the lesson plan's three-target pause: queue boundaries/wraparound, tree order/valid-tree assumptions, and graph merge/distance/routes. Preserve original predictions and add labeled corrections. Run the [combined driver](../module_08_graph_bfs/student/lab_driver.c) and add original queue/tree/maze assertions. The separate checked matrix/list API and older staged worksheets remain optional references.
 
-* "We can just put the node address in the queue and count the depth later." But if we put the address and depth together as a pair, we don't need to go back up to count it.
-* "Since C1's children were just discovered, they come out before C2." But C2 is already waiting at the front of the queue, so it comes out first.
-* "A visit history is also strictly necessary for a tree." But a correct tree in this chapter has only one path to each node, so we don't need a visit history here.
-
-## Neutral Questions
-
-* What two values should we write in each queue item to know the current depth?
-* How does C2's position in the queue change before and after putting C1's children in?
-* If we swap the order of putting in the left child and right child, which part of the visit order changes?
-
-## Vocabulary Rules
-
-**Words we can use:** Binary tree, root, child, depth, depth-first search, queue, and First-In-First-Out (FIFO).
-
-**Names we will introduce in this chapter:** Level, node-and-depth pair, waiting task, breadth-first search, and level-order traversal.
-
-**Words we won't use yet:** We won't introduce the names for recording the first discovered distance and previous vertex in a graph until the next chapter. We also won't use the names from later chapters about fixing the tree's shape. Finding the shallowest value is only covered in optional activities.
-
-## Final Check
-
-> "Can you write the state of the queue right after visiting C2, and explain why the nodes at depth 2 could not jump ahead of C2 at depth 1?"
-
-**Minimum Expected Answer:** Students should write the order `C3@2, C4@2, C5@2, C6@2` and explain the rule of taking out the first added item first.
+Count seven processed tree nodes/fourteen child checks and twenty maze passages/eighty neighbor checks. Separate 49-cell initialization, fixed reserved arrays, peak linked pending count versus total discoveries, array-comparison writes, and route-output work. The final explanation connects one FIFO rule to arrival order, tree levels, and shortest graph distances with a discovery record.

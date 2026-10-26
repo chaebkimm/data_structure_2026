@@ -1,0 +1,29 @@
+# Self-contained build for the current index-linked-list lab.
+CC = cc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+LAB_DIR ?= ../student
+CPPFLAGS += -I$(LAB_DIR)
+BUILD_DIR ?= build
+
+.PHONY: all lab-compile core student-tests clean
+all: core student-tests
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/lab_core: tests/test_lab_core.c tests/lab_test_support.h $(LAB_DIR)/lab.c | $(BUILD_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) tests/test_lab_core.c -o $@
+
+$(BUILD_DIR)/lab_student: tests/test_lab_student.c tests/lab_test_support.h $(LAB_DIR)/lab.c | $(BUILD_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) tests/test_lab_student.c -o $@
+
+lab-compile: $(BUILD_DIR)/lab_core
+
+core: lab-compile
+	$(BUILD_DIR)/lab_core
+
+student-tests: $(BUILD_DIR)/lab_student
+	$(BUILD_DIR)/lab_student
+
+clean:
+	$(RM) -r $(BUILD_DIR)

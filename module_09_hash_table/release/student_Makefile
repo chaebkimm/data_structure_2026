@@ -1,0 +1,25 @@
+# Run from module_09_hash_table/code inside the extracted release.
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?= -I../..
+BUILD_DIR ?= build
+
+.PHONY: all lab-compile core student-tests clean
+all: core
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+lab-compile: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c ../student/lab.c -o $(BUILD_DIR)/lab.o
+
+core: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) tests/test_lab_core.c -o $(BUILD_DIR)/lab_core
+	$(BUILD_DIR)/lab_core
+
+student-tests: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) tests/test_lab_student.c -o $(BUILD_DIR)/lab_student_tests
+	$(BUILD_DIR)/lab_student_tests
+
+clean:
+	$(RM) -r $(BUILD_DIR)

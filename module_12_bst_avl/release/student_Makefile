@@ -1,0 +1,39 @@
+# Run from code/ inside the extracted student release.
+CC := gcc
+CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
+CPPFLAGS ?=
+LAB_DIR ?= ../student
+TREE_ROOT ?= ..
+TREE_SOURCE := $(TREE_ROOT)/module_02_binary_tree/student/lab.c
+TEST_SUPPORT := tests/lab_test_support.h
+BUILD_DIR ?= build
+
+.PHONY: all lab-compile core student-tests comparison clean
+all: core student-tests
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+lab-compile: | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(TREE_ROOT) -c $(LAB_DIR)/lab.c -o $(BUILD_DIR)/lab.o
+
+$(BUILD_DIR)/lab_core: tests/test_lab_core.c $(TEST_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/test_lab_core.c -o $@
+
+core: $(BUILD_DIR)/lab_core
+	$(BUILD_DIR)/lab_core
+
+$(BUILD_DIR)/lab_student: tests/test_lab_student.c $(TEST_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/test_lab_student.c -o $@
+
+student-tests: $(BUILD_DIR)/lab_student
+	$(BUILD_DIR)/lab_student
+
+$(BUILD_DIR)/lab_comparison: tests/compare_lab.c $(TEST_SUPPORT) $(LAB_DIR)/lab.c $(TREE_SOURCE) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(LAB_DIR) -I$(TREE_ROOT) tests/compare_lab.c -o $@
+
+comparison: $(BUILD_DIR)/lab_comparison
+	$(BUILD_DIR)/lab_comparison
+
+clean:
+	$(RM) -r $(BUILD_DIR)
