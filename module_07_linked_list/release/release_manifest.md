@@ -12,7 +12,7 @@ The default archive is `../dist/module_07_linked_list.zip`. Use `--output` for a
 
 The archive preserves student/code directories and includes canonical student Markdown, exact `student/lab.c`, Makefile, PowerShell helper, actual-lab core tests, student test template, test support, READMEs, and a file manifest.
 
-Faculty answers, generated builds, pointer-list implementations, DSU, and the legacy unsafe autopsy are excluded. Students trace the supplied lab and add three original safe linked-list test groups.
+Faculty answers, generated builds, pointer-list implementations, DSU, and the legacy unsafe autopsy are excluded. Students trace the supplied lab and add three original safe linked-list test groups covering shared storage and linked stack/queue applications. The stack is caller-side use of the supplied primitives. The intentionally removed separate lab slides are not packaged; use `student/ppt_material.md` and `student/lab.md`.
 
 ## Facilitation notes
 
@@ -20,7 +20,7 @@ Stage A–E READMEs are optional checkpoints within one weekly lesson. They do n
 
 ## Verification before distribution
 
-Run `make -C ../code core student-tests`. Verify ten-slot exhaustion and preservation, two-argument allocation, insertion writes, tail deletion, detachment/recycling/reuse, caller-managed first removal, and linked queue FIFO/endpoints, public-value returns and recycling, raw empty-index return, and failed-enqueue preservation. Extract a fresh archive and run the same tests there. Compare canonical source bytes and check local Markdown links. A second packaging attempt at the same output must preserve the existing archive and fail. Verify the PowerShell wrapper separately when available.
+Run `make -C ../code core student-tests`. Verify ten-slot exhaustion and preservation, two-argument allocation, insertion writes, tail deletion, detachment/recycling/reuse, caller-managed first removal, and linked queue FIFO/endpoints, public-value returns and recycling, raw empty-index return, and failed-enqueue preservation. Execute the textbook's caller-side Stack example and trace shared-pool reuse as additional material checks. Extract a fresh archive and run the same tests there. Compare canonical source bytes and check local Markdown links. A second packaging attempt at the same output must preserve the existing archive and fail. Verify the PowerShell wrapper separately when available.
 
 The linked queue is a linked-list example here; Module 8 imports it for tree and graph BFS. Array queue alternatives and BFS algorithms are Module 8 work. The optional pointer-list/DSU library remains under `../code/`; DSU is taught in Week 14.
 

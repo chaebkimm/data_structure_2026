@@ -6,7 +6,7 @@ This is the operational delivery path for a course with **14 instructional
 weeks**. The repository's 14 numbered teaching packages form an instructor resource
 library; Priority Queue is integrated into Module 10, and Hash Table is
 Module 9. Package numbers follow teaching Weeks 1–14. Module 7
-teaches index-linked lists with a linked queue as an application in Week 7
+teaches index-linked lists with linked stack and queue applications in Week 7
 and retains DSU references used by Week 14. Module 8 compares queue
 representations and reuses that linked queue for tree BFS and graph BFS.
 A package README describes the complete deep-dive
@@ -51,7 +51,7 @@ issued as a second weekly programming submission.
 | 4 | Integer Stack and postfix — [Module 4](module_04_stack/README.md) core | Ordinary lab 4: top-index integer Stack, `1-2*3+4 -> 123*-4+ -> -1`, and `1+(2+3) -> 123++ -> 6` using `student/lab.c` | Checked parsing/arithmetic and legacy integer API comparisons | [Week 4 page](student_question_bank/week_04_stack.md) |
 | 5 | Preorder, inorder, and postorder using explicit stacks without recursion — [Module 5 textbook](module_05_tree_dfs/student/textbook.md) | Ordinary lab 5; existing package exercise remains separate from the textbook examples | Additional tree shapes and stack traces | [Week 5 page](student_question_bank/week_05_tree_dfs.md) |
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
-| 7 | Linked lists with a linked queue example — [textbook](module_07_linked_list/student/textbook.md) and [Module 7 materials](module_07_linked_list/README.md) | Ordinary lab 6: node-pool reuse, predecessor insertion/detachment, linked FIFO endpoints, and list/queue traces and tests | Allocated-list API, doubly linked lists, and DSU before Week 14 | [Week 7 page](student_question_bank/week_07_linked_list.md) |
+| 7 | Linked lists with linked stack and queue examples — [textbook](module_07_linked_list/student/textbook.md) and [Module 7 materials](module_07_linked_list/README.md) | Ordinary lab 6: shared-pool reuse, predecessor insertion/detachment, LIFO first-node operations, FIFO endpoints, and traces/tests in one artifact | Allocated-list API, doubly linked lists, and DSU before Week 14 | [Week 7 page](student_question_bank/week_07_linked_list.md) |
 | 8 | Queues → tree BFS → graph BFS — [Module 8](module_08_graph_bfs/README.md): queue comparisons, linked-queue reuse for tree levels and maze discovery, shortest predecessors, and path recovery | **Lab 7: one submission** with queue checks, tree and maze traces, driver, and explanation | Checked matrix/list API, all-path printing, and larger-maze generalization | [Week 8 page](student_question_bank/week_08_bfs.md) |
 | 9 | Hash Table — [Module 9](module_09_hash_table/README.md): ten buckets, separate chaining, pool reuse, and two-sum in the supplied lab.c | Ordinary lab 8: one driver and evidence submission | Older open-addressed map, resizing, and adversarial extensions | [Week 9 page](student_question_bank/week_09_hash_table.md) |
 | 10 | Integer min/max Heaps and shared on-time — [Module 10](module_10_binary_heap/README.md) follows current lab.c | **Lab 9: one submission** of driver, tests, traces, maps, and interval reasoning | Alert-record Heap, dynamic allocation, and unsorted-baseline implementation | [Week 10 page](student_question_bank/week_10_priority_queue_heap.md) |
@@ -123,10 +123,11 @@ Practical 1 is the only required graded submission for Week 6. Its bounded
 Graph DFS task is the implementation evidence for the week; do not also
 assign the standalone Module 6 lab.
 
-### Week 7 — Linked lists with a linked queue example
+### Week 7 — Linked lists with linked stack and queue examples
 
 Use the [current textbook](module_07_linked_list/student/textbook.md),
 [class workbook](module_07_linked_list/student/class_material.md),
+[concept slides](module_07_linked_list/student/ppt_material.md),
 [Module 7 lab](module_07_linked_list/student/lab.md), and
 [instructor plan](module_07_linked_list/instructor/lesson_plan.md).
 The source of truth is [`student/lab.c`](module_07_linked_list/student/lab.c):
@@ -136,8 +137,24 @@ with `link_lnode`; detach with `delete_next_lnode`; and recycle a detached
 slot as a separate action.
 This pool reserves storage in advance. It does not use `malloc` or C `free`.
 
+Follow the slide sequence: an acyclic chain with a separately stored first
+index; predecessor insertion/deletion and safe write order; shared-pool
+benefits and link/traversal costs; free-chain allocation/recycling; then the
+linked stack and queue. Multiple lists can use the same pool while keeping
+their live slots disjoint. Omitted recycling makes a detached slot unavailable;
+double recycling corrupts the free chain. After a slot is recycled, its former
+owner must stop reading or writing it because it may serve the free chain or
+another list.
+
+For the linked stack, keep a caller-owned `first`. Allocate with its old first
+as the successor and update `first` only after allocation succeeds. For removal,
+check nonempty, save the old first and its value, advance `first` to its successor,
+and recycle the old slot. Inputs 17,23,31 leave as 31,23,17. This is a caller-side
+application of the supplied primitives; the lab does not supply a separate
+linked-stack API.
+
 Use a linked FIFO queue as the application of those links. First trace the
-node-level helpers: `enqueue_lnode(node)` appends a detached allocation;
+node-level helpers: `enqueue_lnode(node)` appends a detached allocation whose `next` is `-1`;
 `dequeue_lnode()` returns a slot without recycling it, or `-1` when empty.
 Then expose the value interface: `enqueue(value)` allocates internally and
 returns `false` without changes if no slot is available. `dequeue()` returns
@@ -147,7 +164,7 @@ dequeue; its assertion diagnoses an empty call but is disabled by `NDEBUG`.
 Payload `-1` is valid and must not be interpreted as the public queue's empty
 result. Perform enqueue calls outside assertions so release builds retain them.
 
-One artifact contains pool/link and linked-queue code, boundary tests, state traces,
+One artifact contains pool/link callers and linked stack/queue evidence, boundary tests, state traces,
 an ArrayList/list comparison, and a corrected explanation. Trace a live
 chain separately from the free chain and preserve a removed node's successor
 before recycling changes its `next` field. Compare constant local work after
@@ -159,12 +176,12 @@ applications are taught in Week 8. The linked queue is the bridge between weeks.
 
 | Required contact activity | Minutes |
 |---|---:|
-| ArrayList comparison and index-linked node model | 20 |
-| Free-chain initialization and allocation | 35 |
-| Predecessor insertion and detachment | 35 |
-| Recycling, exhaustion, and reuse | 30 |
+| ArrayList comparison and acyclic index-linked node model | 20 |
+| Predecessor insertion/detachment and safe write order | 30 |
+| Shared pool, allocation/recycling, exhaustion, and stale access | 35 |
+| Linked stack with caller-owned first index | 25 |
 | Linked queue as a list application | 35 |
-| Caller tests, costs, corrections, and Module 8 transfer | 25 |
+| Caller tests, costs, corrections, and Module 8 transfer | 35 |
 | **Total** | **180** |
 
 ### Week 8 — Queues, tree BFS, and graph BFS, one submission

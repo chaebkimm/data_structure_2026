@@ -15,7 +15,7 @@ PowerShell: `./code/build.ps1` and `./code/build.ps1 -StudentTests`. Add `-Sanit
 
 ## State and caller responsibilities
 
-The ten records are `lnodes[10]`. Each contains integer `data` and `next`. Valid indices are 0–9; `-1` means no node. Initialize with `init_lnodes_pool()` only when no live list uses the pool. Keep the first-node index in the caller.
+The ten records are `lnodes[10]`. Each contains integer `data` and `next`. Valid indices are 0–9; `-1` means no node. Initialize with `init_lnodes_pool()` only when no user owns an active or detached allocation. Keep the first-node index in the caller.
 
 `new_lnode(data_value,next_value)` stores both arguments and returns the first free index, or returns `-1` without changes when exhausted. Pass `-1` to create a detached node. Check the result before indexing. A supplied successor must be a valid node in the intended list or `-1`.
 
@@ -37,11 +37,19 @@ In an independent experiment, allocate all ten slots and request an eleventh. As
 
 For removing the first node, save `lnodes[first].next`, update the caller's `first`, then recycle the old first node. The provided primitives do not maintain that variable.
 
-## 4. Apply the list to a linked queue
+## 4. Share the pool and build a linked Stack
+
+In a fresh unowned pool, allocate 17 for a singleton list A at index 0 and 23 for list B at index 1. Keep separate first indices; `free_head=2`. Detach A's only node, set A's first to `-1`, and recycle 0. Allocate 8 with next equal to B's first; expect index 0, `next=1`, and `free_head=2`. After checking success, set B's first to 0. B now reads 8,23. A stale copy of its former index 0 now refers to B's node. Explain stale reads and writes on paper. Do not reset the pool while either list owns a slot. An unreturned detached slot remains allocated and cannot be reused by the allocator.
+
+In a separate fresh run, keep caller variable `first=-1`. For 17,23,31, call `node=new_lnode(value,first)`, check the result, then set `first=node` only on success. Expect 2(31)→1(23)→0(17)→-1. These are caller actions; the supplied file has no linked Stack push/pop functions.
+
+Before every removal, check `first != -1`. Save the old index, its data, and its next. Update `first` to the saved next, then call `free_lnode(old)`. Do not read or write the recycled slot through the old index. Expect output 31,23,17, ending with `first=-1` and all ten slots free. An empty removal is rejected by the caller without indexing `-1`; allocation exhaustion leaves the Stack unchanged.
+
+## 5. Apply the list to a linked queue
 
 Use `init_lnodes_pool(); head = tail = -1;` only when no live user owns a pool slot. `enqueue(value)` allocates a detached node, appends it, and returns `true`. Pool exhaustion returns `false` without changing the pool or queue. `dequeue()` returns the oldest **value** and recycles its node internally. The caller must check `is_empty_queue()` before calling it and must not recycle the returned value as if it were a slot index.
 
-The node helpers expose the implementation: `enqueue_lnode(index)` appends an allocated detached slot; `dequeue_lnode()` detaches and returns an index without recycling it, or returns `-1` without changes when empty. Raw callers read `lnodes[index].data` before `free_lnode(index)`. Public `dequeue()` performs those steps itself. It asserts nonempty rather than returning an empty status. With `NDEBUG`, the assertion is removed, so the caller's nonempty precondition still applies.
+The node helpers expose the implementation: `enqueue_lnode(index)` appends an allocated detached slot whose `next` must be `-1`; `dequeue_lnode()` detaches and returns an index without recycling it, or returns `-1` without changes when empty. Raw callers read `lnodes[index].data` before `free_lnode(index)`. Public `dequeue()` performs those steps itself. It asserts nonempty rather than returning an empty status. With `NDEBUG`, the assertion is removed, so the caller's nonempty precondition still applies.
 
 A queued value of `-1` is valid. It is not an empty marker in the value interface. Check the queue state, not the returned payload. Store the result of `enqueue(value)` before checking it; `assert(enqueue(value))` would remove the insertion when assertions are disabled.
 
@@ -51,8 +59,8 @@ Use a separate raw-helper experiment to show that `dequeue_lnode()` returns an i
 
 ## Tests and evidence
 
-Add three original groups in `code/tests/test_lab_student.c`: allocation/exhaustion, insertion/traversal, and detachment/recycling/reuse including the linked queue example. Use valid independent starting states. Compare exact links and values, not only program exit status.
+Add three original groups in `code/tests/test_lab_student.c`: allocation/exhaustion including shared-pool accounting, insertion/traversal including first insertion, and detachment/recycling/reuse including linked Stack and Queue examples. Use valid independent starting states. Compare exact links and values, not only program exit status.
 
-Submit code/tests, compiler commands and output, the [evidence record](evidence_template.md), a corrected prediction, and operation counts. Follow the [rubric](rubric.md). Local relinking takes fixed work; finding a predecessor can inspect every active node.
+Submit code/tests, compiler commands and output, the [evidence record](evidence_template.md), a corrected prediction, and operation counts. Follow the [rubric](rubric.md). Local relinking and guarded first-node Stack operations take fixed work; finding a predecessor or the i-th node can inspect every active node. Each slot reserves one extra integer for `next`.
 
 The linked queue is a linked-list example in Module 7 and is reused for tree and graph BFS in Module 8. Array queue comparisons are Module 8 work. The allocated pointer-list and DSU reference library is optional; DSU teaching belongs to Week 14.

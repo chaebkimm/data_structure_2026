@@ -10,7 +10,7 @@
 - Does a module number always match the week in which we use it?
 - Which document controls if a package README and the 14-week delivery guide appear to disagree?
 - Where can I find the definitive list of required work for the current week?
-- How does Week 7's value-based linked-queue API hide allocation and recycling while the same implementation is reused for tree and graph BFS in Week 8?
+- How do Week 7's caller-side linked Stack and value-based linked Queue use one pool safely, and how is that queue reused for tree and graph BFS in Week 8?
 - Why are Union-Find and Kruskal combined in Week 14?
 - How does Week 8 progress from FIFO queues through tree level order to minimum-hop graph reachability?
 - Why does Module 10 combine the Priority Queue contract and Binary Heap implementation?

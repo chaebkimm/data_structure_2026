@@ -4,4 +4,4 @@ Use `student/lab.md`, its rubric, and `student/lab.c`. Run `make -C code core st
 
 Use the current weekly release; this checkpoint does not produce a separate archive.
 
-Include linked queue FIFO/endpoints, raw-index versus public-value returns, automatic public recycling, and failed-enqueue preservation in the lifecycle test group. This adds no fourth test group or separate submission.
+Include shared-pool reuse, linked Stack LIFO, linked Queue FIFO/endpoints, raw-index versus public-value returns, automatic public recycling, and failed-enqueue preservation within the three groups. Diagnose omitted/double recycling and stale access on paper. This adds no fourth test group or separate submission.

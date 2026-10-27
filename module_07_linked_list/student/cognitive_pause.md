@@ -14,9 +14,9 @@ Start with 0(17)→1(23)→2(31)→-1 and free chain 3→4→5→6→7→8→9�
 
 Response: ___________________________________________________________
 
-## Target 3 — Apply membership to a waiting list
+## Target 3 — Apply the list at its ends
 
-All ten slots have been allocated. What does `new_lnode(8,-1)` return? Which state changes? Now consider a linked queue whose sole node is index 2 carrying 31. Compare `dequeue_lnode()` and `dequeue()` on that same singleton state in separate runs. Give each return, head/tail, and free-chain membership. Explain why public dequeue already recycles the slot and why its returned value must not be passed to free_lnode.
+A linked Stack starts at 2(31)→1(23)→-1. Before recycling node 2, what data and next must the caller save, and what becomes first? In a separate linked Queue containing only 2(31), what value and head/tail result from public `dequeue()`?
 
 Response: ___________________________________________________________
 

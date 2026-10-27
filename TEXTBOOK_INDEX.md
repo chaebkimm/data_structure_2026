@@ -1,6 +1,6 @@
 # Korean Data Structures Textbook
 
-Chapter numbers identify resources; the teaching sequence follows the 14-week delivery guide. Module 7 teaches index-linked lists with a linked queue as an application, following its current `student/lab.c`. Module 8 compares queue representations and reuses Module 7's linked queue for tree BFS and graph BFS in Week 8. DSU is introduced with Kruskal in Week 14; its reference code remains in the Module 7 resource library. For new concepts, we first show why they are needed, and then give them a name.
+Chapter numbers identify resources; the teaching sequence follows the 14-week delivery guide. Module 7 teaches acyclic index-linked lists, shared-pool recycling, and linked stack/queue applications, following the updated concept slides and current `student/lab.c`. Module 8 compares queue representations and reuses Module 7's linked queue for tree BFS and graph BFS in Week 8. DSU is introduced with Kruskal in Week 14; its reference code remains in the Module 7 resource library. For new concepts, we first show why they are needed, and then give them a name.
 
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](module_00_datastructure/textbook.md).
 

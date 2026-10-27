@@ -1,8 +1,46 @@
 # Korean Textbook Validation Record
 
 The historical baseline validation date is August 14, 2026. Dated entries below
-record later revisions; the current course has thirteen teaching packages
-numbered consecutively 1–13, plus introductory Chapter 0.
+record later revisions; the current course has fourteen teaching packages
+numbered consecutively 1–14, plus introductory Chapter 0.
+
+## Module 7 aligned with the revised concept slides — October 27, 2026
+
+The English and Korean textbooks follow the updated concept manuscript:
+acyclic singly linked nodes with a saved first index, insertion/deletion
+and write order, shared storage and costs, free-chain lifecycle, linked
+Stack, then linked Queue. The Stack uses guarded caller-side first-node
+changes with the supplied primitives. Shared-pool examples distinguish
+disjoint active lists, detached allocations, and free slots. Missing/double
+returns and stale accesses are explained through concrete state changes.
+The original slides and `student/lab.c` remain unchanged.
+
+Student workbook, inquiry, reveal, pause, investigation, evidence, rubric,
+lab, vocabulary, and autopsy match the lesson. Instructor plans, answer
+keys, models, question banks, active pilot materials, and global maps match
+those activities. The deleted separate lab-slide manuscript remains absent
+and current entry points no longer link to it. The required work stays one
+180-minute artifact with three original test groups and A30/B25/C25/D20.
+
+Checks passed:
+
+- Both textbooks keep the exact five-section order and exact full lab code.
+  Their three caller programs match across languages and pass normal,
+  `NDEBUG`, and AddressSanitizer/UndefinedBehaviorSanitizer builds.
+- Current core and student smoke suites pass normal and sanitizer builds.
+  Shared-pool reuse, Stack LIFO, guarded first-node removal, full-allocation
+  preservation, and the Queue state table were also checked against the source.
+- Standard/linear inquiry and investigation files match. Delivery-guide and
+  instructor timings agree on 20+30+35+25+35+35=180 minutes. The rubric totals
+  100. Week 7's 36 vocabulary entries and 42 prompts match the consolidated bank.
+- All 287 local links in 41 current Markdown sources resolve, accounting for
+  release README installation paths. A new 24-entry student archive preserves
+  source bytes and inventory/manifest, has 36 resolving links, passes its
+  standalone core/student build, and refuses overwrite without changing bytes.
+- Independent review clarified that pool reset requires no owned active or
+  detached allocation, and raw `enqueue_lnode` requires `next == -1`.
+
+These are technical and editorial checks. No beginner reading pilot was run.
 
 ## Module 12 aligned with the supplied lab — October 25, 2026
 

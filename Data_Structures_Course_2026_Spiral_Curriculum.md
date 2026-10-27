@@ -4,7 +4,7 @@
 
 ### Curriculum status and assumptions
 
-This document defines an operational **14-week curriculum supported by 14 teaching packages**. Priority Queue is part of Module 10, and Hash Table is Module 9. Module 7 covers linked lists with a linked queue example. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS. Teaching packages are numbered consecutively from 1 to 14, matching their teaching weeks. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
+This document defines an operational **14-week curriculum supported by 14 teaching packages**. Priority Queue is part of Module 10, and Hash Table is Module 9. Module 7 covers linked lists with linked stack and queue examples. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS. Teaching packages are numbered consecutively from 1 to 14, matching their teaching weeks. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
 
 Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
 
@@ -48,19 +48,19 @@ By the end of the course, students will be able to:
 |---|---|---|---|---|
 | 1 | 1. Keeping ordered data together with an ArrayList | 2. Expression-tree model and binary-tree links | 3. Graph models and representations | Representing relationships in memory |
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
-| 3 | 7. Index-linked lists, node-pool reuse, and a linked queue example; 8. Queue comparisons | 8. Tree BFS using the same linked queue | 8. Graph BFS using the same linked queue | Explicit links, storage reuse, and FIFO-controlled exploration |
+| 3 | 7. Index-linked lists, shared-pool reuse, linked stack/queue examples; 8. Queue comparisons | 8. Tree BFS using the same linked queue | 8. Graph BFS using the same linked queue | Explicit links, storage reuse, and FIFO-controlled exploration |
 | 4 | 10. Numeric priority and optional scan reference | 10. Integer min/max and dual ID Heaps | 11. Dijkstra | Priority-controlled exploration |
 | 5 | Union-Find (introduced within Module 14 in Week 14) | 12. BST-to-AVL synthesis | 14. Prim and Kruskal | Maintaining global invariants while optimizing |
 
 This map contains deliberate previews and returns:
 
-- The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Module 7 introduces a linked queue as a list application; Module 8 compares queue representations and reuses that linked queue for trees and graphs. Module 10 contains integer min/max Heaps and a dual-Heap interval application in one week.
+- The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Module 7 applies linked lists to a stack and a queue; Module 8 compares queue representations and reuses that linked queue for trees and graphs. Module 10 contains integer min/max Heaps and a dual-Heap interval application in one week.
 - Module 9 bridges Spirals 3 and 4 through a supplied two-sum application. It revisits Module 1's array bounds and Module 7's node-pool lifecycle and remainder calculation; adds signed hash normalization, collisions, and separate chaining; and stores earlier array positions for complement lookup.
 - Array-indexed nodes appear in Module 2. Week 7 adds a free chain and separate detachment/recycling in a fixed ten-node pool. Module 9 reuses that pool for bucket chains. Dynamic allocation and owned-storage release remain optional container-reference topics; the allocated-list library in Module 7 and open-addressed map in Module 9 remain optional. DSU is introduced with Kruskal in Week 14.
 - Module 2 uses expression trees to introduce indexed binary links, loop-based construction, and recursive evaluation. The Module 5 textbook develops preorder, inorder, and postorder using explicit stacks without recursion.
 - Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
-- Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Week 7 teaches linked lists with a linked FIFO queue as an application. Week 8 compares array queue variants, then uses that linked queue for tree BFS and graph BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find is introduced immediately before Kruskal within Week 14.
+- Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Week 7 applies linked lists to a LIFO stack and a FIFO queue. Week 8 compares array queue variants, then uses that linked queue for tree BFS and graph BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find is introduced immediately before Kruskal within Week 14.
 
 ---
 
@@ -704,8 +704,21 @@ free chain initialized by `init_lnodes_pool`; use `new_lnode(data_value, next_va
 from recycling. They distinguish physical array positions from logical list
 order and explain why exhaustion leaves the pool unchanged.
 
+Follow the [updated concept slides](module_07_linked_list/student/ppt_material.md):
+acyclic chains and separately stored first indices; safe insertion/deletion;
+shared-storage benefits and costs; free-node management; linked stack; linked
+queue. Separate lists share the ten-slot capacity, with disjoint live nodes.
+Omitted recycling prevents reuse, double recycling corrupts the free chain,
+and an old owner must stop accessing a recycled slot.
+
+Students implement stack behavior in the caller with a separate `first`.
+New nodes point to the previous first. After a successful allocation the caller
+updates `first`. Removal checks nonempty, saves the old first and value, advances
+to the next node, then recycles. The lab has no separate linked-stack API.
+
 As a linked-list application, students maintain FIFO `head` and `tail` with
-`enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. They trace empty and
+`enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. Raw appends require a
+detached allocation whose `next` is `-1`. They trace empty and
 singleton transitions and distinguish raw node indices from payloads. The
 public `enqueue(value)` combines allocation with appending and reports a
 Boolean failure when the pool is exhausted. Public `dequeue()` reads the
@@ -723,7 +736,11 @@ initialization, exhaustion/reuse, predecessor insertion, and detachment traces.
 A returned node index has not been recycled automatically.
 `delete_next_lnode` retains the returned node's old `next`; `free_lnode`
 overwrites that link to prepend the slot to the free chain. The caller
-preserves any needed successor and updates the list head separately.
+preserves any needed successor and updates the list head separately. Include a
+linked-stack trace that inserts 17,23,31 at the first position and removes
+31,23,17. Compare it with the queue trace below within the same three original
+test groups and submission. Trace a recycled slot moving between two lists;
+inspect invalid stale accesses on paper.
 
 Add the linked queue example to the same artifact. Allocate 17, 23, and 31
 as detached nodes, append them in arrival order, and remove them in the same
@@ -1509,7 +1526,7 @@ The capstone is built incrementally so Week 14 is integration rather than a new 
 |---|---|
 | Week 3 / Module 3 | Bounded directed matrix, tested operations, and capstone skeleton |
 | Week 6 / Module 6 | Stack-backed DFS and reachability |
-| Week 7 / Module 7 | Fixed-node-pool links, predecessor insertion/detachment, reuse, and linked FIFO as a list application |
+| Week 7 / Module 7 | Acyclic links, safe insertion/detachment, shared-pool reuse, stale-access rules, and linked LIFO/FIFO applications |
 | Week 8 / Module 8 | Queue representation comparisons; the same linked queue for tree BFS, graph BFS, and unweighted paths |
 | Week 9 / Module 9 | Separate-chained complement lookup and pool-reuse evidence; external-label index adaptation belongs to later integration |
 | Week 11 / Module 11 | Heap-backed Dijkstra |
@@ -1597,8 +1614,8 @@ postfix-evaluation phases using the same global Stack, under explicit
 valid null-terminated input assumptions (at most seven characters), including
 balanced parentheses through the dedicated converter. Its Stack operations are unchecked; the
 full/empty predicates do not guard operations or validate expressions. Module 7 introduces
-index-linked pool nodes, separate detachment and recycling, and a linked FIFO
-queue as an application. Module 8 compares unchecked array queues and reuses
+index-linked pool nodes, shared storage, separate detachment and recycling,
+and linked LIFO stack/FIFO queue applications. Module 8 compares unchecked array queues and reuses
 that linked queue for tree BFS and graph BFS,
 with explicit caller preconditions. Module 9
 reuses that pool for separate-chained hashing and complement lookup. Module 10 uses fixed integer and ID Heaps with caller preconditions. Dynamic
@@ -1665,7 +1682,7 @@ Scope controls:
   Module 4 reuses fixed storage for a Stack, while later modules introduce
   allocation and growable storage in their own contracts.
 - Module 2's textbooks and lab use loop-based expression-tree construction and recursive evaluation of valid single-digit `+`/`*` input. Module 5's textbook focuses on explicit-stack preorder, inorder, and postorder without recursion; existing package labs remain separate. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
-- Module 7 uses a linked queue as an example of linked lists. Module 8 compares queue representations and uses that same linked queue for required tree BFS and graph BFS in one Week 8 submission. Queue boundaries, pool-slot recycling, tree levels, graph discovery, distances, predecessors, and path recovery share one lesson; Week 6 DFS provides the frontier-control comparison.
+- Module 7 applies linked lists to a stack and a queue. Module 8 compares queue representations and uses that same linked queue for required tree BFS and graph BFS in one Week 8 submission. Queue boundaries, pool-slot recycling, tree levels, graph discovery, distances, predecessors, and path recovery share one lesson; Week 6 DFS provides the frontier-control comparison.
 - Module 10 combines fixed integer min/max Heaps and ten-device interval search in one Week 10 driver/evidence submission. Its alert-record Heap and unsorted baseline remain optional.
 - Module 9 traces and tests the supplied separate-chained two-sum program in one driver/evidence submission. It reuses Week 7's fixed pool; open-addressed rebuilding is optional. Week 14 combines bounded DSU work and Kruskal. Complete reference-package menus are optional resources.
 - AVL insertion is core; AVL deletion is an extension.
@@ -1687,7 +1704,7 @@ Scope controls:
 | 4 | Integer Stack and postfix | Module 4; top index and item count, LIFO boundaries, top-index autopsy, `1-2*3+4 -> 123*-4+ -> -1`, and parentheses conversion |
 | 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
-| 7 | Linked lists with a linked queue example | Module 7 fixed-node pool, predecessor insertion/detachment, recycling, and FIFO endpoint transitions |
+| 7 | Linked lists with linked stack and queue examples | Module 7 acyclic links, shared pool, safe insertion/detachment, recycling, LIFO first-node operations, and FIFO endpoint transitions |
 | 8 | Queues, tree BFS, and graph BFS | Module 8; queue comparison and linked-queue reuse for tree levels, graph discovery, distances, predecessors, path reconstruction, and frontier-control synthesis in one submission |
 | 9 | Hash Table and two-sum | Module 9 supplied lab.c; signed hashing, separate chains, pool reuse, and one driver/evidence submission |
 | 10 | Integer Heaps and shared on-time | Current Module 10 lab.c, driver, repairs, dual ID Heaps, maps, and interval reasoning; one submission |

@@ -11,6 +11,13 @@ Add `-Sanitize` where supported. The supplied lab should pass immediately.
 The default lab directory is `../student`; override `LAB_DIR` for another
 copy of the same source.
 
+The current lesson follows the revised concept slides through acyclic links,
+safe insertion/deletion, shared-pool recycling, a linked Stack, and a linked
+Queue. The Stack is a caller-side example using a separate first index and
+the existing primitives; no additional Stack API is supplied. Keep disjoint
+live chains and stop accessing a slot after recycling it. Include Stack and
+Queue evidence within the existing three original test groups.
+
 The rest of this directory retains the optional pointer-list/DSU reference
 package. Its explicit `solution-*`, `starter-*`, and `autopsy` targets retain
 their existing behavior; DSU teaching belongs to Week 14.

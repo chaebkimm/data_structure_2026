@@ -17,7 +17,7 @@ for 17,23,31 with next argument `-1`, then `link_lnode(0,1); link_lnode(1,2);`:
 | 2 | 31 | -1 |
 
 The standalone list's first-node index is 0. Free slots begin at 3 and
-continue 3→4→5→6→7→8→9→-1. The standalone first index belongs to the caller. Reset the pool only after finishing every live list.
+continue 3→4→5→6→7→8→9→-1. The standalone first index belongs to the caller. Reset the pool only when no user owns an active or detached allocation.
 
 ## A. Pool representation and lifecycle — 30 points
 
@@ -42,7 +42,7 @@ Response: ___________________________________________________________
 
 At the canonical fixture, classify all ten indices as active, detached,
 or free. State why active/free chains cannot overlap or contain cycles.
-Explain who holds responsibility for a temporarily detached allocation.
+Explain who holds responsibility for a temporarily detached allocation and why an unreturned slot remains unavailable. In a fresh pool, list A owns singleton 0(17), list B owns singleton 1(23), and free slots start at 2. Detach and recycle A's 0, then allocate 8 before B's 1. Give both first indices and the new active/free chains. Explain why each list needs its own first index and why neither may share an allocated node.
 
 Response: ___________________________________________________________
 
@@ -59,7 +59,7 @@ Response: ___________________________________________________________
 
 ### B2. Traverse and keep the first index — 10 points
 
-Write the visited indices and data for the canonical fixture. Explain how to stop before indexing `-1`. Who retains the first-node index? How would the caller remove that first node safely? In a fresh linked-queue example, call value-based enqueue for 17, 23, 31. Trace `head` and `tail`, including the empty-to-singleton transition.
+Write the visited indices and data for the canonical fixture. Explain how to stop before indexing `-1`. Who retains the first-node index? In a fresh linked Stack, prepend 17,23,31 using `new_lnode(value,first)` and update `first` only after checking success. Give the chain and LIFO outputs. Explain the nonempty check and why both data and next must be saved before first-node recycling. In a separate fresh linked-queue example, call value-based enqueue for 17, 23, 31. Trace `head` and `tail`, including the empty-to-singleton transition.
 
 Response: ___________________________________________________________
 
@@ -85,7 +85,7 @@ Response: ___________________________________________________________
 
 ### C3. Diagnose membership violations — 5 points
 
-Explain why range checks cannot detect recycling an active or already-free slot. Identify the first broken rule in the [autopsy](linked_list_autopsy.md). Keep defective operations on paper.
+Explain why range checks cannot detect recycling an active or already-free slot. Identify the first broken rule in the [autopsy](linked_list_autopsy.md). After list B reuses a slot returned by A, explain what A's stale index now reads and why writing its data or link changes B. Keep defective operations on paper.
 
 Response: ___________________________________________________________
 
@@ -93,13 +93,13 @@ Response: ___________________________________________________________
 
 ### D1. Three original test groups — 12 points
 
-Add allocation/exhaustion, insertion/traversal, and detachment/recycling/reuse groups, including FIFO endpoints, public value returns, automatic recycling, and exhausted-enqueue status. Record exact expected/observed states and build commands.
+Add allocation/exhaustion, insertion/traversal, and detachment/recycling/reuse groups, including shared-pool ownership, LIFO first-node transitions, FIFO endpoints, public value returns, automatic recycling, and exhausted-enqueue status. Record exact expected/observed states and build commands.
 
 Response: ___________________________________________________________
 
 ### D2. Count actual work — 4 points
 
-Count field changes for known-predecessor operations. Compare them with finding a predecessor and initializing the entire pool.
+Count field changes for known-predecessor operations. Compare them with finding a predecessor or the i-th node and initializing the entire pool. Count the extra integer link per slot. Explain why known-position relinking is fixed work but finding that position may not be.
 
 Response: ___________________________________________________________
 

@@ -4,4 +4,4 @@ Read the English or Korean textbook. Both follow the five-section flow and repro
 
 Use the current weekly release; this checkpoint does not produce a separate archive.
 
-The linked queue is a required application of these list operations. Trace arrival order and endpoint changes before Module 8 reuses the source for BFS.
+The linked stack and queue are required applications of these list operations. Trace first-position insertion/removal for LIFO, then opposite-end insertion/removal and empty/singleton endpoints for FIFO. The stack uses a caller-owned first index and the supplied node primitives. Module 8 reuses the linked queue source for BFS.

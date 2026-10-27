@@ -26,7 +26,7 @@ Check if the student can explain all three of these parts in their own words:
 | Class Week | Chapters | Teaching Rules |
 | --- | --- | --- |
 | 1–6 | Chapters 1–6 | Completed sequence; existing materials retained. |
-| 7 | Chapter 7 | Index links, predecessor insertion/detachment, and free-chain reuse; a linked FIFO queue as a linked-list application in one lab following `student/lab.c`. |
+| 7 | Chapter 7 | Acyclic index links, predecessor insertion/detachment, shared-pool reuse and stale-access rules; linked LIFO Stack and FIFO Queue applications in one lab following `student/lab.c`. |
 | 8 | Chapter 8 | Retrieve Module 7's linked queue, compare linear/circular array queues, and use the same linked queue for tree BFS and graph/maze BFS with distances, shortest predecessors, and path recovery in one lab. |
 | 9 | Chapter 9 | Hash Table: pooled collision chains, signed hashing, and two sum. |
 | 10 | Chapter 10 | Fixed integer min/max Heap, bottom-up construction, and two indexed ID Heaps for common on-time; one lab-driver submission. |
@@ -35,7 +35,7 @@ Check if the student can explain all three of these parts in their own words:
 | 13 | Chapter 13 | Linear and first-match binary search, stable insertion/merge sorting, and consolidation through a workload-selection memo; one artifact. |
 | 14 | DSU reference from Module 7 + Chapter 14 | Introduce DSU and Kruskal in one lab; Prim demonstration only. |
 
-The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 uses a linked queue as an example of linked lists. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS.
+The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 applies linked lists to a stack and a queue. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS.
 
 The total class time for a single week must not go over 180 minutes. The board walkthroughs in these files are just one piece of the core explanation. Manage the time so it stays under 180 minutes by adding in your separate coding practice and test times.
 

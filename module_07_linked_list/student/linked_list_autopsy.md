@@ -54,18 +54,22 @@ harmless while the caller holds it, but overwritten on recycling?
 
 Response: ___________________________________________________________
 
-## 4. Diagnose two nearby errors
+## 4. Diagnose nearby errors
 
 1. After correct recycling, what does a second `free_lnode(1)` do to
    `lnodes[1].next`? Does its range check prevent this?
 2. In a separate list 0→2→-1, reverse the insertion writes for detached node 1. State the resulting self-link and lost successor.
+
+3. A removed node is detached but never recycled. Can `new_lnode` find it? Distinguish this lost allocation from a free slot.
+4. In a separate fresh pool, A owns 0(17) and B owns 1(23), both with next `-1`. A detaches and recycles 0. B prepends `new_lnode(8,1)`, which returns 0. An old A variable still equals 0. What does `lnodes[old_a].data` now read? On paper, show how assigning either data or next through `old_a` changes B. A range check passes; explain why it cannot establish ownership.
+5. A linked Stack recycles its first node before saving its next. Which successor is lost when recycling overwrites that field? Give the safe save-data/save-next, update-first, recycle order.
 
 Response: ___________________________________________________________
 
 ## 5. Regression evidence
 
 Assert the repaired active/free chains and absence of repeated indices.
-For reuse, assert the returned index, data, next field, and exact traversal order.
+For reuse, assert the returned index, data, next field, and exact traversal order. Include two disjoint lists sharing the free chain, a safe LIFO drain, and no access through recycled caller indices.
 Run the repaired version as a normal regression; use a bounded trace for
 the wrong sequence.
 

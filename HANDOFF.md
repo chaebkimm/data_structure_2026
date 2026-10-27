@@ -1,6 +1,37 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-10-25.
+Updated: 2026-10-27.
+
+## Module 7 revised-slide alignment — 2026-10-27
+
+The updated `module_07_linked_list/student/ppt_material.md` now drives the
+lesson: acyclic chains and a saved first index, safe predecessor rewiring,
+shared-pool benefits and costs, recycling hazards, linked Stack, and linked
+Queue. Both textbooks, student activities, instructor guidance, models,
+assessment, current question banks, pilot prompts, and course maps follow
+that sequence. The Stack is caller-side use of existing node primitives;
+no Stack API was added to `student/lab.c`. The lesson still has one artifact,
+three original test groups, 180 contact minutes, and the 100-point rubric.
+
+The concept slides and supplied C source are unchanged. The lab-slide file
+deleted in the slide update remains deleted; current source and packaged
+entry points now link to the lab instead. Raw queue append explicitly
+requires `next == -1`; pool resets require that no active or detached
+allocation remains owned. Module 8 continues to import the existing queue.
+
+Verification covers 41 current Markdown sources and 287 resolving local
+links. Both textbooks retain the five-section structure, exact full lab
+code, and three identical caller programs across languages. Those programs
+pass normal, `NDEBUG`, and sanitizer builds. Core/student suites pass normal
+and AddressSanitizer/UndefinedBehaviorSanitizer builds. A fresh 24-entry
+student archive has exact canonical bytes, the exact inventory/manifest,
+36 resolving local links, a passing standalone build, and overwrite refusal.
+Weekly/consolidated Week 7 banks agree on 42 prompts and 36 vocabulary
+entries. Technical checks do not replace a beginner reading pilot.
+
+Lab SHA256: `99145b95e45840ee519019c9c788313740f20516489a6e87cd297a0e6b8b6739`.
+Slides SHA256: `1bf745bcaccf606b6de4a6a2554b183187475026a12beaceb619b10360548d5c`.
+These edits remain local; no course site was published.
 
 ## Module 11 current-lab alignment — 2026-10-25
 

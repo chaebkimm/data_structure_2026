@@ -31,15 +31,19 @@ Prediction / observed links / correction: ____________________
 - Deletion after a tail; unchanged fields: ____________________
 - Out-of-range recycling; unchanged fields: ____________________
 - Why a live or already-free node cannot be recycled: ____________________
+- Missing return versus double return: ____________________
+- Two lists' separate first indices and disjoint shared-pool slots: ____________________
+- Return A's slot 0, reuse it for 8 before B's slot 1; exact chains: ____________________
+- Why stale reads/writes through A's old index now access B: ____________________
 - Safe first-node removal by the caller: ____________________
 
 ## 4. Original tests and build evidence
 
 | Test group | Assertion | Expected result | Observed result |
 |---|---|---|---|
-| allocation/exhaustion | | | |
-| insertion/traversal | | | |
-| detachment/recycling/reuse, including linked queue | | | |
+| allocation/exhaustion and shared pool | | | |
+| insertion/traversal and first insertion | | | |
+| detachment/recycling/reuse, including linked Stack and Queue | | | |
 
 Compiler and commands: ____________________
 Output or attachment: ____________________
@@ -48,11 +52,17 @@ Output or attachment: ____________________
 
 - Autopsy's first broken precondition and repair: ____________________
 - Fixed work for known-predecessor mutations: ____________________
-- Work for traversal and initialization: ____________________
+- Work for traversal, i-th-node access, initialization, and one extra integer link per slot: ____________________
 - Preserved first prediction and labeled correction: ____________________
 - Evidence supporting the correction: ____________________
 
-## 6. Linked queue as a list example
+## 6. Linked Stack as a list example
+
+Use a separate unowned pool and `first=-1`. Record each `new_lnode(value,first)` result for 17,23,31, the guarded update to first, and chain 2→1→0→-1. Before each removal, check nonempty, save old data/next, update first, and recycle. Record LIFO outputs 31,23,17, all free slots after draining, and unchanged Stack state on allocation exhaustion. These are caller actions, not a new supplied Stack API.
+
+Prediction / trace / observed test / correction: ____________________
+
+## 7. Linked Queue as a list example
 
 Record public enqueue of 17,23,31, each boolean result, public dequeue values, endpoint changes, and internal free-chain recycling. Compare the raw helper's returned index with the public wrapper's returned value in separate runs. Include singleton transitions, full enqueue returning false unchanged, reuse behind waiting nodes, a payload of -1, and why enqueue must execute outside assert. Module 8 changes the value to a vertex ID without changing these wrappers.
 
