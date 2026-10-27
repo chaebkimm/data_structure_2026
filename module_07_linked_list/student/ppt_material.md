@@ -1,92 +1,94 @@
-# Chapter 7 Concept Slides — Linked Lists
+# 연결된 형태의 노드
 
-Use one numbered topic per slide or board scene. Ask for a prediction before revealing the state. The [textbooks](textbook.md) and [workbook](class_material.md) use the same examples. The implementation is the current `lab.c`.
-각 번호를 슬라이드나 판서 한 장면으로 사용한다. 상태를 보여 주기 전에 먼저 예상하게 한다.
+- 모든 데이터가 다음 데이터 하나에 대한 정보를 가지고 있는 형태다.
+- 서로 연결된 노드들은 하나의 리스트를 구성하게 되며, 노드들을 연결해서 만든 리스트를 링크드 리스트라고 한다.
 
-## 1. Can the order change without moving values? / 값을 옮기지 않고 순서를 바꾸려면?
+# 단순한 링크드 리스트
 
-We want to keep 17, 23, and 31 while changing which record follows which.
-배열 리스트는 중간 삽입 때 뒤의 값을 민다. 다음 위치를 따로 기록하면 연결만 바꿀 수 있다.
+- 사이클이 없게 만든다.
+- 어떤 노드에서나 다음으로 끝까지 가면 마지막 노드에 도달한다.
+- 링크드 리스트의 노드들 중에서는 시작 노드가 있다.
+- 처음 노드 정보는 따로 저장한다.
 
-Reveal a node as `{data, next}` after students describe the needed information.
+# 링크드 리스트 중간에 노드 추가
 
-```text
-0:{17,1}  1:{23,2}  2:{31,-1}
-index order: 0 → 1 → 2 → -1
-value order: 17 → 23 → 31
-```
+- 기존에 있던 앞뒤 노드의 연결을 적절하게 바꾼다.
+- 원래는 앞 노드의 다음이 뒷 노드였다.
+- 추가한 후에는 앞 노드의 다음이 새로운 노드가 되고, 새로운 노드의 다음이 뒷 노드가 된다.
 
-Attach the name singly linked list. Emphasize that the lab's links are integer indices; its storage is still an array. `-1` is an ending marker, never an array position.
+# 링크드 리스트 중간에 노드 삭제
 
-## 2. How do we find a reusable slot? / 재사용할 칸을 어떻게 찾을까?
+- 기존에 있던 앞뒤 노드의 연결을 적절하게 바꾼다.
+- 원래는 앞 노드의 다음이 삭제할 노드고, 삭제할 노드의 다음이 뒷 노드였다.
+- 삭제한 후에는 앞 노드의 다음이 뒷 노드가 된다.
 
-Scanning ten slots repeats work. Connect the available indices instead.
-사용 가능한 칸을 연결하고 첫 위치 하나를 기억한다. 이를 가용 리스트라고 한다.
+# 중간에 노드 추가할 때 주의점
 
-```text
-init_lnodes_pool(): free_head=0
-0→1→2→3→4→5→6→7→8→9→-1
-new_lnode(17, -1): returns0, free_head1, lnodes[0]={17,-1}
-new_lnode(23, -1): returns1, free_head2, lnodes[1]={23,-1}
-new_lnode(31, -1): returns2, free_head3, lnodes[2]={31,-1}
-```
+- 앞 노드의 다음 노드를 새로운 노드로 바꾸기 전에 뒷 노드 정보를 저장해놓지 않으면 뒷 노드를 잃어버린다.
 
-Predict exhaustion: after ten successful allocations, the next returns `-1` and changes nothing. The pool is fixed storage; no heap allocation occurs.
+# 링크드 리스트의 장점
 
-## 3. Which write must happen first? / 어느 대입을 먼저 할까?
+- 데이터가 노드 단위로 분리되어 있다.
+- 중간에 노드를 추가/삭제하기 편하다.
+- 배열 하나에 여러 링크드 리스트를 만들어도 공간을 효율적으로 쓸 수 있다.
+- 배열에서 비어있는 공간은 어떤 링크드 리스트에서나 쓸 수 있다.
 
-Start with `0(17)→2(31)→-1`. Node1 containing23 is allocated and detached.
-1번에 기존 다음 위치를 보관한 뒤 0번의 다음 위치를 바꾼다.
+# 링크드 리스트의 단점
 
-```text
-link_lnode(0,1):
-  lnodes[1].next = lnodes[0].next   // 2
-  lnodes[0].next = 1
-result: 0(17)→1(23)→2(31)→-1
-```
+- i번째 노드를 찾는 데 시간이 많이 든다.
+- 다음 노드 정보를 저장하기 위해서 메모리를 써야 한다.
 
-Have students trace the reversed writes on paper: node1 points to itself and the old successor becomes unreachable from node0. Never run this corrupted chain as a traversal exercise.
+# 비어있는 공간 관리하기
 
-## 4. Does removal make a slot available? / 빼면 가용 칸이 되는가?
+- 현재 안 쓰는 모든 노드들을 연결해서 링크드 리스트를 만든다.
+- 노드가 필요할 때마다 하나씩 꺼내서 쓴다.
+- 노드를 다 썼으면 다시 안 쓰는 노드들의 링크드 리스트로 반납한다.
 
-Remove the successor of index0, keeping the returned index.
-분리와 반환을 서로 다른 상태 변경으로 표시한다.
+# 비어있는 공간 관리 주의점
 
-```text
-initial: 0→1→2→-1; free_head3
-delete_next_lnode(0): returns1; active0→2→-1; lnodes[1].next2; free_head3
-free_lnode(1): free_head1; free1→3→4→5→6→7→8→9→-1
-new_lnode(8, -1): returns1; lnodes[1]={8,-1}; free_head3
-```
+- 다 쓰고 반납을 안 하면 다시 못 쓴다.
+- 한 노드를 두 번 반납하면 안 쓰는 노드들의 링크드 리스트가 망가진다.
 
-A node belongs to one active chain, the free chain, or the caller as a detached allocation. A range check does not prevent returning an active node or returning a node twice. `delete_next_lnode` needs a valid predecessor; it does not search for a value.
+# 반납한 노드 재사용 주의
 
-## 5. How much work changes a link? / 연결을 바꾸는 일은 얼마나 걸릴까?
+- 반납한 노드는 안 쓰는 노드들의 링크드 리스트에 있거나 다른 링크드 리스트가 새로 받아서 쓰고 있다.
+- 반납한 노드의 데이터나 노드를 바꾸면 다른 링크드 리스트가 망가질 수 있다. 데이터를 읽어도 원하지 않는 값이다.
 
-Count two link assignments for insertion after a known predecessor. Searching for that predecessor can inspect every active node.
-선행 노드를 이미 알면 연결 둘만 바꾼다. 선행 노드를 찾아야 하면 활성 노드를 모두 볼 수 있다.
+# 링크드 스택
 
-Board / 판서: relink O(1), traversal O(n), initialization O(capacity).
+- 스택은 마지막 데이터가 먼저 나온다.
+- 한쪽에서만 저장하고 읽으면 구현된다.
+- 링크드 리스트는 시작 노드 정보를 가지고 있으므로 시작 노드에 저장하고 삭제하는 방식으로 스택을 구현한다.
 
-## 6. Which slots are reusable? / 어떤 칸을 다시 쓸 수 있을까?
+# 시작 노드로 추가하기
 
-Classify each of ten slots as free, active, or allocated and detached. No slot may belong to two groups. A range check does not establish membership.
-열 칸을 가용, 활성, 할당 후 분리 상태로 나눈다. 한 칸이 두 상태에 겹치면 안 된다. 범위 검사만으로 소속을 확인할 수 없다.
+- 새로운 노드의 다음 노드를 기존의 시작 노드로 만든다.
+- 시작 노드를 새로운 노드로 바꾼다.
 
-## 7. How can a list preserve arrival order? / 연결 리스트로 도착 순서를 지키려면?
+# 시작 노드 삭제하기
 
-Requests 17,23,31 must leave in arrival order. Remember both ends, then name FIFO and linked queue. First trace node helpers: append an allocated detached index with `enqueue_lnode`; detach an index with `dequeue_lnode`. The raw removal leaves recycling to its caller and returns `-1` when empty.
+- 기존 시작 노드를 기억해둔다.
+- 시작 노드를 기존 시작 노드의 다음 노드로 바꾼다.
+- 기존 시작 노드는 데이터를 읽어서 저장해놓고 반납한다.
 
-Then hide that lifecycle behind `bool enqueue(value)` and `int dequeue()`. Enqueue allocates and reports success; dequeue returns the payload and recycles. Callers check status and `is_empty_queue()`. They do not allocate or free queue slots themselves.
-공개 함수는 값으로 큐를 쓰게 한다. 노드의 할당과 반환은 함수 안에 둔다. 내부 인덱스와 반환 데이터가 다르다.
+# 노드 추가, 삭제할 때 주의점
 
-| Action after a fresh reset | Return | `head` | `tail` | Live slots | `free_head` |
-| --- | --- | ---: | ---: | --- | ---: |
-| `enqueue(17)` | `true` | 0 | 0 | 0 → -1 | 1 |
-| `enqueue(23)` | `true` | 0 | 1 | 0 → 1 → -1 | 2 |
-| `enqueue(31)` | `true` | 0 | 2 | 0 → 1 → 2 → -1 | 3 |
-| `dequeue()` | 17 | 1 | 2 | 1 → 2 → -1 | 0 |
-| `enqueue(8)` | `true` | 1 | 0 | 1 → 2 → 0 → -1 | 3 |
-| drain 23, 31, 8 | values | -1 | -1 | empty | 0 (all ten free) |
+- 비어있는 리스트에서는 노드를 삭제할 수 없다.
 
-Show a full ten-value queue: the next enqueue returns false with unchanged state. Show payload -1: it is a value, not an empty marker. Evaluate enqueue before any assertion. Module 8 reuses this value interface for BFS IDs.
+# 링크드 큐
+
+- 큐는 먼저 저장한 것이 먼저 나온다.
+- 읽는 쪽과 반대쪽에 저장하면 구현된다.
+- 읽을 때는 시작 노드를 읽는다.
+- 마지막 노드 정보를 가지고 있다가 추가할 때는 마지막 노드 다음에 한다.
+
+# 끝 노드로 추가하기
+
+- 기존 끝 노드의 다음 노드를 새로운 노드로 만든다.
+- 새로운 노드의 다음 노드는 없다고 한다.
+- 새로운 노드를 끝 노드로 삼는다.
+
+# 비어있는 링크드 큐
+
+- 링크드 큐가 비어있을 때 노드를 추가하면, 처음 노드와 끝 노드가 모두 새로운 노드가 된다.
+- 시작 노드의 다음 노드가 없을 때 노드를 삭제해서 큐가 비어있게 되면 끝 노드도 없다고 표시해준다.
