@@ -10,11 +10,17 @@
 
 - 노드에는 데이터와 다른 노드에 대한 정보가 들어있다.
 - 링크드 리스트를 위한 노드는 다음 노드 정보를 저장한다.
+- 노드들을 배열에 저장한다.
 
-# 노드를 저장할 배열 생성
+# C 문법 - enum
 
-- 노드를 저장할 수 있는 배열을 만든다.
-- 용량을 저장하지 않아도 링크드 리스트를 써서 관리할 수 있다.
+- 정수 상수에 이름을 붙일 수 있다.
+
+```c
+enum { 상수이름1 = 정수값1, 상수이름2 = 정수값2 };
+```
+
+- 코드에서 상수이름을 쓰면 정수 상수값을 쓰는 것과 같다.
 
 # 링크드 리스트 노드 만들기
 
@@ -23,7 +29,8 @@ struct Linked_Node {
   int data;
   int next;
 };
-struct Linked_Node arr[10];
+enum { CAP = 10 };
+struct Linked_Node arr[CAP];
 ```
 
 # 복습 - 링크드 리스트에 노드 추가
@@ -50,10 +57,11 @@ void link_node(int p, int n) {
 # 링크드 리스트의 노드 삭제
 
 ```c
-int del_node(int p) {
+int del_next_node(int p) {
   int n = arr[p].next;
   if (n != -1) {
     arr[p].next = arr[n].next;
+    arr[n].next = -1;
   }
   return n;
 }
@@ -65,19 +73,24 @@ int del_node(int p) {
 - 처음에는 배열의 모든 노드들이 연결되어 있다.
 - 시작 노드로 링크드 리스트를 표현한다.
 
+# C 문법 - static
+
+- 로컬 변수의 타입 앞에 static 키워드를 붙이면, 프로그램이 실행되는 동안 변수가 없어지지 않고 유지된다. 초기값은 처음 한 번만 저장된다. 함수가 다시 실행되면 이전 값이 그대로 저장되어 있다.
+
 # 링크드 리스트로 배열 관리
 
 ```c
 int fhead = -1;
 
 void init_nodes_pool(void) {
-  for (int i = 0; i < 9; i++) {
-    arr[i].data = 0;
+  static int initialized = 0;
+  if (initialized) {return;}
+  initialized = 1;
+  for (int i = 0; i < CAP - 1;
+       i++) {
     arr[i].next = i + 1;
   }
-
-  arr[9].data = 0;
-  arr[9].next = -1;
+  arr[CAP - 1].next = -1;
   fhead = 0;
 }
 ```
@@ -91,18 +104,17 @@ void init_nodes_pool(void) {
 
 - 시작 노드가 없으면 못 꺼낸다.
 - 기존 시작 노드를 저장해 놓고, 그 다음 노드로 시작 노드를 바꾼다.
-- 기존 시작 노드의 데이터와 다음 노드 정보를 필요에 따라 업데이트한다.
+- 저장해 놓았던 노드를 쓰면 된다.
 
 ```c
-int new_node(int val, int nex) {
+int new_node(void) {
+  init_nodes_pool();
   if (fhead == -1) {
     return -1;
   }
   int node = fhead;
   fhead = arr[fhead].next;
-
-  arr[node].data = val;
-  arr[node].next = nex;
+  arr[node].next = -1;
   return node;
 }
 ```
@@ -111,11 +123,11 @@ int new_node(int val, int nex) {
 
 - 반납할 노드의 다음 노드를 기존 시작 노드로 바꾼다.
 - 반납할 노드로 시작 노드를 바꾼다.
-- 유효하지 않은 노드는 거부한다.
+- 없는 노드 -1에는 작업하지 않는다.
 
 ```c
 void free_node(int node) {
-  if (node < 0 || node >= 10) {
+  if (node == -1) {
     return;
   }
   arr[node].next = fhead;
@@ -133,11 +145,11 @@ void free_node(int node) {
 # 링크드 리스트로 큐 구현
 
 ```c
-int head = -1;
-int tail = -1;
+int qhead = -1;
+int qtail = -1;
 
 int is_empty(void) {
-  return head == -1;
+  return qhead == -1;
 }
 ```
 
@@ -149,17 +161,18 @@ int is_empty(void) {
 # 큐에 노드 추가하기
 
 ```c
-void enqueue_lnode(int node) {
+void enqueue_node(int node) {
   if (node == -1) {
     return;
   }
   if (is_empty()) {
-    head = tail = node;
+    qhead = qtail = node;
   }
   else {
-    arr[tail].next = node;
-    tail = node;
+    arr[qtail].next = node;
+    qtail = node;
   }
+  arr[qtail].next = -1;
 }
 ```
 
@@ -172,16 +185,16 @@ void enqueue_lnode(int node) {
 # 큐에서 노드 삭제하기
 
 ```c
-int dequeue_lnode(void) {
+int dequeue_node(void) {
   if (is_empty()) {
     return -1;
   }
-  int oldest = head;
-  if (head == tail) {
-    head = tail = -1;
-  } else {
-    head = arr[head].next;
+  int oldest = qhead;
+  qhead = arr[qhead].next;
+  if (qhead == -1) {
+    qtail = -1;
   }
+  arr[oldest].next = -1;
   return oldest;
 }
 ```
