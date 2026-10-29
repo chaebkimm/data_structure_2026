@@ -1,52 +1,59 @@
 # Instructor Technical Notes — Module 07
 
-## Scope and source of truth
+## Source and slide alignment
 
-[student/lab.c](../student/lab.c) supplies the fixed-pool linked-list lesson and its linked queue example. The updated [concept slides](../student/ppt_material.md) add explicit shared-pool lifecycle and linked Stack reasoning. Its exact names are `lnodes`, `init_lnodes_pool`, `new_lnode`, `free_lnode`, `link_lnode`, and `delete_next_lnode`. Linked Stack operations compose these functions in the caller; there is no supplied linked `push`/`pop` API. `head`, `tail`, `enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue` apply the same links to FIFO. Module 8 imports this implementation for tree/graph BFS and teaches array queue alternatives. The pointer-list and DSU library under `code/` is a separate optional API.
+[student/lab.c](../student/lab.c) is executable truth. The [question outline](../student/ppt.md), [concept slides](../student/ppt_material.md), and [lab slides](../student/ppt_lab_material.md) teach acyclic chains, predecessor mutation, shared storage/lifecycle, Stack, then Queue. Current delivery is Week 7. Short slide aliases do not replace exact executable names.
 
-## Pool representation and lifecycle
+## Initialization and allocation
 
-The ten `Linked_Node` records hold integer data and next. `init_lnodes_pool()` zeros data, links 0 through 9 ending at `-1`, and sets `free_head=0`. Before initialization `free_head=-1`; static zero fields alone do not form a valid free chain. Reinitializing over live users corrupts their membership.
+`init_lnodes_pool()` initializes links only on its first call. Its function-local `static initialized` flag survives later calls, including calls from `new_lnode()`. First initialization builds 0→1→2→3→4→5→6→7→8→9→-1 and sets `free_head=0`; it does not assign data fields. Global data begins at zero by C static-storage rules, while reused data remains until a caller writes it. Later initialization calls change nothing and cannot reset or recover an exhausted pool. Use a new process for an independent pristine fixture, or recycle every owned node before continuing; an all-free chain need not be in ascending order.
 
-`new_lnode(data_value,next_value)` removes `free_head`, advances to its old next, then stores both supplied arguments. It does not validate the supplied successor. Use next `-1` to obtain a detached record. Exhaustion checks the sentinel before indexing and preserves every field.
+`new_lnode(void)` calls the guarded initializer, returns -1 unchanged if exhausted, otherwise removes free_head and sets the selected node's next=-1. It does not write data. Callers must check the index before assigning payload. No successor argument remains.
 
-`free_lnode` checks only 0–9 bounds, writes the old free head into next, and installs the returned index as free head. Data remains unchanged. In-range active-node or duplicate recycling is invalid and unchecked.
+`free_lnode(-1)` is a no-op. Every other argument must be a valid allocated, unreferenced, isolated node. There is no general range or membership check. Return prepends the slot to free_head and preserves data. Missing return consumes capacity; active/double return violates ownership; after return the old owner must stop accessing the slot.
 
-Each slot is free or allocated. An allocated slot is in one live chain or held detached by the caller. Active/free chains must have no cycles or overlap. Stale links in a detached node do not establish membership. Each active list keeps a separate first index and ends at `-1`. Any list can use any free slot; no fixed partition is required. All live users share the ten-slot limit.
+## List operations
 
-A detached slot that is never returned remains allocated and reduces available capacity. A returned slot's data is not erased, but its next now serves the free chain. After another allocation, both fields may serve another list. A stale index can therefore remain in bounds while reading a replacement value or corrupting another user's links. These are ownership defects without C deallocation, so sanitizers need not diagnose them. Reinitialization is allowed only when no live or detached allocation remains owned.
+`simple_link_lnode_to_prev(prev,node)` is unchecked: valid distinct allocated indices, non-queue predecessor, unreferenced isolated inserted node. It copies the old successor into the inserted node before publishing predecessor.next. Reversing writes makes a self-link and loses the old successor.
 
-## List primitives and their preconditions
+`simple_delink_next_lnode_from_prev(prev)` requires a valid allocated non-queue predecessor. It bypasses the successor, clears its next=-1, and returns its index without recycling. After a tail it returns -1 unchanged. Neither primitive updates a caller's first index or queue endpoints.
 
-`link_lnode(prev,node)` requires valid distinct allocated indices and a detached inserted node. It preserves the predecessor's old successor before publishing the new link. Reversing the writes loses that successor and can create a self-link.
+There is no supplied Stack API. To prepend, call `node=new_lnode()` and check success, then write its data, set `lnodes[node].next=first`, and finally set `first=node`. Prepending 17,23,31 in a pristine process gives 2(31)→1(23)→0(17)→-1. Before removal check `first != -1`; save the old index, data, and next, advance `first`, set `lnodes[old].next=-1`, then recycle. The outputs are 31,23,17. Clearing next is required because `free_lnode` accepts only isolated allocations. Never recover data or next through a recycled old index.
 
-`delete_next_lnode(prev)` requires a valid predecessor. It bypasses and returns the successor, or returns `-1` without mutation for a tail. It leaves the detached next unchanged and does not recycle. Neither primitive finds a value or updates a caller's first-node variable.
+## Representation invariants and API preconditions
 
-To remove the first node, first check that the list is nonempty. Save the old index, data, and successor, advance the caller's first index, then recycle the detached old first. Never fetch the result or successor through the returned index after recycling. To prepend, `new_lnode(value,first)` can initialize the successor; install the returned index as first only after checking success. Prepending 17,23,31 and removing from the first position yields 31,23,17, implementing Stack LIFO without a tail or a search. Empty removal is skipped by a caller guard. A stored value `-1` is valid and cannot replace that guard.
+- Every active list and the free chain are acyclic, end at `-1`, and contain only indices 0–9.
+- Every slot belongs exactly once to the free chain, one active list, or a caller-held isolated allocation. Active lists are disjoint; every standalone list has its own saved first index.
+- A caller-held node ready for insertion, enqueue, or recycling has `next == -1` and no incoming live link.
+- The queue is empty exactly when both endpoints are `-1`; otherwise the tail is reachable and ends at `-1`.
+- Save payload/successor before recycling, then stop using the old owner's index. Index range alone does not establish ownership.
 
-## Autopsy, validation, and costs
+Invariants describe valid completed representations. During safe insertion the old successor is temporarily referenced by the new node before it is published; the caller-held node ceases to be isolated within that operation. Teach checks at operation boundaries. Detached allocations presented to another primitive must be isolated. The two simple list operations must not mutate queued nodes because they cannot repair qhead/qtail.
 
-The [student autopsy](../student/linked_list_autopsy.md) diagnoses recycling before detachment. Recycling rewrites the victim's successor to the free chain; subsequent deletion can make active nodes reach free records and lose the old active successor. These accesses may remain in bounds and evade sanitizers. Use a bounded paper trace for defective operations.
+## Node Queue and consumer boundary
 
-Core tests use actual lab source. Verify all ten slots, second-argument storage, exhaustion preservation, insertion order, tail deletion, detachment, exact recycling/reuse, caller-managed first removal, linked FIFO endpoints, stale-link detachment, full-pool reuse, and repeated dequeue/recycle cycles. Student tests add three original groups with shared-list pool reuse and linked Stack/Queue evidence. Use safe calls to check membership; use bounded paper traces for stale access or other invalid ownership actions. Legacy `solution-*` tests verify the optional API separately.
+The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a valid allocated, unreferenced, isolated node (`next == -1`). Allocate first with `new_lnode()`, check for `-1`, write `lnodes[node].data=value`, then append. `enqueue_lnode(-1)` is a no-op; the void function does not report allocation failure.
 
-Initialization visits C slots, so work/storage are O(C). Allocation, recycling, known-predecessor mutations, and linked Stack first operations take O(1) additional work/storage. Searching or traversing n nodes takes O(n); reaching zero-based position i follows i next links. The representation adds one next integer per reserved node and a first index per list; the queue also stores a tail index. Sharing the pool avoids unused per-list partitions but does not increase its capacity. The fixed pool is allocated for the program's lifetime; recycling does not call C `free`.
+`dequeue_lnode()` returns the oldest **index**, isolates that node with `next=-1`, and leaves it allocated to the caller. Empty removal returns `-1` without changes. On success, copy `lnodes[node].data`, then call `free_lnode(node)` exactly once. Neither queue operation allocates or recycles automatically. There are no supplied value-based `enqueue(value)` or `dequeue()` wrappers.
 
-## Linked queue application and Module 8 reuse
+The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtail` is reachable from `qhead` and `lnodes[qtail].next == -1`. The first append sets both; the final removal clears both. A payload of `-1` is valid: only the returned node index is the empty marker.
 
-Use `init_lnodes_pool(); head = tail = -1;` only when no live user owns a pool slot. `enqueue(value)` allocates a detached node, appends it, and returns `true`. Pool exhaustion returns `false` without changing the pool or queue. `dequeue()` returns the oldest **value** and recycles its node internally. The caller must check `is_empty_queue()` before calling it and must not recycle the returned value as if it were a slot index.
-
-The node helpers expose the implementation: `enqueue_lnode(index)` appends an allocated detached slot whose `next` must be `-1`; `dequeue_lnode()` detaches and returns an index without recycling it, or returns `-1` without changes when empty. Raw callers read `lnodes[index].data` before `free_lnode(index)`. Public `dequeue()` performs those steps itself. It asserts nonempty rather than returning an empty status. With `NDEBUG`, the assertion is removed, so the caller's nonempty precondition still applies.
-
-A queued value of `-1` is valid. It is not an empty marker in the value interface. Check the queue state, not the returned payload. Store the result of `enqueue(value)` before checking it; `assert(enqueue(value))` would remove the insertion when assertions are disabled.
-
-| Action after a fresh reset | Return | `head` | `tail` | Live slots | `free_head` |
+| Action in a pristine process | Result | `qhead` | `qtail` | Queue | `free_head` |
 | --- | --- | ---: | ---: | --- | ---: |
-| `enqueue(17)` | `true` | 0 | 0 | 0 → -1 | 1 |
-| `enqueue(23)` | `true` | 0 | 1 | 0 → 1 → -1 | 2 |
-| `enqueue(31)` | `true` | 0 | 2 | 0 → 1 → 2 → -1 | 3 |
-| `dequeue()` | 17 | 1 | 2 | 1 → 2 → -1 | 0 |
-| `enqueue(8)` | `true` | 1 | 0 | 1 → 2 → 0 → -1 | 3 |
-| drain 23, 31, 8 | values | -1 | -1 | empty | 0 (all ten free) |
+| allocate 0, write 17, append 0 | void | 0 | 0 | 0→-1 | 1 |
+| allocate 1, write 23, append 1 | void | 0 | 1 | 0→1→-1 | 2 |
+| allocate 2, write 31, append 2 | void | 0 | 2 | 0→1→2→-1 | 3 |
+| `node=dequeue_lnode()` | index 0; next=-1 | 1 | 2 | 1→2→-1 | 3 |
+| copy data 17; `free_lnode(0)` | caller recycles | 1 | 2 | 1→2→-1 | 0 |
+| allocate 0, write 8, append 0 | void | 1 | 0 | 1→2→0→-1 | 3 |
+| dequeue/copy/recycle remaining | values 23,31,8 | -1 | -1 | empty | 0 |
 
-In the singleton example, raw `dequeue_lnode()` returns the slot and leaves it allocated; public `dequeue()` returns 31 and recycles that slot. Both reset endpoints. Do not double-recycle after public removal. Module 8 calls the value interface with tree/vertex IDs. The shared ten-slot pool limits simultaneous ownership, and pool initialization does not reset queue endpoints.
+The final free chain is 0→2→1→3→4→5→6→7→8→9→-1. All ten slots are free; their order need not match initialization.
+
+Module 8's queue.c imports these primitives and defines its own checked-allocation value adapters `enqueue(value)`/`dequeue()`. Those wrappers copy payload and recycle before BFS expansion. Module 7 itself supplies neither wrapper. Module 9 allocates first, then explicitly writes data/next before publishing a bucket head.
+
+## Validation and costs
+
+Tests include actual source. Cover one-time initialization, retained data before caller assignment, allocation/exhaustion unchanged, two-write insertion order, isolated detachment, tail deletion, explicit recycling/reuse, caller first changes, shared-pool ownership, Queue endpoints/FIFO/empty sentinel, and repeated safe reuse. Student tests add three original groups. Keep invalid calls and [autopsy](../student/linked_list_autopsy.md) defects on paper. Sanitizers cannot establish logical ownership when wrong indices remain in bounds. Legacy solution-* tests assess a different optional library.
+
+First initialization visits C nodes (O(C)); repeated calls return immediately (O(1)). Local allocation/recycling/relinking/endpoint work is O(1). Traversal and unknown predecessor search O(n); position i follows i links. Pool memory is O(C), with one extra integer next field per slot plus first/end indices. Recycling never ends the array's C lifetime.

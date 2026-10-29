@@ -2,7 +2,7 @@
 
 Chapter 1 keeps values in consecutive active array slots. Here we change their logical order without shifting the values. The current `lab.c` uses ten array slots and integer links. We apply the same links to a Stack and a queue.
 
-[한글 교재](textbook_korean.md) · [Class workbook](class_material.md) · [Concept slides](ppt_material.md) · [Lab](lab.md)
+[한글 교재](textbook_korean.md) · [Class workbook](class_material.md) · [Concept slides](ppt_material.md) · [Lab slides](ppt_lab_material.md) · [Question slides](ppt.md) · [Lab](lab.md)
 
 ## Thinking Logically
 
@@ -31,7 +31,7 @@ Indices and values have different jobs. The value 23 is stored at index 1. Reusi
 
 ### How do we insert after a known node?
 
-We want to put 23 between 17 and 31. The old successor of slot 0 is slot 2. First give the new node that successor. Then make slot 0 point to the new node. `link_lnode(0, 1)` performs these two writes:
+We want to put 23 between 17 and 31. The old successor of slot 0 is slot 2. First give the new node that successor. Then make slot 0 point to the new node. `simple_link_lnode_to_prev(0, 1)` performs these two writes:
 
 ```text
 lnodes[1].next = lnodes[0].next   // 2
@@ -41,21 +41,21 @@ Result: first=0; 0(17) → 1(23) → 2(31) → -1
 
 Reversing the writes first replaces the only link from slot 0 to slot 2. The second write then copies 1 into `lnodes[1].next`, creating a self-cycle. Preserve the old successor before replacing the predecessor's link.
 
-`link_lnode(prev,node)` neither obtains a slot nor searches for a value. The caller supplies two valid, distinct indices that are already assigned for use. The inserted node must be outside every active chain and the chain of unused nodes. Inserting a node already in a chain can create a cycle or mix two lists.
+`simple_link_lnode_to_prev(prev,node)` neither obtains a slot nor searches for a value. The caller supplies two valid, distinct indices that are already assigned for use. The predecessor belongs to an ordinary list, not the queue. The inserted node must be outside every active chain and the chain of unused nodes, with `next=-1`. Inserting a node already in a chain can create a cycle or mix two lists.
 
 ### How do we remove the middle node?
 
-The predecessor must point past the removed node. `delete_next_lnode(0)` saves index 1, changes `lnodes[0].next` to 2, and returns 1.
+The predecessor must point past the removed node. `simple_delink_next_lnode_from_prev(0)` saves index 1, changes `lnodes[0].next` to 2, clears `lnodes[1].next` to `-1`, and returns 1.
 
 ```text
 Before: first=0; 0(17) → 1(23) → 2(31) → -1
 After:  first=0; 0(17) → 2(31) → -1
-Returned: 1; lnodes[1].next is still 2
+Returned: 1; lnodes[1].next = -1
 ```
 
-The removed node is **detached**: the active chain no longer reaches it. Its stored `next` is unchanged. The caller retains the returned index until the node is used elsewhere or returned for reuse. Removing the link does not make the slot available automatically.
+The removed node is **detached**: the active chain no longer reaches it. Its `next` is now `-1`, so it is isolated from the remaining nodes. The caller retains the returned index until the node is used elsewhere or returned for reuse. Removing the link does not make the slot available automatically.
 
-With a valid predecessor that has no successor, `delete_next_lnode(prev)` returns `-1` and changes nothing. The function does not search for a matching value. It also cannot update the caller's `first`. Removing the first node requires the caller to save the old first index and advance `first` to that node's successor.
+With a valid predecessor that has no successor, `simple_delink_next_lnode_from_prev(prev)` returns `-1` and changes nothing. The function does not search for a matching value. It also cannot update the caller's `first`. The predecessor must belong to an ordinary list, not the queue. Removing the first node requires the caller to save the old first index and advance `first` to that node's successor. Set the old first's `next` to `-1` before recycling or inserting it elsewhere.
 
 ### Can several lists use one array?
 
@@ -65,30 +65,32 @@ Suppose two lists need different amounts of space over time. Reserving five of t
 
 ### Where does an available node come from?
 
-Before adding a record, we need an unused slot. Scanning the whole array would repeat the same search on every request. Link the available slots together instead. This chain is a **free list**. The fixed array of reusable nodes is a **node pool**.
+Before adding a record, we need an unused slot. Scanning the whole array would repeat the same search on every request. Link the available slots together instead. This chain is a **free list**. The fixed array of reusable nodes is a **node pool**. Give its size a name so the declarations and loops use the same limit. `enum { CAPACITY = 10 };` attaches the name `CAPACITY` to the integer constant 10.
 
-`free_head` holds the first available index. `init_lnodes_pool()` sets every value to zero and constructs this chain:
+`free_head` holds the first available index. The first `init_lnodes_pool()` call constructs this chain:
 
 ```text
 free_head = 0
 free chain: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → -1
 ```
 
-`new_lnode(value, -1)` removes the first free slot. It advances `free_head`, writes the requested value, and stores its second argument as `next`. Passing `-1` creates a separate node. The return value is an index, not the stored data. If the free chain is empty, it returns `-1` and changes nothing. Check that result before indexing.
+An initializer that rewrites this chain on every call could overwrite nodes already in use. The local `static int initialized` keeps its value between calls. It starts at 0 once, becomes 1 on the first call, and makes later calls return without changes. This initializer does not reset a used pool. It writes links, not payloads. Global array storage begins with zero values when the program starts; later calls do not clear the data.
 
-| Request after initialization | Returned index | `free_head` | Chosen node |
+`new_lnode()` calls the initializer, then removes the first free slot. It advances `free_head` and sets that slot's `next=-1`. It accepts no arguments and does not set `data`. Check the returned index, then assign the desired payload. If the free chain is empty, it returns `-1` and changes nothing.
+
+| Request and caller assignment in a fresh program | Returned index | `free_head` | Chosen node |
 | --- | ---: | ---: | --- |
-| `new_lnode(17, -1)` | 0 | 1 | `data=17, next=-1` |
-| `new_lnode(23, -1)` | 1 | 2 | `data=23, next=-1` |
-| `new_lnode(31, -1)` | 2 | 3 | `data=31, next=-1` |
+| allocate; check index; store 17 | 0 | 1 | `data=17, next=-1` |
+| allocate; check index; store 23 | 1 | 2 | `data=23, next=-1` |
+| allocate; check index; store 31 | 2 | 3 | `data=31, next=-1` |
 
-These nodes are **allocated**: removed from the free chain and assigned to the caller. None of these functions calls C's `malloc` or `free`. To reproduce the insertion above, call `link_lnode(0,2)` and then `link_lnode(0,1)`.
+Each assignment above requires checking the returned index against `-1` first. These nodes are **allocated**: removed from the free chain and assigned to the caller. None of these functions calls C's `malloc` or `free`. To reproduce the insertion above, call `simple_link_lnode_to_prev(0,2)` and then `simple_link_lnode_to_prev(0,1)`.
 
-The same allocations can instead form two lists: `first_a=0` with `0(17)→2(31)→-1`, and `first_b=1` with `1(23)→-1`. Both use the free chain beginning at 3. An allocation for either list takes the first available slot. Initialize the pool only when no live user owns any slot. Initializing while either list is live overwrites both lists' records.
+The same allocations can instead form two lists: `first_a=0` with `0(17)→2(31)→-1`, and `first_b=1` with `1(23)→-1`. Both use the free chain beginning at 3. An allocation for either list takes the first available slot. Calling `init_lnodes_pool()` again preserves both lists and the current free chain. To make nodes available again, detach and return them; another initializer call does not reclaim them.
 
 ### When can a removed slot be reused?
 
-Return to the one-list example `0(17)→1(23)→2(31)→-1`, with `free_head=3`. After `delete_next_lnode(0)`, index 1 is detached and `free_head` is still 3. Read any needed value before calling `free_lnode(1)`. That call prepends the slot to the free chain:
+Return to the one-list example `0(17)→1(23)→2(31)→-1`, with `free_head=3`. After `simple_delink_next_lnode_from_prev(0)`, index 1 is detached and `free_head` is still 3. Read any needed value before calling `free_lnode(1)`. That call prepends the slot to the free chain:
 
 ```text
 free_head = 1
@@ -96,11 +98,11 @@ free chain: 1 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → -1
 lnodes[1].data = 23; lnodes[1].next = 3
 ```
 
-`free_lnode` overwrites `next` and leaves `data` unchanged. The next `new_lnode(8,-1)` returns index 1 with `data=8, next=-1`. Another list can receive that slot.
+`free_lnode` overwrites `next` and leaves `data` unchanged. The next `new_lnode()` returns index 1 with `next=-1` and the old payload 23. The new caller writes `lnodes[1].data=8` before using the record. Another list can receive that slot.
 
 The caller controls **ownership**: responsibility for keeping a slot in one state at a time. A slot belongs to the free chain, to one active chain, or to the caller as a detached allocation. Those states must not overlap. A detached slot that is never returned stays unavailable. Losing its saved index can exhaust the pool even when fewer than ten nodes remain in active lists.
 
-Returning an active node overwrites a link still used by its list. Returning slot 1 twice consecutively makes `lnodes[1].next=1`, a cycle in the free chain. `free_lnode` rejects out-of-range indices, but cannot detect these in-range ownership mistakes. Diagnose them on paper rather than executing corrupted chains.
+Returning an active node overwrites a link still used by its list. Returning slot 1 twice consecutively makes `lnodes[1].next=1`, a cycle in the free chain. `free_lnode(-1)` does nothing. Any other argument must be an in-range, allocated, unreferenced node with `next=-1`. The function checks neither bounds nor ownership for such arguments. Diagnose them on paper rather than executing corrupted chains.
 
 After returning slot 1, the old caller must stop using that slot as its record. Before reuse, `next` belongs to the free chain and `data` may still hold 23. After reuse, a read can see 8 from another list. Writing `next` can corrupt that list or the free chain. Writing `data` can change another caller's value. Save the needed value and successor before returning a node.
 
@@ -108,9 +110,9 @@ After returning slot 1, the old caller must stop using that slot as its record. 
 
 Chapter 4 removes the last value added. Keep that same LIFO rule using links. Add each new record at the first node and remove from the same end. A Stack built from linked nodes is a **linked Stack**. The caller's `first` marks its top.
 
-Start an independent pool with `first=-1`. To add a value, allocate a separate node and check success. Set its `next` to the old `first`, then set `first` to the new index. If allocation returns `-1`, leave `first` and the existing links unchanged.
+Start a fresh program with `first=-1`. To add a value, allocate a separate node and check success. Write its `data`, set its `next` to the old `first`, then set `first` to the new index. If allocation returns `-1`, leave `first` and the existing links unchanged.
 
-To remove a value, check `first!=-1`. Save the old first index, its value, and its successor. Advance `first` to the successor, then return the old slot with `free_lnode`. There is no predecessor to pass to `delete_next_lnode` at this end. The caller performs the first-index update directly.
+To remove a value, check `first!=-1`. Save the old first index, its value, and its successor. Advance `first` to the successor and set the old slot's `next=-1`. Then return the old slot with `free_lnode`. There is no predecessor to pass to `simple_delink_next_lnode_from_prev` at this end. The caller performs the first-index update directly.
 
 | Action in a fresh pool | `first` | Stack from its top | `free_head` |
 | --- | ---: | --- | ---: |
@@ -127,42 +129,53 @@ The output is 31, 23, 17. The last removal makes `first=-1`. No node can be remo
 
 Now requests 17, 23, and 31 must be processed in the order they arrive. Insert each record after the last and remove the first. Remember both ends so neither action needs a search. This first-in, first-out rule is **FIFO**. A **queue** uses that rule. The linked queue applies the same nodes from this chapter.
 
-Use `init_lnodes_pool(); head = tail = -1;` only when no live user owns a pool slot. `enqueue(value)` allocates a detached node, appends it, and returns `true`. The appended node has `next=-1`. With a nonempty queue, the old tail points to it and `tail` moves to it. With an empty queue, both endpoints become that node. Pool exhaustion returns `false` without changing the pool or queue.
+The source keeps global `qhead` and `qtail`, both initially `-1`. To insert a value, call `new_lnode()`, check its index, write its `data`, and pass that index to `enqueue_lnode(node)`. The node must be allocated, unreferenced, and isolated with `next=-1`. With a nonempty queue, the old tail points to it and `qtail` moves to it. With an empty queue, both endpoints become that node. The append itself allocates nothing and returns no success value. `enqueue_lnode(-1)` does nothing.
 
-`dequeue()` returns the oldest **value** and recycles its node internally. The caller must check `is_empty_queue()` before calling it and must not recycle the returned value as if it were a slot index. Removing the only node sets both `head` and `tail` to `-1`.
+`dequeue_lnode()` returns the oldest **node index**, not its payload. It advances `qhead`, clears the returned node's `next` to `-1`, and leaves the node allocated to the caller. Removing the only node also sets `qtail=-1`. On an empty queue it returns `-1` without changes. Check the returned index before reading `lnodes[node].data`, then return the detached node with `free_lnode(node)` when finished.
 
-The node helpers expose the implementation: `enqueue_lnode(index)` appends an allocated detached slot whose `next` must be `-1`; `dequeue_lnode()` detaches and returns an index without recycling it, or returns `-1` without changes when empty. Raw callers read `lnodes[index].data` before `free_lnode(index)`. Public `dequeue()` performs those steps itself. It asserts nonempty rather than returning an empty status. With `NDEBUG`, the assertion is removed, so the caller's nonempty precondition still applies.
+A payload of `-1` is valid. The empty marker applies to node indices, not stored values. The source provides no value-based `enqueue` or `dequeue` wrapper. Allocation, data assignment, append, removal, data read, and recycling remain separate steps in the caller.
 
-A queued value of `-1` is valid. It is not an empty marker in the value interface. Check the queue state, not the returned payload. Store the result of `enqueue(value)` before checking it. `assert(enqueue(value))` would remove the insertion when assertions are disabled.
-
-| Action after a fresh reset | Return | `head` | `tail` | Live slots | `free_head` |
+| Action in a fresh program | Returned node | `qhead` | `qtail` | Queue slots | `free_head` |
 | --- | --- | ---: | ---: | --- | ---: |
-| `enqueue(17)` | `true` | 0 | 0 | 0 → -1 | 1 |
-| `enqueue(23)` | `true` | 0 | 1 | 0 → 1 → -1 | 2 |
-| `enqueue(31)` | `true` | 0 | 2 | 0 → 1 → 2 → -1 | 3 |
-| `dequeue()` | 17 | 1 | 2 | 1 → 2 → -1 | 0 |
-| `enqueue(8)` | `true` | 1 | 0 | 1 → 2 → 0 → -1 | 3 |
-| drain 23, 31, 8 | values | -1 | -1 | empty | 0 (all ten free) |
+| allocate 0, store 17, append 0 | allocation: 0 | 0 | 0 | 0 → -1 | 1 |
+| allocate 1, store 23, append 1 | allocation: 1 | 0 | 1 | 0 → 1 → -1 | 2 |
+| allocate 2, store 31, append 2 | allocation: 2 | 0 | 2 | 0 → 1 → 2 → -1 | 3 |
+| `dequeue_lnode()` | 0; read value 17 | 1 | 2 | 1 → 2 → -1 | 3 |
+| `free_lnode(0)` | none | 1 | 2 | 1 → 2 → -1 | 0 |
+| allocate 0, store 8, append 0 | allocation: 0 | 1 | 0 | 1 → 2 → 0 → -1 | 3 |
+| remove, read, recycle 23, 31, 8 | indices 1, 2, 0 | -1 | -1 | empty | 0 (all ten free) |
 
-Reusing slot 0 behind waiting slots preserves arrival order even though array-index order changes. Module 8 stores tree-node or graph-vertex IDs as queue values and uses the same `enqueue` and `dequeue` functions. Its BFS caller does not allocate or recycle queue nodes directly.
+Reusing slot 0 behind waiting slots preserves arrival order even though array-index order changes. A later BFS caller can store tree-node or graph-vertex IDs in `data`. That stored ID still differs from the pool-slot index returned by `dequeue_lnode()`.
+
+### Which rules must remain true?
+
+Once the pool is initialized, account for every slot and every endpoint after each complete operation. These continuing rules are **invariants**.
+
+- Every active chain and the free chain uses indices 0–9, has no repeated node, and ends at `-1`.
+- Each of the ten slots belongs to exactly one active chain, the free chain, or a caller as a detached allocation. Different owners do not overlap. A detached node is isolated with `next=-1`.
+- Each ordinary list keeps its first index separately. The queue is empty exactly when `qhead == -1 && qtail == -1`.
+- In a nonempty queue, `qtail` is the last node reached from `qhead`, and `lnodes[qtail].next == -1`.
+- Appending at the tail and removing at the head preserves FIFO order. A removed node remains allocated until the caller returns it exactly once.
+
+These are conditions after a helper or complete caller update. A helper does not check all of them. Use the documented preconditions before calling it. In particular, use queue helpers for queued nodes; ordinary predecessor helpers would leave the queue endpoints out of date.
 
 ## Calculating Efficiency
 
 ### How much work changes one link?
 
-Allocation removes the first free index. Recycling prepends one index. Insertion after a known predecessor changes two links. Deletion after a known predecessor reads one successor and changes at most one link. None scans the chain, so each operation takes O(1) work. Searching for a predecessor by value may inspect all `n` active nodes, so that separate search takes O(n).
+After initialization, allocation removes the first free index. Recycling prepends one index. Insertion after a known predecessor changes two links. Deletion after a known predecessor reads one successor, bypasses it, and sets the removed node's link to `-1`. None scans the chain, so each operation takes O(1) work. Searching for a predecessor by value may inspect all `n` active nodes, so that separate search takes O(n).
 
 The first node needs no link traversal to reach. The third needs two `next` steps. The last of `n` nodes needs `n-1` steps from the first. Finding a position by its logical order can therefore take O(n), while accessing a known physical array index takes O(1).
 
 ### How much memory do the links use?
 
-Each node stores one integer value and one extra integer link. The lab reserves ten two-integer records plus `free_head`, `head`, and `tail`, regardless of how many records are active. Several lists can share unused slots, but each additional list needs its own first index. A slot cannot count toward two active lists at once.
+Each node stores one integer value and one extra integer link. The lab reserves ten two-integer records plus `free_head`, `qhead`, `qtail`, and the persistent initialization flag, regardless of how many records are active. Several lists can share unused slots, but each additional list needs its own first index. A slot cannot count toward two active lists at once.
 
-Initializing capacity `C` writes each slot once: O(C). Here `C=10`. The pool uses O(C) storage and O(1) additional local storage per operation. Allocation failure means the free chain is exhausted. No operating-system heap request occurs.
+The first initialization of capacity `C` writes each link once: O(C). Here `C=10`. If `new_lnode()` performs that first initialization, that first allocation is O(C). Later initializer calls and allocations take O(1). The pool uses O(C) storage and O(1) additional local storage per operation. Allocation failure means the free chain is exhausted. No operating-system heap request occurs.
 
 ### How much work keeps a Stack or queue in order?
 
-A linked Stack changes `first` and a fixed number of node fields. Adding or removing its first record takes O(1). A queue adds constant pool-allocation work to the saved-tail append. Its value removal copies one value and adds constant recycling work to the saved-head removal. Both queue operations take O(1).
+A linked Stack changes `first` and a fixed number of node fields. Adding or removing its first record takes O(1). The queue helpers append at the saved tail and detach the saved head with a fixed number of writes. Both take O(1). After initialization, the caller's allocation, data assignment, payload read, and recycling also take O(1) each.
 
 Ten slots limit simultaneous allocated records across every user of the pool. The pool does not limit the total processed over repeated add/remove cycles. A Stack using three slots leaves at most seven for a queue sharing that pool. Module 8 uses the difference between simultaneous occupancy and total processed values for BFS.
 
@@ -180,169 +193,194 @@ The following names describe the mechanisms traced above.
 | node pool / 노드 풀 | the fixed `lnodes[10]` storage shared by its users |
 | free list / 가용 리스트 | available indices linked from `free_head` |
 | allocation / 할당 | removing a slot from the free chain for use |
-| detach / 분리 | removing a node from an active chain without recycling it |
+| detach / 분리 | removing a node from an active chain and setting its `next=-1`, without recycling it |
 | recycle / 반환 | adding an allocated, detached slot to the free chain |
 | ownership / 소유 책임 | responsibility for keeping a slot in exactly one valid state |
 | stale index / 이전 소유자의 인덱스 | an index kept after returning a node, which no longer identifies that caller's record |
 | linked Stack / 연결 스택 | a linked list that adds and removes at its first node |
 | LIFO | taking out the most recently added value first |
-| linked queue / 연결 큐 | a linked list that appends at `tail` and removes at `head` |
+| linked queue / 연결 큐 | a linked list that appends at `qtail` and removes at `qhead` |
 | FIFO | processing records in their arrival order |
-| public enqueue / dequeue | accept a value and return success / return a value and recycle its node |
-| node helpers | `enqueue_lnode` and `dequeue_lnode` act on slot indices |
+| enqueue / 삽입 | `enqueue_lnode` appends an allocated isolated node index |
+| dequeue / 제거 | `dequeue_lnode` returns an isolated node index; the caller reads and recycles it |
+| invariant / 불변식 | a rule preserved after complete operations |
+| `enum` / 열거 상수 | gives a name such as `CAPACITY` to an integer constant |
+| `static` local / 정적 지역 변수 | keeps its value between calls; initialization happens once |
 
 ## Coding Plan
 
 Build the mechanisms in the order that makes their dependencies visible.
 
-1. Define `Linked_Node` and `lnodes[10]`. Keep each list's first index separately. End each active chain with `-1` and prevent cycles.
-2. Preserve the predecessor's old successor in the inserted node, then change the predecessor's link. Remove a successor by pointing past it and retain its index.
-3. Link all ten unused slots from `free_head`. Allocate with `new_lnode(data_value,next_value)`. Pass `-1` to obtain a detached node and check the result before indexing.
-4. Read needed data before returning a detached node with `free_lnode`. Return exactly once, then stop accessing that node as the old owner.
-5. Build a linked Stack in caller code. Insert at `first`, guard empty removal, save the old first's value and successor, advance `first`, then recycle.
-6. Trace queue endpoint changes through raw node helpers, then use value-based `enqueue` and `dequeue`. Check insertion status and queue emptiness in the caller.
-7. Test exhaustion, deletion after a tail, shared-pool separation, Stack order, queue empty transitions, and reuse from independent valid states. Diagnose missing return, duplicate return, and stale access on paper.
+1. Define `Linked_Node` and `lnodes[CAPACITY]`, where `enum { CAPACITY = 10 };` names the integer constant 10. Keep each list's first index separately. End each active chain with `-1` and prevent cycles.
+2. Preserve the predecessor's old successor in the inserted node, then change the predecessor's link. Remove a successor by pointing past it, isolate it with `next=-1`, and retain its index.
+3. Link all ten unused slots from `free_head` on the first initializer call. Keep the local `static` flag so later calls preserve the pool. Allocate with `new_lnode()`, check its index, and write `data` in the caller.
+4. Read needed data before returning an allocated, unreferenced, isolated node with `free_lnode`. Return exactly once, then stop accessing that node as the old owner.
+5. Build a linked Stack in caller code. Insert at `first`, guard empty removal, save the old first's value and successor, advance `first`, isolate the old node, then recycle.
+6. Keep queue endpoints in `qhead` and `qtail`. Allocate, write data, and append with `enqueue_lnode`. Detach with `dequeue_lnode`, check the index, read the payload, then recycle. Restore both empty endpoints after the last removal.
+7. Test exhaustion, deletion after a tail, repeated initialization, shared-pool separation, Stack order, queue empty transitions, and reuse from valid states. Use separate programs for fresh-pool fixtures. Diagnose missing return, duplicate return, and stale access on paper.
 
 ## C Code
 
-The following code is the complete current `lab.c`, including the linked queue example. A driver must include this source only once. Later modules protect their shared import at the include boundary. The source defines no `main`. The test driver includes it. Allocation stores the second argument directly in `next`. The caller must provide a valid successor index or `-1`.
+The following code is the complete current `lab.c`, including the linked queue example. Include this source once in a driver; it defines no `main`. `enum` gives the integer constant 10 the name `CAPACITY`. The lab slides use shorter names for the same ideas:
+
+| Lab-slide name | Current `lab.c` name |
+| --- | --- |
+| `arr`, `CAP`, `fhead` | `lnodes`, `CAPACITY`, `free_head` |
+| `link_node`, `del_next_node` | `simple_link_lnode_to_prev`, `simple_delink_next_lnode_from_prev` |
+| `init_nodes_pool`, `new_node`, `free_node` | `init_lnodes_pool`, `new_lnode`, `free_lnode` |
+| `enqueue_node`, `dequeue_node`, `is_empty` | `enqueue_lnode`, `dequeue_lnode`, `is_empty_queue` |
+
+The slides clear the new tail's `next` inside `enqueue_node`. The source requires the caller to supply an isolated node whose `next` is already `-1`. Follow that source precondition in executable drivers.
 
 ```c
-#include <stdbool.h>
-#include <assert.h>
+enum { CAPACITY = 10 };
 
 struct Linked_Node {
-    int data;
-    int next;
+  int data;
+  int next;
 };
+struct Linked_Node lnodes[CAPACITY];
 
-struct Linked_Node lnodes[10];
-
-void link_lnode(int prev, int node) {
-    lnodes[node].next = lnodes[prev].next;
-    lnodes[prev].next = node;
+/* Unchecked: caller guarantees 0 <= prev, node < CAPACITY,
+ * prev != node, prev is an allocated non-queue node,
+ * and node is allocated, unreferenced, and isolated (lnodes[node].next == -1). */
+void simple_link_lnode_to_prev(int prev, int node) {
+	lnodes[node].next = lnodes[prev].next;
+	lnodes[prev].next = node;
 }
 
-int delete_next_lnode(int prev) {
-    int node = lnodes[prev].next;
-    if (node != -1) {
-        lnodes[prev].next = lnodes[node].next;
-    }
-    return node;
+/* Unchecked: caller guarantees 0 <= prev < CAPACITY and prev is an
+ * allocated non-queue node.
+ * Returns the detached node index (or -1 if none); caller owns the returned node. */
+int simple_delink_next_lnode_from_prev(int prev) {
+	int node = lnodes[prev].next;
+	if (node != -1) {
+		lnodes[prev].next = lnodes[node].next;
+		lnodes[node].next = -1;
+	}
+	return node;
 }
 
 int free_head = -1;
 
+/* Initializes the free list on first use; does not reset an active pool. */
 void init_lnodes_pool(void) {
-    for (int i = 0; i < 9; i++) {
-        lnodes[i].data = 0;
-        lnodes[i].next = i + 1;
-    }
-    lnodes[9].data = 0;
-    lnodes[9].next = -1;
-    free_head = 0;
+	static int initialized = 0;
+	if (initialized) { return; }
+	initialized = 1;
+
+	for (int i = 0; i < CAPACITY - 1; i++) {
+		lnodes[i].next = i + 1;
+	}
+	lnodes[CAPACITY - 1].next = -1;
+	free_head = 0;
 }
 
-int new_lnode(int data_value, int next_value) {
-    if (free_head == -1) {
-        return -1;
-    }
-    int node = free_head;
-    free_head = lnodes[free_head].next;
-    lnodes[node].data = data_value;
-    lnodes[node].next = next_value;
-    return node;
+int new_lnode(void) {
+	init_lnodes_pool();
+	if (free_head == -1) {
+		return -1;
+	}
+	int node = free_head;
+	free_head = lnodes[free_head].next;
+	lnodes[node].next = -1;
+	return node;
 }
 
+/* Unchecked: caller guarantees node == -1, or (0 <= node < CAPACITY and
+ * node is allocated, unreferenced, and isolated (lnodes[node].next == -1)). */
 void free_lnode(int node) {
-    if (node < 0 || node >= 10) {
-        return;
-    }
-    lnodes[node].next = free_head;
-    free_head = node;
+	if (node == -1) {
+		return;
+	}
+	lnodes[node].next = free_head;
+	free_head = node;
 }
 
-int head = -1;
-int tail = -1;
+int qhead = -1;
+int qtail = -1;
 
-bool is_empty_queue(void) {
-    return head == -1;
-}
+int is_empty_queue(void) { return qhead == -1; }
 
+/* Unchecked: caller guarantees node == -1, or (0 <= node < CAPACITY and
+ * node is allocated, unreferenced, and isolated (lnodes[node].next == -1)). */
 void enqueue_lnode(int node) {
-    if (is_empty_queue()) {
-        head = tail = node;
-    } else {
-        lnodes[tail].next = node;
-        tail = node;
-    }
+	if (node == -1) {
+		return;
+	}
+	if (is_empty_queue()) {
+		qhead = qtail = node;
+	} else {
+		lnodes[qtail].next = node;
+		qtail = node;
+	}
 }
 
+/* Returns the detached node index (or -1 if none); caller owns the returned node. */
 int dequeue_lnode(void) {
-    if (is_empty_queue()) {
-        return -1;
-    }
-    int oldest = head;
-    if (head == tail) {
-        head = tail = -1;
-    } else {
-        head = lnodes[head].next;
-    }
-    return oldest;
-}
-
-bool enqueue(int value) {
-    int node = new_lnode(value, -1);
-    if (node == -1) {return false;}
-    enqueue_lnode(node);
-    return true;
-}
-
-int dequeue(void) {
-    int node = dequeue_lnode();
-    assert(node != -1);
-    int value = lnodes[node].data;
-    free_lnode(node);
-    return value;
+	if (is_empty_queue()) {
+		return -1;
+	}
+	int oldest = qhead;
+	qhead = lnodes[qhead].next;
+	if (qhead == -1) {
+		qtail = -1;
+	}
+	lnodes[oldest].next = -1;
+	return oldest;
 }
 ```
 
-The following caller reproduces the middle insertion, detachment, and reuse. Run each driver below as a separate program with a fresh pool. Save each code block beside `lab.c` and compile the driver alone. All checks and state changes still execute with `NDEBUG`.
+The following caller reproduces insertion, detachment, and reuse. It also checks that repeated initialization preserves live nodes and that allocation leaves the previous payload unchanged. Run each driver below as a separate program, so each begins with fresh program storage. Save a driver beside `lab.c` and compile the driver alone. The checks and state changes execute with or without `NDEBUG`.
 
 ```c
 #include "lab.c"
 
 int main(void) {
-    init_lnodes_pool();
-    int first = new_lnode(17, -1);
-    int middle = new_lnode(23, -1);
-    int last = new_lnode(31, -1);
+    int first = new_lnode();
+    int middle = new_lnode();
+    int last = new_lnode();
     if (first == -1 || middle == -1 || last == -1) return 1;
-    link_lnode(first, last);
-    link_lnode(first, middle);
-    int removed = delete_next_lnode(first);
+    lnodes[first].data = 17;
+    lnodes[middle].data = 23;
+    lnodes[last].data = 31;
+    simple_link_lnode_to_prev(first, last);
+    simple_link_lnode_to_prev(first, middle);
+    int saved_free_head = free_head;
+    init_lnodes_pool(); /* This repeated call must preserve live links. */
+    if (free_head != saved_free_head || lnodes[first].next != middle) return 1;
+    int removed = simple_delink_next_lnode_from_prev(first);
     if (removed != middle || lnodes[first].next != last) return 1;
+    if (lnodes[removed].next != -1 || lnodes[removed].data != 23) return 1;
     free_lnode(removed);
-    int reused = new_lnode(8, -1);
+    int reused = new_lnode();
     if (reused != middle || lnodes[reused].next != -1) return 1;
+    if (lnodes[reused].data != 23) return 1;
+    lnodes[reused].data = 8;
+    free_lnode(reused);
+    removed = simple_delink_next_lnode_from_prev(first);
+    if (removed != last || lnodes[first].next != -1) return 1;
+    free_lnode(removed);
+    if (simple_delink_next_lnode_from_prev(first) != -1) return 1;
+    free_lnode(first);
     return 0;
 }
 ```
 
 ### Apply the same nodes to a Stack
 
-The caller keeps its own `first`. It saves the value and successor before recycling the old first slot. This example adds 17, 23, 31 and checks the output 31, 23, 17. A failed allocation leaves the existing Stack unchanged.
+The caller keeps its own `first`. It saves the value and successor, advances `first`, isolates the old first, then recycles it. This example adds 17, 23, 31 and checks the output 31, 23, 17. A failed allocation leaves the existing Stack unchanged.
 
 ```c
 #include "lab.c"
 
 int main(void) {
-    init_lnodes_pool();
     int first = -1;
     int values[3] = {17, 23, 31};
     for (int i = 0; i < 3; ++i) {
-        int node = new_lnode(values[i], -1);
+        int node = new_lnode();
         if (node == -1) return 1;
+        lnodes[node].data = values[i];
         lnodes[node].next = first;
         first = node;
     }
@@ -352,6 +390,7 @@ int main(void) {
         int value = lnodes[old_first].data;
         int next = lnodes[old_first].next;
         first = next;
+        lnodes[old_first].next = -1;
         free_lnode(old_first);
         if (value != values[i]) return 1;
     }
@@ -362,29 +401,38 @@ int main(void) {
 
 ### Apply the same nodes to a queue
 
-This caller checks insertion success and queue emptiness. `dequeue()` recycles the slot internally. The output is 17, 23, 31. It also checks that the payload `-1` is a valid value.
+The caller allocates and fills each node before append. It checks every returned index, reads the data, and recycles the detached slot. The output is 17, 23, 31. A payload `-1` is also valid; an empty dequeue returns the index marker `-1` instead.
 
 ```c
 #include "lab.c"
 
 int main(void) {
-    init_lnodes_pool();
-    head = tail = -1;
     int values[3] = {17, 23, 31};
     for (int i = 0; i < 3; ++i) {
-        bool added = enqueue(values[i]);
-        if (!added) return 1;
+        int node = new_lnode();
+        if (node == -1) return 1;
+        lnodes[node].data = values[i];
+        enqueue_lnode(node);
     }
     for (int i = 0; i < 3; ++i) {
-        if (is_empty_queue()) return 1;
-        int value = dequeue();
+        int node = dequeue_lnode();
+        if (node == -1) return 1;
+        int value = lnodes[node].data;
+        if (lnodes[node].next != -1) return 1;
+        free_lnode(node);
         if (value != values[i]) return 1;
     }
-    if (!is_empty_queue() || head != -1 || tail != -1) return 1;
-    bool added = enqueue(-1);
-    if (!added || is_empty_queue()) return 1;
-    int value = dequeue();
-    if (value != -1 || !is_empty_queue()) return 1;
+    if (!is_empty_queue() || qhead != -1 || qtail != -1) return 1;
+    if (dequeue_lnode() != -1) return 1;
+    int node = new_lnode();
+    if (node == -1) return 1;
+    lnodes[node].data = -1;
+    enqueue_lnode(node);
+    node = dequeue_lnode();
+    if (node == -1) return 1;
+    int value = lnodes[node].data;
+    free_lnode(node);
+    if (value != -1 || !is_empty_queue() || qtail != -1) return 1;
     return 0;
 }
 ```

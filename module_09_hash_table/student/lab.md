@@ -1,5 +1,8 @@
 # Stage E — C Lab: Chaining and Two Sum
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 The required lesson follows [lab.c](lab.c). Its operations are supplied.
 Trace them and write an assertion driver that exercises the actual source.
 There are no required implementation TODOs. The older open-addressed library
@@ -52,7 +55,7 @@ Use a course-provided compiler if the local compiler is unavailable.
 
 The table has ten bucket heads in `hashtable[10]`. Each head is `-1` or a
 node index. The included Module 07 source provides `lnodes[10]`,
-`free_head`, `init_lnodes_pool()`, and `new_lnode(data_value, next_value)`.
+`free_head`, `init_lnodes_pool()`, and `new_lnode()` followed by explicit caller data/next assignment.
 
 Call `init_lnodes_pool()` before the first allocation while all buckets are empty.
 The initial free chain is `0→1→2→3→4→5→6→7→8→9→-1`.

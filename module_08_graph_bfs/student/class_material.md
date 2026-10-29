@@ -1,5 +1,8 @@
 # Chapter 8 Class Workbook / 8장 수업 활동 — Queues, Tree BFS, and Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 Name / 이름: ____________________ Date / 날짜: ____________________
 
 Use the [English textbook](textbook.md), [Korean textbook](textbook_korean.md), [concept slides](ppt_material.md), [lab slides](ppt_lab_material.md), and [lab](lab.md). The current `lab.c` defines the maze and operations. Keep your first prediction, then record corrections beside it.
@@ -24,7 +27,7 @@ Module 7 taught linked lists and used a linked FIFO queue as their example. Pred
 
 ## Next thirty minutes: process tree levels / 트리를 층별로 처리한다
 
-Run `alphabet_init(); root=tree_connect();` from Module 2. Root F has A/G; A has B/C; B has D/E. Use `tree_bfs(root, order)` after initializing the unowned linked pool and setting head/tail to -1.
+Run `alphabet_init(); root=tree_connect();` from Module 2. Root F has A/G; A has B/C; B has D/E. Use `tree_bfs(root, order)` after ensuring all prior allocations are recycled and calling the guarded initializer and setting head/tail to -1.
 2장의 같은 트리를 쓴다. root F부터 왼쪽 자식을 먼저 큐에 넣는다.
 
 | Just processed / 처리 | Your pending indices / 대기 인덱스 | Correction / 수정 |
@@ -65,7 +68,7 @@ The start is `{1,1}`. Prepare an independent run, then predict the state after t
 ```c
 init_info();
 init_lnodes_pool();
-head = tail = -1;
+qhead = qtail = -1;
 bfs((struct point){1, 1});
 ```
 
@@ -145,7 +148,7 @@ Reason / 이유: ______________________________________________________
 Run [lab_driver.c](lab_driver.c) directly using the [lab setup](lab.md).
 실제 소스와 드라이버를 직접 빌드한다. 준비 사본은 필요 없다.
 
-Record at least these observations: start distance and predecessor count; goal distance and predecessors; reached-passage count; final linked `head`/`tail` and the restored free-node count; and one cell with multiple predecessors.
+Record at least these observations: start distance and predecessor count; goal distance and predecessors; reached-passage count; final linked `qhead`/`qtail` and the restored free-node count; and one cell with multiple predecessors.
 거리 하나만 확인하지 말고 발견 수, 연결 큐의 두 끝, 반환한 풀 칸 수, 합쳐진 이전 칸도 확인한다.
 
 Command / 명령: _____________________________________________________
@@ -186,6 +189,6 @@ Read these after completing your predictions. Keep the first answer and explain 
 3. **Iterator and branch.** From `{3,2}`, inspect `{4,2}` wall; `{2,2}` distance 2, skip; `{3,3}` distance 25, discover at 4; `{3,1}` distance 25, discover at4. Removing only the first `break` allows case1 to undo the x increment before its own `break`, returning `{3,2}` on the first call.
 4. **Merge.** `{3,4}` changes `{3,5}` from 25 to 6, appends the first predecessor, and enqueues ID38. `{2,5}` keeps 6, appends the second predecessor, and does not enqueue. Each reached cell is processed once and a cell has at most four neighbors, so no more than four distinct predecessors can be appended.
 5. **Routes.** The goal has distance 8 and ordered predecessors `{5,4}`, `{4,5}`. There are three complete shortest routes. One is `{1,1}→{1,2}→{2,2}→{3,2}→{3,3}→{4,3}→{5,3}→{5,4}→{5,5}`. The two choices at `{3,5}` account for the extra complete route. Each backward step decreases distance by 1.
-6. **Caller conditions.** A passage lies at coordinates1–5 because the border is walls. Its immediate neighbors lie at0–6. The start must already satisfy the passage and coordinate conditions. Twenty passages are each enqueued once. Public `dequeue()` copies the payload and recycles its node before BFS expands it. The canonical peak pending count is four; every supplied start peaks at most six. An independent run needs `init_info(); init_lnodes_pool(); head=tail=-1;` with no other live pool owner. The queue include guard shares one definition across tree and maze searches.
-7. **Baseline evidence.** The start has distance 0 and `prev_size==0`. All 20 passages are reached. At the end `head==tail==-1` and all ten pool slots are free. There are 20 insertions/removals and a peak of four pending entries. The reversed valid start reaches all 20 passages and gives distance 8 at `{1,1}`. A start-as-target route has one point and zero moves. An isolated passage target keeps distance 25 and no predecessors.
+6. **Caller conditions.** A passage lies at coordinates1–5 because the border is walls. Its immediate neighbors lie at0–6. The start must already satisfy the passage and coordinate conditions. Twenty passages are each enqueued once. Public `dequeue()` copies the payload and recycles its node before BFS expands it. The canonical peak pending count is four; every supplied start peaks at most six. An independent run needs `init_info(); init_lnodes_pool(); qhead = qtail = -1;` with no other live pool owner. The queue include guard shares one definition across tree and maze searches.
+7. **Baseline evidence.** The start has distance 0 and `prev_size==0`. All 20 passages are reached. At the end `qhead==qtail==-1` and all ten pool slots are free. There are 20 insertions/removals and a peak of four pending entries. The reversed valid start reaches all 20 passages and gives distance 8 at `{1,1}`. A start-as-target route has one point and zero moves. An isolated passage target keeps distance 25 and no predecessors.
 8. **Work.** There are 49 metadata initializations,20 enqueues,20 dequeues, and80 direction checks. For `R` rows and `C` columns, initialization and grid storage are O(R·C). Traversal is O(V_reached) because each reached cell has at most four neighbors. Generating neighbors directly avoids an adjacency-matrix scan. Enumerating every route depends on the number and lengths of the routes printed.

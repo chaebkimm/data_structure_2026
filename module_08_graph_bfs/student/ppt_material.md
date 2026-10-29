@@ -1,5 +1,8 @@
 # Chapter 8 Concept Slides — Queues, Tree BFS, and Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 Use one numbered topic per slide or board scene. Ask for a prediction before revealing the next state. The [English textbook](textbook.md), [Korean textbook](textbook_korean.md), [lab](lab.md), and [class workbook](class_material.md) follow the current `lab.c`.
 각 번호를 슬라이드나 판서 한 장면으로 사용한다. 다음 상태를 보여 주기 전에 먼저 예상하게 한다.
 
@@ -9,7 +12,7 @@ Requests 17, 23, 31 arrive in that order. Predict removals under the Stack rule,
 
 ## 2. Which links preserve arrival order? / 어떤 연결이 도착 순서를 지킬까?
 
-Use Module 7's value queue through `queue.c`. `enqueue(value)` allocates and returns Boolean success; `dequeue()` returns the oldest value and recycles its node. Check `is_empty_queue()` before dequeue. Raw helpers exchange node indices, but BFS does not call them. / 공개 enqueue는 값을 넣고 성공 여부를 준다. 공개 dequeue는 값을 반환하며 칸을 자동으로 돌려준다. 빈 큐에서 공개 꺼내기를 호출하지 않는다.
+Use Module 8's local value adapters in `queue.c` over Module 7's node queue. `enqueue(value)` allocates and returns Boolean success; `dequeue()` returns the oldest value and recycles its node. Check `is_empty_queue()` before dequeue. Raw helpers exchange node indices, but BFS does not call them. / 공개 enqueue는 값을 넣고 성공 여부를 준다. 공개 dequeue는 값을 반환하며 칸을 자동으로 돌려준다. 빈 큐에서 공개 꺼내기를 호출하지 않는다.
 
 ## 3. Why can an empty linear queue be full? / 빈 선형 큐가 왜 가득 찼다고 할까?
 
@@ -168,7 +171,7 @@ The functions rely on the caller and the supplied maze. Establish these conditio
 함수 내부에서 모든 조건을 검사하지 않는다. 실행 전에 호출자가 조건을 맞춘다.
 
 - Start at an interior passage. A wall start is invalid. / 내부 통로에서 시작한다.
-- Call `init_info()` and initialize the otherwise unowned pool with `init_lnodes_pool(); head=tail=-1;` before each independent search. / 독립 탐색마다 정보와 큐를 초기화한다.
+- Call `init_info()` and ensure every prior allocation is recycled, call the guarded initializer with `init_lnodes_pool(); qhead = qtail = -1;` before each independent search. / 독립 탐색마다 정보와 큐를 초기화한다.
 - Preserve the zero wall border. A queued passage is interior; its four neighbors have valid indices. `is_wall()` itself does no bounds check. / 바깥 테두리의 0을 유지한다.
 - Reuse Module 7's linked queue. Twenty discoveries reuse ten pool slots because every removed slot returns before expansion. Peak pending is four from the canonical start and at most six over all supplied starts. / 꺼낸 큐 노드의 데이터를 먼저 읽고 반환한다. 동시에 기다리는 항목만 풀 칸을 쓴다.
 

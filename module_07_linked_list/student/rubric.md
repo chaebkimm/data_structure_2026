@@ -1,31 +1,31 @@
 # Module 07 Assessment Rubric
 
-Total: 100 points. This rubric and both investigation formats assess [lab.c](lab.c). Typed, spoken, tabular, and diagram explanations receive equivalent credit.
+Total: 100 points. Both investigation formats assess [lab.c](lab.c). Typed, spoken, tabular, and diagram explanations receive equivalent credit. One artifact; three original test groups.
 
 ## A. Pool representation and lifecycle — 30 points
 
-- 10: distinguishes index, data, sentinel, and complete ten-slot free chain;
-- 10: exact two-argument allocation, exhaustion, and unchanged-state evidence;
-- 10: accounts for active, detached, and free slots without overlap or cycles across multiple lists sharing the pool; explains missing returns.
+- 10: distinguish index, data, sentinel, first free chain, and retained data;
+- 10: exact no-argument allocation/exhaustion, unchanged state, and one-time static initialization;
+- 10: account for free, active, and isolated allocations across disjoint shared-pool lists; explain missing returns.
 
 ## B. Insertion and traversal — 25 points
 
-- 10: preserves the old successor and gives both insertion writes in order;
-- 10: exact resulting links, traversal values, caller-owned first indices, linked Stack first insertion and LIFO trace, and linked Queue head/tail trace;
-- 5: explains valid indices, membership conditions, and a reversed-write defect.
+- 10: preserve the old successor and give both insertion writes in order;
+- 10: exact links/traversal, caller first indices, Stack prepend/LIFO, and Queue qhead/qtail;
+- 5: valid/distinct allocated indices, isolation/ownership/non-queue predecessor preconditions, and reversed-write defect.
 
 ## C. Detachment and recycling — 25 points
 
-- 10: exact detached index, unchanged free chain, and stale next field;
-- 10: correct recycling/reuse, valid tail-deletion boundary, and raw-index versus public-value FIFO lifecycle with automatic public recycling;
-- 5: diagnoses active-node or duplicate recycling and stale access after another list reuses a slot; explains guarded first removal with data/next saved before recycling.
+- 10: exact detached index, next=-1, unchanged free chain, and caller ownership;
+- 10: explicit data assignment, recycling/reuse, tail boundary, and node-index FIFO lifecycle with separate caller recycling;
+- 5: diagnose active/double recycling and stale access; guard/save/advance/isolate before first-node recycling.
 
 ## D. Tests, costs, and revision — 20 points
 
-- 12: three original groups with expected/observed state: allocation/exhaustion, insertion/traversal, detachment/recycling/reuse including shared-pool ownership, linked Stack LIFO and empty/full guards, linked Queue endpoints, FIFO values, full status, and automatic recycling;
-- 4: fixed local mutation work versus traversal, i-th-node access and initialization, plus extra link storage;
+- 12: three original groups with expected/observed exact state, repeated-init preservation, shared ownership, Stack LIFO/guards, Queue FIFO/endpoints, empty sentinel, exhausted allocation, payload -1, and explicit caller recycling;
+- 4: fixed local work versus search/traversal, first versus repeated initialization, and link storage;
 - 4: reproducible build evidence, preserved prediction, and justified correction.
 
-A crash-free run or clean sanitizer report does not prove chain membership. Keep invalid unchecked calls as paper diagnoses. Test out-of-range input only where `free_lnode` defines that behavior.
+A crash-free or sanitizer-clean run does not prove ownership. Invalid non-sentinel indices and invalid membership calls are paper diagnoses; only defined -1 no-ops and empty/tail results are executable boundaries. Keep mutations outside assert and return all owned slots between tests or use separate processes.
 
-Linked Stack and Queue are required examples of the same list operations. The Stack uses caller-side first-node changes; no Stack API is added to the supplied source. Module 8 reuses the linked Queue for BFS; array queue comparisons and BFS algorithms belong there. Pointer-list, DSU, edge builder, and Kruskal implementations earn no required Week 7 points.
+Stack/Queue are required applications within this artifact. The source supplies no Stack API or value Queue wrappers. Module 8 adds local adapters for BFS and compares array queues. Pointer-list/DSU/edge-builder/Kruskal implementations earn no required Week 7 points.

@@ -2,68 +2,64 @@
 
 Name: ____________________ Date: ____________________ Revision: ____________________
 
-Use [lab.c](lab.c). Preserve first predictions and add corrections. Keep indices separate from values.
+Use [lab.c](lab.c). Preserve predictions and labeled corrections. Keep slot indices separate from payloads. State whether each independent fixture uses a new process or recycles all prior ownership.
 
 ## 1. Pool and list trace
 
-Initialize, allocate 17,23,31 with next `-1`, and link 0→1→2→-1.
+Initialize once, allocate/check three nodes, explicitly write 17,23,31, and link 0→1→2→-1.
 
-| Checkpoint | First index | Active chain | Free head | Free chain | Detached indices |
-|---|---|---|---|---|---|
-| initialization | | | | | |
+| Checkpoint | First | Active chain | Free head/chain | Isolated allocations | Removed/reused data/next |
+| --- | --- | --- | --- | --- | --- |
+| first initialization | | | | | |
+| repeated initialization | | | | | |
 | three allocations and links | | | | | |
-| `removed=delete_next_lnode(0)` | | | | | |
+| `simple_delink_next_lnode_from_prev(0)` | | | | | |
 | `free_lnode(removed)` | | | | | |
-| `reused=new_lnode(8,-1)` | | | | | |
+| `reused=new_lnode()` | | | | | |
+| explicit reused data=8 | | | | | |
 
-State the removed index, its old next, and the reused node's data/next: ____________________
-Account for all ten indices without overlap or cycles: ____________________
+Account for all ten indices with no overlap or cycles: ____________________
 
 ## 2. Insertion and traversal
 
-From 0→2→-1 and detached node 1, record both writes of `link_lnode(0,1)`. Preserve a paper prediction for the reversed order. Explain why the caller retains the first-node index.
+Record both writes of `simple_link_lnode_to_prev(0,1)` for 0→2→-1 and isolated 1. Preserve a paper prediction for reversed writes. Identify who retains first.
 
 Prediction / observed links / correction: ____________________
 
 ## 3. Boundaries and ownership
 
-- Ten allocations followed by exhaustion; unchanged fields: ____________________
-- Deletion after a tail; unchanged fields: ____________________
-- Out-of-range recycling; unchanged fields: ____________________
-- Why a live or already-free node cannot be recycled: ____________________
-- Missing return versus double return: ____________________
-- Two lists' separate first indices and disjoint shared-pool slots: ____________________
-- Return A's slot 0, reuse it for 8 before B's slot 1; exact chains: ____________________
-- Why stale reads/writes through A's old index now access B: ____________________
-- Safe first-node removal by the caller: ____________________
+- Ten allocations, exhaustion, and repeated init unchanged: ____________________
+- Tail deletion and empty dequeue return -1 unchanged: ____________________
+- Defined `free_lnode(-1)` and `enqueue_lnode(-1)` no-ops: ____________________
+- Other invalid indices are unchecked precondition violations, kept on paper: ____________________
+- Missing return, double return, and active-node recycling: ____________________
+- Two disjoint lists and stale A index after B reuses a slot: ____________________
+- First removal saves data/next, advances first, isolates, then recycles: ____________________
 
 ## 4. Original tests and build evidence
 
-| Test group | Assertion | Expected result | Observed result |
-|---|---|---|---|
-| allocation/exhaustion and shared pool | | | |
-| insertion/traversal and first insertion | | | |
-| detachment/recycling/reuse, including linked Stack and Queue | | | |
+| Group | Assertion | Expected | Observed |
+| --- | --- | --- | --- |
+| allocation/exhaustion/shared pool | | | |
+| insertion/traversal/first insertion | | | |
+| detachment/recycling/reuse with Stack and Queue | | | |
 
-Compiler and commands: ____________________
-Output or attachment: ____________________
+Commands/compiler: ____________________ Output: ____________________
 
 ## 5. Diagnosis, costs, and revision
 
-- Autopsy's first broken precondition and repair: ____________________
-- Fixed work for known-predecessor mutations: ____________________
-- Work for traversal, i-th-node access, initialization, and one extra integer link per slot: ____________________
-- Preserved first prediction and labeled correction: ____________________
-- Evidence supporting the correction: ____________________
+Record the autopsy's first broken precondition, repaired chains, fixed local work versus O(n) search, O(C) first initialization versus O(1) later calls, extra next storage, preserved prediction, and correction supported by evidence.
 
-## 6. Linked Stack as a list example
+Evidence: ____________________
 
-Use a separate unowned pool and `first=-1`. Record each `new_lnode(value,first)` result for 17,23,31, the guarded update to first, and chain 2→1→0→-1. Before each removal, check nonempty, save old data/next, update first, and recycle. Record LIFO outputs 31,23,17, all free slots after draining, and unchanged Stack state on allocation exhaustion. These are caller actions, not a new supplied Stack API.
+## 6. Linked Stack
 
-Prediction / trace / observed test / correction: ____________________
+Allocate/check/write/set-next/update-first for 17,23,31. Record 2→1→0→-1 in a pristine fixture, guarded removal with explicit isolation, outputs 31,23,17, and all-free completion. There is no supplied push/pop API.
 
-## 7. Linked Queue as a list example
+Prediction / trace / test / correction: ____________________
 
-Record public enqueue of 17,23,31, each boolean result, public dequeue values, endpoint changes, and internal free-chain recycling. Compare the raw helper's returned index with the public wrapper's returned value in separate runs. Include singleton transitions, full enqueue returning false unchanged, reuse behind waiting nodes, a payload of -1, and why enqueue must execute outside assert. Module 8 changes the value to a vertex ID without changing these wrappers.
+## 7. Linked Queue
 
-Prediction / trace / observed test / correction: ____________________
+Record checked allocation, explicit payload write, void append, node-index removal, data copy, and separate recycling. Include qhead/qtail singleton transitions, reuse behind waiting nodes, full-pool allocation -1, empty dequeue -1, a valid payload -1, and isolation after removal. Queue operations themselves never allocate or recycle. Module 8 adds its own value adapters around these node primitives.
+
+Prediction / trace / test / correction: ____________________

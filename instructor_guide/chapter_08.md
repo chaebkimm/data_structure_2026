@@ -1,5 +1,8 @@
 # Chapter 8. Queues, Tree BFS, and Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 Follow the [Module 8 plan](../module_08_graph_bfs/instructor/lesson_plan.md) for one 180-minute lesson: queues 60 minutes, tree BFS 30, maze graph BFS 60, testing/cost/synthesis 30. Module 7 introduces FIFO through a linked-list example. Module 8 reuses that implementation for both BFS traversals.
 
 The [English textbook](../module_08_graph_bfs/student/textbook.md), [Korean textbook](../module_08_graph_bfs/student/textbook_korean.md), [workbook](../module_08_graph_bfs/student/class_material.md), [concept slides](../module_08_graph_bfs/student/ppt_material.md), and [lab slides](../module_08_graph_bfs/student/ppt_lab_material.md) use the same three-part sequence. Submit once through the [lab](../module_08_graph_bfs/student/lab.md) and [rubric](../module_08_graph_bfs/student/rubric.md).
@@ -24,7 +27,7 @@ The maze [lab.c](../module_08_graph_bfs/student/lab.c) is graph BFS. Passages ar
 
 First discovery sets distance before enqueue. An equal-distance arrival appends a predecessor without another enqueue. An earlier distance is skipped. The goal distance is 8, with predecessors (5,4),(4,5). The two choices at (3,5), namely(3,4),(2,5), give three complete shortest routes. One recovered route contains nine cells/eight moves. The source records predecessors without printing routes.
 
-Before each maze run call init_info, initialize the otherwise unowned pool with init_lnodes_pool, and set head=tail=-1. The start must be an interior passage and the zero wall border remains intact. The shared neighbor iterator completes each cell before starting another. Twenty passages enter once; the linked frontier peaks at four entries, and every supplied start peaks at most six. Public dequeue returns the cell ID and recycles its node before neighbors are added. Final head/tail are -1 and all ten pool slots return. Tree and maze include the same guarded local queue; the combined driver compiles directly without a prepared copy.
+Before each maze run call init_info, ensure every prior allocation is recycled, call the guarded initializer with init_lnodes_pool, and set qhead = qtail = -1. The start must be an interior passage and the zero wall border remains intact. The shared neighbor iterator completes each cell before starting another. Twenty passages enter once; the linked frontier peaks at four entries, and every supplied start peaks at most six. Public dequeue returns the cell ID and recycles its node before neighbors are added. Final head/tail are -1 and all ten pool slots return. Tree and maze include the same guarded local queue; the combined driver compiles directly without a prepared copy.
 
 ## Pause and final evidence
 

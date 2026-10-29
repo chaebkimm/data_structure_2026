@@ -37,10 +37,12 @@ int hash_func(int value) {
 }
 
 int save_data(int hash, int data) {
-    int node = new_lnode(data, hashtable[hash]);
+    int node = new_lnode();
     if (node == -1) {
         return -1;
     }
+    lnodes[node].data = data;
+    lnodes[node].next = hashtable[hash];
     hashtable[hash] = node;
     return node;
 }

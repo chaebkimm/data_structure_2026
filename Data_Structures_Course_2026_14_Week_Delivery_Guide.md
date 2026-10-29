@@ -132,9 +132,8 @@ Use the [current textbook](module_07_linked_list/student/textbook.md),
 [instructor plan](module_07_linked_list/instructor/lesson_plan.md).
 The source of truth is [`student/lab.c`](module_07_linked_list/student/lab.c):
 ten fixed nodes, integer `next` links, and `-1` for no node. Students trace
-`init_lnodes_pool`, `new_lnode(data_value, next_value)`, and `free_lnode`; insert
-with `link_lnode`; detach with `delete_next_lnode`; and recycle a detached
-slot as a separate action.
+`init_lnodes_pool` (first call only), `new_lnode()`, and `free_lnode`; callers assign payload explicitly, insert
+with `simple_link_lnode_to_prev`, detach/isolate with `simple_delink_next_lnode_from_prev`, and recycle as a separate action. Later initializer calls are no-ops; independent runs need all owned nodes recycled or a new process.
 This pool reserves storage in advance. It does not use `malloc` or C `free`.
 
 Follow the slide sequence: an acyclic chain with a separately stored first
@@ -146,23 +145,16 @@ double recycling corrupts the free chain. After a slot is recycled, its former
 owner must stop reading or writing it because it may serve the free chain or
 another list.
 
-For the linked stack, keep a caller-owned `first`. Allocate with its old first
-as the successor and update `first` only after allocation succeeds. For removal,
+For the linked stack, keep a caller-owned `first`. Allocate/check, assign data, set next to its old first, and update `first` only after allocation succeeds. For removal,
 check nonempty, save the old first and its value, advance `first` to its successor,
-and recycle the old slot. Inputs 17,23,31 leave as 31,23,17. This is a caller-side
+isolate old.next=-1, and recycle the old slot. Inputs 17,23,31 leave as 31,23,17. This is a caller-side
 application of the supplied primitives; the lab does not supply a separate
 linked-stack API.
 
 Use a linked FIFO queue as the application of those links. First trace the
 node-level helpers: `enqueue_lnode(node)` appends a detached allocation whose `next` is `-1`;
 `dequeue_lnode()` returns a slot without recycling it, or `-1` when empty.
-Then expose the value interface: `enqueue(value)` allocates internally and
-returns `false` without changes if no slot is available. `dequeue()` returns
-the payload and recycles the slot internally. Trace `head`/`tail` across empty,
-singleton, and multiple-node states. Check `is_empty_queue()` before public
-dequeue; its assertion diagnoses an empty call but is disabled by `NDEBUG`.
-Payload `-1` is valid and must not be interpreted as the public queue's empty
-result. Perform enqueue calls outside assertions so release builds retain them.
+Trace `qhead`/`qtail` across empty, singleton, and multiple-node states. Allocation/check/data assignment precedes the void append; successful removal returns an isolated node index. The caller copies data and explicitly recycles once. Empty removal returns -1 unchanged; data -1 is valid. The supplied Module 7 has no value wrappers. Module 8 adds its own value adapters for BFS. Execute mutations outside assertions. Keep invalid non-sentinel indices and ownership violations on paper.
 
 One artifact contains pool/link callers and linked stack/queue evidence, boundary tests, state traces,
 an ArrayList/list comparison, and a corrected explanation. Trace a live
@@ -209,8 +201,7 @@ Then follow the complete maze BFS in
 an implicit graph: each passage has at most four neighbors. It is not a
 `V × V` adjacency matrix.
 
-Before each independent traversal, initialize the otherwise-unused node pool
-with `init_lnodes_pool()` and set `head = tail = -1`. A worklist node's pool
+Before each independent traversal, require every prior pool allocation recycled and the queue empty. Call the one-time initializer as needed; later calls do nothing. Module 8 defines the value adapters locally and uses `qhead = qtail = -1` for empty endpoints. A worklist node's pool
 index differs from the tree/cell ID stored in its `data` field. BFS calls
 `enqueue(id)` and `dequeue()` through the public value interface; dequeue
 copies the data and recycles the slot internally before BFS adds children

@@ -1,5 +1,8 @@
 # Chapter 8. 큐, 트리 BFS, 그래프 BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 7장은 연결 리스트의 예로 연결 큐를 만들었다. 이번 장은 배열 큐와 저장 방식을 비교한다. 트리 BFS와 그래프 BFS에는 7장의 같은 연결 큐를 재사용한다. 미로의 `lab.c`는 각 통로까지의 최단 거리와 모든 최단 선행 칸을 기록한다.
 
 [English textbook](textbook.md) · [수업 활동](class_material.md) · [개념 슬라이드](ppt_material.md) · [실습 슬라이드](ppt_lab_material.md)
@@ -10,7 +13,7 @@
 
 7장의 연결 큐를 떠올리자. 요청 17, 23, 31을 들어온 순서대로 처리한다. Stack에서는 31을 먼저 꺼낸다. 뒤에 넣고 앞에서 꺼내야 한다. 먼저 넣은 값을 먼저 꺼내는 규칙을 FIFO(first in, first out)라고 한다. 이 두 동작을 제공하는 구조가 큐(queue)다. 넣기는 enqueue, 꺼내기는 dequeue다.
 
-7장의 값 중심 큐 인터페이스를 그대로 쓴다. `enqueue(value)`는 노드를 할당해 뒤에 붙이고 `true`를 반환한다. 빈 칸이 없으면 큐를 바꾸지 않고 `false`를 반환한다. `dequeue()`는 가장 오래된 값을 반환하고 그 노드를 풀에 돌려준다. 17, 23, 31을 넣으면 같은 순서로 값을 받는다. 첫 삽입은 두 끝을 함께 정하고 마지막 꺼내기는 `head = tail = -1`로 만든다.
+7장의 노드 큐를 감싼 8장 queue.c의 값 어댑터를 쓴다. `enqueue(value)`는 노드를 할당해 뒤에 붙이고 `true`를 반환한다. 빈 칸이 없으면 큐를 바꾸지 않고 `false`를 반환한다. `dequeue()`는 가장 오래된 값을 반환하고 그 노드를 풀에 돌려준다. 17, 23, 31을 넣으면 같은 순서로 값을 받는다. 첫 삽입은 두 끝을 함께 정하고 마지막 꺼내기는 `qhead = qtail = -1`로 만든다.
 
 하위 함수 `enqueue_lnode(node)`와 `dequeue_lnode()`는 풀 인덱스를 주고받는다. 하위 꺼내기는 빈 큐에서 `-1`을 반환하며 분리한 노드를 재활용하지 않는다. 공개 함수 `dequeue()`가 값을 읽고 노드를 반환한다. 공개 꺼내기 전에는 `is_empty_queue()`를 확인한다. assertion은 비어 있지 않아야 한다는 전제다. 데이터 `-1`도 큐에 넣을 수 있으므로 빈 결과 표시로 쓰지 않는다. 살아 있는 연결이 노드를 소유할 때 풀을 초기화하지 않는다.
 
@@ -41,9 +44,9 @@
 | D | `[4]` | E |
 | E | `[]` | 비었음 |
 
-처리 순서는 **F, A, G, B, C, D, E**다. 깊이는 0, 1, 1, 2, 2, 3, 3이다. `tree_bfs(root, order)`는 이 노드 인덱스를 저장하고 7을 반환한다. 호출자는 인덱스 열 개를 담을 배열을 제공한다. 다른 구조가 노드를 소유하지 않을 때 풀을 초기화하고 `head = tail = -1`로 둔다. root가 `-1`이면 빈 트리이므로 0을 반환한다. 올바른 트리는 순환도 공유 자식도 없다. 각 노드로 가는 경로가 하나이므로 한 번만 큐에 들어간다. 일반 그래프에는 같은 정점으로 가는 경로가 여러 개일 수 있다. 다음 예에서는 중복 예약을 막으려고 발견 기록을 추가한다.
+처리 순서는 **F, A, G, B, C, D, E**다. 깊이는 0, 1, 1, 2, 2, 3, 3이다. `tree_bfs(root, order)`는 이 노드 인덱스를 저장하고 7을 반환한다. 호출자는 인덱스 열 개를 담을 배열을 제공한다. 다른 구조가 노드를 소유하지 않을 때 풀이 처음 초기화되어 있으며 기존 노드가 모두 반환되었는지 확인하고 `qhead = qtail = -1`로 둔다. root가 `-1`이면 빈 트리이므로 0을 반환한다. 올바른 트리는 순환도 공유 자식도 없다. 각 노드로 가는 경로가 하나이므로 한 번만 큐에 들어간다. 일반 그래프에는 같은 정점으로 가는 경로가 여러 개일 수 있다. 다음 예에서는 중복 예약을 막으려고 발견 기록을 추가한다.
 
-연결 구현의 `head`, `tail`, `next`는 풀 인덱스다. 위 표는 저장한 트리 번호를 보인다. BFS는 `enqueue(tree_id)`와 `dequeue()`로 값을 주고받는다. 노드를 직접 할당하거나 반환하지 않는다. 공개 꺼내기가 칸을 자동 반환한 뒤 자식을 넣는다.
+연결 구현의 `qhead`, `qtail`, `next`는 풀 인덱스다. 위 표는 저장한 트리 번호를 보인다. BFS는 `enqueue(tree_id)`와 `dequeue()`로 값을 주고받는다. 노드를 직접 할당하거나 반환하지 않는다. 공개 꺼내기가 칸을 자동 반환한 뒤 자식을 넣는다.
 
 ### 가장 적게 움직이는 경로는 어떻게 찾을까?
 
@@ -152,7 +155,7 @@
 
 33번은 목적지 40번을 처음 발견한다. 거리는 8이다. 이후 39번이 다른 선행 칸을 추가한다. 탐색이 끝나면 `info[5][5].prev_size`는 2다. 저장 순서는 `{5,4}`, `{4,5}`다. 완성된 최단 경로는 총 세 개다. `{3,5}`에도 선행 칸이 두 개 있기 때문이다.
 
-출발점 `{1,1}`에서 통로 20칸에 모두 도달한다. 각 통로는 큐에 한 번 들어가고 한 번 나온다. 마지막에는 `head = tail = -1`이다. 20번 꺼낸 뒤 풀 열 칸이 모두 가용 상태다. 동시 대기는 최대 네 개다. 미로 자체는 바뀌지 않는다. 프로그램은 별도의 처리 순서 배열을 저장하지 않는다. 표는 실행 과정을 손으로 추적한 것이다.
+출발점 `{1,1}`에서 통로 20칸에 모두 도달한다. 각 통로는 큐에 한 번 들어가고 한 번 나온다. 마지막에는 `qhead = qtail = -1`이다. 20번 꺼낸 뒤 풀 열 칸이 모두 가용 상태다. 동시 대기는 최대 네 개다. 미로 자체는 바뀌지 않는다. 프로그램은 별도의 처리 순서 배열을 저장하지 않는다. 표는 실행 과정을 손으로 추적한 것이다.
 
 ### 선행 칸으로 경로를 어떻게 얻을까?
 
@@ -171,11 +174,11 @@
 
 ### 탐색 전에 무엇을 준비해야 할까?
 
-새 실행에는 이전 거리나 대기 번호가 남아 있으면 안 된다. 호출자가 `init_info()`를 호출한다. 다른 구조가 풀을 소유하지 않을 때 `init_lnodes_pool()`를 호출하고 `head = tail = -1`로 둔다. 바깥 벽 안쪽의 통로를 출발점으로 제공한다. `bfs()`는 출발점의 거리를 0으로 정한다. 앞의 초기화와 출발점 검사는 수행하지 않는다. 배열 비교용 `front`, `rear`는 BFS를 제어하지 않는다.
+새 실행에는 이전 거리나 대기 번호가 남아 있으면 안 된다. 호출자가 `init_info()`를 호출한다. 다른 구조가 풀을 소유하지 않을 때 `init_lnodes_pool()`를 호출하고 `qhead = qtail = -1`로 둔다. 바깥 벽 안쪽의 통로를 출발점으로 제공한다. `bfs()`는 출발점의 거리를 0으로 정한다. 앞의 초기화와 출발점 검사는 수행하지 않는다. 배열 비교용 `front`, `rear`는 BFS를 제어하지 않는다.
 
 주어진 미로의 테두리는 모두 벽이다. 따라서 큐에서 꺼내는 통로는 모두 내부에 있다. 내부 통로의 네 이웃 좌표는 0부터 6 사이에 있다. 테두리 칸은 벽 검사에서 걸러지므로 큐에 들어가지 않는다. 이 조건 때문에 이웃을 배열에서 읽을 수 있다. `is_wall()` 자체에는 범위 검사가 없다. 잘못된 출발점을 주거나 테두리를 통로로 열면 같은 보장이 성립하지 않는다.
 
-두 탐색은 **7장의 값 중심 연결 큐**를 쓴다. 내부 풀 위치는 0..9지만 저장한 번호는 9보다 클 수 있다. BFS는 `enqueue(id)`와 `dequeue()`를 호출한다. 앞 함수가 할당과 풀 소진 검사를 맡고, 뒤 함수가 번호를 반환하며 이웃을 넣기 전에 칸을 재활용한다. 열 칸으로 발견 20번을 처리할 수 있다. 기본 출발점의 최대 대기는 4개이고 현재 미로의 모든 출발점에서는 최대 6개다. 다른 그래프는 별도 용량 근거가 필요하다. `enqueue`는 `assert` 밖에서 실행하고 Boolean 결과를 검사한다. `NDEBUG`에서도 삽입 자체가 사라지면 안 된다.
+두 탐색은 **7장의 노드 연산을 감싼 8장의 값 어댑터**를 쓴다. 내부 풀 위치는 0..9지만 저장한 번호는 9보다 클 수 있다. BFS는 `enqueue(id)`와 `dequeue()`를 호출한다. 앞 함수가 할당과 풀 소진 검사를 맡고, 뒤 함수가 번호를 반환하며 이웃을 넣기 전에 칸을 재활용한다. 열 칸으로 발견 20번을 처리할 수 있다. 기본 출발점의 최대 대기는 4개이고 현재 미로의 모든 출발점에서는 최대 6개다. 다른 그래프는 별도 용량 근거가 필요하다. `enqueue`는 `assert` 밖에서 실행하고 Boolean 결과를 검사한다. `NDEBUG`에서도 삽입 자체가 사라지면 안 된다.
 
 ## Calculating Efficiency
 
@@ -197,7 +200,7 @@
 
 프로그램은 미로 정수 49개, 탐색 기록 49개, 좌표 50개, 두 정수 필드의 연결 큐 풀 열 칸을 예약한다. 별도의 배열 비교도 정수 25개를 예약하지만 두 BFS는 그 배열을 쓰지 않는다. 벽의 기록에도 선행 칸 네 항목을 둔다. 예약 공간은 실제로 도달한 통로 수가 아니라 미로 크기에 따라 정해진다. 미로가 커지면 미로와 탐색 기록의 공간은 O(HW)다. 반복문이 추가로 사용하는 지역 공간은 O(1)이다.
 
-예제의 삽입과 꺼내기는 각각 20번이다. 꺼낸 칸은 이웃을 넣기 전에 풀로 돌려준다. `{1,1}`에서 동시에 기다리는 항목은 최대 네 개다. 필요한 풀 용량은 전체 발견 수가 아니라 최대 동시 대기 수로 정한다. 탐색이 끝나면 `head == tail == -1`이고 열 칸이 모두 가용 상태다. 내부 5 × 5칸을 모두 열고 이 방향 순서로 탐색해도 모든 출발점에서 동시 대기는 최대 열 개다. 더 크거나 다른 그래프에 이 상한을 그대로 적용하지 않는다.
+예제의 삽입과 꺼내기는 각각 20번이다. 꺼낸 칸은 이웃을 넣기 전에 풀로 돌려준다. `{1,1}`에서 동시에 기다리는 항목은 최대 네 개다. 필요한 풀 용량은 전체 발견 수가 아니라 최대 동시 대기 수로 정한다. 탐색이 끝나면 `qhead == qtail == -1`이고 열 칸이 모두 가용 상태다. 내부 5 × 5칸을 모두 열고 이 방향 순서로 탐색해도 모든 출발점에서 동시 대기는 최대 열 개다. 더 크거나 다른 그래프에 이 상한을 그대로 적용하지 않는다.
 
 ### 경로를 복원할 때 얼마나 일할까?
 
@@ -240,26 +243,47 @@
 6. 공유 반복자로 오른쪽, 왼쪽, 아래, 위를 만든다. 각 `switch` 분기를 `break`로 끝낸다.
 7. `enqueue(start_id)`를 실행하고 Boolean 결과를 저장해 성공을 확인한다. 할당과 삽입은 wrapper가 맡는다. 삽입 호출을 assert 안에 넣지 않는다.
 8. `dequeue()`에서 칸 번호를 받는다. 그 큐 노드는 이미 풀로 반환되었다. 좌표를 얻고 벽과 더 이른 거리를 건너뛴다. 같은 거리의 선행 칸을 남기고 처음 발견할 때만 넣는다.
-9. 별도 드라이버에서 매번 기록과 소유자가 없는 풀을 초기화하고 연결 큐의 두 끝을 초기화한다. 거리와 유효한 선행 칸을 확인한다. 경로가 필요하면 선행 칸 하나 또는 모든 선택지를 따라간다.
+9. 별도 드라이버에서 매번 기록을 초기화하고 앞서 소유한 모든 노드가 반환되었으며 큐의 두 끝이 비었는지 확인한다. 풀 초기화는 첫 호출에만 동작한다. 거리와 유효한 선행 칸을 확인한다. 경로가 필요하면 선행 칸 하나 또는 모든 선택지를 따라간다.
 
 ## C Code
 
-큐 코드는 [queue.c](queue.c)에 있다. 7장의 연결 큐와 노드 풀 전체를 정의 중복 없이 가져온다. [tree_bfs.c](tree_bfs.c)는 2장 트리와 같은 큐를 포함한다. 미로 [lab.c](lab.c)는 `queue.c`를 직접 포함한다. 큐 포함 가드는 두 탐색을 함께 쓸 때 정의가 중복되지 않게 한다. 드라이버만 컴파일한다. 포함한 C 파일을 별도 입력으로 다시 컴파일하지 않는다.
+큐 코드는 [queue.c](queue.c)에 있다. 7장의 노드 큐와 노드 풀을 정의 중복 없이 가져온 뒤 8장에서 값 어댑터를 정의한다. [tree_bfs.c](tree_bfs.c)는 2장 트리와 같은 큐를 포함한다. 미로 [lab.c](lab.c)는 `queue.c`를 직접 포함한다. 큐 포함 가드는 두 탐색을 함께 쓸 때 정의가 중복되지 않게 한다. 드라이버만 컴파일한다. 포함한 C 파일을 별도 입력으로 다시 컴파일하지 않는다.
 
 ### 연결 큐를 가져오고 배열 구현을 비교한다
 
 앞에서 추적한 상태를 다음 함수로 바꾼다.
 
 ```c
-/* Module 8: compare array queues and reuse Module 7's linked queue.
- * Callers check full/empty conditions and reset independent queue runs.
+/* Module 8: compare array queues and reuse Module 7's linked node queue.
+ * Value adapters below allocate/write/enqueue, then dequeue/read/recycle.
+ * The imported pool initializes once; drain every owner between independent runs.
  */
 #ifndef MODULE_08_QUEUE_C
 #define MODULE_08_QUEUE_C
+#include <assert.h>
+#include <stdbool.h>
 #ifndef MODULE_07_LINKED_LIST_SOURCE_IMPORTED
 #define MODULE_07_LINKED_LIST_SOURCE_IMPORTED
 #include "module_07_linked_list/student/lab.c"
 #endif
+
+/* Module 8 convenience interface, built on Module 7's index operations. */
+bool enqueue(int value) {
+    int node = new_lnode();
+    if (node == -1) { return false; }
+    lnodes[node].data = value;
+    enqueue_lnode(node);
+    return true;
+}
+
+/* Caller guarantees nonempty; a payload of -1 is valid. */
+int dequeue(void) {
+    assert(!is_empty_queue());
+    int node = dequeue_lnode();
+    int value = lnodes[node].data;
+    free_lnode(node);
+    return value;
+}
 
 int queue[25];
 int front = 0;
@@ -308,8 +332,8 @@ int is_empty_circular() {
 `nodes[cur].left`와 `.right`에 자식 인덱스가 있다. `-1`은 큐에 넣지 않는다.
 
 ```c
-/* Reuse Module 7's value-based linked queue for tree-node IDs.
- * Before an independent run, initialize the unowned pool and set head=tail=-1.
+/* Use Module 8 value adapters over Module 7's node queue for tree-node IDs.
+ * Before an independent run, initialize once and drain every pool owner.
  * A valid nonempty tree has no cycles/shared child and at most ten nodes.
  * order has ten slots; root -1 denotes an empty tree.
  */

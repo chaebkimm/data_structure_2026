@@ -1,6 +1,60 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-10-27.
+Updated: 2026-10-28.
+
+## Module 7 current-slide and webpage alignment — 2026-10-28
+
+Homepage follow-up: `/`, `/ko`, and `/en` all open Chapter 7. The stale
+`/ko` alias was corrected and published as Sites version 201, source commit
+`aed3f377839c1e354bb076b055183dc1e7d01f44`. TypeScript, production build,
+and browser verification of all three published routes pass.
+
+All three slide Markdown files now align with the current node-index source.
+The question outline's week label is corrected to Week 7 and a concept-slide
+spacing typo is fixed; the lab-slide code and canonical `student/lab.c` are
+unchanged. English/Korean textbooks, workbook, student activities, glossary,
+instructor guides, diagrams, question banks, course contracts, and active
+pilot prompts follow safe rewiring, shared-pool ownership, linked Stack,
+and linked Queue. The lesson retains 180 minutes, one artifact, three test
+groups, and the 100-point rubric.
+
+The source allocates through `new_lnode(void)` and leaves payload assignment
+to the caller. Initialization runs once through a static guard. Removal
+isolates the returned node; raw FIFO uses `qhead`/`qtail`, returns indices,
+and requires separate payload reads and recycling. Module 8 now defines its
+own value adapters and Module 9 explicitly assigns fields after allocation.
+Their consumers and explanations match the retained Module 7 source.
+
+The bilingual website adds Chapter 7 and opens to it by default. It includes
+stepwise safe/unsafe rewiring, recycling-hazard predictions, a shared ten-slot
+list/Stack/Queue playground, live invariant checks, and a searchable 21-term
+glossary. Physical slots and logical links are shown separately. Simulator
+guards are distinguished from unchecked C preconditions. Downloads contain
+26 exact release members; `release/sync_web.py` derives web prose and the
+reproducible ZIP from canonical module files.
+
+Validation: 75 website tests pass, including 12,000 transitions checked
+against independent order/free-slot oracles; TypeScript and production build
+pass. Browser checks cover both languages, insertion/detach/recycle, FIFO
+payload -1, wrong-order cycle explanation, glossary search, anchors, and
+control overflow at the available preview width. C core/student suites pass
+normal, NDEBUG, and ASan/UBSan builds; the three matching bilingual caller
+programs pass all three modes. Module 8/9 normal/sanitizer and both combined
+include orders pass. Three web-sync regression tests pass. The student
+archive has exact source/manifest bytes, 48 resolving packaged links,
+reproducible regeneration, extracted sanitizer tests, and overwrite refusal.
+The support-document audit covers 330 local targets across 57 changed
+Markdown files with no missing targets. Technical checks do not replace a
+beginner reading pilot. PowerShell wrappers were not executed.
+
+Published through Sites as version 200, source commit
+`ad03a93a1648bae728ada119f265eb9c8cb6d521`, at
+https://data-structures.chaebinkim.chatgpt.site . Public access is preserved.
+Course-repository changes remain local; the separate website repository is
+committed and pushed. Canonical lab SHA256:
+`420cb07fc204e138d5f5683f24a9d9ed4b1ae4b82e9218bafbbaefc14ba7bc97`.
+Student archive SHA256:
+`8744233f268e382a42f600e1ac0e309ae6e5933922e7a78ddad3f4831894c09f`.
 
 ## Module 7 revised-slide alignment — 2026-10-27
 

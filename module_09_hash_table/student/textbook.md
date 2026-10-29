@@ -1,5 +1,8 @@
 # Chapter 9. Finding a Pair with a Hash Table
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 The required lesson follows [lab.c](lab.c). It reuses the ten-node pool in
 [Module 07's lab.c](../../module_07_linked_list/student/lab.c). Read the
 supplied functions, predict their state changes, and test them with a driver.
@@ -311,10 +314,12 @@ function updates the head only after `new_lnode` succeeds.
 
 ```c
 int save_data(int hash, int data) {
-    int node = new_lnode(data, hashtable[hash]);
+    int node = new_lnode();
     if (node == -1) {
         return -1;
     }
+    lnodes[node].data = data;
+    lnodes[node].next = hashtable[hash];
     hashtable[hash] = node;
     return node;
 }

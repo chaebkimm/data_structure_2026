@@ -1,5 +1,5 @@
-/* Reuse Module 7's value-based linked queue for tree-node IDs.
- * Before an independent run, initialize the unowned pool and set head=tail=-1.
+/* Use Module 8 value adapters over Module 7's node queue for tree-node IDs.
+ * Before an independent run, initialize once and drain every pool owner.
  * A valid nonempty tree has no cycles/shared child and at most ten nodes.
  * order has ten slots; root -1 denotes an empty tree.
  */

@@ -699,8 +699,8 @@ The older separately allocated list is an optional reference API.
 ### Learning objectives
 
 Students trace integer links in `lnodes[10]` and `-1` endings; explain the
-free chain initialized by `init_lnodes_pool`; use `new_lnode(data_value, next_value)`,
-`link_lnode`, `delete_next_lnode`, and `free_lnode`; and keep detachment separate
+free chain initialized by `init_lnodes_pool`; use `new_lnode()` with explicit caller payload assignment,
+`simple_link_lnode_to_prev`, `simple_delink_next_lnode_from_prev`, and `free_lnode`; and keep detachment separate
 from recycling. They distinguish physical array positions from logical list
 order and explain why exhaustion leaves the pool unchanged.
 
@@ -714,15 +714,9 @@ and an old owner must stop accessing a recycled slot.
 Students implement stack behavior in the caller with a separate `first`.
 New nodes point to the previous first. After a successful allocation the caller
 updates `first`. Removal checks nonempty, saves the old first and value, advances
-to the next node, then recycles. The lab has no separate linked-stack API.
+to the next node, isolates old.next=-1, then recycles. The lab has no separate linked-stack API.
 
-As a linked-list application, students maintain FIFO `head` and `tail` with
-`enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. Raw appends require a
-detached allocation whose `next` is `-1`. They trace empty and
-singleton transitions and distinguish raw node indices from payloads. The
-public `enqueue(value)` combines allocation with appending and reports a
-Boolean failure when the pool is exhausted. Public `dequeue()` reads the
-payload and recycles the slot internally. Callers check emptiness first.
+As a linked-list application, students maintain FIFO `qhead` and `qtail` with `enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. Allocate/check/assign data before appending an isolated node. Dequeue returns an isolated node index without recycling; caller copies payload and recycles once. Both endpoints become -1 after the last removal. Module 7 supplies no value wrappers; Module 8 adds local adapters for BFS. Pool initialization is first-only through a static guard; later calls do not reset active, free, or exhausted state.
 
 ### Macro-Question
 
@@ -734,8 +728,7 @@ payload and recycles the slot internally. Callers check emptiness first.
 Use the current fixed-node-pool lab in one artifact. Include free-chain
 initialization, exhaustion/reuse, predecessor insertion, and detachment traces.
 A returned node index has not been recycled automatically.
-`delete_next_lnode` retains the returned node's old `next`; `free_lnode`
-overwrites that link to prepend the slot to the free chain. The caller
+`simple_delink_next_lnode_from_prev` clears the returned node's next=-1; `free_lnode` writes the free-chain link when the caller returns it. The caller
 preserves any needed successor and updates the list head separately. Include a
 linked-stack trace that inserts 17,23,31 at the first position and removes
 31,23,17. Compare it with the queue trace below within the same three original
@@ -746,10 +739,7 @@ Add the linked queue example to the same artifact. Allocate 17, 23, and 31
 as detached nodes, append them in arrival order, and remove them in the same
 order. Preserve endpoint and free-chain traces. The first enqueue sets both
 endpoints; the final dequeue restores both to `-1`. Raw `dequeue_lnode`
-returns an unrecycled slot; public `dequeue` returns the value and recycles
-the slot. Trace the helpers to explain the wrapper, then use the value
-interface. An empty public dequeue is outside its contract, and a value of
-`-1` is valid data. This example applies list operations without requiring
+returns an isolated unrecycled slot. The caller reads its data and explicitly recycles it once. Empty raw removal returns -1 unchanged, while payload -1 remains valid. This example applies list operations without requiring
 array queue or BFS work in Week 7.
 
 Count fixed local work for pool, known-predecessor link, and linked-queue operations;
@@ -803,7 +793,7 @@ Students will:
 ### Learning sequence and representation spiral
 
 Begin with [`student/queue.c`](module_08_graph_bfs/student/queue.c), which
-imports Module 7's existing linked queue. Retrieve its `head`/`tail`
+imports Module 7's node queue and defines local value adapters. Retrieve its `qhead`/`qtail`
 transitions and the public value wrappers. Compare
 linear and circular `queue[25]`: 25 writes before a linear reset versus
 24 usable circular positions under the reserved-slot convention. Predicates
@@ -811,8 +801,7 @@ report state; callers guard unchecked operations and reset between variants.
 The linear comparison uses `enqueue_linear`, `dequeue_linear`,
 `is_empty_linear`, and `is_full_linear` so it does not redefine the linked API.
 The tree and maze BFS use the linked queue rather than the array variants.
-Before each independent traversal initialize the unused pool and reset
-`head = tail = -1`. Call `enqueue(id)` and check its Boolean result. Guard
+Before each independent traversal require every prior pool owner already recycled and empty endpoints `qhead = qtail = -1`. The pool initializer is one-time and cannot reset ownership. Module 8 defines the value adapters locally. Call `enqueue(id)` and check its Boolean result. Guard
 with `is_empty_queue()`, then call public `dequeue()` to obtain a payload ID.
 That function reads and recycles the internal slot before BFS adds children
 or neighbors; callers do not recycle its returned value. Keep enqueue calls
@@ -825,8 +814,7 @@ left-before-right child insertion behind waiting nodes. A valid tree has no
 shared child or cycle, so each reachable node enters once without graph
 discovery state. Compare the result with the Stack-based DFS choice.
 
-Then trace the 7 × 7 maze as an implicit graph. Reset `info`, the unused pool,
-and linked endpoints before each independent run. Process neighbors right, left, down, up.
+Then trace the 7 × 7 maze as an implicit graph. Reset `info` and verify all pool slots recycled with empty linked endpoints before each independent run; the pool initializer is one-time. Process neighbors right, left, down, up.
 First discovery sets distance before enqueueing; an equal shortest arrival
 adds a predecessor without enqueueing again. Start `{1,1}` reaches all 20
 passages. Target `{5,5}` has distance 8 and three shortest routes.

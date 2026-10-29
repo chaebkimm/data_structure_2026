@@ -6,7 +6,7 @@ Use these names after working through queues, the tree, and the maze in the [tex
 | --- | --- |
 | FIFO | Remove in arrival order / 먼저 들어온 값부터 꺼냄 |
 | Queue | Add at the back and remove at the front / 뒤에 넣고 앞에서 꺼내는 구조 |
-| Linked queue | The original Module 7 implementation reused by both BFS functions; head/tail refer to pool slots / 7장의 구현을 두 BFS에서 재사용 |
+| Linked queue | Module 7 node primitives plus Module 8 local value adapters; qhead/qtail identify pool slots / 7장의 노드 연산을 8장의 값 어댑터로 감싼 큐 |
 | Queue-node payload | Tree index or maze cell ID in lnodes[slot].data, separate from the pool-slot index / 풀 위치와 저장한 탐색 번호를 구분 |
 | Peak pending | Largest simultaneous linked frontier; four canonical, at most six over this maze's starts / 동시 대기 최대 개수 |
 | Recycling | Public dequeue reads the payload and returns its node to the pool before returning / 공개 꺼내기가 값을 읽고 칸을 자동 반환 |
@@ -38,6 +38,6 @@ Use these names after working through queues, the tree, and the maze in the [tex
 | neighbor iterator / 이웃 반복자 | `init_iter`, `has_next`, and `next_iter` generate right, left, down, and up |
 | path reconstruction / 경로 복원 | Follow predecessors backward, then reverse the selected sequence |
 | unreachable / 도달 불가 | A passage left at distance 25 after BFS; check `maze` to distinguish a wall |
-| caller precondition / 호출 전제 | Reset metadata and queue, choose a valid passage, and preserve the zero border |
+| caller precondition / 호출 전제 | Reset metadata, require all pool slots recycled and the queue empty, choose a valid passage, and preserve the zero border |
 
 Cell index 25 is valid. The sentinel belongs to the distance field only. `prev_size == 0` means there are no active predecessors; unused `prev` slots have no meaning. The lab supplies no stored visit-order array, heap allocation, or path-reconstruction function. Linked enqueue returns Boolean success; dequeue requires a nonempty queue.

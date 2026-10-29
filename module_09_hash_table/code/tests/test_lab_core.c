@@ -60,28 +60,32 @@ static void test_hash_and_chains(void)
 
 static void test_pool_lifecycle(void)
 {
-    /* The previous test recycled everything. A fresh numbering experiment
-       may now initialize the pool without orphaning active bucket chains. */
+    /* Reinitialization is idempotent and preserves the recycled ordering. */
+    int slots[10];
+    int saved_free = free_head;
     init_lnodes_pool();
     free_lnode_chunk(-1);
-    assert(free_head == 0);
+    assert(free_head == saved_free);
     for (int i = 0; i < 10; ++i) {
-        assert(save_data(0, i * 10) == i);
+        int expected = free_head;
+        slots[i] = save_data(0, i * 10);
+        assert(slots[i] == expected);
     }
     assert(check_pool() == 10 && free_head == -1);
     struct Linked_Node before[10];
     memcpy(before, lnodes, sizeof before);
     assert(save_data(1, 7) == -1);
-    assert(hashtable[1] == -1 && hashtable[0] == 9);
+    assert(hashtable[1] == -1 && hashtable[0] == slots[9]);
     for (int i = 0; i < 10; ++i) {
         assert(lnodes[i].data == before[i].data);
         assert(lnodes[i].next == before[i].next);
     }
     init_hashtable();
-    assert(check_pool() == 0 && free_head == 9);
+    assert(check_pool() == 0 && free_head == slots[9]);
     init_hashtable(); /* empty reset must not recycle a node twice */
-    assert(check_pool() == 0 && free_head == 9);
-    assert(save_data(7, 17) == 9 && free_head == 8);
+    assert(check_pool() == 0 && free_head == slots[9]);
+    int reused = save_data(7, 17);
+    assert(reused == slots[9] && free_head == slots[8]);
     init_hashtable();
     assert(check_pool() == 0);
     puts("2. Pool exhaustion and recycling passed.");

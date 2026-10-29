@@ -1,5 +1,8 @@
 # Module 09 Lesson Plan — Chained Hashing and Two Sum
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 ## Source and learning goals
 
 The required lesson follows [student/lab.c](../student/lab.c). It includes
@@ -16,7 +19,7 @@ expected-cost claims.
 ## Prerequisite retrieval
 
 Retrieve array positions, `%`, integer `next` links, `-1`, `free_head`, and
-`new_lnode(data,next)` from Module 07. Module 08 supplied practice following
+`new_lnode()` followed by caller data/next assignments from Module 07. Module 08 supplied practice following
 indices while preserving the meaning of stored data. The hash table needs
 those ideas, not dynamic allocation or a new queue lesson.
 

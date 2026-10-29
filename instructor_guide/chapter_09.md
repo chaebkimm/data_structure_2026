@@ -1,5 +1,8 @@
 # Chapter 9. Finding Earlier Values with a Hash Table
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 ## Starting Question
 
 > "Which two different positions contain values that add up to the target, and how can we avoid searching every earlier position again?"

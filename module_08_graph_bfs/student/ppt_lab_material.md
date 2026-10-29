@@ -1,5 +1,8 @@
 # Chapter 8 Lab Slides — Trace Queues, Tree BFS, and Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 Use the current `lab.c` with the [lab](lab.md), [English textbook](textbook.md), [Korean textbook](textbook_korean.md), and [class workbook](class_material.md). Each scene starts with a prediction and ends with state evidence.
 실행 전에 상태를 예상한다. 실행 후에는 거리와 이전 칸, 큐 위치를 함께 확인한다.
 
@@ -9,7 +12,7 @@ Requests 17, 23, 31 arrive in that order. Predict removals under the Stack rule,
 
 ## 2. Which links preserve arrival order? / 어떤 연결이 도착 순서를 지킬까?
 
-Use Module 7's value queue through `queue.c`. `enqueue(value)` allocates and returns Boolean success; `dequeue()` returns the oldest value and recycles its node. Check `is_empty_queue()` before dequeue. Raw helpers exchange node indices, but BFS does not call them. / 공개 enqueue는 값을 넣고 성공 여부를 준다. 공개 dequeue는 값을 반환하며 칸을 자동으로 돌려준다. 빈 큐에서 공개 꺼내기를 호출하지 않는다.
+Use Module 8's local value adapters in `queue.c` over Module 7's node queue. `enqueue(value)` allocates and returns Boolean success; `dequeue()` returns the oldest value and recycles its node. Check `is_empty_queue()` before dequeue. Raw helpers exchange node indices, but BFS does not call them. / 공개 enqueue는 값을 넣고 성공 여부를 준다. 공개 dequeue는 값을 반환하며 칸을 자동으로 돌려준다. 빈 큐에서 공개 꺼내기를 호출하지 않는다.
 
 ## 3. Why can an empty linear queue be full? / 빈 선형 큐가 왜 가득 찼다고 할까?
 
@@ -47,14 +50,14 @@ The BFS function only records the start distance and enqueues its ID. The caller
 ```c
 init_info();
 init_lnodes_pool();
-head = tail = -1;
+qhead = qtail = -1;
 bfs((struct point){1, 1});
 ```
 
 Before calling `bfs`, verify that the start is an interior passage. `is_wall()` directly indexes the array, so it cannot validate an arbitrary coordinate.
 시작점은 1 이상 5 이하의 좌표를 가진 통로여야 한다. 좌표가 유효한지 먼저 확인한 뒤 배열을 읽는다.
 
-Predict a second independent run without resetting: previous distances may suppress discoveries or live links may retain pending work. Initialize metadata and the unowned node pool/endpoints before each independent run. Never reset a pool that still has a live owner.
+Predict a second independent run without resetting: previous distances may suppress discoveries or live links may retain pending work. Initialize metadata and verify all pool slots are recycled with empty endpoints before each independent run; the pool initializer only acts once. The initializer runs only once; it cannot reset live, exhausted, or damaged pool state. Finish/recycle every owner between independent runs.
 
 ## 9. Which grid entries does initialization assign? / 초기화가 어떤 칸에 기록하는가?
 
@@ -121,7 +124,7 @@ Record dequeued IDs using the existing right, left, down, up iterator order. The
 8,15,16,22,17,29,24,10,36,25,31,11,37,26,38,12,33,19,39,40
 ```
 
-After the run, `head==tail==-1`, `is_empty_queue()` is true, and all ten pool slots are free. There are 20 insertions/removals and a peak of four pending entries. Public `dequeue()` returns the ID after recycling its node, then BFS expands the ID.
+After the run, `qhead==qtail==-1`, `is_empty_queue()` is true, and all ten pool slots are free. There are 20 insertions/removals and a peak of four pending entries. Public `dequeue()` returns the ID after recycling its node, then BFS expands the ID.
 두 BFS는 7장의 연결 큐를 그대로 호출한다. 꺼낸 풀 칸의 데이터를 읽고 반환한 뒤 이웃을 넣는다. 선형·원형 배열은 비교 예다.
 
 Do not replace distance checks with a requirement to sort IDs. For example, ID 24 leaves before ID 10 because the iterator finds `{3,3}` before `{3,1}`.

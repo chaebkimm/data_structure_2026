@@ -3,7 +3,8 @@
 Read the [English textbook](student/textbook.md) or
 [Korean textbook](student/textbook_korean.md). Use the
 [class workbook](student/class_material.md) and
-[concept slides](student/ppt_material.md) with the supplied source.
+[concept slides](student/ppt_material.md), [question outline](student/ppt.md),
+and [lab slides](student/ppt_lab_material.md) with the supplied source.
 
 Complete the [lab](student/lab.md) and check the [rubric](student/rubric.md).
 The supplied [student/lab.c](student/lab.c) is complete. Trace it and add
@@ -33,4 +34,19 @@ save the value and successor, then recycle. Compare output 31,23,17 from a
 stack with 17,23,31 from a queue after the same input sequence. Include both
 within the three original test groups and the single lab artifact.
 
-The linked queue example is included in the same `student/lab.c`. Its caller checks bool enqueue status and queue emptiness. Public dequeue returns a value and recycles internally; raw node helpers expose indices and separate recycling. Initialize the unused pool and reset `head = tail = -1` for an independent run. Module 8 reuses these functions.
+The linked queue example in `student/lab.c` accepts and returns **node
+indices**. Call `new_lnode()`, check for `-1`, write the payload, then pass
+the isolated node to `enqueue_lnode(index)`. `dequeue_lnode()` returns an
+isolated allocation (or `-1` when empty); read its payload before returning
+it with `free_lnode(index)`. Neither queue operation recycles a node.
+`qhead == qtail == -1` represents an empty queue, and the tail's next is
+`-1` whenever the queue is nonempty. A stored payload of `-1` is valid.
+
+`init_lnodes_pool()` initializes once, including on first allocation.
+Later calls preserve pool ownership, free order, links, and data. They do
+not reset a test fixture. Recycle every detached allocation and drain every
+list or queue between independent runs. `free_lnode(-1)` is a no-op;
+other calls require a valid, allocated, isolated, unreferenced node. Invalid
+indices, live-node recycling, double recycling, and stale writes are caller
+errors, not rejected operations. Module 8 adds value adapters around these
+same node operations for BFS.

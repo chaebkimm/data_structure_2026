@@ -1,5 +1,8 @@
 # Module 09 — Hash Tables and Two Sum
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 The required Week 9 lesson follows [student/lab.c](student/lab.c). It uses
 ten bucket heads and the ten-node pool included from
 [Module 07](../module_07_linked_list/student/lab.c). Collisions form linked
@@ -7,7 +10,7 @@ chains. Students trace the supplied functions and write a test driver;
 there are no required implementation TODOs in the supplied lab.
 
 The hash table uses the node-pool interface directly: `struct Linked_Node`,
-`init_lnodes_pool()`, and `new_lnode(data, next)`. The public queue wrappers
+`init_lnodes_pool()`, and `new_lnode()` followed by caller data/next assignments. Module 8's local queue adapters
 `enqueue(value)` and `dequeue()` belong to FIFO use; hash chains retain and
 recycle their own nodes rather than passing them through those wrappers.
 
@@ -50,7 +53,7 @@ recycle their own nodes rather than passing them through those wrappers.
   must be representable as `int`. The supplied fixture satisfies this
   condition for the targets used in the lesson.
 - A successful early return leaves chains allocated. The next
-  `init_hashtable()` recycles them. Do not call `init_lnodes_pool()` over live
+  `init_hashtable()` recycles them. Repeated `init_lnodes_pool()` calls do not reset live
   bucket chains or mix another user of the shared pool into the experiment.
 
 For `nums = {-16,-8,-4,-2,-1,1,2,4,8,16}`, target 0 returns `[5,4]`.

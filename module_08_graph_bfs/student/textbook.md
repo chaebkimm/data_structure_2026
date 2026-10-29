@@ -1,5 +1,8 @@
 # Chapter 8. Queues, Tree BFS, and Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 Chapter 7 used a linked FIFO queue as a linked-list example. This chapter compares array queue representations, then reuses that same linked queue for tree BFS and graph BFS. The maze `lab.c` records shortest distances and all shortest predecessors.
 
 [한글 교재](textbook_korean.md) · [Class workbook](class_material.md) · [Concept slides](ppt_material.md) · [Lab slides](ppt_lab_material.md)
@@ -10,9 +13,9 @@ Chapter 7 used a linked FIFO queue as a linked-list example. This chapter compar
 
 Recall Chapter 7's linked queue. Requests 17, 23, and 31 must be processed in the order they arrive. A Stack removes 31 first. We need to add at the back and remove at the front. This rule is first in, first out, or **FIFO**. A **queue** provides those two actions. Adding is **enqueue**; removing is **dequeue**.
 
-Reuse Chapter 7's value-based queue interface. `enqueue(value)` allocates a node, appends it, and returns `true`; an exhausted pool returns `false` without changing the queue. `dequeue()` returns the oldest stored value and recycles its node. Enqueue 17, 23, and 31, then receive those values in the same order. The first enqueue sets both endpoints, and the final dequeue restores `head = tail = -1`.
+Reuse the local value adapters in `queue.c`, built on Chapter 7's node queue. `enqueue(value)` allocates a node, appends it, and returns `true`; an exhausted pool returns `false` without changing the queue. `dequeue()` returns the oldest stored value and recycles its node. Enqueue 17, 23, and 31, then receive those values in the same order. The first enqueue sets both endpoints, and the final dequeue restores `qhead = qtail = -1`.
 
-The lower-level `enqueue_lnode(node)` and `dequeue_lnode()` still exchange pool-slot indices. The raw dequeue returns `-1` when empty and does not recycle its detached node. The public `dequeue()` reads and recycles that node for the caller. Check `is_empty_queue()` before a public dequeue: its assertion expresses a nonempty precondition. The payload `-1` is a valid queued integer, so it is not an empty-result sentinel. Never reset the pool while a live list or queue owns nodes.
+The lower-level `enqueue_lnode(node)` and `dequeue_lnode()` still exchange pool-slot indices. The raw dequeue returns `-1` when empty and does not recycle its detached node. The public `dequeue()` reads and recycles that node for the caller. Check `is_empty_queue()` before a public dequeue: its assertion expresses a nonempty precondition. The payload `-1` is a valid queued integer, so it is not an empty-result sentinel. The pool initializer runs only once; later calls preserve live/free state. Start a new process or finish/recycle all owners before an independent run.
 
 ### Can an array hold the same waiting order?
 
@@ -41,9 +44,9 @@ Reuse Chapter 2's exact tree after `alphabet_init(); root = tree_connect();`. It
 | D | `[4]` | E |
 | E | `[]` | empty |
 
-The processing order is **F, A, G, B, C, D, E**, with depths 0, 1, 1, 2, 2, 3, 3. `tree_bfs(root, order)` stores these node indices and returns 7. The caller supplies room for ten indices, initializes the otherwise unowned linked-node pool, and sets `head = tail = -1` before the call. Root `-1` represents an empty tree and returns 0. A valid tree has no cycles and no shared child, so each reachable node has one route from the root and enters once. A general graph can have several routes to the same vertex. The next example adds a discovery record to prevent duplicate scheduling.
+The processing order is **F, A, G, B, C, D, E**, with depths 0, 1, 1, 2, 2, 3, 3. `tree_bfs(root, order)` stores these node indices and returns 7. The caller supplies room for ten indices, initializes the otherwise unowned linked-node pool, and sets `qhead = qtail = -1` before the call. Root `-1` represents an empty tree and returns 0. A valid tree has no cycles and no shared child, so each reachable node has one route from the root and enters once. A general graph can have several routes to the same vertex. The next example adds a discovery record to prevent duplicate scheduling.
 
-The linked implementation keeps pool-slot indices in `head`, `tail`, and `next`. The table shows the stored tree IDs. BFS calls `enqueue(tree_id)` and receives `tree_id` from `dequeue()`; it does not allocate, inspect, or free queue nodes itself. The public dequeue recycles before BFS adds children.
+The linked implementation keeps pool-slot indices in `qhead`, `qtail`, and `next`. The table shows the stored tree IDs. BFS calls `enqueue(tree_id)` and receives `tree_id` from `dequeue()`; it does not allocate, inspect, or free queue nodes itself. The public dequeue recycles before BFS adds children.
 
 ### How can we find a route with the fewest steps?
 
@@ -152,7 +155,7 @@ When number 31 is processed, it discovers number 38 with distance 6 and predeces
 
 Number 33 first discovers the goal, number 40, at distance 8. Number 39 later adds another predecessor. At completion, `info[5][5].prev_size` is 2. The entries are `{5,4}` and `{4,5}`, in that order. There are three shortest routes in total because `{3,5}` also has two predecessors.
 
-All 20 passages are reachable from `{1,1}`. Each enters and leaves the queue once. The final linked endpoints are `head = tail = -1`. All ten queue-pool slots are free after 20 removals; peak pending is four. The maze itself is unchanged. The program does not save a separate processing-order array; the table is a hand trace.
+All 20 passages are reachable from `{1,1}`. Each enters and leaves the queue once. The final linked endpoints are `qhead = qtail = -1`. All ten queue-pool slots are free after 20 removals; peak pending is four. The maze itself is unchanged. The program does not save a separate processing-order array; the table is a hand trace.
 
 ### How do previous cells give a route?
 
@@ -171,11 +174,11 @@ The start has distance 0 and no predecessor. Its route contains only itself. A p
 
 ### What must be ready before a search?
 
-A new run must begin without distances or queued numbers from an earlier run. The caller runs `init_info()` and `init_lnodes_pool()` while no live structure owns the pool, sets `head = tail = -1`, and supplies a passage strictly inside the outer wall. `bfs()` sets the start distance to 0 but does not perform those resets or validate the start. The array comparison counters `front` and `rear` do not control BFS.
+A new run must begin without distances or queued numbers from an earlier run. The caller runs `init_info()` and `init_lnodes_pool()` while no live structure owns the pool, sets `qhead = qtail = -1`, and supplies a passage strictly inside the outer wall. `bfs()` sets the start distance to 0 but does not perform those resets or validate the start. The array comparison counters `front` and `rear` do not control BFS.
 
 Every border cell in the supplied maze is a wall. Every dequeued passage is therefore interior. Its four neighbors have coordinates from 0 through 6. The wall check rejects border cells before they could be enqueued. This explains why neighbor accesses are valid under the stated conditions. `is_wall()` itself performs no bounds check. An invalid start or an open border removes that guarantee.
 
-Both searches use the **value-based linked queue from Chapter 7**. Its internal pool slot lies in 0..9, while the stored ID can be larger than 9. The wrappers hide that distinction from BFS: `enqueue(id)` allocates and checks the pool; `dequeue()` returns the ID and recycles the slot before expansion. This permits 20 total discoveries with ten slots. Canonical peak pending is four, and all supplied-maze starts peak at six. A different graph needs its own bound. BFS stores each enqueue result outside `assert`, then asserts success; compiling with `NDEBUG` must not remove an enqueue call.
+Both searches use the **local value adapters in Module 8 over Chapter 7's node queue**. Its internal pool slot lies in 0..9, while the stored ID can be larger than 9. The wrappers hide that distinction from BFS: `enqueue(id)` allocates and checks the pool; `dequeue()` returns the ID and recycles the slot before expansion. This permits 20 total discoveries with ten slots. Canonical peak pending is four, and all supplied-maze starts peak at six. A different graph needs its own bound. BFS stores each enqueue result outside `assert`, then asserts success; compiling with `NDEBUG` must not remove an enqueue call.
 
 ## Calculating Efficiency
 
@@ -197,7 +200,7 @@ Initialization separately writes all 49 cell records and coordinate entries. On 
 
 The program reserves 49 maze integers, 49 search records, 50 points, and ten two-integer linked queue-pool records. The separate array comparison also reserves 25 integers, but neither BFS uses that array. Each search record has four predecessor slots even if the cell is a wall. Reserving storage depends on the grid size, not on how many passages are reached. For a growing grid, the maze and search storage are O(HW). The loop's additional local storage is O(1).
 
-The example makes 20 total insertions and 20 removals. Each removed slot returns to the pool before expansion. At most four entries wait simultaneously from `{1,1}`. The required pool capacity follows peak live queue occupancy, not total discoveries. Every completed run leaves `head == tail == -1` and all ten slots free. Even a fully open 5 × 5 interior peaks at ten pending entries over all 25 possible starts with this direction order. Arbitrary larger or altered graphs are outside that measured bound.
+The example makes 20 total insertions and 20 removals. Each removed slot returns to the pool before expansion. At most four entries wait simultaneously from `{1,1}`. The required pool capacity follows peak live queue occupancy, not total discoveries. Every completed run leaves `qhead == qtail == -1` and all ten slots free. Even a fully open 5 × 5 interior peaks at ten pending entries over all 25 possible starts with this direction order. Arbitrary larger or altered graphs are outside that measured bound.
 
 ### How much work rebuilds routes?
 
@@ -248,18 +251,39 @@ The queue code is in [queue.c](queue.c). It imports Chapter 7's complete linked 
 
 ### Import the linked queue and compare array representations
 
-The include reuses Chapter 7's linked queue. Its `enqueue(value)` and `dequeue()` are the BFS interface. The array comparison functions below use `_linear` or `_circular` suffixes, so their names do not collide.
+The include reuses Chapter 7's raw node queue; `queue.c` adds local `enqueue(value)` and `dequeue()` value adapters as the BFS interface. The array comparison functions below use `_linear` or `_circular` suffixes, so their names do not collide.
 
 ```c
-/* Module 8: compare array queues and reuse Module 7's linked queue.
- * Callers check full/empty conditions and reset independent queue runs.
+/* Module 8: compare array queues and reuse Module 7's linked node queue.
+ * Value adapters below allocate/write/enqueue, then dequeue/read/recycle.
+ * The imported pool initializes once; drain every owner between independent runs.
  */
 #ifndef MODULE_08_QUEUE_C
 #define MODULE_08_QUEUE_C
+#include <assert.h>
+#include <stdbool.h>
 #ifndef MODULE_07_LINKED_LIST_SOURCE_IMPORTED
 #define MODULE_07_LINKED_LIST_SOURCE_IMPORTED
 #include "module_07_linked_list/student/lab.c"
 #endif
+
+/* Module 8 convenience interface, built on Module 7's index operations. */
+bool enqueue(int value) {
+    int node = new_lnode();
+    if (node == -1) { return false; }
+    lnodes[node].data = value;
+    enqueue_lnode(node);
+    return true;
+}
+
+/* Caller guarantees nonempty; a payload of -1 is valid. */
+int dequeue(void) {
+    assert(!is_empty_queue());
+    int node = dequeue_lnode();
+    int value = lnodes[node].data;
+    free_lnode(node);
+    return value;
+}
 
 int queue[25];
 int front = 0;
@@ -308,8 +332,8 @@ int is_empty_circular() {
 The tree stores child indices in `nodes[cur].left` and `.right`. A `-1` child never enters the queue.
 
 ```c
-/* Reuse Module 7's value-based linked queue for tree-node IDs.
- * Before an independent run, initialize the unowned pool and set head=tail=-1.
+/* Use Module 8 value adapters over Module 7's node queue for tree-node IDs.
+ * Before an independent run, initialize once and drain every pool owner.
  * A valid nonempty tree has no cycles/shared child and at most ten nodes.
  * order has ten slots; root -1 denotes an empty tree.
  */

@@ -7,7 +7,7 @@ LAB_DIR ?= ../student
 LAB_CPPFLAGS := $(CPPFLAGS) -I$(LAB_DIR)
 TEST_CPPFLAGS := $(CPPFLAGS) -DLINKED_LIST_TESTING
 SANITIZER_FLAGS ?= -fsanitize=address,undefined -fno-omit-frame-pointer
-BUILD_DIR := build
+BUILD_DIR ?= build
 SUPPORT_SOURCE := support/undirected_edge_list.c
 STARTER_SOURCES := starter/linked_list.c starter/dsu.c
 SOLUTION_SOURCES := solution/linked_list.c solution/dsu.c
