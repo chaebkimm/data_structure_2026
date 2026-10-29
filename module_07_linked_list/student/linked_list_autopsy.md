@@ -1,79 +1,60 @@
 # Linked-List Autopsy — Recycle Before Detaching
 
-Examine the index pool in [lab.c](lab.c). Use a paper trace first; the wrong
-sequence below is not normal lab code. The old `code/autopsy` program
-concerns a separate pointer-based library and is optional reference.
+Use [lab.c](lab.c). Predict the wrong sequence on paper; it is outside the caller contract. The old code/autopsy executable belongs to the optional pointer library.
 
 ## 1. Predict the defect
 
-The standalone list starts at 0:
-
 ```text
+first=0
 lnodes[0]={17,1}; lnodes[1]={23,2}; lnodes[2]={31,-1}
-free_head=3; free chain 3→4→5→6→7→8→9→-1
+free_head=3; free 3→4→5→6→7→8→9→-1
 ```
-
-A programmer attempts to remove index 1 in the wrong order:
 
 ```c
 int victim = lnodes[0].next;
-free_lnode(victim);                 /* wrong: still linked */
-int removed = delete_next_lnode(0);
+free_lnode(victim); /* wrong: referenced and not isolated */
+int removed = simple_delink_next_lnode_from_prev(0);
 ```
 
-Predict whether the list still reaches 31 and whether an index is now
-both active and free.
+Does the active list still reach 31? Which index becomes both allocated/active and free? Record 0.next, 1.next, and free_head after each statement.
 
 Prediction: _________________________________________________________
 
-## 2. Locate the earliest broken rule
+## 2. Find the earliest broken precondition
 
-Record `lnodes[0].next`, `lnodes[1].next`, and `free_head` after each call.
-Which caller precondition breaks first? How does recycling overwrite the
-successor, causing deletion to follow the free chain instead of index 2?
+A recyclable node must be an allocated unreferenced isolated slot. The wrong first call violates both incoming-link and next=-1 requirements. Recycling overwrites 1.next with the free head, so later deletion copies 3 into 0.next instead of old successor 2, then clears 1.next=-1. The invalid result can remain inside the array, so a clean sanitizer run does not establish ownership.
 
-Response: ___________________________________________________________
-
-This is logical pool corruption. The array still exists: `free_lnode` does
-not end the C lifetime of a slot. A memory sanitizer may report no error
-because wrong accesses can stay within `lnodes[0..9]`.
+Earliest broken rule and lost successor: ______________________________
 
 ## 3. Repair and verify
 
-Reset to the valid starting state, then trace:
-
 ```c
-int removed = delete_next_lnode(0);
+int removed = simple_delink_next_lnode_from_prev(0);
 if (removed != -1) {
+    int value = lnodes[removed].data;
+    /* Use the saved value before returning ownership. */
+    (void)value;
     free_lnode(removed);
 }
 ```
 
-State both chains after each call. Why is the detached node's stale `next`
-harmless while the caller holds it, but overwritten on recycling?
+Give both chains and removed next=-1 after detachment; then give the free-chain link written on return. Detachment isolates but does not recycle. Another init call cannot reset a damaged pool: its static guard makes it a no-op. Use a valid new process/fixture for the repair.
 
 Response: ___________________________________________________________
 
-## 4. Diagnose nearby errors
+## 4. Nearby paper diagnoses
 
-1. After correct recycling, what does a second `free_lnode(1)` do to
-   `lnodes[1].next`? Does its range check prevent this?
-2. In a separate list 0→2→-1, reverse the insertion writes for detached node 1. State the resulting self-link and lost successor.
-
-3. A removed node is detached but never recycled. Can `new_lnode` find it? Distinguish this lost allocation from a free slot.
-4. In a separate fresh pool, A owns 0(17) and B owns 1(23), both with next `-1`. A detaches and recycles 0. B prepends `new_lnode(8,1)`, which returns 0. An old A variable still equals 0. What does `lnodes[old_a].data` now read? On paper, show how assigning either data or next through `old_a` changes B. A range check passes; explain why it cannot establish ownership.
-5. A linked Stack recycles its first node before saving its next. Which successor is lost when recycling overwrites that field? Give the safe save-data/save-next, update-first, recycle order.
+1. After correct return, a second return of 1 creates what link? Which ownership/isolation rules fail? There is no general bounds/membership validator.
+2. Reverse insertion writes for 0→2→-1 and isolated 1. Give the self-link and lost successor.
+3. Can new_lnode find a detached allocation that was never returned?
+4. A returns singleton 0; B reallocates 0, writes 8, and prepends it to B's 1. What does A's stale index now select? Why can old writes damage B?
+5. A Stack advances first but calls free_lnode(old) without clearing old.next. Which precondition is missing? Give guard/save/advance/isolate/recycle order.
+6. A caller treats dequeue_lnode's index as a payload or assumes automatic recycling. Which observation distinguishes returned ownership from a free slot?
 
 Response: ___________________________________________________________
 
 ## 5. Regression evidence
 
-Assert the repaired active/free chains and absence of repeated indices.
-For reuse, assert the returned index, data, next field, and exact traversal order. Include two disjoint lists sharing the free chain, a safe LIFO drain, and no access through recycled caller indices.
-Run the repaired version as a normal regression; use a bounded trace for
-the wrong sequence.
+Assert repaired exact chains, no repeated/overlapping indices, next=-1 on detached nodes, retained data before explicit assignment, two disjoint lists sharing slots, safe LIFO drain, and FIFO dequeue/copy/recycle. Execute only repaired valid calls; bound wrong traces on paper.
 
-- first broken precondition: _________________________________________
-- exact repaired state: ______________________________________________
-- test name and result: ______________________________________________
-- why “it did not crash” is insufficient: ______________________________
+First broken precondition: ____________________ Repaired state: ____________________ Test/result: ____________________ Why no crash is insufficient: ____________________

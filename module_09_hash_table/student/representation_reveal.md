@@ -1,5 +1,8 @@
 # Stage B — Representation Reveal: Buckets and Linked Chains
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 Preserve the initial inquiry before opening this explanation. The required
 representation is the one in [lab.c](lab.c). It uses the node pool supplied
 by Module 07.
@@ -54,7 +57,7 @@ initialized with `init_lnodes_pool()` before the three calls.
 
 We must know what each node's integer means. The integer in `data` is its
 **payload**. `save_data(hash, data)` takes an already calculated bucket
-and a payload. It calls `new_lnode(data, hashtable[hash])`, then publishes
+and a payload. It calls `new_lnode()`, checks its returned index, then writes `data` and `next=hashtable[hash]`, then publishes
 the returned node as the new head.
 
 The caller must pass a bucket from 0 to 9. The function has no bucket-range
@@ -117,7 +120,7 @@ complete unsuccessful run with an exclusive ten-node pool stores all ten
 positions, so `free_head` becomes -1. Resetting makes those nodes reusable.
 
 Keep active chains valid and acyclic. Keep them disjoint from each other
-and from the free chain. Do not call `init_lnodes_pool()` over active bucket
+and from the free chain. Repeated `init_lnodes_pool()` calls are no-ops and cannot reset active bucket
 chains. The table shares Module 07's pool, so independent list and queue
 experiments must release their nodes before the table uses the pool.
 

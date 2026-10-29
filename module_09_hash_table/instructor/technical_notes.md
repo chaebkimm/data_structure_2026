@@ -1,5 +1,8 @@
 # Module 09 Technical Notes — Current `lab.c`
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 ## Source boundary
 
 The required source is [student/lab.c](../student/lab.c), including
@@ -16,10 +19,7 @@ chain is empty. `lnodes[10]` holds `{data,next}` records. An active `next`
 is another node index or -1. `free_head` identifies the first free node.
 It initially equals -1, so the pool must be initialized explicitly.
 
-`init_lnodes_pool()` sets node data to zero, links `0→1→…→9→-1`, and sets
-`free_head=0`. It does not clear hash bucket heads. Call it before first use
-when no active structure owns nodes. Resetting it under live hash chains
-would let future allocations reuse nodes that still belong to those chains.
+`init_lnodes_pool()` links `0→1→…→9→-1` and sets `free_head=0` only on its first call. It does not assign data or clear bucket heads; a persistent static guard makes later calls no-ops. `new_lnode()` also calls that initializer. Reuse capacity by recycling table chains, not by reinitializing the pool.
 The linked queue taught as a Module 07 list example and reused in Module 08 shares this pool. It must not use
 the same nodes concurrently without explicit disjoint ownership.
 
@@ -50,7 +50,7 @@ Bucket selection is not equality. For example, -8 and 2 share bucket 2.
 ## Save and find contracts
 
 `save_data(hash,data)` requires `hash` in 0–9. It calls
-`new_lnode(data,hashtable[hash])`. On success, that node becomes the new
+`new_lnode()`, checks its returned index, then writes `data` and `next=hashtable[hash]`. On success, that node becomes the new
 bucket head and its index is returned. It does not calculate `hash`, check
 for an existing payload, update an existing record, or validate bucket
 bounds. The caller chooses what the payload means.

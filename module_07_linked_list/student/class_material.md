@@ -2,136 +2,96 @@
 
 Name / 이름: ____________________ Date / 날짜: ____________________
 
-Use the [English textbook](textbook.md), [Korean textbook](textbook_korean.md),
-[concept slides](ppt_material.md), and [lab](lab.md). Read exact behavior in [lab.c](lab.c).
-Keep each first prediction and add corrections beside it.
-첫 예상을 지우지 않고 옆에 수정한다. 표 대신 같은 항목의 번호 목록으로 답해도 된다.
+Use the [textbook](textbook.md), [Korean textbook](textbook_korean.md), [question outline](ppt.md), [concept slides](ppt_material.md), [lab slides](ppt_lab_material.md), and exact [lab.c](lab.c). Preserve first predictions and add corrections. 첫 예상은 지우지 않고 옆에 수정한다. 표 대신 번호 목록으로 답해도 된다.
 
-## 1. Which number is the value? / 값은 어느 숫자인가?
-
-We want to read 17, 23, and 31 without requiring neighboring slots.
-값의 물리적 위치와 읽는 순서를 나눠 보자.
+## 1. Which number is the value? / 값과 인덱스는 어떻게 다른가?
 
 ```text
-lnodes[0] = {17, 1}
-lnodes[1] = {23, 2}
-lnodes[2] = {31, -1}
-first = 0
+first=0
+lnodes[0]={17,1}; lnodes[1]={23,2}; lnodes[2]={31,-1}
 ```
 
-1. Write the visited indices / 방문 인덱스: ____________________
-2. Write the read values / 읽는 값: ____________________
-3. Explain the ending `-1` and who keeps `first` / 끝 표시의 뜻과 시작 위치를 보관하는 주체: ____________________
-4. If slot 2 pointed back to 0, would traversal finish? / 2번의 다음이 0이면 순회가 끝나는가?
+1. List visited indices and read values. / 방문 인덱스와 값을 각각 쓴다.
+2. Explain -1 and who keeps first. / -1의 뜻과 first를 보관하는 주체를 쓴다.
+3. If 2.next becomes 0, will traversal end? / 2.next가 0이면 끝나는가?
 
-Initial prediction / 첫 예상: ______________________________________
-Correction and reason / 수정과 이유: _______________________________
+Prediction / 예상: ____________________ Correction / 수정: ____________________
 
 ## 2. Which link must be saved first? / 어느 연결을 먼저 보관하는가?
 
-Use a valid list 0(17)→2(31)→-1 and detached allocated node 1 holding 23.
-`link_lnode(0,1)` inserts node 1 between nodes 0 and 2.
-0번과 2번 사이에 1번을 넣는다. 삽입할 노드는 다른 활성 연결이나 가용 연결에 없어야 한다.
+For 0→2→-1 and allocated isolated 1, trace `simple_link_lnode_to_prev(0,1)`. 기록 1은 할당되어 있고 next=-1이며 다른 연결에 없다.
 
-| Moment / 시점 | `lnodes[0].next` | `lnodes[1].next` | `lnodes[2].next` |
+| Moment / 시점 | 0.next | 1.next | 2.next |
 | --- | --- | --- | --- |
-| before insertion / 삽입 전 | | | |
-| after the first assignment / 첫 대입 후 | | | |
-| after the second assignment / 두 번째 대입 후 | | | |
+| before / 전 | | | |
+| first assignment / 첫 대입 | | | |
+| second assignment / 둘째 대입 | | | |
 
-Predict the result if the two assignments are reversed. Trace the writes on paper only.
-두 대입을 뒤집었을 때의 결과는 종이에만 추적한다.
+Reverse the writes on paper and explain the lost successor/self-link. 대입 순서를 뒤집은 결과는 종이에만 추적한다.
 
-__________________________________________________________________
+## 3. Is detaching recycling? / 분리와 반환은 같은가?
 
-## 3. Is detaching the same as recycling? / 분리와 반환은 같은가?
+Start with 0(17)→1(23)→2(31)→-1 and free chain 3→4→5→6→7→8→9→-1.
 
-Use 0(17)→1(23)→2(31)→-1, with `free_head=3` and the remaining slots linked in ascending order.
-다음 세 호출을 순서대로 적용한다.
-
-| Call / 호출 | Return / 반환 | Active chain / 활성 연결 | `free_head` | `lnodes[1].data` | `lnodes[1].next` |
+| Call / 호출 | Returned index / 반환 인덱스 | Active chain / 활성 연결 | free_head | 1.data | 1.next |
 | --- | --- | --- | --- | --- | --- |
-| `delete_next_lnode(0)` | | | | | |
-| `free_lnode(1)` | no return / 없음 | | | | |
-| `new_lnode(8, -1)` | | | | | |
+| `simple_delink_next_lnode_from_prev(0)` | | | | | |
+| `free_lnode(1)` | void | | | | |
+| `node=new_lnode()` | | | | | |
+| caller writes `lnodes[node].data=8` | none | | | | |
 
-Why must the caller retain the detached index? What happens if the caller never returns it?
-분리한 인덱스를 보관해야 하는 이유와 반환을 빠뜨렸을 때의 결과를 쓴다.
-Why is returning it twice invalid even when the index is in range?
-범위 안의 칸도 중복 반환하면 안 되는 이유를 쓴다.
+Which call isolates, which makes the slot free, and which assigns new data? 분리, 반환, 값 대입을 하는 동작을 나눈다. Why can a caller not return the same slot twice?
 
-__________________________________________________________________
+## 4. How can lists share slots? / 여러 리스트가 칸을 나누려면?
 
-## 4. How can lists share ten slots? / 여러 리스트가 열 칸을 어떻게 나눠 쓰는가?
+In a pristine process, allocate singleton A=0(17), B=1(23), free_head=2. Detach A's sole node and set first_a=-1; recycle 0. Allocate 0 for B, write data 8, set next=first_b, then first_b=0. 두 리스트의 시작 위치는 따로 보관한다.
 
-Start an independent unowned pool with `init_lnodes_pool()`. Allocate 17 and 23 with next `-1`.
-Keep `first_a=0` for list A and `first_b=1` for list B. The free chain starts at 2.
-새 풀에서 두 리스트의 시작 위치를 따로 보관한다. 어느 활성 리스트에도 같은 칸을 중복으로 넣지 않는다.
+Record both first indices and free/active chains after each step. Explain why A's old index becomes stale, why unused detached allocations consume capacity, and why a double return can create a cycle. 종이에만 잘못된 접근을 진단한다.
 
-| Action / 동작 | A's first / A 시작 | B's first / B 시작 | `free_head` | Slot 0 data/next / 0번 값과 다음 |
-| --- | --- | --- | --- | --- |
-| two singleton lists / 한 노드 리스트 둘 | 0 | 1 | 2 | 17 / -1 |
-| detach A's first, then `free_lnode(0)` / A에서 분리 후 반환 | | | | |
-| `node=new_lnode(8,first_b)`, check result, then `first_b=node` / B 맨 앞에 추가 | | | | |
+`init_lnodes_pool()` has a persistent static guard. Predict a second call while B is live, and a call while the pool is exhausted. It is not a reset. 반복 호출은 초기 상태로 돌려놓지 않는다. For independent pristine indices run a new process; otherwise return all owned allocations and follow the actual free-chain order.
 
-A stale copy of A's former index still equals 0. What does reading its data now return?
-Why can writing its `data` or `next` damage B? Diagnose on paper; do not perform stale writes.
-A가 예전 인덱스 0으로 읽으면 무엇을 얻는가? 그 칸을 바꾸면 B가 왜 바뀌는가?
-Explain why both lists can use any available slot and why initialization cannot run while either owns a slot.
-가용 칸을 어느 리스트나 쓸 수 있는 이유와 사용 중인 풀을 초기화하면 안 되는 이유를 쓴다.
+## 5. Which first-node changes give LIFO? / 시작 노드로 LIFO를 만들려면?
 
-__________________________________________________________________
+There is no supplied Stack API. To prepend, call `node=new_lnode()` and check success, then write its data, set `lnodes[node].next=first`, and finally set `first=node`. Prepending 17,23,31 in a pristine process gives 2(31)→1(23)→0(17)→-1. Before removal check `first != -1`; save the old index, data, and next, advance `first`, set `lnodes[old].next=-1`, then recycle. The outputs are 31,23,17. Clearing next is required because `free_lnode` accepts only isolated allocations. Never recover data or next through a recycled old index.
 
-## 5. Which first-node changes give LIFO? / 시작 노드를 어떻게 바꾸면 LIFO가 되는가?
-
-Use a fresh unowned pool and caller variable `first=-1`. There is no supplied Stack API.
-For each of 17, 23, and 31, call `node=new_lnode(value,first)`; set `first=node` only after checking `node != -1`.
-새 풀에서 시작 노드 앞에 차례로 추가한다. 할당 실패 시 시작 위치를 바꾸지 않는다.
-
-| Action / 동작 | Return index/value / 반환 인덱스 또는 값 | `first` | Stack chain / 스택 연결 | `free_head` |
-| --- | --- | --- | --- | --- |
-| add 17 / 17 추가 | | | | |
-| add 23 / 23 추가 | | | | |
-| add 31 / 31 추가 | | | | |
-| remove first / 시작 노드 제거 | | | | |
-| drain remaining two / 나머지 둘 제거 | | | | |
-
-Before removal, check `first != -1`. Save the old index, its data, and its next; update `first`, then recycle the old node. Stop using that index afterward.
-제거 전 빈 스택인지 검사한다. 옛 인덱스와 값, 다음 위치를 보관하고 시작 위치를 바꾼 뒤 반환한다.
-Predict output 31,23,17. Contrast it with the arrival order. What happens on an empty removal or an exhausted allocation?
-출력 31,23,17을 도착 순서와 비교한다. 빈 스택의 제거와 풀 소진 시 호출자가 할 일을 쓴다.
-
-Prediction / 예상: ____________________ Correction and reason / 수정과 이유: ____________________
+For each prepend/remove, record first, active chain, detached index, and free head. 제거 전에 값과 다음을 보관하고, first를 바꾼 뒤 옛 노드의 next를 -1로 만들어 반환한다. Explain unchanged Stack state on exhausted allocation and the nonempty guard on removal.
 
 ## 6. Which end preserves arrival order? / 어느 끝이 도착 순서를 지키는가?
 
-Prepare an independent unowned pool with `init_lnodes_pool(); head = tail = -1;`. Call `enqueue(17)`, `enqueue(23)`, and `enqueue(31)`. Save and check each boolean result. Predict the value and free-chain change after `dequeue()`; the wrapper recycles its slot. Enqueue 8 behind the remaining values.
-새 풀과 양 끝을 준비한다. 공개 함수는 값을 넣고 성공 여부를 반환한다. 값을 꺼낼 때 칸도 내부에서 반환한다.
+The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a valid allocated, unreferenced, isolated node (`next == -1`). Allocate first with `new_lnode()`, check for `-1`, write `lnodes[node].data=value`, then append. `enqueue_lnode(-1)` is a no-op; the void function does not report allocation failure.
 
-| Action after a fresh reset | Return | `head` | `tail` | Live slots | `free_head` |
+`dequeue_lnode()` returns the oldest **index**, isolates that node with `next=-1`, and leaves it allocated to the caller. Empty removal returns `-1` without changes. On success, copy `lnodes[node].data`, then call `free_lnode(node)` exactly once. Neither queue operation allocates or recycles automatically. There are no supplied value-based `enqueue(value)` or `dequeue()` wrappers.
+
+The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtail` is reachable from `qhead` and `lnodes[qtail].next == -1`. The first append sets both; the final removal clears both. A payload of `-1` is valid: only the returned node index is the empty marker.
+
+| Action in a pristine process | Result | `qhead` | `qtail` | Queue | `free_head` |
 | --- | --- | ---: | ---: | --- | ---: |
-| `enqueue(17)` | `true` | 0 | 0 | 0 → -1 | 1 |
-| `enqueue(23)` | `true` | 0 | 1 | 0 → 1 → -1 | 2 |
-| `enqueue(31)` | `true` | 0 | 2 | 0 → 1 → 2 → -1 | 3 |
-| `dequeue()` | 17 | 1 | 2 | 1 → 2 → -1 | 0 |
-| `enqueue(8)` | `true` | 1 | 0 | 1 → 2 → 0 → -1 | 3 |
-| drain 23, 31, 8 | values | -1 | -1 | empty | 0 (all ten free) |
+| allocate 0, write 17, append 0 | void | 0 | 0 | 0→-1 | 1 |
+| allocate 1, write 23, append 1 | void | 0 | 1 | 0→1→-1 | 2 |
+| allocate 2, write 31, append 2 | void | 0 | 2 | 0→1→2→-1 | 3 |
+| `node=dequeue_lnode()` | index 0; next=-1 | 1 | 2 | 1→2→-1 | 3 |
+| copy data 17; `free_lnode(0)` | caller recycles | 1 | 2 | 1→2→-1 | 0 |
+| allocate 0, write 8, append 0 | void | 1 | 0 | 1→2→0→-1 | 3 |
+| dequeue/copy/recycle remaining | values 23,31,8 | -1 | -1 | empty | 0 |
 
-Compare `int slot=dequeue_lnode()` with `int value=dequeue()`. Which leaves a detached allocated slot? Which already recycles it? What does each return for a queue containing the payload `-1`? What must be checked before public dequeue?
-내부 함수의 인덱스 반환과 공개 함수의 값 반환을 구분한다. 마지막 노드를 꺼낼 때 양 끝이 모두 `-1`인지 확인한다.
-Explain why `assert(enqueue(17))` loses its insertion under `NDEBUG`.
-삽입 호출을 `assert` 안에 넣으면 안 되는 이유를 쓴다.
+The final free chain is 0→2→1→3→4→5→6→7→8→9→-1. All ten slots are free; their order need not match initialization.
 
-Prediction / 예상: ____________________ Correction and reason / 수정과 이유: ____________________
+Allocate/append a node with data=-1; what index does removal return? What does an empty removal return? 값 -1과 빈 큐의 인덱스 -1을 구분한다. Explain why the caller copies data and explicitly recycles once, and why a void append is not an allocation-success result.
 
-## 7. What does the evidence establish? / 실행 근거는 무엇을 보여 주는가?
+## 7. Which rules must remain true? / 계속 지켜야 할 규칙은?
 
-Run the Week 7 tests and add three original safe groups: allocation/exhaustion including shared-pool accounting, insertion/traversal including first insertion, and detachment/recycling/reuse including linked Stack and Queue.
-세 테스트 그룹 안에서 공유 풀, 스택의 LIFO, 큐의 FIFO와 양 끝 전환을 검사한다.
+- Every active list and the free chain are acyclic, end at `-1`, and contain only indices 0–9.
+- Every slot belongs exactly once to the free chain, one active list, or a caller-held isolated allocation. Active lists are disjoint; every standalone list has its own saved first index.
+- A caller-held node ready for insertion, enqueue, or recycling has `next == -1` and no incoming live link.
+- The queue is empty exactly when both endpoints are `-1`; otherwise the tail is reachable and ends at `-1`.
+- Save payload/successor before recycling, then stop using the old owner's index. Index range alone does not establish ownership.
 
-Command / 명령: ____________________
-Expected and observed state / 예상과 관찰 상태: ____________________
-Correction and reason / 수정과 이유: ____________________
+For each operation distinguish its caller preconditions from its completed-state invariants. 사전 조건과 연산 후 불변식을 구분한다. Do not execute invalid non-sentinel indices, double return, stale writes, or recycling live nodes.
 
-Count the writes for a known-predecessor insertion and first-node Stack/Queue changes. Compare them with searching for the i-th node. Count one additional integer link per pool slot, without assuming an integer's byte size.
-이미 아는 위치의 연결 변경과 i번째 노드를 찾는 작업을 구분한다. 다음 위치 저장에 필요한 메모리도 센다.
+## 8. What does the evidence establish? / 실행 근거는 무엇을 보여 주는가?
+
+Use three original test groups: allocation/exhaustion/shared pool; insertion/traversal/first insertion; detachment/recycling/reuse with Stack LIFO and Queue FIFO/endpoints. Return every owned node between tests. Execute mutations outside assert; release builds may remove assertions.
+
+Command / 명령: ____________________ Expected/observed / 예상과 관찰: ____________________ Correction / 수정: ____________________
+
+Count fixed field work, O(n) predecessor/i-th-node search, O(C) first initialization and O(1) later calls, and one extra next integer per slot. 같은 한 제출물에 근거를 모은다.

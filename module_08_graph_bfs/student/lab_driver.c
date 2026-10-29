@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include "queue.c"
 
-/* Observe the imported public value queue without changing either BFS. */
+/* Observe Module 8 value adapters around Module 7 node operations. */
 static int inserted, removed_count, pending, peak_pending;
 static int scheduled[49], payload_order[49];
 
 static void check_pool_restored(void) {
     int seen[10] = {0};
     int count = 0;
-    assert(is_empty_queue() && head == -1 && tail == -1);
+    assert(is_empty_queue() && qhead == -1 && qtail == -1);
     for (int slot = free_head; slot != -1; slot = lnodes[slot].next) {
         assert(slot >= 0 && slot < 10 && !seen[slot]);
         seen[slot] = 1;
@@ -19,15 +19,15 @@ static void check_pool_restored(void) {
 }
 
 static void reset_linked_run(void) {
-    init_lnodes_pool(); /* No live owner remains between independent runs. */
-    head = tail = -1;
+    init_lnodes_pool(); /* One-time initialization; the previous run recycled all slots. */
+    assert(is_empty_queue() && qhead == -1 && qtail == -1);
     inserted = removed_count = pending = peak_pending = 0;
     for (int i = 0; i < 49; ++i) scheduled[i] = 0;
 }
 
 static void check_live_free_partition(void) {
     int free_count = 0, live_count = 0, seen[10] = {0};
-    for (int node = head; node != -1; node = lnodes[node].next) {
+    for (int node = qhead; node != -1; node = lnodes[node].next) {
         assert(node >= 0 && node < 10 && !seen[node]);
         seen[node] = 1;
         ++live_count;
@@ -162,15 +162,15 @@ static void check_canonical(void) {
 
 static void check_queues(void) {
     init_lnodes_pool();
-    head = tail = -1;
+    qhead = qtail = -1;
     assert(dequeue_lnode() == -1); /* The raw helper reports empty. */
     bool added = enqueue(17);
     assert(added);
     added = enqueue(23);
     assert(added);
-    assert(head == 0 && tail == 1 && lnodes[head].next == tail);
+    assert(qhead == 0 && qtail == 1 && lnodes[qhead].next == qtail);
     int value = dequeue();
-    assert(value == 17 && head == tail && head == 1 && free_head == 0);
+    assert(value == 17 && qhead == qtail && qhead == 1 && free_head == 0);
     value = dequeue();
     assert(value == 23 && is_empty_queue());
     check_pool_restored();
@@ -188,9 +188,9 @@ static void check_queues(void) {
     }
     struct Linked_Node saved[10];
     for (int i = 0; i < 10; ++i) saved[i] = lnodes[i];
-    int saved_head = head, saved_tail = tail;
+    int saved_head = qhead, saved_tail = qtail;
     added = enqueue(99);
-    assert(!added && free_head == -1 && head == saved_head && tail == saved_tail);
+    assert(!added && free_head == -1 && qhead == saved_head && qtail == saved_tail);
     for (int i = 0; i < 10; ++i)
         assert(saved[i].data == lnodes[i].data && saved[i].next == lnodes[i].next);
     for (int i = 0; i < 10; ++i) {

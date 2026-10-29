@@ -1,5 +1,8 @@
 # Week 09 — Chained Hashing and Two Sum: Vocabulary and Questions
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
 These questions follow [Module 09's lab.c](../module_09_hash_table/student/lab.c)

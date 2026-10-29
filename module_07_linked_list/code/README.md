@@ -223,4 +223,9 @@ make autopsy
 make autopsy-unsafe
 ```
 
-The linked queue example is included in the same `student/lab.c`. Its caller checks bool enqueue status and queue emptiness. Public dequeue returns a value and recycles internally; raw node helpers expose indices and separate recycling. Initialize the unused pool and reset `head = tail = -1` for an independent run. Module 8 reuses these functions.
+The required linked queue in `student/lab.c` uses `qhead`/`qtail` and
+node-index operations: allocate with `new_lnode()`, write `data`, enqueue
+the isolated node, then dequeue/read/recycle it. Empty dequeue returns `-1`;
+a payload of `-1` is valid. `init_lnodes_pool()` initializes once and later
+calls preserve state. Return every allocation between independent tests.
+Module 8 adds its own value adapters around these node operations.

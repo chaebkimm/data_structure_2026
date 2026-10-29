@@ -470,7 +470,6 @@ and the legacy pointer-based exercise's contracts.
 
 [Weekly vocabulary and scope](week_07_linked_list.md)
 
-
 ### Acyclic chains and saved first indices
 
 - How does a linked sequence in `lnodes[10]` differ from an ArrayList's active prefix even though both use contiguous arrays?
@@ -481,49 +480,49 @@ and the legacy pointer-based exercise's contracts.
 
 ### Predecessor link changes
 
-- Why must `link_lnode(prev, node)` copy the predecessor's old next link before replacing it?
-- Which links change when a new node is inserted between two existing nodes?
-- How can reversing the insertion writes make the new node point to itself and lose the old successor?
-- What does `delete_next_lnode(prev)` return when the predecessor has no following node?
-- Why does `delete_next_lnode(prev)` neither recycle the detached node nor clear its old next link?
-- Why must the caller manage a separate list-head change instead of passing `-1` as a predecessor?
-- Why are known-predecessor insertion and detachment constant work while finding that predecessor can take O(n)?
+- Why must `simple_link_lnode_to_prev(prev,node)` copy the predecessor's old next before replacing it?
+- Which links change when a node is inserted between two existing nodes?
+- How can reversing insertion writes create a self-link and lose the old successor?
+- What does `simple_delink_next_lnode_from_prev(prev)` return after a tail?
+- Why does detachment clear the removed next to -1 without recycling the node?
+- Why must the caller manage first-node changes instead of passing -1 as a predecessor?
+- Why is known-predecessor mutation constant work while finding the predecessor can take O(n)?
 
 ### Shared pool, costs, and recycling
 
-- Why can separate lists draw any available slot from one free chain without reserving a fixed array partition for each list?
-- How do the extra next field and saved endpoints increase storage compared with values alone?
-- How many next links must be followed to reach zero-based position i from the first node?
-- What chain does `init_lnodes_pool()` create, and why does slot 9 end in `-1`?
-- Why does initialization visit every reserved slot while one allocation uses a fixed number of updates?
-- What happens to live links if `init_lnodes_pool()` is called while any list still owns a slot?
-- How do `free_head` and the chosen node change when `new_lnode(17, -1)` succeeds?
-- What remains unchanged when an eleventh allocation returns `-1` from an exhausted pool?
-- Why does `free_lnode(node)` change the free chain without releasing C array storage?
-- Why must a node leave every live list before it is recycled?
-- How does detaching a node without returning it reduce the shared pool's available capacity?
-- Why can recycling the same valid index twice corrupt the free chain even though the bounds check passes?
-- If A returns slot 0 and B allocates 8 into slot 0, why can A's stale read see 8 and A's stale write damage B?
-- Why must all live and detached allocations across every list fit within the same ten slots?
+- Why can disjoint lists draw any available slot without fixed per-list partitions?
+- How do next fields and saved endpoints increase storage compared with values alone?
+- How many links reach zero-based position i from first?
+- What free chain does the first init_lnodes_pool call create?
+- Why is first initialization O(C) while later calls are O(1)?
+- How does the function-local static guard make repeated initialization a no-op, even when exhausted?
+- How do free_head, next, and retained data change when new_lnode() succeeds?
+- What remains unchanged on an eleventh allocation from an exhausted pool?
+- Why does free_lnode change links without releasing C array storage?
+- Why must a recyclable node be allocated, unreferenced, and isolated?
+- How does a missing return reduce available shared capacity?
+- Why can double recycling corrupt the free chain even for an in-range index?
+- If B reallocates A's returned slot and writes 8, why can A's stale access observe or damage B?
+- Why must all active and isolated allocations across lists fit within ten slots?
 
 ### Linked Stack from first-node operations
 
-- How does prepending 17,23,31 produce LIFO output 31,23,17 without a tail index?
-- Why must a caller check `new_lnode(value,first)` before replacing `first`?
-- Why must removal check `first != -1` before accessing the first node?
-- Which old index, data, and next values must be saved before advancing first and recycling the removed slot?
-- Why must a caller avoid reading or modifying the removed slot after it has been returned?
-- How do these caller-side steps implement a linked Stack even though `lab.c` supplies no linked push/pop API?
+- How does prepending 17,23,31 give LIFO output 31,23,17 without a tail?
+- Why must the caller check new_lnode() before assigning data/next and replacing first?
+- Why must removal check first!=-1 before array access?
+- Which old data/next must be saved before advancing first, isolating the old node, and recycling?
+- Why must the old owner stop reading or writing a recycled node?
+- How do these caller actions implement Stack despite no supplied push/pop API?
 
 ### Linked Queue from opposite-end operations
 
-- How does FIFO order differ from the linked Stack's LIFO order for values 17,23,31?
-- How does the first `enqueue(value)` allocate a node and set both `head` and `tail` to its pool slot?
-- Why does public `enqueue` allocate with next `-1`, and what remains unchanged when it returns `false` from an exhausted pool?
-- Which tail link changes when `enqueue_lnode` appends another detached node, and why is no tail search needed?
-- How does removing the only queued value restore both endpoints to `-1` and return its slot to the free chain?
-- How do the raw `dequeue_lnode()` pool-slot result and the public `dequeue()` value result differ, especially when the stored value is `-1`?
-- Why does public `dequeue()` copy the payload before recycling, and why must the caller avoid recycling that slot a second time?
-- Why must the caller check `is_empty_queue()` before public dequeue even though a debug assertion diagnoses an empty request?
-- Why must `enqueue(value)` run outside an `assert` expression when builds may define `NDEBUG`?
-- Which shared-pool, linked Stack LIFO, and linked Queue FIFO/endpoint evidence belongs inside the same three original test groups and single Week 7 artifact?
+- How does FIFO output differ from Stack LIFO for 17,23,31?
+- How does the first enqueue_lnode(index) set both qhead and qtail?
+- Why must allocation/check/data assignment occur before the void enqueue_lnode call?
+- Which tail link changes on append, and why must the appended node already be isolated?
+- How does removing the sole queued node clear both endpoints while leaving it allocated?
+- How does dequeue_lnode's returned index differ from payload -1 and from its empty index -1?
+- Why must the caller copy data and explicitly recycle once after successful dequeue?
+- Which empty dequeue and sentinel enqueue/free calls are defined no-ops, and which other invalid indices are outside contract?
+- Why must mutations run outside assert when NDEBUG may remove assertions?
+- Which shared-pool, Stack LIFO, and Queue FIFO/endpoint evidence belongs inside three test groups and one artifact?

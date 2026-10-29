@@ -1,7 +1,7 @@
 """Package the Module 7 indexed linked-list lab and linked queue example."""
 import argparse
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
 def main():
@@ -33,7 +33,13 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(args.output, "x", ZIP_DEFLATED) as archive:
         for name, data in sorted(files.items()):
-            archive.writestr(name, data)
+            # Stable metadata makes the same canonical sources produce the
+            # same download bytes, including when synchronized to the website.
+            entry = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            entry.compress_type = ZIP_DEFLATED
+            entry.create_system = 3
+            entry.external_attr = 0o100644 << 16
+            archive.writestr(entry, data)
     print(args.output.resolve())
 
 

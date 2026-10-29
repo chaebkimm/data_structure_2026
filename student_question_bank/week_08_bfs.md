@@ -1,5 +1,8 @@
 # Week 8 — Queues, Tree BFS, and Graph BFS: Vocabulary and Questions
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
 ## Required scope for the 14-week course
@@ -36,7 +39,7 @@ checked status returns, or matrix/list backends.
 
 Reset `front = 0; rear = -1;` before independent array-queue comparisons.
 Before each independent tree or maze search, prepare the otherwise-unused
-pool with `init_lnodes_pool()` and set `head = tail = -1`. Run `init_info()`
+pool with `init_lnodes_pool()` and set `qhead = qtail = -1`. Run `init_info()`
 before each maze search. A tree has one parent path;
 a graph can reach the same passage again, so maze discovery prevents a
 second enqueue while equal-distance arrivals record additional predecessors.
@@ -76,7 +79,7 @@ are bounds for these fixtures, not a claim that every graph fits ten slots.
 | iterator state | Global `cur_point` and `state`, used to return the four neighbors of one current cell. |
 | deterministic neighbor order | The supplied right, left, down, up inspection order, which fixes dequeue and predecessor-list order. |
 | linear array queue | A comparison implementation in `queue.c`, whose `front` and `rear` advance without reusing removed slots. |
-| linked-worklist reset | Preparing an otherwise-unused pool with `init_lnodes_pool()` and setting `head=tail=-1` before a search. |
+| linked-worklist reset | Preparing an otherwise-unused pool with `init_lnodes_pool()` and setting `qhead = qtail = -1` before a search. |
 | wall-border condition | A zero outer border that keeps neighbors of queued interior passages inside the grid. |
 | path reconstruction | Following stored predecessors backward, then reversing the collected points to present a forward route. |
 | route count | The number of complete shortest routes, which can exceed the target's immediate predecessor count. |

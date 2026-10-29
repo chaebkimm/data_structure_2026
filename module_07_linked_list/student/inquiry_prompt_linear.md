@@ -52,7 +52,7 @@ Records carrying 17,23,31 arrive one at a time. Place every arrival before the o
 
 1. What is the resulting chain, and in what order do records leave?
 2. Which old first position must a new record remember before becoming first?
-3. Before returning the first record's place, which data and continuation must be saved?
+3. Before returning the first record's place, which data and continuation must be saved, and how can its continuation be marked END after the first-place marker advances?
 4. What should happen if no record exists, or if no available place remains?
 
 Response: ___________________________________________________________

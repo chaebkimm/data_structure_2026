@@ -1,5 +1,8 @@
 # Module 09 Instructor Answer Key — Chaining and Two Sum
 
+Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+
+
 Accept equivalent spatial or linear traces, typed or verbal evidence, and
 correct explanations in the student's own words. Lock exact numbers only
 when a fixture fixes initialization and operation order. The source is
@@ -78,7 +81,7 @@ caller-visible probe-count result is supplied.
 
 Before explicit initialization, `free_head=-1`. Static zeroed node records
 do not form a valid initialized free chain. `init_lnodes_pool()` creates
-`0→1→…→9→-1`, zeros data, and sets `free_head=0`. Empty bucket heads
+`0→1→…→9→-1` and sets `free_head=0` only on the first call. It does not assign data; later calls are no-ops. Empty bucket heads
 must accompany a fresh pool setup. Never reinitialize a pool while active
 bucket chains still reference its nodes.
 

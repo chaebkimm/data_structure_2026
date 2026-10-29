@@ -1,191 +1,177 @@
+#include <string.h>
 #include "lab_test_support.h"
 
-static void expect_free_count(int expected)
+static void expect_partition(const int *owned, int owned_count)
 {
-    int seen[10] = {0};
-    int count = 0;
+    int seen[CAPACITY] = {0};
+    for (int i = 0; i < owned_count; ++i) {
+        CHECK(owned[i] >= 0 && owned[i] < CAPACITY && !seen[owned[i]]);
+        seen[owned[i]] = 1;
+    }
+    int count = owned_count;
     for (int node = free_head; node != -1; node = lnodes[node].next) {
-        assert(node >= 0 && node < 10);
-        assert(!seen[node]);
+        CHECK(node >= 0 && node < CAPACITY && !seen[node]);
         seen[node] = 1;
         ++count;
-        assert(count <= 10);
     }
-    assert(count == expected);
+    CHECK(count == CAPACITY);
 }
 
-static void expect_nodes_equal(const struct Linked_Node saved[10],
-                               int saved_free_head)
+static void expect_state(const struct Linked_Node saved[CAPACITY],
+                         int saved_free, int saved_head, int saved_tail)
 {
-    assert(free_head == saved_free_head);
-    for (int i = 0; i < 10; ++i) {
-        assert(lnodes[i].data == saved[i].data);
-        assert(lnodes[i].next == saved[i].next);
+    CHECK(free_head == saved_free && qhead == saved_head && qtail == saved_tail);
+    for (int i = 0; i < CAPACITY; ++i) {
+        CHECK(lnodes[i].data == saved[i].data);
+        CHECK(lnodes[i].next == saved[i].next);
     }
 }
 
-static void test_pool_exhaustion_and_reuse(void)
+static void test_pool_exhaustion_and_one_time_init(void)
 {
-    struct Linked_Node saved[10];
-    reset_lab();
-    expect_free_count(10);
-    for (int i = 0; i < 10; ++i) {
-        assert(lnodes[i].data == 0);
-        assert(lnodes[i].next == (i == 9 ? -1 : i + 1));
-        int node = new_lnode(100 + i, -1);
-        assert(node == i);
-        assert(lnodes[node].data == 100 + i);
-        assert(lnodes[node].next == -1);
+    expect_clean_lab();
+    int owned[CAPACITY];
+    for (int i = 0; i < CAPACITY; ++i) {
+        CHECK(lnodes[i].data == 0); /* Static initial storage, not an allocator promise. */
+        CHECK(lnodes[i].next == (i == CAPACITY - 1 ? -1 : i + 1));
+        owned[i] = allocate_value(100 + i);
+        CHECK(owned[i] == i);
     }
-    expect_free_count(0);
-    for (int i = 0; i < 10; ++i) {
-        saved[i] = lnodes[i];
-    }
-    assert(new_lnode(999, -1) == -1);
-    expect_nodes_equal(saved, -1);
-    free_lnode(-1);
-    free_lnode(10);
-    expect_nodes_equal(saved, -1);
+    expect_partition(owned, CAPACITY);
+    struct Linked_Node saved[CAPACITY];
+    memcpy(saved, lnodes, sizeof saved);
+    int exhausted = new_lnode();
+    CHECK(exhausted == -1);
+    expect_state(saved, -1, -1, -1);
+    free_lnode(-1); /* Only the -1 sentinel has a defined no-op contract. */
+    enqueue_lnode(-1);
+    init_lnodes_pool(); /* Cannot reset an allocated pool or erase its values. */
+    expect_state(saved, -1, -1, -1);
 
-    /* All ten allocated slots are detached; returning slot 4 is valid. */
-    free_lnode(4);
-    assert(free_head == 4 && lnodes[4].next == -1);
-    expect_free_count(1);
-    assert(new_lnode(-7, -1) == 4);
-    assert(lnodes[4].data == -7 && lnodes[4].next == -1);
-    expect_free_count(0);
-    for (int i = 0; i < 10; ++i) {
-        free_lnode(i);
-    }
-    expect_free_count(10);
+    int recycled = owned[4];
+    free_lnode(recycled);
+    CHECK(free_head == recycled && lnodes[recycled].next == -1);
+    int reused = new_lnode();
+    CHECK(reused == recycled && lnodes[reused].data == 104);
+    CHECK(lnodes[reused].next == -1); /* Allocation does not initialize data. */
+    for (int i = 0; i < CAPACITY; ++i) free_lnode(owned[i]);
+    expect_clean_lab();
 }
 
-static void test_insertion_detachment_and_reuse(void)
+static void test_insertion_detachment_and_shared_reuse(void)
 {
-    reset_lab();
-    int first = new_lnode(17, -1);
-    int middle = new_lnode(23, -1);
-    int last = new_lnode(31, -1);
-    assert(first == 0 && middle == 1 && last == 2);
-    link_lnode(first, last);
-    link_lnode(first, middle);
-    assert(lnodes[first].next == middle);
-    assert(lnodes[middle].next == last);
-    assert(lnodes[last].next == -1);
-    assert(lnodes[first].data == 17 && lnodes[middle].data == 23);
-    assert(lnodes[last].data == 31);
-
-    int detached = delete_next_lnode(first);
-    assert(detached == middle && lnodes[first].next == last);
-    assert(lnodes[detached].next == last); /* Detach does not clear the link. */
-    assert(free_head == 3);              /* Detach does not free a slot. */
-    expect_free_count(7);
+    expect_clean_lab();
+    int first = allocate_value(17), middle = allocate_value(23);
+    int last = allocate_value(31), other = allocate_value(90);
+    int owned[] = {first, middle, last, other};
+    simple_link_lnode_to_prev(first, last);
+    simple_link_lnode_to_prev(first, middle);
+    CHECK(lnodes[first].next == middle && lnodes[middle].next == last);
+    CHECK(lnodes[last].next == -1 && lnodes[other].next == -1);
+    expect_partition(owned, 4);
+    int saved_free = free_head;
+    int detached = simple_delink_next_lnode_from_prev(first);
+    CHECK(detached == middle && lnodes[first].next == last);
+    CHECK(lnodes[detached].next == -1 && free_head == saved_free);
     free_lnode(detached);
-    assert(free_head == middle && lnodes[middle].next == 3);
-    assert(new_lnode(8, -1) == middle);
-    assert(lnodes[middle].data == 8 && lnodes[middle].next == -1);
+    int reused = allocate_value(8);
+    CHECK(reused == middle);
+    simple_link_lnode_to_prev(other, reused); /* The other list shares the pool. */
+    CHECK(lnodes[other].next == reused && lnodes[reused].next == -1);
+    CHECK(lnodes[first].next == last && lnodes[last].data == 31);
+    expect_partition(owned, 4);
 
-    struct Linked_Node saved[10];
-    for (int i = 0; i < 10; ++i) {
-        saved[i] = lnodes[i];
-    }
-    assert(delete_next_lnode(last) == -1);
-    expect_nodes_equal(saved, 3);
-    assert(delete_next_lnode(first) == last);
-    assert(lnodes[first].next == -1);
-    free_lnode(last);
+    struct Linked_Node saved[CAPACITY];
+    memcpy(saved, lnodes, sizeof saved);
+    int absent = simple_delink_next_lnode_from_prev(last);
+    CHECK(absent == -1);
+    expect_state(saved, saved_free, -1, -1);
+    detached = simple_delink_next_lnode_from_prev(first);
+    CHECK(detached == last && lnodes[first].next == -1);
+    free_lnode(detached);
     free_lnode(first);
-    free_lnode(middle);
-    expect_free_count(10);
+    detached = simple_delink_next_lnode_from_prev(other);
+    CHECK(detached == reused);
+    free_lnode(detached);
+    free_lnode(other);
+    expect_clean_lab();
 }
 
-static void test_supplied_successor_and_first_removal(void)
+static void test_caller_owned_stack(void)
 {
-    reset_lab();
-    int first = new_lnode(31, -1);
-    int added = new_lnode(23, first);
-    assert(added != -1 && lnodes[added].next == first);
-    first = added;
-    added = new_lnode(17, first);
-    assert(added != -1 && lnodes[added].next == first);
-    first = added;
-    assert(lnodes[first].data == 17);
-    int removed = first;
-    first = lnodes[first].next;
-    free_lnode(removed);
-    assert(lnodes[first].data == 23 && free_head == removed);
-    assert(lnodes[removed].next == 3);
-    expect_free_count(8);
+    expect_clean_lab();
+    int first = -1;
+    const int values[] = {17, 23, 31};
+    for (int i = 0; i < 3; ++i) {
+        int node = allocate_value(values[i]);
+        lnodes[node].next = first;
+        first = node;
+    }
+    for (int i = 2; i >= 0; --i) {
+        CHECK(first != -1);
+        int removed = first;
+        int value = lnodes[removed].data;
+        first = lnodes[removed].next;
+        lnodes[removed].next = -1; /* Isolate before passing to free_lnode. */
+        free_lnode(removed);
+        CHECK(value == values[i]);
+    }
+    CHECK(first == -1);
+    expect_clean_lab();
 }
 
-static void test_linked_queue_example(void)
+static void test_index_queue_and_recycling(void)
 {
-    struct Linked_Node saved[10];
-    reset_lab();
-    assert(is_empty_queue() && head == -1 && tail == -1);
-    int empty_slot = dequeue_lnode();
-    assert(empty_slot == -1);
-    expect_free_count(10);
-    for (int i = 0; i < 10; ++i) {
-        bool added = enqueue(100 + i);
-        assert(added);
-        assert(head == 0 && tail == i && lnodes[tail].next == -1);
+    expect_clean_lab();
+    struct Linked_Node saved[CAPACITY];
+    memcpy(saved, lnodes, sizeof saved);
+    int saved_free = free_head;
+    int empty = dequeue_lnode();
+    CHECK(empty == -1);
+    expect_state(saved, saved_free, -1, -1);
+    int slots[CAPACITY];
+    for (int i = 0; i < CAPACITY; ++i) {
+        slots[i] = allocate_value(i == 0 ? -1 : 100 + i);
+        enqueue_lnode(slots[i]);
+        CHECK(qhead == slots[0] && qtail == slots[i]);
+        CHECK(lnodes[qtail].next == -1);
     }
-    for (int i = 0; i < 10; ++i) saved[i] = lnodes[i];
-    int saved_head = head, saved_tail = tail;
-    bool added = enqueue(999);
-    assert(!added && head == saved_head && tail == saved_tail);
-    expect_nodes_equal(saved, -1);
-    int value = dequeue();
-    assert(value == 100 && head == 1 && tail == 9 && free_head == 0);
-    added = enqueue(999);
-    assert(added && head == 1 && tail == 0 && lnodes[9].next == 0);
-    for (int i = 1; i < 10; ++i) {
-        assert(!is_empty_queue());
-        value = dequeue();
-        assert(value == 100 + i);
+    expect_partition(slots, CAPACITY);
+    memcpy(saved, lnodes, sizeof saved);
+    init_lnodes_pool();
+    expect_state(saved, -1, slots[0], slots[CAPACITY - 1]);
+    int exhausted = new_lnode();
+    CHECK(exhausted == -1);
+    enqueue_lnode(exhausted);
+    expect_state(saved, -1, slots[0], slots[CAPACITY - 1]);
+    for (int i = 0; i < CAPACITY; ++i) {
+        int node = dequeue_lnode();
+        CHECK(node == slots[i] && lnodes[node].next == -1);
+        CHECK(lnodes[node].data == (i == 0 ? -1 : 100 + i));
+        CHECK(free_head == (i == 0 ? -1 : slots[i - 1]));
+        if (i + 1 < CAPACITY) CHECK(qhead == slots[i + 1]);
+        else CHECK(qhead == -1 && qtail == -1);
+        free_lnode(node); /* Dequeue returns an index and does not recycle it. */
     }
-    assert(head == 0 && tail == 0);
-    value = dequeue();
-    assert(value == 999 && is_empty_queue() && head == -1 && tail == -1);
-    expect_free_count(10);
-
-    /* A payload of -1 is valid; only the raw helper uses -1 for no slot. */
-    added = enqueue(-1);
-    assert(added && !is_empty_queue());
-    value = dequeue();
-    assert(value == -1 && is_empty_queue());
-    expect_free_count(10);
-
-    /* The raw helper detaches but does not recycle its index. */
-    int first = new_lnode(17, -1), second = new_lnode(23, -1);
-    assert(first != -1 && second != -1);
-    enqueue_lnode(first);
-    enqueue_lnode(second);
-    int removed = dequeue_lnode();
-    assert(removed == first && lnodes[removed].data == 17);
-    assert(head == second && tail == second && lnodes[removed].next == second);
-    expect_free_count(8);
-    free_lnode(removed);
-    value = dequeue();
-    assert(value == 23 && is_empty_queue());
-    expect_free_count(10);
-
+    expect_clean_lab();
     for (int i = 0; i < 30; ++i) {
-        added = enqueue(i);
-        assert(added && head == tail);
-        value = dequeue();
-        assert(value == i && is_empty_queue() && head == -1 && tail == -1);
-        expect_free_count(10);
+        int node = allocate_value(i);
+        enqueue_lnode(node);
+        CHECK(qhead == node && qtail == node);
+        int removed = dequeue_lnode();
+        CHECK(removed == node && lnodes[removed].data == i);
+        CHECK(is_empty_queue() && qhead == -1 && qtail == -1);
+        free_lnode(removed);
+        expect_clean_lab();
     }
 }
 
 int main(void)
 {
-    test_pool_exhaustion_and_reuse();
-    test_insertion_detachment_and_reuse();
-    test_supplied_successor_and_first_removal();
-    test_linked_queue_example();
+    test_pool_exhaustion_and_one_time_init();
+    test_insertion_detachment_and_shared_reuse();
+    test_caller_owned_stack();
+    test_index_queue_and_recycling();
     puts("Week 7 linked-list core tests passed.");
     return 0;
 }

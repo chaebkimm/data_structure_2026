@@ -1,5 +1,8 @@
 # Instructor Technical Notes — Module 8 Graph BFS
 
+Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+
+
 ## Required queue and tree checkpoints
 
 Week 7 teaches linked lists with a linked queue example. Week 8 retrieves that queue, compares array queues, then uses the same linked implementation for tree BFS and graph BFS. The combined driver is [lab_driver.c](../student/lab_driver.c). The [lesson plan](lesson_plan.md) budgets 60/30/60/30 minutes,180 total, for those topics and testing/synthesis.
@@ -9,7 +12,7 @@ Week 7 teaches linked lists with a linked queue example. Week 8 retrieves that q
 - Circular queue[25]:24 usable values; after filling 0..23, removing 0/1, and appending 24/25, front 2, rear 0 and full true. Drain order 2..25.
 - Module 2's tree: root F(index 5), children A/G, A→B/C, B→D/E. Pending after F, A, G, B is [0,6], [6,1,2], [1,2], [2,3,4]. Output indices 5,0,6,1,2,3,4 or F, A, G, B, C, D, E. Seven processed nodes and fourteen child checks. Empty root -1 returns 0; one-node root3 returns 1.
 - Tree inputs are acyclic with no shared children and at most ten nodes. The tree needs no discovery flag under that contract. General graph cycles/merges require discovery-before-enqueue.
-- Array variants share one queue and counters. Reset front 0, rear -1 before independent array comparisons. Tree/maze runs initialize the otherwise unowned pool and set head=tail=-1; maze runs also call init_info. No prepared teaching copy is needed.
+- Array variants share one queue and counters. Reset front 0, rear -1 before independent array comparisons. Tree/maze runs ensure every prior allocation is recycled, call the guarded initializer and set qhead = qtail = -1; maze runs also call init_info. No prepared teaching copy is needed.
 
 
 Both BFS loops call public `enqueue(id)` and `dequeue()` without manual queue-node allocation or recycling. Enqueue is executed outside assert, its Boolean result is saved, and success is asserted. With NDEBUG, valid enqueue calls still execute. The supplied tree peaks at three entries; the canonical maze peaks at four and all current-maze starts at six. All ten slots return after traversal. An open 5 × 5 interior peaks at ten over all starts. BFS capacity assertions diagnose a violated precondition; the public enqueue itself reports pool exhaustion as false. Array queues are comparisons only.
