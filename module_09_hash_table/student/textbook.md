@@ -95,11 +95,12 @@ that the bucket has no chain. A nonnegative value selects a record in
 `lnodes[10]`. That record's `next` selects another record or ends at -1.
 Bucket positions and node positions belong to different arrays.
 
-Before the first allocation, call `init_lnodes_pool()`. It creates the free
-chain `0 → 1 → ... → 9 → -1` and sets `free_head` to 0. The initial
-`hashtable` heads are already -1. A call to `init_hashtable()` alone does
-not initialize the free pool. Before `init_lnodes_pool()`, `free_head` is -1 and
-`new_lnode` reports exhaustion.
+The first allocation calls `init_lnodes_pool()` through `new_lnode()`.
+On its first call, the initializer creates the free chain
+`0 → 1 → ... → 9 → -1` and sets `free_head` to 0. You may also call the
+initializer explicitly before an experiment. Later calls do nothing;
+they cannot reset the pool. The initial `hashtable` heads are already -1.
+`init_hashtable()` recycles owned bucket chains; it does not recreate the pool.
 
 For a small storage experiment, start with the fresh pool and save 12, 22,
 and -8 into bucket 2, in that order. Each call puts the new node before the
@@ -185,14 +186,14 @@ the tail to the existing free chain and makes the supplied head the new
 
 Recycling changes links. It does not clear old payloads. A recycled node is
 available because it belongs to the free chain, not because its data is 0.
-The next allocation overwrites its payload and `next`.
+The next `save_data` call writes its new payload and chain link.
 
 Every active chain must be valid, acyclic, and disjoint from the free chain
 and the other active chains. Do not recycle one chain twice. The helper
-`free_lnode_chunk` does not clear a bucket head itself. Resetting the pool
-with `init_lnodes_pool()` while buckets still point into it would make those
-nodes both available and active. Clear the table before deliberately
-reinitializing an otherwise unused pool.
+`free_lnode_chunk` does not clear a bucket head itself. `init_hashtable()`
+both recycles each owned chain and clears its head. Calling
+`init_lnodes_pool()` again changes neither the active chains nor the free
+chain. Use chain recycling to make allocated nodes available again.
 
 If `new_lnode` finds `free_head == -1`, it returns -1 without changing the
 pool. `save_data` then returns -1 without changing the bucket head. In
@@ -274,14 +275,15 @@ We can now attach names to the operations already traced.
 
 Use the source to explain each action before testing it.
 
-1. Initialize the unused node pool once with `init_lnodes_pool()`.
+1. Trace the first allocation's one-time pool initialization.
 2. Trace `hash_func` on negative and positive numbers.
 3. Trace `save_data` through allocation, next-link assignment, and head update.
 4. Trace `find_data` through payload comparisons and the -1 stopping marker.
 5. Trace `free_lnode_chunk` and `init_hashtable` through chain recycling.
 6. Trace `two_sum_bf` in `i` then `j` order.
 7. Trace `two_sum_ht` through complement lookup before current-index storage.
-8. Write a driver that asserts results, chains, reset behavior, and exhaustion.
+8. Write a driver that asserts results, chains, table clearing, repeated
+   initialization, and exhaustion.
 
 The implementation is supplied. There are no required rehashing,
 dynamic-allocation, or individual-deletion implementation tasks.

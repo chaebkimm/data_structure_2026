@@ -45,7 +45,15 @@ Inside Network | Waiting Outside
      A         | B, C, D, E
 ```
 
-Any network that connects everyone *must* build at least one bridge crossing between these two groups. Why is picking the cheapest one perfectly safe? If the absolute cheapest possible network somehow didn't use the cheap bridge we just picked, we could force it in! Adding our cheap bridge would create a loop, and if we simply broke the loop by deleting a more expensive road, the overall price tag would get even smaller! Because of this logic, there is always a champion network that includes the cheapest crossing road.
+Any network that connects everyone must include an edge crossing between
+these two groups. Take a cheapest connecting tree that contains the edges
+already accepted. If it omits the chosen cheapest crossing edge, add that
+edge. The resulting cycle contains another edge crossing the same boundary.
+Previously accepted edges lie inside the growing group, so the other crossing
+edge is not one of them. Remove that other crossing edge. It costs at least
+as much as the chosen edge, so the exchange does not increase the total cost.
+Equal weights leave the total unchanged. The result is still a cheapest
+connecting tree and contains the accepted edges plus the chosen edge.
 
 ### What do we write down for the towns waiting outside?
 

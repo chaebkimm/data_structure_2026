@@ -1,5 +1,49 @@
 # Korean Textbook Validation Record
 
+## Six review findings repaired — 2026-10-30
+
+- Chapter 5: restored the documented `capacity` import adaptation in the
+  canonical lab. Repository and website sources now agree. Lecture and all
+  seven lab tests pass normally and with ASan/UBSan, both in the repository
+  layout and the assembled 22-member Stage E layout. All 38 release source
+  mappings resolve. PowerShell itself was not available.
+- Active pilot: replaced obsolete dynamic-array, pointer-tree, directed
+  iterative-DFS, linked-node, alert-Heap, and lazy-Dijkstra questions with
+  current-source questions. The new participant check sheet has four required
+  prompts per chapter. All 56 check and 14 transfer prompts match their keys;
+  all 43 prerequisite/stage prompts match their criteria. Current-chapter
+  concepts are checked only after introduction. Scoring requires requested
+  results and reasons; unasked verification notes are not extra requirements.
+  README and learner/facilitator templates follow the same protocol. All 89
+  active-pilot local links resolve. Numeric transfer fixtures were executed
+  against current sources, with independent traces/oracles where appropriate.
+- Chapter 9: corrected first-allocation initialization, subsequent no-ops,
+  caller payload assignment, and table-chain recycling. Source probes verify
+  first use, repeated initialization, and exhaustion; current core/student
+  suites pass.
+- Chapter 10: both complete C blocks exactly match the current lab, including
+  `update_value`. Added matching min/max-mode preconditions, repair directions,
+  position meaning, examples, plan, and cost. Direct update probes and current
+  core/student suites pass.
+- Foundations: Chapter 0 English/Korean count concrete ID inspections before
+  notation, separate work/input/extra storage, and distinguish best, average,
+  and worst cases. Chapter 2 defines depth and edge height, explains four
+  node calls plus a stopping call, and uses `O(h + 1)` extra storage. Source
+  instrumentation confirms five peak calls and expression result 6. The
+  stale Chapter 2 vocabulary row was corrected.
+- Chapter 14 reference: the cut exchange removes another crossing edge of
+  equal or greater weight; total cost does not increase, including ties.
+
+The local website's Chapter 0 component/translations/glossary and Chapter 2
+raw readings match the repaired texts. All 75 website tests, TypeScript, and
+the production build pass. Browser checks verify both languages. Course and
+website diff whitespace checks pass. These are local changes, not a new
+published website version.
+
+Historical simulation records and the actual-pilot status are unchanged.
+These technical/editorial checks do not establish beginner reading success;
+no actual participant responses were collected.
+
 ## Module 7 current-slide and webpage alignment — 2026-10-28
 
 Homepage follow-up: `/`, `/ko`, and `/en` all open Chapter 7. The stale

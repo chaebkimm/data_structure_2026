@@ -56,7 +56,9 @@ A node stores one `char` and two `int` members. `nodes[10]` reserves ten slots e
 
 ### How much memory is used for iterating over items?
 
-Recursive calls keep temporary state for the current path. Extra memory grows with tree height: `O(h)`.
+Each unfinished recursive call keeps its own temporary state. Along the alphabet tree's longest path `F → A → B → D`, four node calls can be active at once. The path contains three child links. A node's depth is the number of links from the root to that node; D has depth 3. Tree height is the largest node depth, so this tree has height `h = 3`. A tree containing only its root has height 0.
+
+A path with `h` links contains `h + 1` nodes. `tree_recursion` can briefly add one stopping call for a missing child, such as index `-1` below D. The example then has five active calls. This extra call adds only a fixed amount. The additional storage for recursive calls is `O(h + 1)`. The `+ 1` also accounts for the root call when height is 0. Reserved node-array storage is counted separately.
 
 ### How fast is creating or adding one item?
 

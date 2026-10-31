@@ -22,17 +22,27 @@ Programmers organize stored information according to the actions a program perfo
 
 Programs consume processing time and memory. Efficiency is the evaluation of the processing steps and memory required under a specific workload. Because a data structure often uses additional memory to reduce processing work, both resources cannot always be minimized simultaneously.
 
-### How to evaluate efficiency
+### How can we count the work?
 
-Running a program always requires a baseline amount of work and memory. Small examples make different methods appear similar. Their growth patterns become clearer as the amount of data increases. Programmers evaluate efficiency by analyzing how the required work and memory scale as the data grows.
+Store ten user IDs in an array. If we know the position we want, reading that item inspects one ID. If we know only the ID's value, compare items from the beginning until a match appears. Finding the last item or confirming that no match exists inspects all ten IDs.
 
-### How to express efficiency
+Now store one hundred IDs. Reading a known position still inspects one ID. Searching for a value at the end or absent from the array inspects one hundred IDs. Count the inspected items first, then ask how that count changes as the input grows.
 
-Programmers use Big O notation to name the growth patterns of work and memory. Letting n represents the amount of input, O(1) means the task requires a constant amount of work and memor. O(n) menas the work and memory grows proportionally with the amount of data.
+### How does storage grow?
 
-### Preparing for the worst
+The array needs ten integer slots for ten IDs and one hundred slots for one hundred IDs. Either search can use a fixed number of extra variables to record the current position and target. The stored input grows, while the extra search storage stays constant. Count processing work, stored input, and extra storage separately.
 
-Because small amounts of data are always fast to process, programmers measure efficiency by looking at the worst possible situation. We don't ask how fast the computer is on a good day when the user we want is the very first one we check. We ask: "If we have one million users and the one we need is at the very end of the database—or not there at all—how much work will the computer have to do?"
+### How do we express this growth?
+
+Let `n` be the number of stored IDs. A cost whose bound stays constant as `n` grows is written `O(1)`. Reading a known position takes `O(1)` work. A cost bounded by a constant multiple of `n` for large enough inputs is written `O(n)`. Checking every ID takes `O(n)` work. This way of expressing a growth bound is called Big O notation.
+
+The array uses `O(n)` storage, and the search uses `O(1)` extra storage. A time bound describes work; a space bound describes storage. A linear search can therefore take `O(n)` time while using `O(1)` extra space.
+
+### Which search case are we counting?
+
+A value search can stop after one comparison if the first ID matches. This is the best case. It needs `n` comparisons if the ID is last or absent. This is the worst case. An average depends on how often the different cases occur in the workload.
+
+State the case before giving its cost. Here the value search has `O(1)` best-case time and `O(n)` worst-case time. Big O describes a bound on the chosen cost; the notation itself does not select the worst case.
 
 ## Glossary
 
@@ -50,12 +60,12 @@ The measure of the processing time and memory required for a workload, often inv
 
 ### Big O notation
 
-A standard notation programmers use to classify how a computer's workload scales as the amount of data grows.
+A notation for an upper bound on how work or storage grows with the input size. State the measured resource and the input case separately.
 
 ### O(1)
 
-Pronounced "O of 1." A classification meaning the amount of work does not grow based on the amount of data. The task requires a constant amount of effort whether there is one item or one million.
+Pronounced "O of 1." A constant upper bound as the input grows. Reading one known array position takes constant work; keeping a fixed number of search variables takes constant extra storage.
 
 ### O(n)
 
-Pronounced "O of N." A classification meaning the workload grows proportionally with the amount of data. More data equals more work.
+Pronounced "O of N." An upper bound proportional to input size `n`. Inspecting every stored ID takes linear work; storing all `n` IDs takes linear space.

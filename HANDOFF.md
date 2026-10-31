@@ -1,6 +1,39 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-10-28.
+Updated: 2026-10-30.
+
+## Six textbook review repairs — 2026-10-30
+
+Chapter 5's canonical lab now includes the documented temporary `capacity`
+rename when importing the Stack lab. It matches the existing website download.
+Lecture and all seven lab tests pass normally and under ASan/UBSan, including
+the assembled standalone Stage E release layout.
+
+The active beginner pilot now has a participant check-question sheet with
+four required questions per chapter, one transfer exercise per chapter, and
+matching facilitator criteria. Its 56 check pairs, 14 transfer pairs, and
+43 prerequisite/stage pairs follow the current fixed ArrayList, indexed
+trees, undirected BCC, raw linked-node pool, Module 8 value adapters,
+integer/schedule Heaps, indexed Dijkstra, character AVL, and required Week 14
+DSU/Kruskal lesson. New concepts are checked after their introduction.
+README and response/log templates use the same four-question protocol.
+Historical simulations and actual-pilot status are unchanged; no beginner
+responses were collected.
+
+Chapter 9 now explains automatic first-use pool initialization and later
+no-ops. Both Chapter 10 editions include the exact current lab plus the
+ordinary value-update explanation. Chapter 0 counts work before notation,
+separates time and storage, and distinguishes input cases; Chapter 2 defines
+depth/height and `O(h + 1)` call storage. The retained Chapter 14 reference's
+exchange proof handles equal weights without claiming a lower total cost.
+
+Local website Chapter 0/2 content and glossary are synchronized. Its 75 tests,
+TypeScript check, and production build pass. Browser checks cover both
+languages' corrected explanations. Transfer fixture results were checked
+against the actual sources; all 89 active-pilot local links resolve.
+Changes remain local in the course and separate website checkouts; no
+commit, push, or deployment was performed. PowerShell release wrappers
+received static inspection because PowerShell is unavailable.
 
 ## Module 7 current-slide and webpage alignment — 2026-10-28
 
@@ -1012,3 +1045,141 @@ with ASan/UBSan in debug and NDEBUG builds. Final archive copies for Modules
 7/8/9 exactly match the latest user source; 672 local links across
 155 current files resolve. PowerShell runners were not executed.
 The 14-module sequence and both weekly submission/time budgets are retained.
+
+## 2026-10-30 — Anonymous website visitor analytics
+
+Published Sites version 202 at https://data-structures.chaebinkim.chatgpt.site,
+website source commit `044215ba1079f9fa2dfbe7bb154cbd7ca2fc208f`.
+The instructor dashboard is `/analytics`; access is restricted by the
+server-side `ANALYTICS_ADMIN_EMAILS` runtime secret and platform ChatGPT identity.
+Production sign-in and live reports/session timeline were verified in Safari.
+The in-app browser's OpenAI account chooser returned an auth error; Safari's
+ordinary Google sign-in completed successfully.
+
+`.openai/hosting.json` now binds D1 as `DB`. Generated migration
+`drizzle/0000_familiar_jigsaw.sql` creates `analytics_events` and indexes.
+Global recording mounts from `app/root-document.tsx`, assigns anonymous browser
+and tab session IDs, and batches page views, clicks, input-change activity
+without values, navigation, disclosure state, section views, scroll checkpoints,
+and visible active time to `/api/analytics/events`. Sessions expire after
+30 minutes idle; visitor IDs rotate after 90 days. The bilingual footer explains
+recording and supports opt-out; browser DNT/GPC is respected. Names, emails,
+IP addresses, URL queries, typed input values, keystrokes, and DOM replay are not
+stored by the analytics feature. Platform infrastructure logs are separate.
+
+Reports cover 7/30/90 days, show the newest 100 sessions, and display/export up
+to 2,000 events for a selected session. Events older than 90 days are omitted
+from reports and removed during subsequent ingestion/report activity. API
+validation caps requests at 64 KiB and 50 events, enforces same-origin JSON,
+uses idempotent event UUIDs, and applies best-effort anonymous traffic limits.
+
+Verification: 87 website tests passed, including actual route/SQLite ingestion,
+authorization, idempotence, retention cleanup, rate limits, CSV, and privacy
+cases. TypeScript and production build passed. Local browser tests verified
+recorded events, no stored sentinel input values, and unchanged event counts
+after opting out and visiting another chapter. Production DB records,
+anonymous report HTTP 403, authorized Safari dashboard, and session timeline
+were verified. Dashboard screenshot from local QA is
+`student-textbook-web/outputs/analytics-dashboard-preview.jpg`.
+
+Publication used a clean checkout at the ignored
+`student-textbook-web/outputs/analytics-publication` to exclude pre-existing
+unpublished chapter edits. The original website repository now points at the
+published commit; its five pre-existing modified files were preserved
+byte-for-byte. The local preview server was stopped. Root course source
+changes were not published or committed by this task.
+
+## 2026-10-31 — Subsection GPT tutor (local; secure API setup pending)
+
+Implemented an English/Korean `Ask GPT` button at every textbook h2/h3/h4,
+including conditional code explanation topics, glossary headings, and visual
+subsections. The shared React heading preserves existing anchors; a shared
+nonmodal panel selects the clicked subsection, previews the included visible
+text, and keeps conversation history only in memory. Glossary term labels are
+preserved in context; form values, hidden/inert animation copies, and tutor
+controls are excluded. All tutor controls and the panel opt out of visitor
+analytics. The panel sends the current subsection snapshot when submitting.
+
+Added `/api/tutor`, server-only Responses API support with `store:false`, a
+30-second provider timeout, bounded context/history/output, and atomic D1
+request counters. Defaults: `gpt-6-luna`, 3 requests/client/minute,
+10/client/UTC-day, 100/site/UTC-day. Client limits are best effort; the global
+daily cap remains atomic. No question, answer, excerpt, or IP is stored in the
+app database. `drizzle/0001_tutor_usage.sql` and `TUTOR_SETUP.md` document setup.
+
+Work was prepared from published commit `044215ba` through the Sites source
+workflow in `student-textbook-web/outputs/gpt-subsection-publication`, then
+merged into the primary website checkout. Its five pre-existing modified files
+were preserved, including a reverse-merge byte check for overlapping files.
+Unrelated course repository changes remain uncommitted.
+
+Verification: all 94 tests pass in both checkouts; TypeScript and the production
+build pass. Browser checks found buttons on all visible subsection headings in
+Chapters 0–7, no duplicate heading IDs or page overflow, and coverage in all 11
+expanded Chapter 1 code topics. Korean phone layout, question-field focus,
+glossary context, current animation text, section reset, mocked successful
+answers, and mocked request-limit handling were checked. Actual missing-key
+behavior is an honest unavailable state; no live OpenAI call was made. Preview:
+`student-textbook-web/outputs/gpt-subsection-preview.jpg`.
+
+Publication is pending because production has no `OPENAI_API_KEY`. OpenAI
+Developers is now installed. The user explicitly chose secure creation of a new
+key, and `open_codex_api_key_setup({})` opened its target-selection flow. Await
+the widget follow-up with the selected organization/project before continuing
+the API-key skill's local-destination confirmation and encrypted creation. No
+key has been created or written. Do not publish the unavailable tutor. After secure key setup, configure the
+Sites runtime secret, package this clean publication checkout, save/deploy the
+existing public Site, and verify a live answer. No commit, push, saved Site
+version, deployment, audience change, or production environment change occurred
+for this task.
+
+## 2026-10-31 — Subsection feedback (local; combined publication pending)
+
+Added Helpful / Needs work buttons to every subsection, with clear-on-second-
+click, saved-state acknowledgement, and shared state across language switches.
+The shared heading now has authored, language-neutral `cN.*` subsection keys;
+scopes preserve original HTML elements and anchors. All 16 chapter/language
+routes were audited: 797 visible headings, no missing/invalid/overlong keys or
+duplicate visible keys. Home aliases share Chapter 7 keys. Existing language-
+specific lessons retain their own keys. The original checkout's extra unpublished
+Chapter 0 storage-growth lesson also has feedback, while its rewritten bilingual
+prose is preserved exactly.
+
+Ten accumulated foreground, active seconds on a subsection count as implicit
+positive feedback. Hidden/inert measurement copies, hidden tabs, idle time, and
+open dialogs do not count. A successful GPT answer also records an implicit
+positive signal using only the subsection key. The latest retained direct rating
+overrides implicit positives; clearing it restores in-window implicit feedback.
+The instructor dashboard separates effective signals, direct ratings, watches,
+and GPT askers, deduplicated by anonymous visitor and subsection across aliases
+and languages. Public heading labels are bundled in `lib/subsection-labels.json`;
+no visitor-supplied labels or question/answer text enter feedback analytics.
+
+The existing analytics table, authorization, 90-day retention, and opt-out are
+reused. Analytics opt-out, DNT, and GPC disable both direct/implicit feedback.
+An in-memory preference also handles blocked browser Storage. No additional
+production migration is needed for feedback. The tutor's separate migration
+remains pending as noted above.
+
+Verification: 101 tests pass in both checkouts, TypeScript passes, and production
+build passes. Real local-D1 browser checks verified rating save/replacement/
+clear, translation persistence, implicit watching, GPT-question metadata using
+an explicitly marked local mock reply, opt-out, and absence of the typed sentinel
+in analytics storage. Instructor dashboard rows and readable bilingual titles
+were checked with local QA identity only; the temporary local admin configuration
+was removed afterward. Korean 375px layout has no horizontal overflow and all
+24 Chapter 7 headings have both feedback controls. Preview screenshot:
+`student-textbook-web/outputs/subsection-feedback-preview.jpg`.
+
+Changes exist in the primary website checkout and the clean publication checkout
+`student-textbook-web/outputs/gpt-subsection-publication`; the original five
+unpublished files were preserved. No commit/push, Site save/deploy, production
+secret change, or audience change was performed. Complete the already-open
+API-key target selection, then finish secure setup and publish the combined
+subsection tutor/feedback update using the existing Site's workflow.
+
+The clean checkout's local D1 database already has the analytics schema from
+`drizzle/0000_familiar_jigsaw.sql`; the local tutor migration has not been applied.
+Both owned preview servers were stopped after QA. TypeScript excludes ignored
+publication checkouts/generated outputs, so stale archived components are not
+checked against the active checkout's new subsection-key props.

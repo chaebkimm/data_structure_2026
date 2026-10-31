@@ -134,6 +134,23 @@ Both children return -1, so `proper_parent(0,-1)` returns 0 without comparing
 values, and the loop stops. Removing from an already empty heap is invalid;
 the caller must check `size > 0`. An inactive slot may retain an old value.
 
+### What if one stored value changes?
+
+A stored value may need a new ranking. Replacing that value can break its
+relationship with its parent or children. The rest of the heap stays ordered.
+`update_value(i,data)` writes the new value at current position `i`.
+The caller must supply `0 <= i && i < size` in an otherwise valid heap.
+The operation preserves `size` and the current min/max mode.
+
+If `i` is the root or its parent still wins the comparison, repair downward.
+Otherwise repair upward. The same choice works in min and max modes.
+Starting again from `[1,3,4,7,9,5]` in min mode, `update_value(4,0)` moves
+the new 0 upward and produces `[0,1,4,7,3,5]`. Then `update_value(0,8)`
+moves 8 downward and produces `[1,3,4,7,8,5]`.
+
+The argument is a current array position. After a repair, that position may
+hold a different value. The ordinary integer heap has no ID-to-position map.
+
 ### Can we build a heap without adding values one at a time?
 
 An input array may already contain every value. Its last positions are
@@ -298,8 +315,9 @@ one path. A tree with full levels of 1, 2, 4, and 8 positions reaches 15
 values in four levels. Doubling the number of values adds roughly one level.
 This growth is logarithmic, written `O(log n)` for `n` live values.
 
-Root inspection is `O(1)`. `add` and `remove_root` each perform at most a
-heap-height repair, so their generalized worst cost is `O(log n)`.
+Root inspection is `O(1)`. `add`, `remove_root`, and `update_value` each
+perform at most a heap-height repair, so their generalized worst cost is
+`O(log n)`.
 There is no allocation or resizing in this lab. A parent comparison and
 choosing among at most two children take constant work.
 
@@ -376,7 +394,8 @@ Connect each supplied function to a state change before writing tests.
 1. Identify the live prefix and initialize ordinary min mode.
 2. Trace relative-position helpers, comparison, missing positions, and swaps.
 3. Trace downward repair, then bottom-up construction.
-4. Trace root replacement and upward repair after appending.
+4. Trace root replacement, upward repair after appending, and direction
+   selection when `update_value` changes an existing value.
 5. Load ten valid schedules and connect `epoch` to the two time readers.
 6. Distinguish positions from IDs in the full-heap comparators.
 7. Trace function-pointer calls and swaps that update inverse positions.
@@ -459,6 +478,15 @@ void add(int data) {
     int i = size++;
     heap[i] = data;
     heapify_up(i);
+}
+void update_value(int i, int data) {
+    heap[i] = data;
+    int pp = proper_parent(parent(i), i);
+    if (i == 0 || parent(i) == pp) {
+        heapify_down(i);
+    } else {
+        heapify_up(i);
+    }
 }
 
 int toggle_info[10][10];
