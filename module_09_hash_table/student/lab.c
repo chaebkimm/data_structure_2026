@@ -1,98 +1,96 @@
-#ifndef MODULE_07_LINKED_LIST_SOURCE_IMPORTED
-#define MODULE_07_LINKED_LIST_SOURCE_IMPORTED
-#include "module_07_linked_list/student/lab.c"
-#endif
+enum { NUMS_SIZE = 10 };
 
-int hashtable[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-
-void free_lnode_chunk(int head) {
-    if (head == -1) {
-        return;
-    }
-    int tail = head;
-    while (lnodes[tail].next != -1) {
-        tail = lnodes[tail].next;
-    }
-    lnodes[tail].next = free_head;
-    free_head = head;
-}
-
-void init_hashtable() {
-    for (int i = 0; i < 10; i++) {
-        if (hashtable[i] != -1) {
-            free_lnode_chunk(hashtable[i]);
-            hashtable[i] = -1;
-        }
-    }
-}
-
-int hash_func(int value) {
-    int hash = value % 10;
-    if (hash >= 0) {
-        return hash;
-    }
-    else {
-        return hash + 10;
-    }
-}
-
-int save_data(int hash, int data) {
-    int node = new_lnode();
-    if (node == -1) {
-        return -1;
-    }
-    lnodes[node].data = data;
-    lnodes[node].next = hashtable[hash];
-    hashtable[hash] = node;
-    return node;
-}
-
-int find_data(int hash, int data) {
-    int node = hashtable[hash];
-    while (node != -1) {
-        if (lnodes[node].data == data) {
-            return node;
-        }
-        node = lnodes[node].next;
-    }
-    return -1;
-}
-
-int nums[10] = {-16, -8, -4, -2, -1, 1, 2, 4, 8, 16};
-
+int nums[NUMS_SIZE] = {-16, -8, -4, -2, -1, 1, 2, 4, 8, 16};
 int answer[2] = {-1, -1};
 
 void two_sum_bf(int target) {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < i; j++) {
-            if (nums[i] + nums[j] == target) {
-                answer[0] = i;
-                answer[1] = j;
-                return;
-            }
-        }
-    }
-    answer[0] = answer[1] = -1;
+	for (int i = 0; i < NUMS_SIZE; i++) {
+		for (int j = 0; j < i; j++) {
+			if (nums[i] + nums[j] == target) {
+				answer[0] = i;
+				answer[1] = j;
+				return;
+			}
+		}
+	}
+	answer[0] = answer[1] = -1;
+}
+
+enum { CAPACITY = NUMS_SIZE, HASHTABLE_SIZE = 15 };
+
+struct hnode {
+	int key;
+	int value;
+	int next;
+};
+struct hnode hnodes[CAPACITY];
+int hnodes_unused = 0;
+
+int hashtable[HASHTABLE_SIZE];
+
+void initialize(void) {
+	hnodes_unused = 0;
+	for (int i = 0; i < HASHTABLE_SIZE; i++) {
+		hashtable[i] = -1;
+	}
+}
+
+int hash_func(int key) {
+	int hash = key % HASHTABLE_SIZE;
+	if (hash < 0) {
+		hash += HASHTABLE_SIZE;
+	}
+	return hash;
+}
+
+int new_hnode(int _key, int _value, int _next) {
+	if (hnodes_unused >= CAPACITY) {
+		return -1;
+	}
+	int i = hnodes_unused++;
+	hnodes[i].key = _key;
+	hnodes[i].value = _value;
+	hnodes[i].next = _next;
+	return i;
+}
+
+int save_data(int k, int v) {
+	int hash = hash_func(k);
+	int old_head = hashtable[hash];
+	int node = new_hnode(k, v, old_head);
+	if (node == -1) {
+		return -1;
+	}
+	hashtable[hash] = node;
+	return 0;
+}
+
+int find_data(int k) {
+	int hash = hash_func(k);
+	int node = hashtable[hash];
+	while (node != -1) {
+		if (hnodes[node].key == k) {
+			return node;
+		}
+		node = hnodes[node].next;
+	}
+	return -1;
 }
 
 void two_sum_ht(int target) {
-    init_hashtable();
-    for (int i = 0; i < 10; i++) {
-        int j_num = target - nums[i];
-        int j_node = hashtable[hash_func(j_num)];
-        while (j_node != -1) {
-            int j = lnodes[j_node].data;
-            if (nums[j] == j_num) {
-                answer[0] = i;
-                answer[1] = j;
-                return;
-            }
-            j_node = lnodes[j_node].next;
-        }
-        int i_node = save_data(hash_func(nums[i]), i);
-        if (i_node == -1) {
-            break;
-        }
-    }
-    answer[0] = answer[1] = -1;
+	initialize();
+	for (int i = 0; i < NUMS_SIZE; i++) {
+		int j_num = target - nums[i];
+		int j_node = find_data(j_num);
+		if (j_node != -1) {
+			int j = hnodes[j_node].value;
+			answer[0] = i;
+			answer[1] = j;
+			return;
+		}
+		if (save_data(nums[i], i) == -1) {
+			break;
+		}
+	}
+	answer[0] = answer[1] = -1;
 }
