@@ -1183,3 +1183,47 @@ The clean checkout's local D1 database already has the analytics schema from
 Both owned preview servers were stopped after QA. TypeScript excludes ignored
 publication checkouts/generated outputs, so stale archived components are not
 checked against the active checkout's new subsection-key props.
+
+## 2026-10-31 — GPT tutor and subsection feedback published
+
+Published Sites version **203** at
+https://data-structures.chaebinkim.chatgpt.site using source commit
+`ca691b2caa1fe4997741e2e198c1392c4893b427`.
+Saved version: `appgprj_6a955240a2d0819191a05a6f72a08e8f~appgver_33592e6feccc8191827543b976fc9409`.
+Deployment: `appgdep_6ae5b691ad488191a32012510fea10b5`, succeeded with environment
+revision 2. Existing public audience and instructor analytics authorization are
+preserved. The hosted tutor migration was applied successfully: its availability
+check and real question both succeeded.
+
+The user selected and explicitly approved creation of **Data Structures Website
+Visitors** in the Personal organization / Default project, with a 30-day expiry.
+The encrypted setup helper saved `OPENAI_API_KEY` to the approved
+`student-textbook-web/.env.local` with permissions 0600; it is ignored by Git.
+The key was configured as the Site's server-only `OPENAI_API_KEY` secret without
+changing `ANALYTICS_ADMIN_EMAILS`. No plaintext key appears in source or chat.
+Rotate this key before its selected 30-day expiration; no automatic renewal was
+configured. Do not create another key merely to resume this completed setup.
+
+The bundled Responses verification helper returned a successful GPT-6 Luna haiku.
+Production browser QA then submitted a real question on `/en` about changing
+`next` links without moving data. GPT returned the correct two-sentence answer.
+The public feedback control acknowledged a saved Helpful vote, then its clear
+operation succeeded to remove the test's direct rating. Browser console had no
+errors/warnings. Prior 101 tests, TypeScript and production build passed for the
+unchanged published source. Live proof screenshot:
+`student-textbook-web/outputs/subsection-gpt-live.jpg`.
+
+The optional API credit preview offered an estimated USD 66 expiring
+2026-11-10, but no organization was linked and no credit grant was claimed:
+the required native `confirm_api_credit_promo_org` form was unavailable. This did
+not block the successful API verification or publication. Any future credit
+claim must restart its current eligibility preview and receive native org-picker
+approval; do not assume the API-key project authorizes that separate link.
+
+The source helper committed, pushed, and packaged the clean publication checkout.
+The primary website checkout was advanced to the published commit with a mixed
+reset after verifying there were no staged changes. SHA checks confirmed all
+313 source working files were preserved. Its only remaining tracked changes are
+the same five pre-existing unpublished files (Chapter 0, glossary, translations,
+and both Chapter 2 manuscripts). The approved local key remains ignored. Course
+repository changes, including this handoff, remain local and uncommitted.
