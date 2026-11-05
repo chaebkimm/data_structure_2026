@@ -1,108 +1,102 @@
-#include "module_03_graph/student/lab.c"
+enum {CAPACITY = 10};
 
-int node_dist[10];
-
-int heap[10];
+int queue[CAPACITY];
 int size;
 
-int comp(int i, int j) {
-    int node_x = heap[i];
-    int node_y = heap[j];
-    return node_dist[node_x] < node_dist[node_y];
+int is_empty_queue(void) { return size == 0; }
+
+int (*comp)(int, int);
+
+void enqueue_linear(int data) { queue[size++] = data; }
+int dequeue_linear(void) { 
+    int urgent = 0;
+    for (int i = 1; i < size; i++) {
+        if (comp(queue[i], queue[urgent])) {urgent = i;}
+    }
+    int temp = queue[urgent];
+    queue[urgent] = queue[--size];
+    return temp;
 }
 
-int node_heap_pos[10];
+void init_queue(int (*compare)(int, int)) {
+    comp = compare; 
+	size = 0;
+}
 
-void init_heap() {
-    size = 0;
-    for (int i = 0; i < 10; i++) {
-        node_heap_pos[i] = -1;
+void (*enqueue)(int);
+int (*dequeue)(void);
+
+void init_queue_linear(int (*compare)(int, int)) {
+    init_queue(compare);
+    enqueue = enqueue_linear;
+    dequeue = dequeue_linear;
+}
+
+enum {LSIZE = CAPACITY, EPOCH_SIZE = 5};
+
+struct Light {
+    int on_time;
+    int off_time;
+    int epoch;
+};
+
+struct Light lights[LSIZE];
+
+int toggle_info[LSIZE][EPOCH_SIZE * 2];
+
+void init_lights() {
+    for (int i = 0; i < LSIZE; i++) {
+        lights[i].on_time = toggle_info[i][0];
+        lights[i].off_time = toggle_info[i][1];
+        lights[i].epoch = 0;
     }
 }
 
-void swap(int i, int j) {
-    int node_x = heap[i]; /* node_heap_pos[node_x] == i */
-    int node_y = heap[j]; /* node_heap_pos[node_y] == j */
-    heap[i] = node_y;
-    heap[j] = node_x;
-    node_heap_pos[node_x] = j;
-    node_heap_pos[node_y] = i;
+int greater_on_time(int id_x, int id_y) {
+    return lights[id_x].on_time >= lights[id_y].on_time;
 }
 
-int heap_parent(int i) {return i == 0 ? -1 : (i - 1) / 2;}
-int left(int i) {return 2 * i + 1 >= size? -1 : 2 * i + 1;}
-int right(int i) {return 2 * i + 2 >= size? -1 : 2 * i + 2;}
+int lesser_off_time(int id_x, int id_y) {
+    return lights[id_x].off_time <= lights[id_y].off_time;
+}
 
-void heapify_up(int i) {
-    int p;
-    while ((p = heap_parent(i)) != -1) {
-        if (comp(p, i)) {break;}
-        swap(p, i);
-        i = p;
+int last_on_id = -1;
+int first_off_id = -1;
+
+void init_on_off() {
+    init_queue_linear(lesser_off_time);
+    last_on_id = 0;
+    for (int i = 0; i < LSIZE; i++) {
+        if (greater_on_time(i, last_on_id)) {last_on_id = i;}
+        enqueue(i);
     }
+    first_off_id = dequeue();
 }
 
-void add_node(int node, int value) {
-    node_dist[node] = value;
-    int i = size++;
-    node_heap_pos[node] = i;
-    heap[i] = node;
-    heapify_up(i);
+int next_epoch(int id) {
+    int ep = ++lights[id].epoch;
+    if (ep >= EPOCH_SIZE) {return -1;}
+    lights[id].on_time = toggle_info[id][ep * 2];
+    lights[id].off_time = toggle_info[id][ep * 2 + 1];  
+    return 0;
 }
 
-int chief_child(int i) {
-    if (right(i) == -1) return left(i);
-    return comp(left(i), right(i)) ? left(i) : right(i);
+void update_on_off(int id) {
+    if (greater_on_time(id, last_on_id)) {last_on_id = id;}
+    enqueue(id);
+    first_off_id = dequeue();
 }
 
-void heapify_down(int i) {
-    int child;
-    while ((child = chief_child(i)) != -1) {
-        if (comp(i, child)) {break;}
-        swap (child, i);
-        i = child;
+int check_all_on() {
+    return lights[last_on_id].on_time <= lights[first_off_id].off_time;
+}
+
+int all_on_time() {
+    init_lights();
+    init_on_off();
+    while (!check_all_on()) {
+        if (next_epoch(first_off_id) == -1) {return -1;}
+        update_on_off(first_off_id);
     }
-}
-
-int remove_root() {
-    int node = heap[0];
-    swap(0, --size);
-    heapify_down(0);
-    return node;
-}
-
-void update_value(int node, int value) {
-    node_dist[node] = value;
-    int i = node_heap_pos[node];
-    if (i == 0 || comp(heap_parent(i), i)) { heapify_down(i);}
-    else {heapify_up(i);}
-}
-
-int edge_length[10][10]; /* positive value */
-int found[10];
-
-void init_dist(int start_node) {
-    init_heap();
-    for (int i = 0; i < 10; i++) {
-        node_dist[i] = -1;
-        found[i] = 0;
-    }
-    add_node(start_node, 0);
-}
-
-void min_dist(int start_node) {
-    init_dist(start_node);
-    while (size > 0) {
-        int node = remove_root();
-        found[node] = 1;
-        for (int i = 0; i < nodes[node].adj_size; i++) {
-            int adj = nodes[node].adj_list[i];
-            int new_dist = node_dist[node] + edge_length[node][adj];
-            if (node_dist[adj] == -1) {
-                add_node(adj, new_dist);
-            } else if (node_dist[adj] > new_dist) {
-                update_value(adj, new_dist);
-            }
-        }
-    }
+    return lights[last_on_id].on_time;
 }
