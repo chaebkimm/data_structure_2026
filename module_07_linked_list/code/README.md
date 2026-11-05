@@ -228,4 +228,4 @@ node-index operations: allocate with `new_lnode()`, write `data`, enqueue
 the isolated node, then dequeue/read/recycle it. Empty dequeue returns `-1`;
 a payload of `-1` is valid. `init_lnodes_pool()` initializes once and later
 calls preserve state. Return every allocation between independent tests.
-Module 8 adds its own value adapters around these node operations.
+Module 8 transfers the FIFO rule to a separate coordinate array queue for maze BFS.

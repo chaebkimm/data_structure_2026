@@ -1,8 +1,11 @@
 # Instructor Answer Key — Module 2
 
 Keep this file instructor-only. Students preserve an initial attempt before
-calibration and an autopsy prediction before observation. Both textbooks
-teach the same four-function array-index model used throughout this key.
+calibration and an autopsy prediction before observation. This key covers
+the staged precedence application lab and its four-function interface.
+The current textbooks introduce the same child-index relationships through
+a separate 10-slot alphabet/`1+2+3` program; use the chapter guide for those
+classroom examples.
 
 ## Macro-question synthesis
 

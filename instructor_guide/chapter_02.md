@@ -1,6 +1,89 @@
 # Chapter 2. Organizing Data in a Hierarchy
 
-## Starting Question
+## Revised textbook teaching sequence
+
+The [English textbook](../module_02_binary_tree/student/textbook.md) and
+[Korean textbook](../module_02_binary_tree/student/textbook_korean.md)
+follow the classroom source [lab.c](../module_02_binary_tree/student/lab.c).
+They use `nodes[10]`, `capacity`, and `nodes_size`, first for letters and
+then for the addition expression `1+2+3`.
+
+Start with the revised question order:
+
+1. What makes a hierarchy a tree? Each node stores data and child links.
+   There is one root with no parent. Every other node has one parent,
+   and following parents from any node leads to that root.
+2. How can array positions record that hierarchy? A binary tree permits
+   at most two children, stored as `left` and `right` indices. `-1` means
+   absence. The number of present children can be zero, one, or two.
+3. How can we access and extend it? Start at the root and follow present
+   children. To attach a node, store its index in the parent's child member.
+   To introduce a new root, attach the old root beneath the new parent,
+   then save the new root's index.
+4. How does an expression fit this model? A binary operator is a parent;
+   its operands are children. An operand can itself be a whole expression.
+   Digits are leaves with both links `-1`.
+5. How do we build and then evaluate `1+2+3`? First record `(1+2)+3`
+   through links. Then obtain child values before returning each sum.
+
+## Textbook board examples
+
+For the alphabet demonstration, initialize ten letters and absent links.
+Connect `F(A(B(D,E),C),G)`. F at index 5 is the root; H, I, and J remain
+initialized but unconnected. `nodes_size` is 10, while only seven nodes
+are reachable. The left/right/current read order is `D E B C A G F`.
+`tree_recursion` reads a character but does not print or return it.
+
+For addition, prepare five separate nodes. The two `+` characters occupy
+different indices. Build left to right:
+
+| Step | New root | Left child | Right child | Expression represented |
+|---|---:|---:|---:|---|
+| First digit | 0 | -1 | -1 | `1` |
+| First operator | 1 | 0 | 2 | `1+2` |
+| Second operator | 3 | 1 | 4 | `(1+2)+3` |
+
+The final index table is:
+
+| Index | `data` | `left` | `right` |
+|---:|---|---:|---:|
+| 0 | `'1'` | -1 | -1 |
+| 1 | `'+'` | 0 | 2 |
+| 2 | `'2'` | -1 | -1 |
+| 3 | `'+'` | 1 | 4 |
+| 4 | `'3'` | -1 | -1 |
+
+`eval(3)` waits for `eval(1)` to return 3, then obtains 3 from `eval(4)`
+and returns 6. Each call has separate local `i`, `l`, and `r`. Stored
+characters and links remain unchanged. The digit case stops before reading
+its absent children; an operator requires two valid children. `eval` has
+no range check and assumes only digit leaves and plus operators.
+
+## Textbook checks and costs
+
+Ask students to distinguish an array index, a stored character, and a
+returned answer. Changing a root does not move data. One root accesses
+one connected tree; initialized entries can remain outside it. A range
+check cannot stop a cycle of valid indices or prevent shared children.
+
+A node needs one character and two integers, plus any padding. Ten node
+slots remain reserved in both demonstrations. Initialization and building
+take `O(n)` for `n` slots; reading or evaluation takes `O(r)` for `r`
+reachable nodes. The alphabet path F–A–B–D has three links and four nodes.
+The guarded reader can briefly add a stopping call with index -1, so
+extra call storage is `O(h + 1)`. Array storage is counted separately.
+
+Check that students can explain why the second plus is root 3, why it
+owns the entire first addition on its left, and why the answer 6 is returned
+separately from the root index. Use **New C Syntax Explained** and **C Code**
+for reading support; subsection **Ask GPT** is available on the webpage.
+
+The remaining guide describes the existing staged application lab. It
+adds `+`/`*` precedence, 20-slot arrays, node reservation, and shared `pos`.
+Keep its four-function contract distinct from the six classroom functions
+and seven code snippets above.
+
+## Application-lab starting question
 
 > How can a tree record which operation happens first, and how can the same
 > function calculate the answer for every subtree?
@@ -11,16 +94,16 @@ multiplication subtree supplies `6` before addition returns `7`. Every
 child member stores an integer index into `nodes`, with `-1` for absence.
 Index `0` identifies a real node.
 
-## Why We Need This
+## Application-lab connection to Chapter 1
 
 Chapter 1 introduces a fixed array and index-based organization. Chapter 2
 uses a fixed array to store nodes, while each node's left and right indices
 record a hierarchy. Related nodes need not be adjacent, and array order
 does not determine the root.
 
-Both [English textbook](../module_02_binary_tree/student/textbook.md) and
-[Korean textbook](../module_02_binary_tree/student/textbook_korean.md) use
-the same representation, coding plan, and four functions as the lab:
+The separate application lab extends the textbook's child-index model
+to multiplication precedence. It uses its own storage, parser state, and
+four-function interface:
 
 ```c
 struct TreeNode {
@@ -185,13 +268,14 @@ are outside the evaluator's contract.
 **Revisit with support:** C variables, functions, arrays, indices, loops,
 conditions, bounds, and invariants from Chapter 1. Previous exposure does
 not guarantee that a student can read every symbol; pause at the unfamiliar
-line and use the chapter's optional explanation.
+line and use the chapter's syntax section or the lab's reading guide.
 
-**Introduce here:** hierarchy, binary tree, expression tree, node, root,
+**Reinforce from the textbook:** hierarchy, binary tree, expression tree, node, root,
 parent, child, sibling, ancestor, descendant, leaf, subtree, path, depth,
 height, `struct`, member access with `.`, digit-character conversion,
-index links and `-1`, precedence, left association, parsing, shared `pos`,
-recursion, and a base case.
+index links and `-1`, left association, recursion, and a base case.
+
+**Add in the application lab:** precedence, parsing, and shared `pos`.
 
 **Deferred:** multi-digit, parenthesized, or unary parsing; other operators;
 malformed-input validation; dynamic node allocation; upward-link APIs;
@@ -233,19 +317,18 @@ Use the module's two 90-minute meetings and five release gates:
    the Stage C attempt is preserved.
 5. E: the four-function lab, tests, rubric, evidence, and autopsy.
 
-Both Stage D textbooks now include **Full C Code Explanation** after the
-original chapter. Treat it as a reference for the current difficulty, not
-another chapter to finish before the lab. Topics 1–3 cover basic C reading;
-4–7 explain structures, storage, functions, and strings; 8–10 trace building;
-11–12 trace evaluation; and 13 supplies the complete program. Topics 14–15
-offer boundary reminders and optional prediction practice. The website's
-**Expand full explanation** button opens the guide when it is needed.
+Both Stage D textbooks retain **New C Syntax Explained** and **C Code**.
+Use the relevant syntax or classroom example for the student's current
+difficulty. On the Chapter 2 webpage, **Ask GPT** at the end of a subsection
+allows questions about its content and code. The downloaded chapters
+remain available for reading without GPT.
 
-Ask students to explain one line, predict its state change, and then return
-to the relevant lab checkpoint. Appendix exercises add no submission or
-rubric points. Use the [lab's file and test guidance](../module_02_binary_tree/student/lab.md)
-for the supplied header, shared declarations, and test helpers that surround
-the textbook's four functions in this package.
+Ask students to check any explanation against the code, explain one line,
+predict its state change, and then return to the relevant lab checkpoint.
+This reading support adds no submission or rubric points. Use the
+[lab's file and test guidance](../module_02_binary_tree/student/lab.md) for
+the supplied header, shared declarations, and test helpers surrounding the
+four functions in this lab package.
 
 Preserve initial attempts and labeled corrections. Hold back solutions,
 instructor extension tests, and worked autopsy answers from student
@@ -261,7 +344,7 @@ left association, and evaluation with unchanged members/shared state. The
 evidence, and 5 to autopsy/transfer. Do not add API requirements or a
 fourth student-authored test for the autopsy.
 
-## Final Check
+## Application-lab final check
 
 > Why is the root of `1+2*3` a plus node at index `1`?
 

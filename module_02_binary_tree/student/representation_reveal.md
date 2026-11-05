@@ -2,8 +2,10 @@
 
 Open this file only when the instructor releases the representation.
 
-A representation is a chosen way to store information. Chapter 2 stores all
-nodes in one array and uses integer indices to connect them.
+A representation is a chosen way to store information. Chapter 2 stores
+nodes in one array and uses integer indices to connect them. This staged
+application lab extends its alphabet/addition examples to `+`/`*`
+precedence, with 20 slots and the shared `size` and `pos` below.
 
 ## 1. Name the stored pieces
 

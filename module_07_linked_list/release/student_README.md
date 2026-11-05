@@ -48,5 +48,5 @@ not reset a test fixture. Recycle every detached allocation and drain every
 list or queue between independent runs. `free_lnode(-1)` is a no-op;
 other calls require a valid, allocated, isolated, unreferenced node. Invalid
 indices, live-node recycling, double recycling, and stale writes are caller
-errors, not rejected operations. Module 8 adds value adapters around these
-same node operations for BFS.
+errors, not rejected operations. Module 8 transfers the FIFO rule to a separate
+coordinate array queue for maze BFS.

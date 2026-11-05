@@ -1,5 +1,9 @@
 # Module 2 Student Code
 
+This application lab extends the textbook's alphabet and `1+2+3` examples
+to `+`/`*` precedence. Its 20-slot arrays, `size`, `pos`, and four functions
+are a separate interface from the textbook's `nodes[10]` and `nodes_size`.
+
 ## Files you edit
 
 - `starter/binary_tree.c`
@@ -11,14 +15,13 @@ functions are `new_node(char data)`, `term(void)`, `terms(void)`, and
 
 ## Help with C syntax
 
-The Stage D textbooks include an optional **Full C Code Explanation** in
-English and Korean. Use the
-[lab's topic map and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
-to find help for your current statement, including the extra notation in
-the supplied header and tests. The textbook's complete program has its own
-`main`; this release already supplies `main` in the test files. Implement
-the four starter bodies and use the build commands below to compile them
-with the tests. No appendix exercises are added to your required work.
+Use **New C Syntax Explained** and **C Code** in either Stage D textbook,
+and the [lab's reading and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
+for the extra notation in the supplied header and tests. On the Chapter 2
+webpage, **Ask GPT** at the end of a subsection lets you ask about its
+content or code. This release already supplies `main` in the test files.
+Implement the four starter bodies and use the build commands below to
+compile them with the tests. Reading support adds no required work.
 
 ## Model and contract
 
@@ -41,7 +44,7 @@ The canonical input `1+2*3` creates five nodes with character data
 Use only valid nonempty alternating single digits and `+`/`*`, with no
 whitespace or parentheses, at most 19 characters, and every intermediate
 and final result within `int`. These preconditions are not checked by the
-textbook implementation. `eval_tree` assumes a completed finite tree with
+lab implementation. `eval_tree` assumes a completed finite tree with
 no cycles or shared children. Missing operands are outside its contract.
 
 Before each independent test, reset `size` and `pos` to zero and copy its

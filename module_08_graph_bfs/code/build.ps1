@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("lab", "starter", "solution", "autopsy")]
+    [ValidateSet("lab", "lecture", "starter", "solution", "autopsy")]
     [string]$Target = "lab",
 
     [switch]$Extensions,
@@ -44,11 +44,9 @@ PowerShell, then rerun this command.
 
 $testingBuild = $false
 
-if ($Target -eq "lab") {
-    if ($Extensions) { throw "The combined lab has no separate extension target." }
-    $repositoryRoot = Split-Path -Parent (Split-Path -Parent $codeRoot)
-    $includeDirectory = $repositoryRoot
-    $sources = @((Join-Path $codeRoot "..\student\lab_driver.c"))
+if ($Target -eq "lab" -or $Target -eq "lecture") {
+    if ($Extensions) { throw "The lecture lab has no separate extension target." }
+    $sources = @((Join-Path $codeRoot "tests\test_lecture.c"))
     $outputName = "lab_core"
 } elseif ($Target -eq "autopsy") {
     if ($Extensions -or $StudentTests) {

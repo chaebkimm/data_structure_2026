@@ -50,7 +50,7 @@ The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtai
 
 The final free chain is 0→2→1→3→4→5→6→7→8→9→-1. All ten slots are free; their order need not match initialization.
 
-Module 8's queue.c imports these primitives and defines its own checked-allocation value adapters `enqueue(value)`/`dequeue()`. Those wrappers copy payload and recycle before BFS expansion. Module 7 itself supplies neither wrapper. Module 9 allocates first, then explicitly writes data/next before publishing a bucket head.
+Module 8 uses a self-contained linear array queue of coordinate values for maze BFS. Its FIFO rule is shared with this chapter; its source does not import these node primitives or define linked value adapters. Module 9 allocates first, then explicitly writes data/next before publishing a bucket head.
 
 ## Validation and costs
 

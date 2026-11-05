@@ -6,16 +6,18 @@ Open these materials after preserving the Stage C attempt:
 - `textbook_korean.md`: Chapter 2 in Korean, with the same executable examples.
 - `diagrams/tree_models.md`: correct diagrams and text equivalents.
 
-Both editions explain array-index construction and recursive evaluation of
-`1+2*3`. Choose either language, or consult both.
+Both editions first define a tree's root and parent/child relationships,
+then store at most two child indices per node. They use `nodes[10]` to
+build an alphabet tree rooted at `F` and the addition tree `(1+2)+3`, whose
+root is the second `+` and whose value is `6`. Choose either language, or
+consult both. The models begin with these examples and separately label
+the `+`/`*` application lab's 20-slot parser.
 
-Each edition also contains **Full C Code Explanation** (Korean:
-**C 코드 전체 설명 (Full C Code Explanation)**). This optional companion
-explains the C syntax from the beginning. Start with the main chapter and
-look up one statement at a time as needed; the matching topic numbers in
-both languages lead from basic notation to construction, recursion, and a
-complete runnable program. Its prediction questions are optional practice,
-with answers for checking your reasoning.
+Use **New C Syntax Explained** and **C Code** for the chapter's syntax and
+classroom examples. On the Chapter 2 webpage, **Ask GPT** at the end of a
+subsection provides a way to ask about its content or code. These downloaded
+textbooks can also be read without the webpage. Explain one statement and
+predict its next state before returning to your current task.
 
 Annotate earlier responses instead of erasing them. The separate lab
 autopsy arrives in Stage E;

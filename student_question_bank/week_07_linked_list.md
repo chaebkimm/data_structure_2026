@@ -4,7 +4,7 @@
 
 ## Required scope for the 14-week course
 
-Follow all three slide Markdown sources and exact Module7 lab.c: acyclic chains and saved first indices, safe predecessor changes, shared-pool lifecycle, linked Stack, then linked Queue. new_lnode() returns an isolated allocation with retained data; callers write payload. Detachment isolates without recycling. Pool initialization happens once through a static guard. The Queue exchanges node indices; caller copies data and recycles. Module8 defines local value adapters for BFS. One artifact, three original groups, 180 minutes, 100 points. Pointer-library/DSU work is optional; DSU belongs to Week14.
+Follow all three slide Markdown sources and exact Module7 lab.c: acyclic chains and saved first indices, safe predecessor changes, shared-pool lifecycle, linked Stack, then linked Queue. new_lnode() returns an isolated allocation with retained data; callers write payload. Detachment isolates without recycling. Pool initialization happens once through a static guard. The Queue exchanges node indices; caller copies data and recycles. Module8 carries the FIFO rule into array queues and stores coordinates directly for maze BFS. One artifact, three original groups, 180 minutes, 100 points. Pointer-library/DSU work is optional; DSU belongs to Week14.
 
 ## Vocabulary students will learn
 

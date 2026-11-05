@@ -40,7 +40,7 @@ The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a
 
 The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtail` is reachable from `qhead` and `lnodes[qtail].next == -1`. The first append sets both; the final removal clears both. A payload of `-1` is valid: only the returned node index is the empty marker.
 
-Trace reuse of returned 0 behind waiting 1/2: outputs 17,23,31,8 despite nonascending slot order. Require explicit dequeue/copy/recycle and singleton endpoint checks. Module 8 adds local value adapters so BFS can work with tree/cell IDs; those wrappers belong to Module 8.
+Trace reuse of returned 0 behind waiting 1/2: outputs 17,23,31,8 despite nonascending slot order. Require explicit dequeue/copy/recycle and singleton endpoint checks. Module 8 transfers FIFO to array queues and tree levels, then stores whole coordinates in a linear queue for maze BFS.
 
 ## Invariants, costs, and final evidence
 

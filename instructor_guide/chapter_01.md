@@ -19,19 +19,19 @@ textbook is the source of truth for the conceptual scope.
 
 ## Supporting a First Reading of C
 
-The [English textbook](../module_01_arraylist/student/textbook.md#full-c-code-explanation)
+The [English textbook](../module_01_arraylist/student/textbook.md)
 and [Korean textbook](../module_01_arraylist/student/textbook_korean.md)
-include an optional **Full C Code Explanation** after the original chapter.
-Release both editions at Stage D, after the investigation and exit ticket.
-The appendix is a reference students can consult one topic at a time; its
-length and practice questions do not add required reading or assessment.
+focus on the fixed-array concepts and five short C examples. Release both
+editions at Stage D, after the investigation and exit ticket.
 
 When a student cannot read a line, explain its names and symbols before
-asking them to trace it. Topics 1–4 explain program structure, punctuation,
-storage, and conditions. Topics 5–8 follow the four operation examples;
-topic 9 joins the trace, and topic 10 provides the complete runnable program.
-Students can return to their current lab checkpoint after one relevant
-example. On the website, the section opens with **Expand full explanation**.
+asking them to trace it. On the webpage, students can use **Ask GPT** beside
+the relevant section for a focused syntax or execution question. Compare
+the answer with the code and a trace, then return to the current lab
+checkpoint. The [student notes](../module_01_arraylist/student/notes.md)
+retain the operation sequence, and
+`module_01_arraylist/code/lecture/simplified_array_list.c` remains a separate
+runnable companion for instructor demonstrations.
 
 The lab packages the same array operations into functions. Use the
 [lab's textbook-to-lab guidance](../module_01_arraylist/student/lab.md)
@@ -87,7 +87,7 @@ The shorter three-item inquiry fixtures are separate practice examples.
 
 **Revisit with support:** C variables, functions, arrays, loops, and conditional
 statements. Do not assume that previous exposure means students can read
-their syntax; use the optional appendix for the line they are working on.
+their syntax; explain the current line or use a focused webpage question.
 
 **Introduce here:** data structure, contiguous memory, array, list, ArrayList,
 index, element, size, capacity, invariant, indexed access, and linear search.

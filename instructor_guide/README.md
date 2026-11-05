@@ -27,7 +27,7 @@ Check if the student can explain all three of these parts in their own words:
 | --- | --- | --- |
 | 1–6 | Chapters 1–6 | Completed sequence; existing materials retained. |
 | 7 | Chapter 7 | Acyclic index links, predecessor insertion/detachment, shared-pool reuse and stale-access rules; linked LIFO Stack and FIFO Queue applications in one lab following `student/lab.c`. |
-| 8 | Chapter 8 | Retrieve Module 7's linked queue, compare linear/circular array queues, and use the same linked queue for tree BFS and graph/maze BFS with distances, shortest predecessors, and path recovery in one lab. |
+| 8 | Chapter 8 | Recall Module 7's FIFO rule, compare linear/circular arrays, trace tree levels, and use a direct coordinate array queue for 5×5 maze distances. Explain one-predecessor path recovery conceptually. |
 | 9 | Chapter 9 | Hash Table: pooled collision chains, signed hashing, and two sum. |
 | 10 | Chapter 10 | Fixed integer min/max Heap, bottom-up construction, and two indexed ID Heaps for common on-time; one lab-driver submission. |
 | 11 | Chapter 11 | Indexed-Heap Dijkstra traces and tests in Practical 2. |
@@ -35,7 +35,7 @@ Check if the student can explain all three of these parts in their own words:
 | 13 | Chapter 13 | Linear and first-match binary search, stable insertion/merge sorting, and consolidation through a workload-selection memo; one artifact. |
 | 14 | DSU reference from Module 7 + Chapter 14 | Introduce DSU and Kruskal in one lab; Prim demonstration only. |
 
-The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 applies linked lists to a stack and a queue. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS.
+The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 applies linked lists to a stack and a queue. Module 8 compares array queues, traces tree BFS, and implements maze BFS with a coordinate array queue.
 
 The total class time for a single week must not go over 180 minutes. The board walkthroughs in these files are just one piece of the core explanation. Manage the time so it stays under 180 minutes by adding in your separate coding practice and test times.
 
@@ -50,7 +50,7 @@ The total class time for a single week must not go over 180 minutes. The board w
 | 5 | [Depth-First Traversal and Expression Trees](chapter_05.md) |
 | 6 | [How Not to Get Lost in a Graph](chapter_06.md) |
 | 7 | [Linking Array Nodes and Reusing Slots](chapter_07.md) |
-| 8 | [Queues, Tree BFS, and Graph BFS](chapter_08.md) |
+| 8 | [Processing data in stored order](chapter_08.md) |
 | 9 | [Finding Large Numbers in a Small Table](chapter_09.md) |
 | 10 | [Binary Heaps and Common On-Times](chapter_10.md) |
 | 11 | [Finding the Path with the Smallest Cost](chapter_11.md) |

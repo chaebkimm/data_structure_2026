@@ -60,6 +60,6 @@ Prediction / trace / test / correction: ____________________
 
 ## 7. Linked Queue
 
-Record checked allocation, explicit payload write, void append, node-index removal, data copy, and separate recycling. Include qhead/qtail singleton transitions, reuse behind waiting nodes, full-pool allocation -1, empty dequeue -1, a valid payload -1, and isolation after removal. Queue operations themselves never allocate or recycle. Module 8 adds its own value adapters around these node primitives.
+Record checked allocation, explicit payload write, void append, node-index removal, data copy, and separate recycling. Include qhead/qtail singleton transitions, reuse behind waiting nodes, full-pool allocation -1, empty dequeue -1, a valid payload -1, and isolation after removal. Queue operations themselves never allocate or recycle. Module 8 transfers the FIFO rule to array queues; its maze queue stores coordinate values directly.
 
 Prediction / trace / test / correction: ____________________

@@ -20,27 +20,28 @@ No wrapper struct is needed. The public header keeps the existing
 
 ## Textbook and lab bridge
 
-The English and Korean textbooks retain the original chapter and add
-**Full C Code Explanation** as an optional eleven-topic reference. Its
-complete program is copied into `code/lecture/simplified_array_list.c` and
-can be run with `make lecture` or `build.ps1 -Target lecture`. It uses the
-chapter's five-item initial list and prints the read value, search result,
-and final five-item list. Keep this example at Stage D or later.
+The English and Korean textbooks present the fixed-array concepts and five
+short C examples. Students can use the webpage's **Ask GPT** button for
+focused syntax and execution questions. The standalone companion
+`code/lecture/simplified_array_list.c` combines the examples inside `main`
+and can be run with `make lecture` or `build.ps1 -Target lecture`. It uses
+the chapter's five-item initial list and prints the read value, search
+result, and final five-item list. Keep this example at Stage D or later.
 
-The textbook's operations run together in `main`; the lab makes reusable
-functions with array access, copied integer inputs, and returned counts.
+The lab makes reusable functions from the textbook's operation snippets,
+with array access, copied integer inputs, and returned counts.
 In particular, the textbook loop represents an unsuccessful search with
 `index == size`, while `int_list_find` returns `-1`. Both preserve the same
 first-match behavior, but neither absence result may be used to read an
 item. Teach the lab's return contract explicitly rather than changing the
-textbook's completed example.
+textbook's search snippet.
 
-The lab also checks metadata supplied by callers, whereas the complete
-textbook program establishes valid counts itself. Smaller three-item inquiry
-and test fixtures remain useful for applying the same invariant. The
-student notes provide an optional appendix topic map; the lab separately
-explains the required function and test-body syntax. Do not require students
-to finish every reference topic before attempting the lab.
+The lab also checks metadata supplied by callers, whereas the textbook's
+setup establishes valid counts itself. Smaller three-item inquiry and test
+fixtures remain useful for applying the same invariant. The student notes
+summarize the model and trace the operation sequence; the lab separately
+explains the required function and test-body syntax. Use focused questions
+and traces when students need more C support.
 
 ## Public API
 
@@ -214,8 +215,8 @@ production repair. Keep the autopsy separate from the normal test suite.
 - [ ] Runtime checks are clean for the reference implementation.
 - [ ] The guarded autopsy builds and prints its expected invariant failure.
 - [ ] The starter compiles before TODO completion.
-- [ ] The lecture copy matches the complete textbook program and expected output.
-- [ ] Stage D includes both textbook languages and their optional C reference.
+- [ ] The lecture companion follows the textbook snippets and expected trace.
+- [ ] Stage D includes both textbook languages, notes, and diagram/text models.
 - [ ] No obsolete test target is mentioned in release build files.
 - [ ] Every diagram has a text equivalent.
 - [ ] Student and instructor API names match the header.

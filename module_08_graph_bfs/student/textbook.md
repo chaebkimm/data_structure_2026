@@ -1,514 +1,345 @@
-# Chapter 8. Queues, Tree BFS, and Graph BFS
+# Chapter 8. Processing data in stored order
 
-Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+Store data in an array and remove it in the order it was stored. Use that order to explore trees and graphs from the starting point outward and find shortest distances.
 
+## Thinking logically
 
-Chapter 7 used a linked FIFO queue as a linked-list example. This chapter compares array queue representations, then reuses that same linked queue for tree BFS and graph BFS. The maze `lab.c` records shortest distances and all shortest predecessors.
+### How can we process data in the order it was stored?
 
-[한글 교재](textbook_korean.md) · [Class workbook](class_material.md) · [Concept slides](ppt_material.md) · [Lab slides](ppt_lab_material.md)
+Add new data at the back and remove data from the front. This processes data in the order it was stored. We call this a queue.
 
-## Thinking Logically
+### How do we mark the front and rear of an array queue?
 
-### How can we process requests in arrival order?
+In a nonempty queue, `front` is the index of the first data and `rear` is the index of the last data. In an empty queue, `front` is one greater than `rear`, so the range from `front` through `rear` is empty. Adding data to an empty queue leaves one item, making `front` and `rear` equal.
 
-Recall Chapter 7's linked queue. Requests 17, 23, and 31 must be processed in the order they arrive. A Stack removes 31 first. We need to add at the back and remove at the front. This rule is first in, first out, or **FIFO**. A **queue** provides those two actions. Adding is **enqueue**; removing is **dequeue**.
+### What initial values should front and rear have?
 
-Reuse the local value adapters in `queue.c`, built on Chapter 7's node queue. `enqueue(value)` allocates a node, appends it, and returns `true`; an exhausted pool returns `false` without changing the queue. `dequeue()` returns the oldest stored value and recycles its node. Enqueue 17, 23, and 31, then receive those values in the same order. The first enqueue sets both endpoints, and the final dequeue restores `qhead = qtail = -1`.
+When the first data is stored at array index `0`, both `front` and `rear` become `0`. Adding data increases `rear` by one, so its initial value is `-1`. Adding data does not change `front`, so its initial value is `0`.
 
-The lower-level `enqueue_lnode(node)` and `dequeue_lnode()` still exchange pool-slot indices. The raw dequeue returns `-1` when empty and does not recycle its detached node. The public `dequeue()` reads and recycles that node for the caller. Check `is_empty_queue()` before a public dequeue: its assertion expresses a nonempty precondition. The payload `-1` is a valid queued integer, so it is not an empty-result sentinel. The pool initializer runs only once; later calls preserve live/free state. Start a new process or finish/recycle all owners before an independent run.
+### What happens when the rear reaches the end of the array?
 
-### Can an array hold the same waiting order?
+In a simple implementation, no more data can be stored once `rear` reaches the array's last index.
 
-We can store integer values directly, without allocating a linked node for each value. In `queue[25]`, `front` names the next read position and `rear` names the most recent write position. Start every independent variant with `front = 0; rear = -1;`.
+Removing data advances `front` and leaves unused space at the beginning of the array. We can also wrap `front` and `rear` around to reuse that space.
 
-For the linear version, `enqueue_linear(17); enqueue_linear(23); enqueue_linear(31);` leaves positions 0, 1, 2 active. `dequeue_linear()` reads 17, then advances `front` to 1. The remaining active values are 23 and 31. Removed positions are not reused. After 25 writes, `rear == 24`, even if some values were removed. The queue is full when `rear + 1 == 25` and empty when `front == rear + 1`. It can be both full and empty after all 25 values are removed: there are no pending values and no unused write positions.
+### What happens when we explore a tree with a queue?
 
-The circular version reuses positions by wrapping indexes modulo 25. Its empty condition is `front == (rear + 1) % 25`; its full condition is `front == (rear + 2) % 25`. One position is reserved to distinguish those states, so 25 slots hold at most 24 waiting values. Fill with 0 through 23, remove 0 and 1, then append 24 and 25. The new `rear` is 0. Removal still gives 2 through 25 in order.
+Add the root to the queue. While the queue contains nodes, remove one from the front, process its data, and add its children at the back. The children wait behind the nodes already in the queue, so the current level finishes before the next level begins.
 
-The linked, linear, and circular queues implement the same arrival rule with different storage. The array variants share `queue`, `front`, and `rear`; do not mix them in one run. Their functions remain unchecked. Their distinct names are `enqueue_linear`, `dequeue_linear`, `is_empty_linear`, and `is_full_linear`, plus the circular variants. The public linked `enqueue` checks pool exhaustion and returns a Boolean status. The pool has ten slots; other live lists reduce those available to the queue.
+A stack instead removes the most recently added node. It follows the current branch deeply before returning to other branches that were already waiting.
 
-### How can we process a tree one level at a time?
+### How do we know which level we are processing?
 
-A tree gives a clear first use for the waiting order. We want to process the root, then its children, then their children. Following one child recursively goes deep before processing the other child. Instead, enqueue the root index. Repeatedly dequeue one index, process its data, and enqueue its existing left child followed by its right child. This level order is **breadth-first search**, or **BFS**.
+A node's level is its distance from the root. Record the distance before adding the node to the queue. The root's distance is zero. A child's distance is its parent's distance plus one.
 
-Reuse Chapter 2's exact tree after `alphabet_init(); root = tree_connect();`. Its root is F at index 5. F has children A and G; A has B and C; B has D and E. Indices 7, 8, and 9 are allocated array positions but are not reachable from F.
+### How does graph traversal differ from tree traversal?
 
-| Just processed | Pending indices | Pending labels |
-| --- | --- | --- |
-| Before processing | `[5]` | F |
-| F | `[0,6]` | A, G |
-| A | `[6,1,2]` | G, B, C |
-| G | `[1,2]` | B, C |
-| B | `[2,3,4]` | C, D, E |
-| C | `[3,4]` | D, E |
-| D | `[4]` | E |
-| E | `[]` | empty |
+In a tree, every node except the root has one parent. Following only child links adds each node once. A graph can contain cycles or multiple paths to the same node, so different nodes may try to add the same neighbor. Repeated processing can follow a cycle indefinitely. Check whether a node has already been processed and process it only once.
 
-The processing order is **F, A, G, B, C, D, E**, with depths 0, 1, 1, 2, 2, 3, 3. `tree_bfs(root, order)` stores these node indices and returns 7. The caller supplies room for ten indices, initializes the otherwise unowned linked-node pool, and sets `qhead = qtail = -1` before the call. Root `-1` represents an empty tree and returns 0. A valid tree has no cycles and no shared child, so each reachable node has one route from the root and enters once. A general graph can have several routes to the same vertex. The next example adds a discovery record to prevent duplicate scheduling.
+### What happens when we explore a graph with a queue?
 
-The linked implementation keeps pool-slot indices in `qhead`, `qtail`, and `next`. The table shows the stored tree IDs. BFS calls `enqueue(tree_id)` and receives `tree_id` from `dequeue()`; it does not allocate, inspect, or free queue nodes itself. The public dequeue recycles before BFS adds children.
+Add the starting node to the queue. While the queue contains nodes, remove one from the front, process its data, and add its neighbors at the back. Nodes are processed in order of increasing distance from the start. Adding a previously queued neighbor again cannot make its first processing happen earlier, so do not add it again.
 
-### How can we find a route with the fewest steps?
+A stack instead processes the most recently added node first. In this form of stack traversal, add an unprocessed neighbor again even if an earlier entry is already waiting. The new entry is removed before the old one and can bring the node's processing forward. This follows the current path as deeply as possible before exploring another path. When removing an entry, skip it if its node has already been processed.
 
-We start at one passage and want to reach another. Moving one cell right, left, down, or up takes one step. We cannot enter a wall. Following one route deeply can reach the goal after a long detour. To find the fewest steps, check all places one step away before places two steps away.
+### How do we find shortest distances from a graph's starting node?
 
-The maze is a graph. A passage is a vertex. Two passages share an edge when they touch horizontally or vertically. Every edge takes one step. A route with the fewest edges is a **shortest path**. This equal-step condition matters. The algorithm in this chapter does not compare different edge costs.
+With each edge counting as one step, a queue processes nodes in order of increasing distance from the start. When a neighbor that has never entered the queue is first discovered, no path to it is shorter than the path through the current node. The starting node's shortest distance is zero. Give each newly discovered neighbor the current node's shortest distance plus one before adding it to the queue.
 
-We use the same maze throughout the chapter. A `0` is a wall. A `1` is a passage. The start is `{1,1}` and the goal is `{5,5}`.
+### How can we represent a maze?
 
-```text
-            x
-       0 1 2 3 4 5 6
-   y 0 0 0 0 0 0 0 0
-     1 0 1 0 1 1 1 0
-     2 0 1 1 1 0 1 0
-     3 0 1 0 1 1 1 0
-     4 0 1 0 1 0 1 0
-     5 0 1 1 1 1 1 0
-     6 0 0 0 0 0 0 0
-```
+Divide the maze into cells and distinguish walls from passages. Each passage cell is a graph node. Passage cells that share a horizontal or vertical side are neighbors. Each move adds one to the distance, so the shortest distance from the start is the minimum number of moves.
 
-A `struct point` stores `x` first and `y` second. An array row comes first, so the cell at `{x, y}` is `maze[y][x]`. For example, `{3,2}` means `maze[2][3]`.
+### How do we find a cell's neighbors?
 
-### What should enter the queue?
+A neighboring cell is one horizontal or vertical step from the current cell. Generate candidates in a fixed direction order, then check that each candidate is within the maze and is a passage.
 
-Each linked queue node has an integer `data` payload. A cell has two coordinates. Give each cell one integer, then keep the coordinates in a separate array. Initialization visits each row from left to right. The cell number is `7 * y + x`.
+### How do we find distances from the starting cell?
 
-| Cell | Cell number | Where its search record lives | Where its coordinates live |
-| --- | ---: | --- | --- |
-| `{1,1}` | 8 | `info[1][1]` | `points[8]` |
-| `{3,2}` | 17 | `info[2][3]` | `points[17]` |
-| `{5,5}` | 40 | `info[5][5]` | `points[40]` |
+The starting cell needs no moves, so set its distance to zero. Mark the other distances as unknown with a value larger than any possible shortest distance, such as the total number of cells. Add the starting cell to the queue. While the queue contains cells, remove one and repeat the same work. For each neighbor whose distance is unknown, record the current cell's distance plus one, then add that neighbor to the queue.
 
-`info[7][7]` holds one search record for every cell, including walls. `points[50]` maps a cell number back to coordinates. Initialization fills numbers 0 through 48. Slot 49 is unused. These cell numbers describe positions. They are not discovery times or distances.
+### Why is the first recorded distance the minimum?
 
-### How can the queue keep closer cells first?
+Every move to a neighboring cell has the same cost, and cells enter the queue in order of increasing distance from the start.
 
-Put the start in the queue with distance 0. Remove its number from the front. Find its passage neighbors and put them at the back with distance 1. Repeat for each removed cell. Neighbors reached from a distance-1 cell receive distance 2.
+### How can we reconstruct a shortest path?
 
-The queue removes all distance-1 cells before any distance-2 cell. The same rule holds for later distances. Searching in this order is **breadth-first search**, or **BFS**. Finding a cell for the first time is discovery. Removing it and checking its neighbors is processing. A discovered cell can still be waiting in the queue.
+When a cell is first discovered, also save the current cell that discovered it. Starting at the destination, follow the saved cells backward to the start and collect the cells along the way. Reverse their order to recover the shortest path.
 
-If a shorter route to a cell existed, the cell immediately before it on that route would be processed earlier. That earlier cell would already have discovered it. Therefore the first distance assigned by BFS is the shortest distance.
+## Calculating efficiency
 
-### How do we recognize a new passage?
+### Memory needed to create a queue
 
-A maze can contain cycles. Enqueuing every neighbor would repeatedly add the same passages. Each cell needs a record showing whether its distance is already known.
+Creating an array queue requires space for its full capacity. If the simple queue does not reuse removed positions at the front, capacity for the total number of items that will be added is sufficient.
 
-`init_info()` sets every `distance` to 25 and every `prev_size` to 0. The value 25 means the distance is not known. There are only 25 interior positions. A shortest route does not repeat a position, so its distance is at most 24. This maze has 20 passages, which gives an even smaller bound. Therefore 25 cannot equal a finite shortest distance in this maze.
+### Efficiency of adding or removing one item
 
-The value 25 is only a distance marker. It is a valid cell number: `{4,3}` has number 25. Do not treat 25 as a missing cell number. After BFS finishes, a passage with distance 25 is unreachable from the chosen start. Walls also keep their initialized distance 25.
-
-When a new passage is found, the code writes its distance and previous cell **before** putting its number in the queue. A second route then sees the saved distance even while the passage is still waiting. The second route does not enqueue it again. No separate `discovered` array is needed.
-
-### Why keep more than one previous cell?
-
-Two routes can reach the same passage in the same number of steps. To remember both routes, save every neighboring cell whose distance is one less. Such a cell is a **predecessor** on a shortest path.
-
-Each record has `prev[4]` and `prev_size`. The active entries are `prev[0]` through `prev[prev_size - 1]`. Each entry stores coordinates. Four slots suffice because a cell has at most four neighbors. Initialization resets the count; old values outside the active entries are ignored.
-
-After skipping a wall, the code compares the neighbor's distance with the current distance.
-
-| Neighbor condition | Action |
-| --- | --- |
-| `neighbor_distance <= cur_distance` | Skip the neighbor. Moving there would not extend a shortest path from the current cell. |
-| `neighbor_distance == cur_distance + 1` | Append the current cell to the neighbor's predecessors. Do not enqueue the neighbor again. |
-| Remaining case in a fresh BFS | Discover the neighbor. Set its distance, append its first predecessor, and enqueue its number. |
-
-In a fresh FIFO search, the remaining case is an unseen passage with distance 25. A later cell cannot offer a shorter distance to an already discovered passage. Existing distances stay fixed, but the predecessor list can grow.
-
-### Which neighbor is checked first?
-
-Shortest distances do not depend on how the four directions are ordered. The queue order and predecessor order can change. This lab always checks **right, left, down, up**.
-
-`init_iter(cur)` saves the current point in the global `cur_point` and sets the global `state` to 0. `next_iter()` copies the point, moves the copy in one direction, and increases `state`. Each `break` ends one `switch` case. Without the breaks, several coordinate changes would run in a single call.
-
-This mechanism is a neighbor iterator: it produces one neighboring point at a time. The iterator uses shared state. Finish the four directions for one cell before initializing another cell's iteration. The current BFS does so inside its inner loop.
-
-### What does the waiting line contain?
-
-We can now follow the actual queue. Start `{1,1}` has number 8. The queue initially contains `[8]`. The table shows active values from front to back after processing each cell. Removed values can remain physically in the array, but they are outside the active queue.
-
-| Removed number and cell | Distance | Queue after checking right, left, down, up |
-| --- | ---: | --- |
-| 8 `{1,1}` | 0 | `[15]` |
-| 15 `{1,2}` | 1 | `[16,22]` |
-| 16 `{2,2}` | 2 | `[22,17]` |
-| 22 `{1,3}` | 2 | `[17,29]` |
-| 17 `{3,2}` | 3 | `[29,24,10]` |
-| 29 `{1,4}` | 3 | `[24,10,36]` |
-| 24 `{3,3}` | 4 | `[10,36,25,31]` |
-| 10 `{3,1}` | 4 | `[36,25,31,11]` |
-| 36 `{1,5}` | 4 | `[25,31,11,37]` |
-| 25 `{4,3}` | 5 | `[31,11,37,26]` |
-| 31 `{3,4}` | 5 | `[11,37,26,38]` |
-| 11 `{4,1}` | 5 | `[37,26,38,12]` |
-| 37 `{2,5}` | 5 | `[26,38,12]` |
-| 26 `{5,3}` | 6 | `[38,12,33,19]` |
-| 38 `{3,5}` | 6 | `[12,33,19,39]` |
-| 12 `{5,1}` | 6 | `[33,19,39]` |
-| 33 `{5,4}` | 7 | `[19,39,40]` |
-| 19 `{5,2}` | 7 | `[39,40]` |
-| 39 `{4,5}` | 7 | `[40]` |
-| 40 `{5,5}` | 8 | `[]` |
-
-When number 31 is processed, it discovers number 38 with distance 6 and predecessor `{3,4}`. Later, number 37 has distance 5 and reaches the same number 38. The equality branch adds `{2,5}` as another predecessor. Number 38 does not enter the queue again.
-
-Number 33 first discovers the goal, number 40, at distance 8. Number 39 later adds another predecessor. At completion, `info[5][5].prev_size` is 2. The entries are `{5,4}` and `{4,5}`, in that order. There are three shortest routes in total because `{3,5}` also has two predecessors.
-
-All 20 passages are reachable from `{1,1}`. Each enters and leaves the queue once. The final linked endpoints are `qhead = qtail = -1`. All ten queue-pool slots are free after 20 removals; peak pending is four. The maze itself is unchanged. The program does not save a separate processing-order array; the table is a hand trace.
-
-### How do previous cells give a route?
-
-The recorded distances let us stop following predecessors at the start. Each backward move lowers the distance by exactly one. Following only `prev[0]` from `{5,5}` produces one route:
-
-```text
-Backward: {5,5} <- {5,4} <- {5,3} <- {4,3} <- {3,3}
-          <- {3,2} <- {2,2} <- {1,2} <- {1,1}
-Forward:  {1,1} -> {1,2} -> {2,2} -> {3,2} -> {3,3}
-          -> {4,3} -> {5,3} -> {5,4} -> {5,5}
-```
-
-The route contains nine cells and eight moves. Choosing only `prev[0]` gives one shortest route. Following every active predecessor, with a separate branch for each choice, gives all three shortest routes. Two predecessors at the goal do not necessarily mean only two complete routes.
-
-The start has distance 0 and no predecessor. Its route contains only itself. A passage whose distance remains 25 has no route from the start. `lab.c` records the information but provides no path-reconstruction function.
-
-### What must be ready before a search?
-
-A new run must begin without distances or queued numbers from an earlier run. The caller runs `init_info()` and `init_lnodes_pool()` while no live structure owns the pool, sets `qhead = qtail = -1`, and supplies a passage strictly inside the outer wall. `bfs()` sets the start distance to 0 but does not perform those resets or validate the start. The array comparison counters `front` and `rear` do not control BFS.
-
-Every border cell in the supplied maze is a wall. Every dequeued passage is therefore interior. Its four neighbors have coordinates from 0 through 6. The wall check rejects border cells before they could be enqueued. This explains why neighbor accesses are valid under the stated conditions. `is_wall()` itself performs no bounds check. An invalid start or an open border removes that guarantee.
-
-Both searches use the **local value adapters in Module 8 over Chapter 7's node queue**. Its internal pool slot lies in 0..9, while the stored ID can be larger than 9. The wrappers hide that distinction from BFS: `enqueue(id)` allocates and checks the pool; `dequeue()` returns the ID and recycles the slot before expansion. This permits 20 total discoveries with ten slots. Canonical peak pending is four, and all supplied-maze starts peak at six. A different graph needs its own bound. BFS stores each enqueue result outside `assert`, then asserts success; compiling with `NDEBUG` must not remove an enqueue call.
-
-## Calculating Efficiency
-
-### How much work do queues and tree BFS need?
-
-Each enqueue or dequeue changes a fixed number of indices, links, or array entries: O(1). Initializing the ten-node pool visits ten records. If the pool grows to `P` slots, that initialization is O(P). Finding a predecessor by traversal remains separate work.
-
-The tree example processes seven nodes and checks two child positions per node: fourteen checks. Every reachable node enters and leaves once. For `N` reached tree nodes, the work is O(N). The pending queue can grow with the largest level width. The linked implementation recycles the removed queue node before expanding it. The seven-node fixture peaks at three pending entries, not seven permanently consumed slots. It reserves ten two-integer pool records and ten output indices. A growing implementation needs storage for the peak frontier and output; their worst case is O(N).
-
-### How much work explores this maze?
-
-The example removes 20 passage numbers and checks four neighbors for each. That is 80 neighbor checks. Assigning a distance, appending one predecessor, and inserting or removing one integer each take a fixed amount of work. No array row is scanned to find neighbors.
-
-If `R` passages are reachable, the search makes `R` removals and `4R` neighbor checks. Its time is O(R). For a general graph with `V` vertices and `E` edges, checking reached vertices and their incident edges gives the usual BFS bound O(V + E). Here each passage has at most four neighbors, so the number of checked connections grows with the number of reached passages.
-
-Initialization separately writes all 49 cell records and coordinate entries. On an `H` by `W` maze, initialization takes O(HW). Initialization and search together take O(HW), since the reachable passages are part of those cells. The fixed 7 by 7 program has fixed bounds; these symbols describe growth when the maze size grows.
-
-### How much storage records the search?
-
-The program reserves 49 maze integers, 49 search records, 50 points, and ten two-integer linked queue-pool records. The separate array comparison also reserves 25 integers, but neither BFS uses that array. Each search record has four predecessor slots even if the cell is a wall. Reserving storage depends on the grid size, not on how many passages are reached. For a growing grid, the maze and search storage are O(HW). The loop's additional local storage is O(1).
-
-The example makes 20 total insertions and 20 removals. Each removed slot returns to the pool before expansion. At most four entries wait simultaneously from `{1,1}`. The required pool capacity follows peak live queue occupancy, not total discoveries. Every completed run leaves `qhead == qtail == -1` and all ten slots free. Even a fully open 5 × 5 interior peaks at ten pending entries over all 25 possible starts with this direction order. Arbitrary larger or altered graphs are outside that measured bound.
-
-### How much work rebuilds routes?
-
-Choosing one predecessor per backward move visits nine cells for the example goal. For a route of `L` moves, following and reversing its `L + 1` cells takes O(L + 1) time and O(L + 1) output storage. Checking whether the stored distance is 25 takes O(1).
-
-Listing all shortest routes costs more because every output route must be written. Branches in the predecessor records can create many complete routes. BFS storing the predecessors does not make enumerating all routes cost the same as following one route.
+To add data, increase `rear` by one and store the data at that position. To remove data, read it at `front` and increase `front` by one. No other queued data moves, so each operation takes constant time regardless of the number of items.
 
 ## Glossary
 
-The following names refer to the actions and records already used above.
+### Queue
 
-| Name | Meaning in this lab |
-| --- | --- |
-| FIFO / 선입선출 | Remove values in arrival order / 먼저 들어온 값부터 꺼내는 규칙 |
-| enqueue, dequeue / 넣기, 꺼내기 | Append at the back, remove from the front / 뒤에 넣고 앞에서 꺼내기 |
-| linked queue / 연결 큐 | Pool-node indices connected between head and tail / head와 tail 사이의 풀 노드 연결 |
-| linear queue / 선형 큐 | Increasing positions without slot reuse / 위치를 증가시키며 사용한 칸은 재사용하지 않음 |
-| circular queue / 원형 큐 | Positions wrap modulo 25; 24 usable slots / 25로 나눈 나머지로 순환하며 24개 저장 |
-| level order / 층별 순서 | Process tree nodes by increasing depth / 깊이가 작은 층부터 처리 |
-| shortest path / 최단 경로 | A passage route using the fewest one-cell moves |
-| breadth-first search / 너비 우선 탐색 | A FIFO search that processes cells in nondecreasing distance order |
-| discovery / 발견 | First assigning a passage's distance and scheduling it in the queue |
-| processing / 처리 | Removing a cell number and checking its four neighbors |
-| distance / 거리 | The minimum move count from the start; 25 means unknown or unreachable |
-| predecessor / 선행 칸 | A neighboring passage one step closer to the start on a shortest path |
-| cell number / 칸 번호 | The integer `7 * y + x`, used in the queue |
-| active predecessor entries / 유효한 선행 칸 항목 | `prev[0]` through `prev[prev_size - 1]` |
-| neighbor iterator / 이웃 반복자 | The shared `cur_point` and `state` mechanism producing four directions |
-| path reconstruction / 경로 복원 | Following predecessors backward and reversing the cell sequence |
+A data structure that adds data at the back and removes the earliest added data first, like a line of waiting people.
 
-## Coding Plan
+### First-in first-out
 
-The data prepared in each step supports the next action.
+The rule that the first data added is the first data removed.
 
-1. Import Chapter 7's linked queue through `queue.c`. Compare its storage with the linear and circular array queues defined here.
-2. Use the imported linked queue in `tree_bfs.c`. Store tree indices in queue-node `data`, enqueue left before right, and store processed indices in `order`.
-3. Store the maze and coordinate type. Keep `0` for walls and `1` for passages. Read a coordinate using `[y][x]`.
-4. Give every cell a number. Fill `info` and `points`, set distances to 25, and clear predecessor counts.
-5. Read and write distances in the global records. Append predecessor coordinates using the active count.
-6. Generate right, left, down, and up with the shared iterator. End every `switch` case with `break`.
-7. Call `enqueue(start_id)`, store its Boolean result, and assert success. The wrapper owns allocation and insertion. Keep the enqueue operation outside `assert`.
-8. Get the cell ID from `dequeue()`. Its queue node has already been recycled. Recover coordinates, skip wall/earlier-distance neighbors, retain equal-distance predecessors, and enqueue only first discoveries.
-9. In a separate driver, initialize records and the otherwise unowned pool, and reset linked endpoints before each run. Check distances and active predecessor entries. Follow one or all predecessors when a route is needed.
+### Enqueue
 
-## C Code
+Adding data at the back of a queue.
 
-The queue code is in [queue.c](queue.c). It imports Chapter 7's complete linked queue and pool without redefining them. [tree_bfs.c](tree_bfs.c) imports Chapter 2's tree and the same queue. The maze [lab.c](lab.c) includes `queue.c` directly. The queue include guard shares one queue definition when the driver includes both searches. Compile only the driver; included C files are not separate compiler inputs.
+### Dequeue
 
-### Import the linked queue and compare array representations
+Removing and returning data from the front of a queue.
 
-The include reuses Chapter 7's raw node queue; `queue.c` adds local `enqueue(value)` and `dequeue()` value adapters as the BFS interface. The array comparison functions below use `_linear` or `_circular` suffixes, so their names do not collide.
+### Front
+
+The index identifying the first data in a nonempty queue. An empty queue has no first data.
+
+### Rear
+
+The index identifying the last data in a nonempty queue. An empty queue has no last data.
+
+### Linear queue
+
+A simple array queue whose occupied range advances toward the end of the array without reusing removed positions or wrapping around during operation.
+
+### Circular queue
+
+An array queue whose indices wrap around to reuse removed positions.
+
+### Level order
+
+Processing all nodes at one tree level before processing the next level.
+
+### Breadth-first search
+
+A traversal that uses a queue to process nodes from the starting point outward. When every move has the same cost, it can find shortest distances.
+
+### Discovered
+
+The state of a node whose distance from the start has been determined. It includes nodes waiting in the queue and nodes already processed.
+
+### Processed
+
+The state of a node that has been removed from the queue and had its neighbors examined.
+
+### Iterator
+
+Something that provides successive items in a defined order, such as the next neighbor of a node.
+
+### Sentinel
+
+A value chosen to carry a special meaning. `INF` means that the distance from the start has not yet been determined.
+
+### Predecessor
+
+The current cell that first discovered another cell. It is that cell's parent in the search and is used to reconstruct a path.
+
+## Invariant
+
+### What is the breadth-first search invariant?
+
+- Distances from the start stay the same or increase from the front of the queue to the back.
+
+### What is the benefit of the invariant?
+
+When every move has the same cost, a neighbor's shortest distance is determined when it is first discovered from the node removed from the queue. No shorter path can be discovered later, so each node only needs to enter the queue once, at its first discovery.
+
+### What happens if the invariant is broken?
+
+Using a stack instead of a queue, or giving moves different costs, removes the guarantee that nodes are taken out in order of increasing distance from the start. If a shorter path is discovered later, the distance must be updated and the neighbors explored again.
+
+### How do we keep the invariant intact?
+
+- Remove a node from the front of the queue. For each undiscovered neighbor, record the removed node's distance plus one, then add the neighbor at the back.
+
+## Coding plan
+
+### Representing the maze
+
+- Name the square maze's size `N`. Store walls and passages as `0` and `1` in a two-dimensional array.
+- Define the members of `struct point` in `y`, `x` order. Following the row-first index order of a two-dimensional array, read a cell with `maze[p.y][p.x]`.
+- Make the maze's border walls so that checking neighbors does not take array indices outside the maze.
+
+### Generating horizontal and vertical neighbor candidates in order
+
+- Remember the current cell and the next direction to examine. When a candidate is requested, copy the current cell's coordinates, change `x` or `y` for that direction, and provide the candidate. Advance to the next direction. Finish the iteration after all four candidates have been examined.
+
+### Storing waiting coordinates
+
+- Make the queue an array of `struct point`. Each cell enters at most once, so a capacity of `N * N`, the total number of cells, is sufficient. Start `front` at `0` and `rear` at `-1`.
+- To add a coordinate, increase `rear` by `1` and store it at that position. To remove a coordinate, read it at `front` and increase `front` by `1`. The queue is empty when `front` is greater than `rear`.
+
+### Preparing the distance search
+
+- Create a two-dimensional array named `distance` to store shortest distances from the start.
+- Name the value `N * N` as `INF`; it is larger than any possible shortest distance. Before searching, initialize every cell's `distance` to `INF` to mark it as undiscovered.
+- For a passage start, set its `distance` to `0` and add it to the queue.
+
+### Finding shortest distances
+
+- While the queue is nonempty, remove the current cell from the front.
+- Examine its four neighbor candidates one at a time. If a candidate is a passage (`1`) and its `distance` is `INF`, store the current cell's distance plus `1` in its `distance`, then add the cell to the queue.
+
+## New C syntax explained
+
+### Initializing a two-dimensional array
+
+Each inner brace pair in `int maze[N][N] = { ... };` initializes one row. `maze[p.y][p.x]` first selects a row, then a column within it.
+
+### Copying and returning a structure
+
+`struct point p = cur_point;` copies both members. Changing `p.x` afterward does not change `cur_point.x`. Functions can also accept or return a whole structure, as `enqueue` and `dequeue` do.
+
+### Short-circuit logical OR
+
+In `is_wall(p) || get_distance(p) != INF`, either true condition is enough to skip the coordinate. If the wall test is true, C does not evaluate the distance test.
+
+## C code
+
+### Maze storage
 
 ```c
-/* Module 8: compare array queues and reuse Module 7's linked node queue.
- * Value adapters below allocate/write/enqueue, then dequeue/read/recycle.
- * The imported pool initializes once; drain every owner between independent runs.
- */
-#ifndef MODULE_08_QUEUE_C
-#define MODULE_08_QUEUE_C
-#include <assert.h>
-#include <stdbool.h>
-#ifndef MODULE_07_LINKED_LIST_SOURCE_IMPORTED
-#define MODULE_07_LINKED_LIST_SOURCE_IMPORTED
-#include "module_07_linked_list/student/lab.c"
-#endif
+enum { N = 5 }; // Use the same size for storage and initialization.
 
-/* Module 8 convenience interface, built on Module 7's index operations. */
-bool enqueue(int value) {
-    int node = new_lnode();
-    if (node == -1) { return false; }
-    lnodes[node].data = value;
-    enqueue_lnode(node);
-    return true;
-}
-
-/* Caller guarantees nonempty; a payload of -1 is valid. */
-int dequeue(void) {
-    assert(!is_empty_queue());
-    int node = dequeue_lnode();
-    int value = lnodes[node].data;
-    free_lnode(node);
-    return value;
-}
-
-int queue[25];
-int front = 0;
-int rear = -1;
-
-void enqueue_linear(int data) {
-    queue[++rear] = data;
-}
-
-int dequeue_linear() {
-    return queue[front++];
-}
-
-int is_full_linear() {
-    return rear + 1 == 25;
-}
-
-int is_empty_linear() {
-    return front == rear + 1;
-}
-
-void enqueue_circular(int data) {
-    rear = (rear + 1) % 25;
-    queue[rear] = data;
-}
-
-int dequeue_circular() {
-    int data = queue[front];
-    front = (front + 1) % 25;
-    return data;
-}
-
-int is_full_circular() {
-    return front == (rear + 2) % 25;
-}
-
-int is_empty_circular() {
-    return front == (rear + 1) % 25;
-}
-
-#endif
+int maze[N][N] = {
+        {0, 0, 0, 0, 0},
+        {0, 1, 0, 1, 0},
+        {0, 1, 1, 1, 0},
+        {0, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0}
+}; // 0 is a wall; 1 is a passage. Keep the outer border closed with walls.
 ```
 
-### Process the tree with Chapter 7's linked queue
-
-The tree stores child indices in `nodes[cur].left` and `.right`. A `-1` child never enters the queue.
+### Representing and checking coordinates
 
 ```c
-/* Use Module 8 value adapters over Module 7's node queue for tree-node IDs.
- * Before an independent run, initialize once and drain every pool owner.
- * A valid nonempty tree has no cycles/shared child and at most ten nodes.
- * order has ten slots; root -1 denotes an empty tree.
- */
-#include <assert.h>
-#include "module_02_binary_tree/student/lab.c"
-#include "queue.c"
-
-int tree_bfs(int root, int order[10]) {
-    int count = 0;
-    if (root == -1) return 0;
-    bool added = enqueue(root);
-    assert(added);
-    (void)added;
-    while (!is_empty_queue()) {
-        int cur = dequeue(); /* Returns the ID and recycles its queue node. */
-        order[count++] = cur;
-        if (nodes[cur].left != -1) {
-            added = enqueue(nodes[cur].left);
-            assert(added);
-        }
-        if (nodes[cur].right != -1) {
-            added = enqueue(nodes[cur].right);
-            assert(added);
-        }
-    }
-    return count;
-}
-```
-
-### Store walls and coordinates
-
-The outer wall keeps the neighbors of interior passages within the array. The coordinate fields still use `x, y`; array access uses `y, x`.
-
-```c
-int maze[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 1, 1, 1, 0},
-    {0, 1, 1, 1, 0, 1, 0},
-    {0, 1, 0, 1, 1, 1, 0},
-    {0, 1, 0, 1, 0, 1, 0},
-    {0, 1, 1, 1, 1, 1, 0},
-    {0, 0, 0, 0, 0, 0, 0}
-};
-
 struct point {
-    int x;
-    int y;
+        int y; // Put the row first to match the first array index.
+        int x; // Put the column second.
 };
 
 int is_wall(struct point p) {
-    return maze[p.y][p.x] == 0;
+        // Requires an in-bounds coordinate. This function does not check bounds.
+        return maze[p.y][p.x] == 0;
 }
 ```
 
-### Initialize the cell records
-
-The same `pos` fills the forward number and the reverse coordinate lookup. A zero predecessor count makes old predecessor values inactive.
-
-```c
-struct maze_node {
-    int index;
-    int distance;
-    struct point prev[4];
-    int prev_size;
-};
-
-struct maze_node info[7][7];
-struct point points[50];
-
-void init_info() {
-    int pos = 0;
-    for (int i = 0; i < 7; i++) {
-        for (int j = 0; j < 7; j++) {
-            info[i][j].index = pos;
-            info[i][j].distance = 25;
-            info[i][j].prev_size = 0;
-            points[pos].y = i;
-            points[pos].x = j;
-            pos++;
-        }
-    }
-}
-```
-
-### Update the global search records
-
-The setters change `info` directly. `prev_size++` supplies the old count as the insertion position and then increases the count. The BFS rules limit the count to four distinct neighboring predecessors.
-
-```c
-int get_index(struct point p) {return info[p.y][p.x].index;}
-
-int get_distance(struct point p) {return info[p.y][p.x].distance;}
-void set_distance(struct point p, int dist) {info[p.y][p.x].distance = dist;}
-
-void add_prev(struct point p, struct point from) {
-    int pos = info[p.y][p.x].prev_size++;
-    info[p.y][p.x].prev[pos] = from;
-}
-```
-
-### Produce four neighbors in order
-
-Each call starts from a copy of `cur_point`. Movement from an earlier call does not carry into the next neighbor.
+### Generating horizontal and vertical neighbor candidates in order
 
 ```c
 struct point cur_point;
-int state;
+int state; // The next directions are right, left, down, and up, in that order.
 
 void init_iter(struct point p) {
-    cur_point = p;
-    state = 0;
+        cur_point = p;
+        state = 0;
 }
 
-int has_next() {return state < 4;}
+int has_next_iter(void) {
+        return state < 4;
+}
 
-struct point next_iter() {
-    struct point p = cur_point;
-    switch (state) {
-        case 0: p.x += 1; break;
-        case 1: p.x -= 1; break;
-        case 2: p.y += 1; break;
-        case 3: p.y -= 1; break;
-    }
-    ++state;
-    return p;
+struct point next_iter(void) {
+        // Requires an interior current cell and a direction still left to examine.
+        struct point p = cur_point; // Start every candidate from the same current cell.
+        switch (state) {
+                case 0: p.x += 1; break;
+                case 1: p.x -= 1; break;
+                case 2: p.y += 1; break;
+                case 3: p.y -= 1; break;
+        }
+        ++state; // The next call selects the next direction.
+        return p;
 }
 ```
 
-### Save distances and every shortest predecessor
+### Storing coordinates in arrival order
 
-The equality branch changes only the predecessor list. The discovery branch writes the record before insertion. These rules let several shortest routes share one queued cell.
+```c
+struct point queue[N * N]; // Store whole coordinates.
+int front = 0; // Index of the first data when the queue is nonempty.
+int rear = -1; // Index of the last data when the queue is nonempty.
+
+void init_queue(void) {
+        // Old values need not be erased. The occupied range becomes empty.
+        front = 0;
+        rear = -1;
+}
+
+int is_empty_queue(void) {
+        return front > rear;
+}
+
+void enqueue(struct point data) {
+        // Requires an unused write position. Removal does not move rear backward.
+        queue[++rear] = data;
+}
+
+struct point dequeue(void) {
+        // Requires a nonempty queue. Read the first data, then advance front.
+        return queue[front++];
+}
+```
+
+### Storing distances
+
+```c
+int distance[N][N];
+
+void set_distance(struct point p, int d) {
+        distance[p.y][p.x] = d;
+}
+
+int get_distance(struct point p) {
+        return distance[p.y][p.x];
+}
+
+enum { INF = N * N }; // Larger than any possible shortest distance in the maze.
+```
+
+### Initializing the search
+
+```c
+void init_bfs(struct point s) {
+        init_queue(); // Restart the queue indices on every call.
+        struct point p;
+        for (p.y = 0; p.y < N; p.y++) {
+                for (p.x = 0; p.x < N; p.x++) {
+                        // Clear old discovery records, including wall entries.
+                        set_distance(p, INF);
+                }
+        }
+        // The start must be in bounds. A wall start leaves the queue empty.
+        if (!is_wall(s)) {
+                set_distance(s, 0);
+                enqueue(s);
+        }
+}
+```
+
+### Finding shortest distances
 
 ```c
 void bfs(struct point start) {
-    set_distance(start, 0);
-    bool added = enqueue(get_index(start));
-    assert(added);
-    (void)added;
-
-    while (!is_empty_queue()) {
-        int cell_id = dequeue(); /* Returns the ID and recycles its queue node. */
-        struct point cur = points[cell_id];
-        int cur_distance = get_distance(cur);
-        init_iter(cur);
-        while (has_next()) {
-            struct point neighbor = next_iter();
-            if (is_wall(neighbor)) {continue;}
-            int neighbor_distance = get_distance(neighbor);
-            if (neighbor_distance <= cur_distance) {continue;}
-            else if (neighbor_distance == cur_distance + 1) {
-                add_prev(neighbor, cur);
-            }
-            else {
-                set_distance(neighbor, cur_distance + 1);
-                add_prev(neighbor, cur);
-                added = enqueue(get_index(neighbor));
-                assert(added);
-            }
+        init_bfs(start); // Reset both the queue and distances on every run.
+        while (!is_empty_queue()) {
+                struct point cur = dequeue();
+                int cur_dist = get_distance(cur);
+                init_iter(cur);
+                while (has_next_iter()) {
+                        struct point p = next_iter();
+                        if (is_wall(p) || get_distance(p) != INF) {
+                                // Coordinates still waiting in the queue are already discovered.
+                                continue;
+                        }
+                        // Record discovery before another path can add this coordinate.
+                        set_distance(p, cur_dist + 1);
+                        enqueue(p);
+                }
         }
-    }
 }
 ```
-
-### Verify queues, tree, and maze together
-
-[lab_driver.c](lab_driver.c) checks queue boundaries, circular reuse, the exact tree order, maze distances, and every shortest predecessor. It initializes the unowned node pool and linked endpoints before independent runs, resets metadata before maze runs, and verifies that all ten queue slots return after traversal. Build the actual sources directly; no edited teaching copy is needed.
-
-```sh
-cc -std=c11 -Wall -Wextra -pedantic -I . \
-  module_08_graph_bfs/student/lab_driver.c -o /tmp/module08_lab
-/tmp/module08_lab
-```
-
-```text
-PASS: linked queues, tree BFS, mapping, canonical maze, and independent searches
-```
-
-Submit once: include the three queue traces, the pending tree queue, graph discovery and equal-distance predecessors, and one shortest route. The checked matrix/list API under `code/` remains optional reference.

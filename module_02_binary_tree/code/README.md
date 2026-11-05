@@ -1,8 +1,11 @@
 # Module 2 C Code
 
-The lab implements the expression tree in the English and Korean Chapter 2
-textbooks. Every node stores a character and two integer child indices in
-`nodes[20]`. A child index of `-1` means no child; index `0` is a valid node.
+The textbook and `../student/lab.c` use `nodes[10]` and `nodes_size` for
+the alphabet tree and the addition expression `1+2+3`. This separate lab
+extends those array-index trees to expressions with `+` and `*`, using
+`size`, `pos`, and four different function names. Every node stores a
+character and two integer child indices in `nodes[20]`. A child index of
+`-1` means no child; index `0` is a valid node.
 Digits are stored as characters such as `'2'`; evaluation converts them to
 integers by subtracting `'0'`.
 
@@ -12,17 +15,16 @@ returns `7` without changing the operator characters or child links.
 
 ## Reading support and file layout
 
-Each textbook's **Full C Code Explanation** is an optional reference for
-every symbol and statement in the chapter program. The
-[lab's topic map and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
-connect its 15 topics to the four implementation checkpoints and explain
-the supplied header, placeholders, and test helpers.
+Use **New C Syntax Explained** and **C Code** in either textbook for the
+chapter's syntax and classroom examples. The Chapter 2 webpage provides
+**Ask GPT** for questions about individual subsections. The
+[lab's reading and file-layout guide](../student/lab.md#help-with-reading-the-c-code)
+explains the supplied header, placeholders, and test helpers.
 
-The complete example in companion topic 13 is a standalone program. Here,
-`include/binary_tree.h` holds declarations, `starter/binary_tree.c` or
-`solution/binary_tree.c` supplies definitions, and the selected test or
+Here, `include/binary_tree.h` holds declarations, `starter/binary_tree.c`
+or `solution/binary_tree.c` supplies definitions, and the selected test or
 lecture file provides `main`. Use the targets below to build those files
-together. The lecture driver prints the same `1+2*3 = 7` output.
+together. The lecture driver prints `1+2*3 = 7`.
 
 ## Core work and coding plan
 
@@ -49,7 +51,7 @@ Use a nonempty expression containing single digits alternating with `+` or
 `*`, no whitespace or parentheses, and at most 19 characters so `eq[20]` has
 room for `'\0'`. Every intermediate result and the final answer must fit in
 an `int`. Input validation, extra operators, and overflow handling are not
-part of this chapter's implementation.
+part of this application lab's implementation.
 
 Before each independent expression, reset the used count and cursor and copy
 the valid expression. For example, with `<string.h>` included:
@@ -74,7 +76,7 @@ unnecessary. Evaluate only a completed subtree with a valid root index;
 - `starter-extension`: run five extra checks against the starter;
 - `solution-core`: run the reference core tests;
 - `solution-extension`: run boundary and repeated-build tests;
-- `lecture`: link the textbook example to the solution and print its answer;
+- `lecture`: link the lab's expression example to the solution and print its answer;
 - `autopsy`: demonstrate faulty precedence with two safe tree fixtures; and
 - `clean`: remove generated executables.
 

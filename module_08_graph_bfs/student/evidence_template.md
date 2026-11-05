@@ -1,120 +1,136 @@
-# Module 8 Evidence — Queues, Tree BFS, and Graph BFS
+# Module 8 Evidence — Processing data in stored order
 
 Name: ____________________  Date: ____________________
 
-Use [lab.c](lab.c), the [lab instructions](lab.md), and the [class workbook](class_material.md). Preserve predictions and add corrections beside them. Code, tests, traces, and explanations form one submission.
+Use the [lab](lab.md), [workbook](class_material.md), and unchanged [source](lab.c). Submit queue, tree, and maze reasoning together. Preserve predictions and add corrections. All coordinate pairs mean `{y, x}`.
 
-## Queue and tree evidence before the maze
+## 1. Which queue states did I predict?
 
-| Required trace | First prediction | Observed result and correction |
+Record actual endpoint changes for the linear queue and the paper circular comparison.
+
+| Trace | First prediction | Observation and correction |
 | --- | --- | --- |
-| Linked queue: enqueue values17/23/31, check Boolean results, receive values and observe automatic recycling | | |
-| Linear: 25 writes, then drain; full and empty together | | |
-| Circular: 24 values, remove2, append2 across wraparound | | |
-| Tree: pending queue after F, A, G, B, all7 output labels and depths | | |
-| Empty and single-node tree with independent resets | | |
-
-Explain Boolean enqueue failure, raw index versus public payload returns, automatic public recycling, valid payload -1, caller nonempty checks, and 24 usable circular positions. Record that enqueue executes outside assert. Explain why the tree needs no discovery array under its valid-tree assumptions while a general graph does. Add one original queue assertion, one tree assertion, and one maze assertion with the claim each checks. Include all three parts in one submission.
-
-
-## 1. Which source and setup did I run?
-
-Record queue.c, tree_bfs.c, maze lab.c, driver path, build command, and observed result. Explain the Module 2 tree and Module 7 pool dependencies and the shared consumer/import guard.
+| Enqueue `{1,1}`, `{2,1}`, `{2,2}` and drain | | |
+| 25 linear writes followed by 25 removals | | |
+| 25-slot circular queue: fill 24, remove two, append two | | |
 
 ```text
-source and preparation:
-driver:
-build command:
-run command and output:
-metadata reset:
-queue reset:
+front means:
+rear means:
+linear empty condition:
+linear enqueue/dequeue preconditions:
+maintained queue bound and how each valid operation preserves it:
+why a drained linear queue can still lack a write position:
+circular convention, empty/full conditions, and reserved slot:
+```
+
+## 2. How does the tree establish levels?
+
+Use root A, children B/C, B's children D/E, and C's left child F. Enqueue existing left children before right children. This is a paper exercise.
+
+```text
+pending after A:
+pending after B:
+pending after C:
+complete processing order and depths:
+how I would retain the current depth:
+why a valid tree has no duplicate scheduling:
+what cycles or shared destinations change in a graph:
+why an unprocessed graph neighbor may enter the comparison stack again:
+why an already processed node is skipped when popped from that stack:
+why BFS never enqueues a discovered neighbor again:
+```
+
+## 3. Which current source did I run?
+
+Record the command and output from the current lab driver. The source has no main function; the separate driver includes it. No tree or linked-pool source is needed.
+
+```text
+source: module_08_graph_bfs/student/lab.c
+driver: module_08_graph_bfs/code/tests/test_lecture.c
+build/run command:
+observed output:
+where bfs resets queue and distances:
 valid-start and border assumptions:
 ```
 
-## 2. How does a coordinate enter the queue?
+## 4. How does a point enter the queue?
 
-Record both directions of the mapping. Explain why `maze[y][x]` uses a different written order from `{x, y}`.
-
-```text
-start {1,1} -> index:
-target {5,5} -> index:
-points[25] -> coordinate:
-distance 25 means:
-active points slots:
-```
-
-## 3. What waits after each passage is processed?
-
-Use start `{1,1}` and right/left/down/up order. Record queue contents from oldest to newest. Trace at least through index 17, then record the complete dequeue order in coordinates or IDs. A trace is evidence in the workbook; the source has no `visit_order` field. The driver records payload IDs around the original linked methods and checks every slot returns to the free pool.
-
-| Dequeued cell and distance | Queue after its four candidates | New distances or predecessors |
-| --- | --- | --- |
-| Initial state | | |
-| `{1,1}` | | |
-| `{1,2}` | | |
-| `{2,2}` | | |
-| `{1,3}` | | |
-| `{3,2}` | | |
-| Remaining cells, attached trace | | |
+Explain the two fields and the discovery action before recording the trace.
 
 ```text
-complete dequeue order:
-reached passage count (distance below 25):
-head/tail after completion, returned free-slot count, total insertions/removals, peak pending:
+struct point field order:
+{2,3} accesses which maze cell:
+right/left/down/up neighbors of {2,2}:
+N and INF meanings:
+which operation marks a passage discovered:
+why pending distances do not decrease from front to back:
+how each inner brace pair initializes one maze row:
+how whole-point copying, passing, and returning work:
+when short-circuit OR omits the distance read:
+review of increment timing and switch/break/continue scope:
 ```
 
-## 4. Which branch applies to a neighbor?
-
-For each source branch, provide an actual pair from the trace. Record the current distance, neighbor distance before the check, predecessor effect, and whether enqueue occurs. Handle a wall before these three comparisons.
-
-| Condition | Example and initial distances | Changed metadata | Enqueued? |
+| Processed point | Distance | Pending points, front to back | Newly discovered points |
 | --- | --- | --- | --- |
-| `neighbor_distance <= cur_distance` | | | |
-| `neighbor_distance == cur_distance + 1` | | | |
-| Otherwise: first discovery | | | |
+| Initial | — | | |
+| `{1,1}` | | | |
+| `{2,1}` | | | |
+| `{2,2}` | | | |
+| `{3,1}` | | | |
+| `{2,3}` | | | |
+| `{3,2}` | | | |
+| `{3,3}` | | | |
+| `{1,3}` | | | |
 
-Explain how setting a distance below 25 before enqueue prevents a second enqueue while a passage is still waiting. Explain why an additional shortest predecessor is retained rather than skipped.
+```text
+why {3,1} does not enqueue the waiting {3,2} again:
+why first discovery gives a shortest distance:
+reached passage count:
+total enqueue/dequeue counts:
+peak pending count:
+final front/rear:
+```
 
-## 5. What do the final predecessor lists prove?
+## 5. Which fresh-run checks did I observe?
 
-For start `{1,1}`, record target `{5,5}`'s distance and active `prev` entries. Also inspect `{3,5}` and explain why the number of target parents need not equal the number of complete shortest routes.
+State an expected result before executing each valid case. Make temporary maze changes in the driver and restore the baseline.
+
+| Check | Expected | Actual | Explanation or correction |
+| --- | --- | --- | --- |
+| Start `{1,1}`, target `{3,3}` | | | |
+| Reverse start `{3,3}`, target `{1,1}` | | | |
+| Wall start `{0,0}` | | | |
+| Block `{2,1}`; start `{1,1}` and target `{3,3}` | | | |
+| Restore `{2,1}` and repeat baseline | | | |
+| One original valid check in a separate driver | | | |
+
+## 6. What route could we recover?
+
+Write one shortest route on paper. The supplied code records distances only; explain the previous-point extension from the concept slides separately.
 
 ```text
 target distance:
-target prev_size and ordered prev entries:
-{3,5} prev_size and ordered prev entries:
-backward sequence using prev[0]:
-forward route:
-number of moves and adjacent-passage checks:
-number of all shortest routes and reasoning:
-source distance and prev_size:
+one route as {y,x} points:
+number of edges:
+how to save the discovering current point as the parent cell:
+how backward following reaches the start:
+why reversing the collected points gives the start-to-target route:
+why the existing lab does not already store this route:
 ```
 
-## 6. Can another person repeat my checks?
+## 7. How much work and space are required?
 
-Provide assertions or equivalent observations for all three categories. State the expected result before recording the actual result.
-
-| Check | Setup | Expected | Actual | Explanation or correction |
-| --- | --- | --- | --- | --- |
-| Distance and source-only route | | | | |
-| Equal-distance merge without duplicate queue entries | | | | |
-| Independent repeated search with both resets | | | | |
-| Isolated valid start; goal remains an unreachable passage | | | | |
-
-The supplied driver temporarily sets `maze[2][1]=0` to isolate the valid start `{1,1}` while preserving the zero border. Record that the still-open target `{5,5}` retains distance 25, zero predecessors, and zero routes. Only the start enters the queue. The driver restores the passage and reruns the canonical fixture. Include this supplied unreachable-passage check in the required evidence. Other maze generalizations are optional. Distance 25 alone does not distinguish an unreachable passage from a wall.
-
-## 7. How much work and storage are needed?
-
-Count concrete operations before attaching cost names.
+Count actual work before generalizing to R rows, C columns, and P reached passages.
 
 ```text
-cells initialized in this fixture:
-reachable passages dequeued:
-neighbor candidates checked:
-initialization cost for R rows and C columns:
-traversal cost for V_reached passages:
-reserved metadata and queue space:
-why all-route enumeration can cost more than BFS:
+number of initialized distances:
+number of neighbor candidates:
+reset cost:
+traversal cost:
+reserved queue/distance space:
+why total writes, not just peak pending, bound this linear queue:
+one original prediction I corrected and why:
 ```
 
-Explain why a maze grid is not a `V × V` adjacency matrix. Explain the separate bounds: ten pool slots cover peak pending entries (four canonical, at most six over the supplied starts); distance sentinel 25 exceeds any simple shortest route length in a 5 × 5 interior. Total discoveries do not equal required linked-pool capacity. Finish with one corrected prediction and a comparison between FIFO search and DFS's LIFO choice.
+The optional checked matrix/list API is outside this submission. Its statuses, sentinel 16, and predecessor arrays are not evidence about the current maze implementation.

@@ -1,6 +1,38 @@
 # Instructor Technical Notes — Module 2
 
-## Scope and exact public contract
+## Textbook and classroom contract
+
+The current English and Korean textbooks follow `student/lab.c`. The
+shared storage is `struct TreeNode nodes[10]`, `capacity = 10`, and
+`nodes_size = 0`. The functions are `alphabet_init`, `tree_connect`,
+`tree_recursion`, `eq_plus_init`, `eq_plus_connect`, and `eval`.
+
+Explain the hierarchy before the code: one root has no parent, every other
+node has one, and following parents reaches that root. Parenthood is a
+relationship; no parent member is stored. Binary nodes reserve two child
+positions, `left` and `right`, each holding an index or `-1`.
+
+`alphabet_init` initializes all ten slots. `tree_connect` returns 5 for F,
+with shape `F(A(B(D,E),C),G)` and seven reachable nodes. H, I, and J remain
+outside that tree. `tree_recursion` reads left, right, then current; the
+read order is `D E B C A G F`. It prints nothing. Its range guard handles
+`-1` but cannot stop a cycle of valid indices.
+
+`eq_plus_init` reuses indices 0–4 for `1+2+3` and resets both child links.
+`eq_plus_connect` builds `(1+2)+3`, changing root from 0 to 1 to 3. Each
+operator has the existing subtree as its left operand and a digit as its
+right operand. `eval(3)` returns 6; digit leaves return without following
+children, and non-digit nodes are assumed to be plus nodes with two valid
+children. There is no index check or unsupported-operator fallback.
+
+The fixed array reserves ten slots. Traversal work depends on the `r`
+reachable nodes, not `nodes_size`: `O(r)`. A height-3 alphabet tree permits
+four active node calls and one additional stopping call. Extra recursive
+storage is `O(h + 1)`; reserved array storage is separate. The snippets
+have no `main`, and `data_read` is intentionally unused, so a warning about
+that variable is expected. Do not add printing merely to remove it.
+
+## Application-lab scope and exact public contract
 
 The header is `code/include/binary_tree.h`. The implementations are
 `code/starter/binary_tree.c` and `code/solution/binary_tree.c`.
@@ -33,25 +65,23 @@ integer indices into `nodes`, with `-1` for no child. Index `0` is valid.
 No additional reset API, wrapper, status type, or structural validator is
 required.
 
-## Relationship to the full C companion
+## C reading support and lab file layout
 
-Both textbooks' **Full C Code Explanation** sections explain the same four
-functions in 15 corresponding topics. The complete program in topic 13
-combines the chapter's six code blocks; its initial expression is still
-`1+2*3`, and its output is still `1+2*3 = 7`. The companion is optional
-reference material released at Stage D, with the chapter's worked code.
+The textbooks retain **New C Syntax Explained** and **C Code** for syntax
+and classroom examples. Students on the Chapter 2 webpage can ask about
+individual subsections using **Ask GPT**. The textbooks and worked models
+remain Stage D materials; no additional assessed work is introduced.
 
-The lab keeps these definitions in separate files: the header declares
-the shared interface, the starter or solution defines the objects and
+The lab keeps its definitions in separate files: the header declares the
+shared interface, the starter or solution defines the objects and
 functions, and each test or lecture driver supplies `main`. The lab's
-syntax bridge explains the added file-layout and test-harness notation.
-Do not ask students to paste the complete standalone program into the
-starter or add a second `main` to the test build.
+syntax guide explains the added file-layout and test-harness notation.
+Do not ask students to paste another program into the starter or add a
+second `main` to the test build.
 
 The lecture's `(void)printf(...)` explicitly discards `printf`'s return
-value; the textbook simply ignores that return value. Both calls
-produce the same output. The cast is not a new expression-tree operation.
-Reference code, starter contracts, and assessment scope remain the same.
+value. The cast is not a new expression-tree operation. Reference code,
+starter contracts, and assessment scope remain the same.
 
 ## Input and tree preconditions
 
@@ -113,7 +143,7 @@ Reset both `size` and `pos` for each independent full parse.
 ## Reserving and initializing a node
 
 `new_node(data)` writes the character into `nodes[size]`, sets both links
-to `-1`, increments `size`, and returns the old index. The textbook's
+to `-1`, increments `size`, and returns the old index. The lab solution's
 `return size++;` returns the position just reserved, not the next slot.
 
 Reservation alone does not attach a parent or decide the whole-expression
@@ -167,7 +197,7 @@ At a digit, `eval_tree` returns `nodes[node].data - '0'`. C guarantees
 consecutive digit character codes; this conversion needs no ASCII-specific
 integer constant. The digit case returns before following its `-1` links.
 
-At an operator, the textbook evaluates the left child and then the right
+At an operator, the lab solution evaluates the left child and then the right
 child in separate declarations. Each recursive call keeps its own local
 results. Applying `+` or `*` returns a numeric answer without modifying
 the node's character or either child link. Evaluation also leaves
@@ -179,7 +209,7 @@ still stores `'*'` after returning `6`, and the root still stores `'+'`
 after returning `7`. Distinguish the order of call entry from the order
 of completed results.
 
-The textbook's `-1` fallback for an unsupported data character is not
+The lab solution's `-1` fallback for an unsupported data character is not
 input or tree validation: bad indices, missing children, or cycles are
 not made safe by that check. No handling of those cases is required.
 
@@ -241,7 +271,7 @@ Microsoft C uses `/nologo /std:c11 /W4 /Zi`. Provide instructor CI or a
 debugger/state-inspection alternative when local runtime checks are
 unavailable.
 
-Before release, verify:
+Before releasing the application lab, verify:
 
 - all four reference functions and supplied tests compile without warnings;
 - creation covers index zero, new-slot identity, and initialized children;
@@ -254,6 +284,6 @@ Before release, verify:
 - all release paths use the current header, implementation, and autopsy names;
 - the three authored-test categories align with the 100-point rubric;
 - vocabulary appears only from Stage B onward;
-- Stage D includes both complete textbooks with their optional C companions
-  and no worked autopsy prediction; and
+- Stage D includes both textbooks and the shared models, with no worked
+  autopsy prediction; and
 - Stage E excludes the solution, instructor extension tests, and answer key.

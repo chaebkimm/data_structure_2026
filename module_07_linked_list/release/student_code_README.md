@@ -35,4 +35,4 @@ no-op is guaranteed for `free_lnode` and `enqueue_lnode`.
 
 Tests keep operations and checks active under `NDEBUG`. The release does
 not require or include the optional pointer-list or DSU library. Module 8
-adds a value interface around these node operations for BFS.
+uses a separate coordinate array queue for maze BFS.

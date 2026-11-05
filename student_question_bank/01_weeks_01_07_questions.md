@@ -52,75 +52,120 @@ boundary and operation-sequence tests are the optional extension.
 - Which operation sequence demonstrates that deletion makes room for another addition?
 - How does the guard-slot autopsy expose a bad full check without accessing outside its physical array?
 
-## Week 2 — Array-Index Expression Trees
+## Week 2 — Array-Indexed Trees
 
 [Weekly vocabulary and scope](week_02_binary_tree.md)
 
+The classroom questions follow the alphabet tree and `1+2+3` in Chapter 2.
+The separate parser-lab questions retain the `1+2*3` assignment and its own
+storage and input contract.
 
-### Meaning and mental model
+### Tree structure and root access
+
+- How do child links give a hierarchy to nodes stored side by side in an array?
+- Why does every non-root node have one parent, and why must following parents lead to the same root?
+- Why does a binary-tree node have two child-link fields even when it has fewer than two children?
+- How do we reach the whole tree from its root, and why must we skip child links equal to `-1`?
+
+### Array storage and the alphabet tree
+
+- What do `data`, `left`, and `right` store, and why is index `0` different from child marker `-1`?
+- How does `tree_connect()` make `F` the root without moving the old subtree rooted at `A`?
+- Why does `nodes_size` remain `10` even though only seven nodes are reachable from `F`?
+- Why is the read order `D E B C A G F`, and why does assigning `data_read` not print those letters?
+
+### Building the addition tree
+
+- How does an operator become a parent whose operands can be numbers or whole subtrees?
+- Why do the two `+` characters in `1+2+3` need separate nodes with links initially set to `-1`?
+- How do `i`, `op`, `num`, and `root` change through both iterations of `eq_plus_connect()`?
+- Why does the final root index `3` represent `(1+2)+3`, with the first `+` on its left and digit `'3'` on its right?
+
+### Recursive evaluation and valid trees
+
+- How do a node index, its stored digit character, and the integer returned by `eval` differ?
+- Why does a digit return immediately, while a `+` waits for its left and right subtree answers?
+- How do separate `i`, `l`, and `r` values in each active call let `eval(3)` return `6` without changing the tree?
+- Why does the range guard in `tree_recursion` stop at `-1` but fail to detect cycles, and what valid-tree assumptions does `eval` require?
+
+### Work and memory
+
+- Why do the ten reserved array slots, initialized slots, and nodes reachable from one root describe different quantities?
+- Why does one node initialization or one child-link assignment take constant work, while building `n` nodes takes `O(n)` time?
+- Why do traversal and evaluation take `O(r)` time for `r` reachable nodes rather than all reserved array slots?
+- Why does the path `F → A → B → D` have height `3`, four node calls, and briefly a fifth stopping call, giving `O(h + 1)` additional call storage?
+
+### Separate parser-lab extension
+
+These questions use `nodes[20]`, `size`, `eq[20]`, and `pos`, with the four
+functions `new_node`, `term`, `terms`, and `eval_tree`. They follow the
+[separate lab contract](../module_02_binary_tree/student/lab.md), not the
+textbook's `nodes[10]` alphabet/addition snippets.
+
+#### Meaning and mental model
 
 - How does `1+2*3` become an addition root with a multiplication subtree?
 - How do root, parent, child, ancestor, descendant, and subtree differ?
 - Why can a general binary tree have a right child without a left child?
 - Why does a completed operator node in this expression model require two children?
 
-### Representation and invariants
+#### Representation and invariants
 
 - How do the expression string, node-array table, and hierarchy describe the same expression?
 - Why is node index 0 valid while child index -1 means no child?
 - Why must each non-root node occur in exactly one child position, with no downward cycles?
 - How does attaching disjoint subtrees under a fresh operator preserve the tree rules?
 
-### Node creation and C
+#### Node creation and C
 
 - What does `new_node` store, initialize, increment, and return?
 - How do a stored digit character, a node index, and an integer answer differ?
 - How do I read `nodes[nodes[root].right].data` one step at a time?
 - Why does returning the old value of `size` identify the new node correctly?
 
-### Parsing and precedence
+#### Parsing and precedence
 
 - What does `term()` consume, and why does it leave the next `'+'` unread?
 - Why does `terms()` call `term()` for a whole operand instead of reading one digit?
 - How do `eq[pos]` and `eq[pos++]` differ when tracing the next unread character?
 - Why do repeated equal operators make each new operator the parent of the previous subtree?
 
-### Recursive evaluation
+#### Recursive evaluation
 
 - What is the digit-leaf base case, and why does subtracting `'0'` produce its integer value?
 - What unfinished work waits while `eval_tree` evaluates a child subtree?
 - Why do the canonical completed calls return 1, 2, 3, 6, and 7?
 - Why do the operator characters and parser state remain unchanged after evaluation?
 
-### Tests and debugging
+#### Tests and debugging
 
 - Which test shows that a digit-only expression can return root index 0?
 - How can checking links reveal an association error that an answer-only test misses?
 - How can member snapshots and a second evaluation establish nonmutation?
 - Why must every independent test build reset both size and pos and copy a valid expression?
 
-### Complexity
+#### Complexity
 
 - Why do reserving a node and assigning one child link each take constant work?
 - Why does the two-level parser take time proportional to the number of characters?
 - Why does evaluation visit every expression-tree node once?
 - How do the fixed 20-node array, its occupied slots, and the evaluator's call-stack depth differ?
 
-### Input contract and autopsy
+#### Input contract and autopsy
 
 - Why do valid inputs use single digits, no spaces or parentheses, at most 19 characters, and int-sized results?
 - Why does treating every operator alike turn `1+2*3` into a tree whose answer is 9?
 - Why can the faulty tree satisfy the general tree rules and pass memory diagnostics while expressing the wrong grouping?
 - Why should the precedence defect be repaired in construction rather than by ignoring the tree during evaluation?
 
-### Assignment and evidence
+#### Assignment and evidence
 
 - What must I implement in `new_node`, `term`, `terms`, and `eval_tree`?
 - What new evidence should my creation, construction, and evaluation tests provide?
 - What warning-enabled and diagnostic evidence belongs in the submission?
 - What should my corrected Cognitive Pause explain about indices, term boundaries, and returned values?
 
-### Transfer and deferred questions
+#### Transfer and deferred questions
 
 - Which Chapter 1 ideas about fixed storage and occupied slots apply to the nodes array?
 - How will a later graph model change the no-sharing and no-cycle restrictions?

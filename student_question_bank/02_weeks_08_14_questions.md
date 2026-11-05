@@ -2,122 +2,90 @@
 
 These questions match the current weekly pages. Optional clusters remain optional.
 
-## Week 8 — Queues, Tree BFS, and Graph BFS
+## Week 8 — Processing data in stored order
 
 [Weekly vocabulary and scope](week_08_bfs.md)
 
-### Reuse the linked queue from Module 7
+### FIFO and the linear array queue
 
-- How does Module 8 import the same linked-queue implementation taught as a list example in Module 7?
-- Why does BFS pass a tree-node or maze-cell ID directly to public `enqueue(id)` rather than pass a pool-slot index?
-- How does public `dequeue()` return the queued ID and recycle its slot without exposing the slot to BFS?
-- Why must BFS avoid a separate `free_lnode` after public dequeue, and how does internal recycling make room before children or neighbors are enqueued?
-- Which pool and endpoint state proves that a completed search returned all worklist nodes for reuse?
-- Why can a search process 20 or 25 different passage IDs with only ten reusable queue slots?
+1. Requests 17, 23, and 31 arrive in order. How do a Stack and a queue differ in which request leaves first?
+2. What do `front = 0` and `rear = -1` mean before the first insertion?
+3. Why does `queue[++rear] = data` increase the write index first while `queue[front++]` reads before increasing the index?
+4. How does `0 <= front <= rear + 1 <= N*N` describe valid queue positions, which positions are active, and why does `front > rear` mean empty?
+5. After 25 insertions and 25 removals, what are `front` and `rear`, and why is another insertion invalid despite the empty queue?
+6. What does `dequeue()` return in the current lab, and why does it need neither a node index nor a call to `free_lnode()`?
 
-### Linear array queue
+### Circular queue comparison
 
-- What do `front = 0` and `rear = -1` mean before the first array enqueue?
-- Why does `enqueue_linear` increment `rear` before writing while `dequeue_linear` increments `front` after reading?
-- Why is the linear empty condition `front == rear + 1`?
-- Why can a linear queue remain full at `rear == 24` after some earlier items have been removed?
-- Which full/empty checks must callers perform because the array queue operations are unchecked?
-- Why must `front` and `rear` be reset before switching between the linear and circular variants that share `queue[25]`?
+7. How does `(index + 1) % 25` move from index 24 to index 0?
+8. When `front` identifies the first queued data’s index and `rear` the last queued data’s index in a nonempty queue, why are empty and full respectively `front == (rear + 1) % 25` and `front == (rear + 2) % 25`?
+9. Why do these predicates reserve one position and allow only 24 waiting values in 25 slots?
+10. Start at `front=0, rear=-1`, insert 0 through 23, remove two values, and insert 24 and 25. What are the new indices and removal order? Does the supplied maze lab use this circular implementation?
 
-### Circular array queue
+### Tree levels before graph search
 
-- How does `(index + 1) % 25` move from index 24 back to index 0?
-- Why is this circular queue empty when `front == (rear + 1) % 25`?
-- Why is this circular queue full when `front == (rear + 2) % 25`?
-- Why do 25 reserved array positions hold only 24 queued values under these predicates?
-- How does removing two values from a full circular queue permit two more enqueues across wraparound while preserving FIFO order?
-- Which boundary traces distinguish array capacity, current queued count, and the 24-value circular limit?
+11. In the workbook tree A(B(D,E),C(F)), what queue remains after processing A, then B, then C with left-before-right insertion?
+12. What are the complete BFS order, corresponding depths, and maximum number of waiting nodes in this tree?
+13. Why does a stack with right-before-left child insertion give A, B, D, E, C, F instead? In the graph-stack comparison, why may an unprocessed neighbor be pushed again, and why must an already processed node be skipped when popped?
+14. How do setting the root's distance to zero and recording each child's distance as its parent's distance plus one before enqueue show which level is being processed?
+15. Why does child-only traversal of a valid tree schedule each node once, while graph cycles and merging routes require a discovery record?
 
+### Maze representation
 
-### Tree BFS bridge
+16. How do passage cells and orthogonal moves define a graph without storing an adjacency list or matrix?
+17. For `(struct point){2,3}`, what are `y`, `x`, and the array access used by `is_wall()`?
+18. How can `enqueue` receive a whole `struct point`, `queue[N * N]` store it, and `dequeue` return it without converting the coordinate into an integer ID?
+19. How does each inner brace pair initialize one row of `maze[N][N]`, and how do the two indices select a row and column? Review how `enum { N = 5 };` names the dimension.
+20. How do the zero border and an in-bounds start keep neighbor accesses within the array, and which condition does `is_wall()` itself fail to check?
 
-- Starting with Module 2's root F (index 5), which pending node indices remain after processing F, A, and G in turn?
-- Why does left-before-right scheduling produce F, A, G, B, C, D, E rather than the DFS order?
-- How does `tree_bfs(root, order)` use the queue's integer payloads to find each tree node's data and children?
-- What count and output prefix should an empty-root test and the seven-node tree test verify?
-- Why does the tree's unique-parent condition avoid repeated scheduling, while a graph needs discovery recorded before enqueue?
-- Why must a fresh tree run initialize the otherwise-unused linked pool and reset `head` and `tail`, and why do three pending slots suffice for the F-root fixture?
+### Neighbor iteration
 
-### Meaning and mental model
+21. Starting from `{2,2}`, which four coordinates do `init_iter()`, `has_next_iter()`, and `next_iter()` produce, and in what order?
+22. Why does every `next_iter()` call begin with a fresh copy of `cur_point`, and why does changing `p.x` leave `cur_point.x` unchanged?
+23. What point would the first call return if only the first switch `break` were missing?
+24. Why must one cell's four neighbors be finished before `init_iter()` starts another cell's iteration?
 
-- What does breadth-first search mean when moving through this maze?
-- What is the frontier, and why does BFS keep it in a FIFO queue?
-- Why do queued passages leave in nondecreasing distance from the start?
-- How do the maze's passages and four-direction moves form a graph without a separate edge table?
-- Why does a shortest route with eight moves contain nine points?
+### Distance and initialization
 
-### Representation and invariants
+25. Why is `INF = N * N` distinct from every possible shortest distance in this grid?
+26. Which queue and distance state does `init_bfs()` reset before each independent search?
+27. What happens when an in-bounds wall is supplied as the start, and why is an out-of-bounds start a different case?
+28. Which state is changed by `set_distance()` and returned by `get_distance()`?
+29. Why can the distance array replace a separate discovered array for both waiting and processed passages?
 
-- Why does point `{3,2}` access `maze[2][3]` rather than `maze[3][2]`?
-- How does `7*y+x` map `{4,3}` to cell ID 25, and why is that ID different from distance sentinel 25?
-- Why does `points[50]` contain only 49 initialized mappings when the maze has 20 passages?
-- What do `prev[4]` and `prev_size` record, and which entries may be read?
-- How does `distance` record discovery for waiting and processed passages without a separate discovered array?
-- Why is 25 a valid unseen-distance marker for this maze, and what would need reconsideration for a larger maze?
+### Trace the supplied maze
 
-### Operations, C API, and ownership
+30. Starting from `{1,1}`, what remains in the queue after `{1,1}`, `{2,1}`, and `{2,2}` are processed?
+31. Why does the encounter from `{3,1}` to `{3,2}` leave both the stored distance and queue unchanged?
+32. What are the complete removal order and final distance grid for the supplied maze?
+33. What are the distance to `{3,3}`, the number of reached passages, and the final `front` and `rear`?
+34. How do `||` and `continue` skip a wall or recorded neighbor without ending BFS? When does short-circuit OR omit `get_distance(p)`, and which operand rejects the encounter from `{3,2}` to `{3,3}`?
 
-- Which functions are already complete in `lab.c`, and which caller setup, tests, and route reconstruction must students add?
-- How do `set_distance` and `add_prev` change the shared `info` array instead of a local copy?
-- Why must the caller call `init_info()`, prepare an otherwise-unused linked pool with empty endpoints, and select an interior passage before each independent search?
-- How do `cur_point`, `state`, and the switch `break` statements generate right, left, down, then up?
-- Why does the maze include its local `queue.c`, which imports Module 7's linked queue, and why must a build avoid duplicate definitions?
+### Shortest-distance reasoning and paths
 
-### Tracing
+35. Why must a newly found distance be recorded before the coordinate enters the queue?
+36. Why do pending distances never decrease from front to back, and how do FIFO processing and equal movement costs make first discovery shortest? What can no longer be guaranteed if a stack is used or movement costs differ?
+37. If the first-discovering parent were stored as a conceptual extension, which five coordinates would reconstruct a four-move route to `{3,3}` in this neighbor order?
+38. Which path records and printing operations would need to be added, given that the supplied lab records distances only?
 
-- What are the start's distance, predecessor count, and queued cell-ID payload when a fresh search begins at `{1,1}`?
-- Which distances and remaining queue IDs follow processing `{1,1}` and then `{1,2}`?
-- How do encounters from `{3,4}` and `{2,5}` create two predecessors for `{3,5}` while enqueueing it only once?
-- What changes in each branch when the neighbor distance is at most the current distance, exactly one greater, or still 25?
-- Why does ID 24 leave the queue before ID 10 even though the traversal distances never decrease?
-- Why does goal `{5,5}` have distance 8 and two immediate predecessors but three complete shortest routes?
+### Work and storage
 
-### Testing and debugging
+39. How many cells are initialized, how many coordinates are inserted and removed, and how many direction candidates are checked in the baseline run?
+40. Why does a peak of three waiting coordinates still require eight total writes in the linear array queue?
+41. For an `R` by `C` grid with `P` reached passages, why are initialization, traversal, and reserved search storage respectively `O(RC)`, `O(P)`, and `O(RC)`?
+42. Why is a queue with room for all cells sufficient for one search, even though `enqueue()` does not check for overflow?
 
-- Which payload trace and final free-chain/endpoint state verify 20 baseline work items and complete recycling after the queue drains?
-- How can a start-as-target test verify distance 0, no predecessor, and a one-point reconstructed route?
-- How does a fully reset run from `{5,5}` check reachability and the reverse distance to `{1,1}`?
-- How can a temporary isolated-passage test preserve the zero border and verify distance 25 with `prev_size==0`?
-- How can a test check that every stored predecessor is an adjacent passage with distance exactly one less?
+### Checks and evidence
 
-### Complexity
+43. Why can `lab.c` be compiled to an object with `-c` but need a separate `main()` driver for execution?
+44. Which observations distinguish a successful fresh reverse-start run from one that accidentally retains the previous distances?
+45. In a separate driver, temporarily block `maze[2][1]` and start at `{1,1}`. Which distance and queue states show that the target is unreachable, and what must be restored afterward?
+46. Which traces, corrected predictions, and checks should appear together in the single queue, tree, and maze submission?
 
-- Why does `init_info()` initialize 49 records here and require `O(R*C)` work for an R-by-C grid?
-- Why do 20 dequeues lead to 80 direction checks here and `O(V_reached)` traversal work in general?
-- Why does the linked worklist need capacity for four pending baseline items rather than all 20 discovered passages, while the comparison linear queue needs space for total writes?
-- Why can enumerating all shortest routes require more work than computing distances and predecessor lists?
+### Optional extension questions
 
-### Security and interpretation
-
-- How does the valid-start and zero-border condition protect neighbor accesses even though `is_wall()` has no bounds check?
-- Why does a larger maze require a new live-frontier bound even though public enqueue reports pool exhaustion and the current BFS asserts that its enqueue succeeded?
-- Why do maze reachability and a small move count establish neither access authorization nor real-world risk?
-
-### Assignment and evidence
-
-- What caller code, tests, predictions, corrections, and traces belong in the single Week 8 queue, tree BFS, and graph BFS submission?
-- Why are the optional checked matrix/list API and its sentinel 16 outside the required maze implementation?
-- Which evidence establishes queue order, all shortest predecessors, an unreachable target, and three shortest goal routes?
-- How do Module 7's linked-queue endpoint and recycling rules explain safe reuse between tree BFS and maze BFS?
-
-### Transfer
-
-- When can DFS establish reachability without guaranteeing that its first route uses the fewest moves?
-- Why does following shortest predecessors always decrease distance and avoid a cycle during reconstruction?
-- How does shortest-route reconstruction prepare you for later paths with unequal movement costs?
-- Why can direct grid indexing and recorded distances replace a separate hash lookup for discovered state here?
-
-### Extension questions
-
-- How would multi-source BFS find each passage's distance from the nearest chosen start?
-- How could repeated BFS searches cover all components after interior walls disconnect the maze?
-- How do the optional checked API's single predecessor, sentinel 16, and failure-preservation rules differ from the maze records?
-- How could optional matrix/list equivalence tests compare two backends under their own shared neighbor-order rule?
+47. How would initializing several passages at distance 0 change the meaning of each final distance?
+48. How could repeated BFS searches cover every component when interior walls disconnect the passages?
 
 ## Week 9 — Chained Hashing and Two Sum
 
@@ -531,7 +499,7 @@ For questions 10–15, begin with empty bucket heads and a fresh
 - When do ordered range queries justify an AVL index rather than a hash table?
 - Why does a Heap support repeated minimum selection without keeping its whole array sorted?
 - Why do linked-list insertion after a known predecessor and searching for that predecessor have different costs?
-- Which public linked-queue API did Module 8 use for BFS, and where does dequeue recycle its pool slot before expansion?
+- How does Module 8 store and return whole coordinates in its linear array queue, and why does capacity follow total discoveries rather than peak pending work?
 - Why does FIFO unweighted BFS answer a different path question from indexed-Heap Dijkstra?
 - How can sorting prepare Kruskal's edge scan without deciding which edges form cycles?
 - Which trace, original assertions, costs, and corrected explanation belong in the single Week 13 artifact?

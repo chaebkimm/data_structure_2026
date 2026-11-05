@@ -50,8 +50,9 @@ insert 600 at 1: [100, 600, 300, 400, 500]   size 5, capacity 10
 
 The inquiry and early diagrams use a shorter three-item example. Name that
 as a practice fixture when moving to the five-item textbook trace. The
-standalone `code/lecture/simplified_array_list.c` is the textbook appendix's
-complete program; run it with `make lecture` after Stage D is available.
+standalone `code/lecture/simplified_array_list.c` combines the textbook's
+short examples into a runnable companion with printed results; run it with
+`make lecture` after Stage D is available.
 
 ## Five release gates
 
@@ -60,7 +61,7 @@ complete program; run it with `make lecture` after Stage D is available.
 | A — Initial inquiry | before Meeting A | standard or linear prompt | vocabulary, completed model, code, answers |
 | B — Model and pause | after initial answers are preserved | fixed-array reveal, vocabulary reference, and Cognitive Pause | expert calibration and investigation |
 | C — Investigation | after the pause and calibration | standard or linear investigation | completed notes and code |
-| D — Calibrated notes | after Meeting A investigation and exit ticket | English/Korean textbooks with optional C reference, notes, diagram/text models | lab and instructor materials |
+| D — Calibrated notes | after Meeting A investigation and exit ticket | English/Korean textbooks, notes, diagram/text models | lab and instructor materials |
 | E — Lab and evidence | Meeting B | lab, rubric, evidence form, autopsy, header, starter, tests, build files | solution and answer key |
 
 Preserve the sequence “attempt, compare, correct.” Accommodations can change
@@ -121,9 +122,8 @@ with the number of stored items rather than introducing a different model.
 
 1. Preserve the investigation and exit ticket before releasing Stage D.
 2. Ask students to annotate earlier answers using either textbook language
-   and the notes. Offer one relevant **Full C Code Explanation** topic when
-   syntax blocks their reading; the eleven-topic appendix and its practice
-   answers are references, not another assigned reading or submission.
+   and the notes. When syntax blocks their reading, explain the current line
+   or use the webpage's **Ask GPT** button for a focused question and trace.
 3. Prepare Stage E for Meeting B.
 4. Verify reference core and extension tests and the isolated guarded
    autopsy before class.
@@ -169,16 +169,17 @@ wrapper object or a status enum.
 Keep Stage A–C focused on models and preserved predictions. After Stage D,
 ask which specific line the student is trying to read and unpack every part
 of that line, including punctuation. Do not assume that `int`, `=`, brackets,
-or semicolons are already familiar. Use the topic map in `student/notes.md`
-to select a short explanation and return to the current operation.
+or semicolons are already familiar. Use the webpage's **Ask GPT** button
+for a focused question, then compare the answer with the operation trace
+in `student/notes.md` and return to the current operation.
 
 At Meeting B, use the lab's scaffold bridge to explain parameters, local
 integer copies, access to the caller's array, and returned counts. Identify
 the supplied metadata helper and test runner so students know which bodies
 they edit. Let a student explain one condition or trace one loop iteration
 before continuing. Adjust pacing or provide equivalent supported practice
-when syntax needs more time; do not add an appendix-completion requirement
-or drop one of the six core operations.
+when syntax needs more time while preserving all six core operations.
+Keep help focused on the current checkpoint.
 
 ## Bounds and Invariant Autopsy
 

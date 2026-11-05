@@ -2,9 +2,18 @@
 
 ## Purpose and scope
 
-Implement Chapter 2's four functions: reserve a node, build a multiplication
-term, build a sum of terms, and recursively evaluate the resulting tree.
-The canonical input is `1+2*3`, whose answer is 7.
+This application lab extends Chapter 2's alphabet and addition examples.
+The textbook and classroom `lab.c` use `nodes[10]`, `nodes_size`, and
+`eq_plus_connect()` to build `1+2+3` as `(1+2)+3`; `eval()` returns 6.
+Each new plus node adopts the old root on its left and the next digit on
+its right. An operand can therefore be a whole subtree.
+
+Here, apply the same parent/operand model to multiplication precedence.
+Implement four lab functions: `new_node`, `term`, `terms`, and `eval_tree`.
+This separate program uses `nodes[20]`, `size`, and a shared input position
+`pos`. Its example is `1+2*3`, whose answer is 7. The contracts below explain
+the added parsing steps; do not paste the classroom globals or functions
+into this lab's starter.
 
 ## Two 90-minute meetings
 
@@ -30,35 +39,25 @@ in the instructor package.
 
 ## Help with reading the C code
 
-Use the original chapter and coding plan as your starting point. If any
-part of C is unfamiliar, the Stage D textbooks contain **Full C Code
-Explanation**, also named **C 코드 전체 설명 (Full C Code Explanation)** in
-Korean. Choose either language and consult the topic needed for the line
-you are working on. You do not need to read the whole companion before
-starting this lab.
+Use the chapter for child links, changing roots, and recursion. Follow
+this lab's coding plan for its added parser functions. Consult **New C
+Syntax Explained** and **C Code** in either Stage D textbook for the
+chapter's syntax and classroom examples. If you are reading the Chapter 2
+webpage, **Ask GPT** at the end of a subsection lets you ask about that
+subsection's content or code. The downloaded chapter can also be used on
+its own.
 
-| Current task | Companion topics in either language |
-|---|---|
-| Read variables, types, braces, semicolons, and conditions | 1–3 |
-| Understand a node, its members, an array index, and `-1` | 4–5 |
-| Implement `new_node`; read function arguments and `return size++` | 6 |
-| Read character strings and the shared `eq[pos++]` expression | 7 |
-| Implement `term` and `terms`; trace `1+2*3` | 8–10 |
-| Implement `eval_tree`; follow calls and returned values | 11–12 |
-| Read the complete program, `printf`, and compile/run commands | 13 |
-| Review input limits, resetting state, and prediction practice | 14–15 |
+Try this in small steps: select one statement, explain it in your own
+words, and predict the next value of `size`, `pos`, or a local variable.
+Check any GPT explanation against the code, then continue with the current
+checkpoint. This reading support adds no graded work to the submission
+below.
 
-Try this in small steps: select one statement, read its explanation, say
-what it does in your own words, and predict the next value of `size`, `pos`,
-or a local variable. Then continue with the current checkpoint. The
-companion's questions and worked answers are optional practice; they add
-no graded work to the submission below.
+### Reading the lab files
 
-### From the textbook program to the lab files
-
-Topic 13 puts the whole example in one file. This lab separates the shared
-declarations, your function definitions, and the test program so the same
-functions can be tested with several expressions.
+This lab separates the shared declarations, your function definitions, and
+the test program so the same functions can be tested with several
+expressions.
 
 | Supplied code | How to read it |
 |---|---|
@@ -76,9 +75,9 @@ functions can be tested with several expressions.
 
 The test files already provide `main`, which starts the test program and
 runs its cases. Put your implementations in the four starter bodies;
-keep the textbook's standalone `main` and duplicate global definitions out
-of those files. Compile with the lab commands below so the starter and
-selected test file are built together.
+do not add another `main` or duplicate global definitions to those files.
+Compile with the lab commands below so the starter and selected test file
+are built together.
 
 ## Representation and function contracts
 

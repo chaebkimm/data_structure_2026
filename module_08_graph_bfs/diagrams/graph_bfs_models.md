@@ -1,6 +1,97 @@
-# Graph BFS Models and Exact Linear Equivalents
+# Chapter 8 Models — Processing Data in Stored Order
 
-> Optional checked-graph reference. This file describes the separate matrix/list API, not the current maze `student/lab.c`. Use the [maze textbook](../student/textbook.md), [class workbook](../student/class_material.md), and [lab](../student/lab.md) for Week 8.
+These models match the current [lab.c](../student/lab.c) and [workbook](../student/class_material.md). Queue states read front to back. Maze coordinates are always `{y,x}`. Every drawing has a text equivalent.
+
+Use them as worked activities alongside the frozen [Korean textbook](../student/textbook_korean.md), **저장된 순서대로 데이터 처리하기**, and its English edition. The concept text states the rules; these models supply concrete queue, level, discovery, and route evidence. The actual source remains a distance-only maze BFS.
+
+## Current model 1 — Linear positions and circular reuse
+
+In a nonempty queue, front identifies the position of its first stored data and rear identifies the position of its last stored data. The indices are not the values at those positions. A point written first must be read first. Three writes occupy positions 0, 1, and 2. One removal advances front and leaves the other values in place.
+
+```text
+index:       0        1        2
+stored:    {1,1}    {2,1}    {2,2}
+                     ^        ^
+                   front     rear
+pending: [{2,1}, {2,2}]
+```
+
+Exact linear equivalent: front is 1 and rear is 2. They identify the positions of the first and last queued data. The next removal returns `{2,1}`. Position 0 still contains old data but is outside the pending interval. The source does not reuse removed positions until reset. Once no data waits, the queue has no first or last data; old array values do not change its empty state.
+
+The first write increments rear from -1 to 0 while front stays 0. That singleton has front==rear. Once its only value is removed, front is one greater than rear and the active interval is empty. No data shifts in either operation.
+
+For a paper circular comparison, front and rear remain the indices of the first and last queued data when nonempty. With 25 positions and one reserved slot, empty is `front==(rear+1)%25` and full is `front==(rear+2)%25`. Starting at 0/-1, fill labels 0–23, remove 0/1, append 24/25: front 2/rear 0 and pending labels 2–25. The actual maze queue is linear.
+
+## Current model 2 — A tree processed by level
+
+A queue makes already waiting siblings leave before newly added grandchildren. Use this illustrative tree; no tree implementation is part of the maze source.
+
+```text
+        A
+       / \
+      B   C
+     / \ /
+    D  E F
+```
+
+Exact linear edges: A has left B/right C; B has left D/right E; C has left F/no right child; D/E/F have no children. Queues after processing A/B/C/D/E/F are `[B,C]`, `[C,D,E]`, `[D,E,F]`, `[E,F]`, `[F]`, `[]`. Order A/B/C/D/E/F has depths 0/1/1/2/2/2. A child's depth is its parent's depth plus one.
+
+### Why can a graph stack contain a duplicate?
+
+Use directed edges A→B, A→C, A→D, and B→D. BFS enqueues A's neighbors as B/C/D. D already has a known distance when B checks it, so B does not enqueue it again. BFS processes A/B/C/D.
+
+For the textbook's pending-node stack comparison, push A's neighbors in reverse order to process B first. Write the stack from bottom to top. After A it is `[D,C,B]`; popping B leaves `[D,C]`. D is unprocessed, so B pushes another D and the stack becomes `[D,C,D]`. The new D is processed before C. When the old D is eventually popped, its processed mark causes it to be skipped. The processing order is A/B/D/C. Mark a node processed before expanding its neighbors. This illustrates one iterative DFS policy; Chapter 6's actual DFS uses recursion.
+
+## Current model 3 — The supplied maze
+
+A passage cell connects to its orthogonally adjacent passage cells. The grid stores cell states, not pairs of graph vertices.
+
+```text
+        x=0 1 2 3 4
+y=0       0 0 0 0 0
+y=1       0 1 0 1 0
+y=2       0 1 1 1 0
+y=3       0 1 1 1 0
+y=4       0 0 0 0 0
+```
+
+Exact passage list: `{1,1}`, `{1,3}`, `{2,1}`, `{2,2}`, `{2,3}`, `{3,1}`, `{3,2}`, `{3,3}`. Every other cell is a wall. Undirected passage connections are `{1,1}–{2,1}`, `{1,3}–{2,3}`, `{2,1}–{2,2}`, `{2,1}–{3,1}`, `{2,2}–{2,3}`, `{2,2}–{3,2}`, `{2,3}–{3,3}`, `{3,1}–{3,2}`, `{3,2}–{3,3}`.
+
+## Current model 4 — Queue and distance trace
+
+Start at `{1,1}`. Check right, left, down, up. Record distance before enqueue so an already waiting point is not added again.
+
+A first discovery changes a cell from `INF` to a known distance before it enters the queue. The cell stays discovered while waiting, while its neighbors are checked, and afterward. It becomes processed once those neighbor checks finish. Distances read from the queue's front to back never decrease.
+
+| Processed point | Distance | Queue after processing |
+| --- | ---: | --- |
+| Initial | — | `[{1,1}]` |
+| `{1,1}` | 0 | `[{2,1}]` |
+| `{2,1}` | 1 | `[{2,2},{3,1}]` |
+| `{2,2}` | 2 | `[{3,1},{2,3},{3,2}]` |
+| `{3,1}` | 2 | `[{2,3},{3,2}]` |
+| `{2,3}` | 3 | `[{3,2},{3,3},{1,3}]` |
+| `{3,2}` | 3 | `[{3,3},{1,3}]` |
+| `{3,3}` | 4 | `[{1,3}]` |
+| `{1,3}` | 4 | `[]` |
+
+Exact linear explanation: `{2,2}` discovers `{3,2}` at distance 3. When `{3,1}` later checks that point, the distance is finite even though it still waits. It is skipped. The target `{3,3}` receives distance 4 from `{2,3}` and is skipped when encountered again from `{3,2}`. The lab saves no predecessors.
+
+Final distance rows, with `INF=25`:
+
+```text
+INF INF INF INF INF
+INF   0 INF   4 INF
+INF   1   2   3 INF
+INF   2   3   4 INF
+INF INF INF INF INF
+```
+
+Eight entries are written and removed; 32 candidates are checked after 25 distance initializations. Peak pending is three, but the linear queue consumes eight write positions. Final front/rear are 8/7. One conceptual predecessor route is `{1,1}→{2,1}→{2,2}→{2,3}→{3,3}`, four moves; storing and printing it would require an extension.
+
+## Optional checked-graph models
+
+The remaining Stage D models describe the separate matrix/list API. Their IDs, sentinel 16, circular queue, and single-predecessor result are not the current maze lab's representation. Use them only with that optional library.
 
 These models accompany Stage D. Every visual is followed by a linear text
 equivalent. No meaning depends on color or spatial position.

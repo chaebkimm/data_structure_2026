@@ -29,14 +29,14 @@ recycling/reuse, caller-managed first removal, and linked queue FIFO/endpoints,
 index returns with separate recycling, raw empty-index return, and exhausted
 allocation preservation. Execute the textbook's caller-side Stack example and trace shared-pool reuse as additional material checks. Extract a fresh archive and run the same tests there. Compare canonical source bytes and check local Markdown links. A second packaging attempt at the same output must preserve the existing archive and fail. Verify the PowerShell wrapper separately when available.
 
-The linked queue is a linked-list example here; Module 8 imports it for tree and graph BFS. Array queue alternatives and BFS algorithms are Module 8 work. The optional pointer-list/DSU library remains under `../code/`; DSU is taught in Week 14.
+The linked queue is a linked-list example here. Module 8 transfers its FIFO rule to array queue comparisons, tree levels, and maze BFS; its maze source stores coordinates directly in an array. The optional pointer-list/DSU library remains under `../code/`; DSU is taught in Week 14.
 
 The linked queue accepts and returns node indices through
 `enqueue_lnode(index)`/`dequeue_lnode()`. Use `qhead`/`qtail` and preserve
 `lnodes[qtail].next == -1` when nonempty. Recycle dequeued allocations after
 reading their values. Initialization happens once and cannot reset ownership;
-each independent test must return all allocations. Module 8 supplies its own
-value adapters around this unchanged source.
+each independent test must return all allocations. Module 8 uses a separate
+coordinate array queue and does not import this source.
 
 ## Website source synchronization
 

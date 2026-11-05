@@ -62,4 +62,4 @@ The final free chain is 0→2→1→3→4→5→6→7→8→9→-1. All ten slot
 
 The Stack drain restores free 0→1→2→3→…→9→-1 in its pristine fixture. The Queue reuse fixture ends with a different all-free order. Treat exact numeric indices as fixture-dependent; repeated initialization does not restore ascending order.
 
-Module 8 defines local value adapters for BFS. It is correct for those adapters to copy data/recycle; no such value interface exists in Module 7. All evidence remains one artifact within 180 minutes and A30/B25/C25/D20.
+Module 8 transfers the FIFO rule to an array queue of coordinates for maze BFS. It does not import Module 7's node operations; Module 7 callers still copy data and recycle removed nodes explicitly. All evidence remains one artifact within 180 minutes and A30/B25/C25/D20.

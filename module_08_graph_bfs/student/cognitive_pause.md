@@ -1,125 +1,33 @@
-# Stage B — Five-Minute Cognitive Pause
+# Chapter 8 Cognitive Pause — 저장된 순서대로 데이터 처리하기
 
-> Optional checked-graph reference. This file describes the separate matrix/list API, not the current maze `student/lab.c`. Use the [maze textbook](textbook.md), [class workbook](class_material.md), and [lab](lab.md) for Week 8.
+Take five minutes without tools, notes, or classmates. Preserve all three initial answers before comparing. Use `{y,x}` coordinates and list queues front to back. 도구나 노트 없이 5분 동안 답한다. 첫 답을 남긴 뒤 수정한다.
 
-Read the starting definitions and graph with the instructor before timing
-begins. Then use no notes, slides, classmates, vocabulary file, or coding
-tools for five minutes.
+## Target 1 — Explain the queue positions / 큐 위치 설명
 
-You may draw, type, dictate, or answer in numbered sentences. An approved
-extended-time or asynchronous version uses the same graph and exactly the
-same three sections. Speed, handwriting, and drawing quality are not
-assessed. Preserve your first response when correction begins.
+A linear queue starts with front 0/rear -1 and has 25 slots. After 25 enqueues and 25 dequeues, what are its endpoints? Is it empty, and can it accept another value without breaking `0 <= front <= rear + 1 <= 25`? 선형 큐에 25번 넣고 모두 꺼낸 뒤의 상태를 설명한다.
 
-## Starting definitions
+For a circular comparison with one reserved slot, fill 0–23, remove 0/1, then append 24/25. Use the convention that, when nonempty, front is the first queued data’s index and rear is the last queued data’s index. Give endpoints, pending count, and next value. 같은 위치 정의로 원형 큐의 결과를 쓴다.
 
-**Breadth-first search (BFS)** processes vertices in nondecreasing hop
-count from one **source**, or starting vertex. A **hop** follows one edge.
+Answer / 답: ________________________________________________________
 
-A vertex is **discovered** after it is successfully added to the Queue.
-A **Queue** removes the earliest-added waiting item first. The
-**frontier** is the Queue of discovered vertices still waiting to be
-processed. List it from front to back.
+## Target 2 — Preserve tree levels / 트리 층 유지
 
-The **distance** of a discovered vertex is its minimum hop count from the
-source. Its **predecessor** is the previous vertex on the route fixed at
-first discovery. The source has distance 0 and no predecessor.
-**Unreachable** means no directed route leads from the source.
+Root A has B/C. B has D/E. C has left child F. Enqueue existing left children before right children. Give the queue after processing B, the complete processing order, and depths. Explain why a valid tree does not need a discovery flag. A/B/C/D/E/F의 대기 순서와 깊이를 설명한다.
 
-Inspect outgoing neighbors from lower vertex ID to higher vertex ID.
+Answer / 답: ________________________________________________________
 
-## Pause graph
+## Target 3 — Discover before enqueue / 추가 전에 발견 기록
 
-```text
-0:[1,3]
-1:[2,4]
-2:[0]
-3:[2,5]
-4:[5]
-5:[]
-6:[]
-```
+In the supplied 5×5 maze, start at `{1,1}`. `{2,2}` first discovers `{3,2}` at distance 3. Later `{3,1}` checks `{3,2}` while it is still queued. Explain why it is skipped. Give the final distance at `{3,3}` and explain why first discovery is shortest. How does skipping a discovered BFS neighbor differ from allowing an unprocessed neighbor to enter the comparison stack again? 아직 큐에서 꺼내지 않은 통로를 다시 넣지 않는 이유와 스택의 중복 대기 비교를 설명한다.
 
-Exact linear edges:
+Answer / 답: ________________________________________________________
 
-```text
-1. 0 -> 1
-2. 0 -> 3
-3. 1 -> 2
-4. 1 -> 4
-5. 2 -> 0
-6. 3 -> 2
-7. 3 -> 5
-8. 4 -> 5
-9. Vertex 5 has no outgoing edge.
-10. Vertex 6 has no entering or leaving edge.
-```
+## Compare after time is called / 시간이 끝난 뒤 비교
 
-Begin at source 0. Enqueue and then mark the source. Dequeue and record one
-vertex at a time. Enqueue an unseen neighbor and mark it immediately after
-that enqueue succeeds.
+Spend five minutes on labeled corrections. 첫 답을 지우지 않고 수정 이유를 덧붙인다.
 
-## Target 1 — Trace Queue and state
+1. Linear endpoints are 25/24. It is empty, but no unused write position remains. Another enqueue would break the maintained upper bound; the caller must supply an available write position. Circular endpoints are 2/0, 24 values wait, and label 2 leaves next. Circular empty/full conditions require the stated one-slot convention; they are not the maze source's linear predicate.
+2. After B, the queue is `[C,D,E]`. Complete order is A/B/C/D/E/F with depths 0/1/1/2/2/2. Each nonroot node has one parent and the tree has no cycle. A shared destination or cycle needs discovery tracking.
+3. `{3,2}` already has a finite distance, so the current lab skips it without enqueue or another record. `{3,3}` receives distance 4. Equal-cost moves and FIFO process closer layers first; any shorter route would have discovered the cell earlier. The graph-stack comparison instead permits another copy of an unprocessed neighbor and skips already processed nodes on pop. The lab records distance only.
 
-State:
-
-1. the initial Queue;
-2. the complete Queue immediately after processing 0;
-3. the complete Queue immediately after processing 1;
-4. the complete Queue immediately after processing 3; and
-5. the final visit order, distances, and predecessors for vertices 0
-   through 6.
-
-Response:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-## Target 2 — Stop duplicate waiting work
-
-When vertex 3 checks edge `3 -> 2`, state:
-
-1. whether vertex 2 is discovered;
-2. where vertex 2 is at that moment;
-3. the required action for the edge; and
-4. what duplicate work could occur if discovery waited until dequeue.
-
-Response:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-## Target 3 — Reconstruct and report
-
-State:
-
-1. the predecessor chain from vertex 5 backward to source 0;
-2. the forward path from 0 to 5;
-3. its hop count; and
-4. the correct result for vertex 6.
-
-Response:
-
-____________________________________________________________________
-
-____________________________________________________________________
-
-## Compare after time is called
-
-When the instructor releases the expert model:
-
-1. preserve your initial response;
-2. check reasoning that remains correct;
-3. label each correction `Queue`, `discovery`, `distance`,
-   `predecessor`, `path`, or `unreachable`; and
-4. finish the sentence below.
-
-Correction:
-
-____________________________________________________________________
-
-The evidence that changed or strengthened my thinking was:
-
-____________________________________________________________________
+Correction and reason / 수정과 이유: _________________________________

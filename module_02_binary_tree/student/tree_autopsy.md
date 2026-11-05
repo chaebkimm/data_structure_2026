@@ -43,7 +43,7 @@ Response:
 
 Run `make autopsy` or the corresponding PowerShell target. Record the printed
 root character and result. Trace the root index and child links from the
-source, or inspect them with a debugger. Compare the faulty links with the textbook's
+source, or inspect them with a debugger. Compare the faulty links with the application lab's
 `root == 1`, `nodes[1].left == 0`, `nodes[1].right == 3`,
 `nodes[3].left == 2`, and `nodes[3].right == 4`.
 

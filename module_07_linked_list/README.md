@@ -38,4 +38,4 @@ Submit one [lab artifact](student/lab.md) with exact-state traces, three origina
 
 Known-predecessor relinking and queue/Stack endpoint work are O(1). Finding a predecessor or the i-th node can visit O(n) nodes. The first pool initialization is O(C); later calls are O(1). Each pool slot reserves one extra integer next link.
 
-Module 8 reuses the node queue for tree/graph BFS; callers copy the payload and recycle the detached node. Array queue comparisons belong there. The separate pointer-list/DSU library is optional; DSU is taught in [Week 14](../module_14_prim_kruskal/week_14/README.md).
+Module 8 transfers the FIFO rule to array queue comparisons and tree levels, then stores coordinates directly in a linear array queue for maze BFS. The separate pointer-list/DSU library is optional; DSU is taught in [Week 14](../module_14_prim_kruskal/week_14/README.md).

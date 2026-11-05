@@ -9,9 +9,9 @@ Do not edit the public header or supplied tests unless your instructor
 authorizes it.
 
 If C syntax is new, use **Reading the supplied C scaffold** in
-`../student/lab.md` and the optional **Full C Code Explanation** in either
-Stage D textbook. Look up one question at a time; reading the whole
-appendix is not required.
+`../student/lab.md` and the model and short C examples in either Stage D
+textbook. For a detailed explanation of a line or operation, use **Ask GPT**
+beside the relevant webpage section, then trace the code yourself.
 
 ## Fixed-capacity model
 

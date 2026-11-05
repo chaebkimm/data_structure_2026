@@ -1,9 +1,13 @@
 # Module 8 C Code — Queues, Tree BFS, and Graph BFS
 
 
-The required combined lab uses ../student/queue.c, tree_bfs.c, maze lab.c, and lab_driver.c. Run `make core` (the default) or `powershell -File ./build.ps1 -Target lab`. These targets compile the driver with the repository root on the include path, including Module 2's tree and Module 7's linked queue/pool. Both BFS functions use the imported value API: enqueue an ID with a checked Boolean result and receive an ID from dequeue; the wrapper recycles its node before expansion. Array queues are comparisons only. `make student-tests` is an alias for the combined driver; add original queue/tree/maze assertions in that driver. Included C files are not separate compiler inputs.
+The required lecture source is [student/lab.c](../student/lab.c). It stores coordinates directly in a linear array queue and computes distances in the 5×5 maze. The source has no `main`; [tests/test_lecture.c](tests/test_lecture.c) includes it and supplies the executable checks. Compile the test file only.
 
-The remaining sections describe optional checked-graph reference targets. To build that scaffold explicitly, select starter-core or -Target starter. The default runs the required combined lab.
+Run `make lecture` or `make core` (the default). On Windows use `powershell -File ./build.ps1 -Target lecture`; `-Target lab` is an alias. The checks cover FIFO boundaries, the right/left/down/up iterator, the exact maze distance map and processing order, independent searches, wall starts, an isolated start, and all 512 bordered 3×3-interior maze layouts from all 25 in-bounds starts. This last check compares 12,800 searches against an independent relaxation oracle. `make student-tests` runs the same harness; students may add their own valid-case checks there.
+
+For start `{1,1}` (fields `y,x`), eight passages are reached and `{3,3}` has distance 4. The queue ends with `front=8`, `rear=7`. Calling `bfs` again resets the queue and every distance. The unchanged source requires an in-bounds start and an intact wall border; in-bounds wall starts leave all distances `INF`. Its queue operations are unchecked. The 25-slot linear queue is sufficient because each passage is enqueued at most once per run. Tree level order and circular queues are conceptual comparisons in the chapter; the executable uses neither a linked queue nor circular storage.
+
+The remaining sections describe optional checked-graph reference targets. Select `starter-core` or `-Target starter` for that scaffold; `solution-core`, `solution-extension`, and `solution-student-tests` run its supplied reference. These targets do not define the current lecture lab.
 
 > Optional checked-graph reference. This file describes the separate matrix/list API, not the current maze `student/lab.c`. Use the [maze textbook](../student/textbook.md), [class workbook](../student/class_material.md), and [lab](../student/lab.md) for Week 8.
 
@@ -120,7 +124,7 @@ From this directory on Windows:
 
 ```powershell
 # Starter scaffold: compiles, then expected tests fail until completed.
-powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target starter
 
 # Instructor reference and private boundaries.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 `

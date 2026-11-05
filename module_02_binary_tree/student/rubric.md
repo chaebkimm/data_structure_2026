@@ -1,5 +1,8 @@
 # Module 2 Lab Rubric — 100 Points
 
+This rubric assesses the separate `+`/`*` application lab described in
+`lab.md`, including its four functions and 20-slot representation.
+
 | Criterion | Points | Full-credit evidence |
 |---|---:|---|
 | Representation and invariants | 20 | Character data, child indices, -1 absence, valid index 0, root, size, and pos agree across code and diagrams; single root, no sharing/cycles, expression arity, and valid-input assumptions are explained |
@@ -21,7 +24,7 @@ returned numeric values with evidence.
 
 ### Meets expectations
 
-All four functions work. Valid inputs produce the textbook's representation
+All four functions work. Valid inputs produce the lab's specified links
 and results. Tests reset shared state for independent builds and show that
 evaluation leaves the tree unchanged.
 

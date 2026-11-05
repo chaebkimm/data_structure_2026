@@ -45,15 +45,15 @@ extension suite adds only extra edge cases and longer operation sequences.
 
 ## Reading support
 
-Both `student/textbook.md` and `student/textbook_korean.md` retain the main
-chapter and include **Full C Code Explanation** as an optional reference.
-Students can look up a symbol or one operation when needed; reading the
-whole appendix and completing its practice questions are not requirements.
-`student/notes.md` maps common questions to its eleven topics, and the lab
-explains the additional syntax used by the supplied function scaffold.
+Both `student/textbook.md` and `student/textbook_korean.md` present the
+fixed-array concepts and five short C examples. For detailed syntax or
+execution questions, students can use **Ask GPT** beside the relevant
+section on the webpage. `student/notes.md` summarizes the model and traces
+its operations; the lab explains the syntax used by the supplied function
+scaffold.
 
-The textbook's complete program starts with five active values. The shorter
-three-item inquiry examples practice the same fixed-capacity rules.
+The textbook's setup starts with five active values. The shorter three-item
+inquiry examples practice the same fixed-capacity rules.
 
 ## Package map
 

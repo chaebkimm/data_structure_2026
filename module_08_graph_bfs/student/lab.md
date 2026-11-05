@@ -1,118 +1,70 @@
-# Module 8 Lab — Queues, Tree BFS, and Graph BFS
+# Module 8 Lab — Processing data in stored order
 
-Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+Follow the frozen [Korean textbook](textbook_korean.md), **저장된 순서대로 데이터 처리하기**, its [English edition](textbook.md), and the [concept](ppt_material.md) and [code](ppt_lab_material.md) slides. Recall the stored order of Chapter 7's linked queue, then implement the same FIFO rule with an array. Trace tree levels before studying graph discovery. Submit one artifact using the [evidence template](evidence_template.md) and [rubric](rubric.md).
 
+Read the textbook’s [Invariant](textbook.md#invariant) and [New C syntax explained](textbook.md#new-c-syntax-explained) sections alongside these traces. Explain why pending distances never decrease from front to back and why equal-cost moves make first discovery final. Relate these rules to the caller’s start, border, capacity, and nonempty conditions. Concrete examples belong to the workbook and lab; the textbook supplies the concepts.
 
-Retrieve the linked queue built as Module 7's linked-list example. Keep values in arrival order with the same implementation. Then process a tree by increasing depth. Finally process graph passages by increasing distance while remembering repeated arrivals. Use [queue.c](queue.c), [tree_bfs.c](tree_bfs.c), and the maze [lab.c](lab.c). Submit one artifact containing all three parts.
+## 1. How do the two queue positions move?
 
-Read the [English textbook](textbook.md) or [Korean textbook](textbook_korean.md). Preserve predictions in the [class workbook](class_material.md) before running [lab_driver.c](lab_driver.c). Keep the original prediction and add a labeled correction.
+The first waiting value must leave first. In the supplied [lab.c](lab.c), when the queue is nonempty, `front` is the index of its first stored data and `rear` is the index of its last stored data. `init_queue()` sets them to 0 and -1. `enqueue(p)` writes a whole coordinate to `queue[++rear]`; `dequeue()` returns `queue[front++]`. Neither operation validates its precondition. The indices identify occupied positions, not the coordinate values themselves. An empty queue has no first or last data; any old values left in the array are outside the active queue.
 
-## 1. Which queue state changes?
+Trace three coordinates `{1,1}`, `{2,1}`, `{2,2}` through enqueue and dequeue. Write every `front`, `rear`, returned point, and pending sequence. Check empty before dequeue. An enqueue requires `rear + 1 < N * N`. Do not deliberately call an operation outside those conditions.
 
-Reuse Module 8's local value adapters over Module 7's node queue. Initialize the otherwise unowned pool with `init_lnodes_pool()` and set `qhead = qtail = -1`. Call `enqueue(17)`, `enqueue(23)`, and `enqueue(31)` outside assertions, save each Boolean result, and check success. Trace endpoints, active links, and the free chain. `dequeue()` returns 17,23,31 and automatically recycles each removed node.
+Explain why draining does not move `rear` backward or reclaim earlier positions. After 25 writes and 25 removals, the queue is empty at `front = 25`, `rear = 24`, but another write needs a reset. This is a limit on total writes between resets, not on simultaneous waiting points alone.
 
-`enqueue(value)` allocates and appends a node, returning `false` without queue changes when the pool is exhausted. `dequeue()` returns the oldest value and automatically recycles its node. Check `is_empty_queue()` before dequeue; `-1` is a valid payload, not an empty-result sentinel. The lower-level `dequeue_lnode()` returns a slot or -1 and leaves recycling to its caller. Distinguish this raw helper from public dequeue. Never recycle a public-dequeue result: it is a payload value and its node is already free.
+For a paper circular comparison, keep the same endpoint meanings and wrap positions modulo 25. Empty is `front == (rear + 1) % 25`; full is `front == (rear + 2) % 25`. Reserve one slot so 24 values fit. Starting from `front = 0`, `rear = -1`, fill with labels 0–23, remove 0 and 1, then append 24 and 25. Predict endpoints and removal order. These circular operations are a concept exercise; the supplied maze uses the linear queue.
 
-For each independent array queue run, reset `front=0; rear=-1`. The two variants share `queue[25]`; do not mix their operations.
+## 2. Why does a tree emerge one level at a time?
 
-| Variant | Empty predicate | Full predicate | Required boundary evidence |
-| --- | --- | --- | --- |
-| Linear | `front == rear+1` | `rear+1 == 25` | Fill 0..24, drain in order, explain why full and empty are then both true |
-| Circular | `front == (rear+1)%25` | `front == (rear+2)%25` | Fill 0..23, remove 0/1, append 24/25, then drain 2..25 |
+Use an illustrative tree with root A, A's children B/C, B's children D/E, and C's left child F. Enqueue existing children left before right after processing each node. Record the pending queue after every removal and the depth of every processed node. This is a paper trace, not a supplied tree function.
 
-The array circular queue holds 24 values in 25 slots because one position distinguishes full from empty. In the wraparound example `rear` becomes 0. Check the predicate before every tested enqueue/dequeue. The array functions do not reject invalid operations for you. Do not execute unchecked overflow or underflow as a test.
+Compare a FIFO queue with a stack of pending nodes. Explain how to retain a node's depth by storing it with the queued node, or by assigning each child its parent's depth plus one. A valid tree has no cycles or shared children. Explain why its unique parent prevents repeated scheduling, and why a general graph needs a discovery record.
 
-## 2. Which tree data is processed next?
+For the graph comparison in the concept PPT, a stack may receive another copy of an unprocessed neighbor even if that neighbor already waits below. Mark the node processed on its first pop and skip later popped copies before expanding neighbors. Explain why this differs from BFS, which marks discovery before enqueue and excludes all later copies. This describes one iterative stack method; the earlier recursive DFS implementation does not need duplicate pending entries.
 
-Prepare Module 2's original tree:
+## 3. How do coordinates and neighbors become C values?
 
-```c
-int order[10];
-alphabet_init();
-int root = tree_connect();
-init_lnodes_pool();
-qhead = qtail = -1;
-int count = tree_bfs(root, order);
-```
+The supplied maze has five rows and five columns. `struct point` stores `y` first and `x` second. Thus `{2,3}` means row 2, column 3, and accesses `maze[2][3]`. The queue stores that point directly; there is no cell-ID conversion.
 
-The root is F (index 5). Its children are A/G; A has B/C; B has D/E. Follow existing left before right children. Predict the pending indices after processing F, A, G, and B. Expected queues are `[0,6]`, `[6,1,2]`, `[1,2]`, and `[2,3,4]`. The final order is `5,0,6,1,2,3,4`, or F, A, G, B, C, D, E; count is 7. Array slots 7..9 are not reachable from the root.
+Trace `init_iter((struct point){2,2})`, then four calls to `next_iter()` guarded by `has_next_iter()`. Record the returned coordinates and `state`. Each call copies `cur_point`, changes one coordinate, and increments `state`. Finish one iterator before initializing another because both iterator variables are global.
 
-Test an empty tree using root `-1` and a one-node tree using root index 3. Before each independent traversal ensure every prior allocation is recycled, call the guarded initializer and set `qhead = qtail = -1`. `order` has ten positions. Inputs must be valid acyclic trees without shared children. The function does not validate them. Explain why one parent per node makes a discovery array unnecessary here, and why that assumption fails for a general graph with cycles and merging routes.
+The three new syntax topics are nested braces initializing one array row at a time, copying/passing/returning a whole `struct point`, and short-circuit `||`. Explain why changing a copied point does not change `cur_point`, and why a true wall test prevents a distance read. Review `enum { N = 5 }`, `enum { INF = N * N }`, increment operators, `switch`/`break`, and `continue` from earlier chapters. Explain why an unseen marker larger than any finite shortest distance is needed. A shortest route need not repeat a cell, so at most 25 cells require at most 24 moves; 25 is a valid marker.
 
-## 3. How does a graph avoid scheduling a passage twice?
+## 4. Why does each passage enter once?
 
-The 7-by-7 maze is a graph whose vertices are passages and whose edges join horizontally or vertically adjacent passages. Every edge is one move. Start `{1,1}` and target `{5,5}` are used throughout the lesson. Coordinates are `{x, y}` while array access is `[y][x]`.
+Start at `{.y = 1, .x = 1}` and use target `{.y = 3, .x = 3}`. A call to `bfs` resets the queue and all distances itself. It then stores distance 0 at a passage start and enqueues it. No separate pool or metadata initialization is required.
 
-Before each independent maze run, with no live pool owner:
+For every removed point, inspect right, left, down, up. A wall is skipped. Any neighbor whose distance is already different from `INF` is also skipped, including one still waiting in the queue. A new passage receives `current distance + 1` before enqueue.
 
-```c
-init_info();
-init_lnodes_pool();
-qhead = qtail = -1;
-bfs((struct point){1, 1});
-```
+Complete the eight-point queue trace in the [workbook](class_material.md). Explain why `{3,2}` is skipped when processing `{3,1}`: it was already discovered from `{2,2}`. No second enqueue or extra predecessor record is made. Explain why FIFO ensures all distance-2 points are processed before any distance-3 point.
 
-The start must be an interior passage and the border must remain walls. `is_wall()` performs no bounds check. Initialization assigns `index=7*y+x` to all 49 cells and inverse coordinates to `points[0..48]`; `points[49]` is unused. Distance 25 means unseen/unreachable. ID 25 validly names `{4,3}`. Walls also retain distance 25.
+Record all final distances, target distance, number of reached passages, total writes/removals, peak pending count, and final endpoints. The code stores distances; it does not store a visit-order array or predecessors. A hand trace may record processing order for evidence.
 
-After skipping walls, the iterator checks right, left, down, up. It has shared `cur_point` and `state`, so finish one cell's four directions before starting another.
+## 5. How do we check the actual source?
 
-| Neighbor distance, with current distance d | Record change | Queue change |
-| --- | --- | --- |
-| `<= d` | None | None |
-| `== d+1` | Append current point to `prev` | None |
-| Unseen 25 in a fresh run | Set distance d+1, append first predecessor | Enqueue once |
-
-Setting distance before enqueue prevents a second route from scheduling a waiting passage again. Only `prev[0..prev_size)` is active. The start has distance 0 and no predecessor.
-
-Trace these three decisions: `{1,2} → {1,1}`, `{2,5} → {3,5}`, and the first `{5,4} → {5,5}`. Continue the queue trace through all 20 passages. Final linked endpoints are `qhead = qtail = -1`; all ten pool slots are free. Each queue node holds a cell ID in `data`; its pool-slot index is different. Public dequeue returns the cell ID and automatically recycles its node before BFS adds neighbors. The linked queue performs 20 insertions/removals from `{1,1}` but peaks at four pending entries. All valid starts on the supplied maze peak at six, within the unchanged ten-slot pool. Every completed run restores all ten free slots and empty endpoints. A fully open 5-by-5 interior peaks at ten pending entries over all starts with this direction order; different graphs need a new bound. Its shortest route still uses at most 24 edges, below unseen distance 25.
-
-The goal has distance 8 and ordered predecessors `{5,4}`, `{4,5}`. `{3,5}` has predecessors `{3,4}`, `{2,5}`. Together those records encode three complete shortest routes. Follow `prev[0]` backward, then reverse it to recover one route of nine cells and eight moves. `bfs` records routes but does not print them. Printing all three routes is optional.
-
-The supplied unreachable-passage check temporarily sets `maze[2][1]=0`, isolating the valid start `{1,1}`. The target `{5,5}` is still a passage but keeps distance 25, zero predecessors, and zero routes. Only the start is enqueued. The driver then restores `maze[2][1]=1` and checks a fresh canonical search. Include this result in the required evidence.
-
-## 4. How do we run all parts together?
-
-The current sources compile directly. `queue.c` imports Module 7's linked queue and pool without redefining either. `tree_bfs.c` includes Module 2's tree and the guarded queue. The maze includes the same queue. The combined driver includes both searches and verifies the original Module 7 queue; do not compile the included C files again as separate inputs. No DFS include or prepared teaching copy is needed.
-
-From the repository root:
+Use the separate driver to call the unchanged lab:
 
 ```sh
-cc -std=c11 -Wall -Wextra -pedantic -I . \
-  module_08_graph_bfs/student/lab_driver.c -o /tmp/module08_lab
-/tmp/module08_lab
+make -C module_08_graph_bfs/code lecture
 ```
 
-Expected output:
+Record the command and actual output. The lab alone has no `main`; an object-only compile is also valid:
 
-```text
-PASS: linked queues, tree BFS, mapping, canonical maze, and independent searches
+```sh
+cc -std=c11 -Wall -Wextra -pedantic -c \
+  module_08_graph_bfs/student/lab.c -o /tmp/module08_lab.o
 ```
 
-Or use `make -C module_08_graph_bfs/code core`. PowerShell users run `code/build.ps1 -Target lab`. A compiler with sanitizer support can add `-g -fsanitize=address,undefined -fno-omit-frame-pointer`. Module 2's unchanged source may emit warnings about its unused demonstration variable and old-style no-argument definitions; record compiler diagnostics with the result.
+Check repeated calls from different valid starts. `bfs` reinitializes queue positions and distances every time. A wall start such as `{0,0}` is within bounds and leaves all distances `INF`. An out-of-range start is outside the contract because `is_wall` directly indexes the array. Keep the all-zero border intact.
 
-The supplied checks cover linked endpoints and recycling, linear/circular boundaries, wraparound order, exact tree output, empty/single-node trees, all cell mappings, canonical maze distances, all shortest predecessor sets, three shortest routes, repeated runs from every valid starting passage, and an unreachable valid passage after isolating the start. The driver also verifies exact-once linked payload scheduling, FIFO order, live/free disjointness, insertion/removal counts, peak pending occupancy, and return of all ten pool slots. Add one original assertion each for queue, tree, and maze behavior and state the claim each assertion tests.
+To inspect unreachable passages in a separate experiment, temporarily set `maze[2][1] = 0`. Start `{1,1}` is isolated, while target `{3,3}` remains an open passage with distance `INF`. Restore the cell to 1 before repeating the baseline. Make experimental changes in a driver at runtime, not in the user-owned `lab.c`.
 
-## 5. What evidence belongs in the one submission?
+Add one original, valid assertion or equivalent observation in a separate driver. State the expected result first. Do not modify the supplied source or PPTs.
 
-Include your driver and output, the queue representation traces, the tree pending-queue trace, the graph's three discovery cases, one recovered shortest route, original assertions, and corrected predictions. Use the [evidence template](evidence_template.md) and [rubric](rubric.md).
+## 6. What does the result cost and what does it omit?
 
-Count work before naming growth. Queue operations use a fixed number of changes: O(1). The linked tree frontier peaks at three entries. The tree processes seven nodes and checks fourteen child positions; N reachable nodes require O(N) work. Maze initialization touches 49 cells; search removes 20 passages and checks 80 neighbor candidates. General grid initialization is O(RC), and four-neighbor traversal is O(P) for P reached passages. General adjacency-list graph BFS is O(V+E). All arrays remain reserved after they drain. Enumerating every shortest route also costs the time needed to output every route.
+Count 25 distance initializations, eight enqueues, eight dequeues, and 32 neighbor checks for the baseline. Queue operations take constant work. For a generalized grid of R rows and C columns with P reached passages, initialization takes O(RC), traversal takes O(P), and the reserved distance/queue arrays use O(RC) storage. The linear queue must cover total discoveries between resets; its three-point peak does not justify a three-slot array.
 
-- [ ] Module 8's local value adapters over Module 7's node queue is retrieved; Module 8 compares array representations with separate names and reset evidence.
-- [ ] Public linked dequeue returns values and recycles automatically; raw helpers exchange node indices.
-- [ ] Circular queue has 24 usable slots and preserves FIFO across wraparound.
-- [ ] Tree output is F, A, G, B, C, D, E and pending states are shown.
-- [ ] Tree and graph discovery assumptions are compared.
-- [ ] Maze metadata, otherwise unowned node pool, and linked endpoints are empty before each run; the one-time initializer does not reset the pool.
-- [ ] Public dequeue returns the payload ID after recycling; BFS adds children/neighbors afterward.
-- [ ] Canonical peak pending is four, all supplied starts peak at six, and all ten pool slots return.
-- [ ] ID 25, distance 25, coordinates, and array subscripts are distinguished.
-- [ ] Equal-distance predecessors are retained without duplicate enqueue.
-- [ ] Goal distance 8, two immediate predecessors, and three full routes are explained.
-- [ ] Original assertions, compiler output, costs, and corrected predictions are included.
+The concept slides and frozen textbook describe saving the discovering current point as the parent cell at first discovery. Follow the parent cells backward from the target to the start, then reverse the collected sequence. Explain this extension using one four-move route on paper. The supplied code does not implement it. No code extension or enumeration of every shortest route is required.
 
-The checked matrix/list library and the older staged inquiry/worksheet/autopsy files are optional references. Their sentinel 16, checked statuses, typed circular queue, and single-predecessor policy describe that API only.
-
-Both BFS functions use Module 8's local `enqueue(value)`/`dequeue()` adapters and Module 7's `is_empty_queue()` predicate. They do not allocate or recycle queue nodes themselves. Enqueue calls remain outside assert; a saved Boolean result is checked. Array queues are comparisons, with `_linear` and `_circular` names.
-
-Check a valid payload of `-1` and a full ten-node queue: enqueue returns false without mutation, while draining returns each value and restores the pool. Public empty dequeue is outside the caller contract. Its assert is a diagnostic check and disappears with NDEBUG; use the emptiness predicate first.
+The checked matrix/list library and its staged worksheets are optional reference exercises. Its statuses, sentinel 16, and predecessor fields do not describe this lab.

@@ -52,22 +52,23 @@ storage growth, and cleanup are not student tasks in this module.
 
 ## Textbook example and lab functions
 
-`lecture/simplified_array_list.c` is the complete program from Chapter 1's
-**Full C Code Explanation**, topic 10. It begins with five active values
-and performs the textbook's read/update, search, removal, and insertion
-inside `main`. The smaller three-item sequence above is a lab API example.
+`lecture/simplified_array_list.c` is a standalone companion that combines
+Chapter 1's short C examples inside `main` and prints their results. It begins
+with five active values and performs the textbook's read/update, search,
+removal, and insertion. The smaller three-item sequence above is a lab API
+example.
 
-Use the lecture after Stage D is released. Its array operations and printed
-output match the textbook; it is separate from the starter assignment.
+Use the lecture after Stage D is released. Its array operations follow the
+textbook's snippets; it is separate from the starter assignment.
 The textbook search loop uses `index == size` to indicate absence, while
 the lab function returns `-1`. The lab also returns updated size counts to
-its caller instead of changing a count directly inside `main`.
+its caller; the textbook snippets change `size` directly.
 
-Students encountering C for the first time can use either textbook's
-optional appendix one topic at a time. `../student/notes.md` maps the topics;
+Students encountering C for the first time can use **Ask GPT** beside the
+relevant webpage section for focused syntax or execution questions.
+`../student/notes.md` summarizes the model and traces the examples;
 `../student/lab.md` explains the function and test-body syntax added by the
-scaffold. No complete-appendix reading or extra practice submission is
-required.
+scaffold.
 
 ## Targets
 
@@ -76,7 +77,7 @@ required.
 - `starter-extension`: run extra checks against the starter;
 - `solution-core`: run the reference core tests;
 - `solution-extension`: run reference boundary and sequence tests;
-- `lecture`: run the textbook's complete five-item example; and
+- `lecture`: run the standalone five-item companion; and
 - `autopsy`: build and run the memory-safe bounds/invariant demonstration.
 
 The default target is the starter core. It intentionally fails until the

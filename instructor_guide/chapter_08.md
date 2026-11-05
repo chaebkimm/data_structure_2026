@@ -1,36 +1,41 @@
-# Chapter 8. Queues, Tree BFS, and Graph BFS
+# Chapter 8. Processing data in stored order
 
-Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+Follow the [180-minute lesson plan](../module_08_graph_bfs/instructor/lesson_plan.md) and current PPTs. The lesson recalls FIFO from Chapter 7, builds an array queue, traces tree levels, then computes shortest distances in a maze. The slides' “10주차” heading does not change the repository's Chapter 8 numbering.
 
+The [English textbook](../module_08_graph_bfs/student/textbook.md), [Korean textbook](../module_08_graph_bfs/student/textbook_korean.md), and [workbook](../module_08_graph_bfs/student/class_material.md) follow the [concept questions](../module_08_graph_bfs/student/ppt.md) and [code questions](../module_08_graph_bfs/student/ppt_lab.md). Submit one artifact using the [lab](../module_08_graph_bfs/student/lab.md), [evidence](../module_08_graph_bfs/student/evidence_template.md), and [rubric](../module_08_graph_bfs/student/rubric.md).
 
-Follow the [Module 8 plan](../module_08_graph_bfs/instructor/lesson_plan.md) for one 180-minute lesson: queues 60 minutes, tree BFS 30, maze graph BFS 60, testing/cost/synthesis 30. Module 7 introduces FIFO through a linked-list example. Module 8 reuses that implementation for both BFS traversals.
+The frozen Korean textbook, **저장된 순서대로 데이터 처리하기**, governs the English edition and teaching material. Read its seven sections in order: `Thinking logically` → `Calculating efficiency` → `Glossary` → `Invariant` → `Coding plan` → `New C syntax explained` → `C code`. They contain 14, 2, 15, 4, 5, 3, and 7 topics respectively. Keep the Korean manuscript and the user's PPT and lab sources unchanged. Worked examples below support the concise concept text; they are part of the same lesson and submission.
 
-The [English textbook](../module_08_graph_bfs/student/textbook.md), [Korean textbook](../module_08_graph_bfs/student/textbook_korean.md), [workbook](../module_08_graph_bfs/student/class_material.md), [concept slides](../module_08_graph_bfs/student/ppt_material.md), and [lab slides](../module_08_graph_bfs/student/ppt_lab_material.md) use the same three-part sequence. Submit once through the [lab](../module_08_graph_bfs/student/lab.md) and [rubric](../module_08_graph_bfs/student/rubric.md).
+The three new C explanations are nested row initialization, whole-structure copying/parameters/returns, and short-circuit logical OR. `enum`, increments, `switch`/`break`, and `continue` are review. The four invariant questions explain nondecreasing queue distances, the benefit of first-discovery finality, the loss of that guarantee, and preservation by recording distance before enqueue.
 
-## Starting question
+## Which queue positions preserve stored order?
 
-Requests 17, 23, 31 arrived in that order. How can we process them in arrival order? Retrieve Module 7's FIFO linked-list example and contrast its known rule with the Stack. Read [queue.c](../module_08_graph_bfs/student/queue.c) after the link/array traces.
+Use the actual [lab.c](../module_08_graph_bfs/student/lab.c): `queue[N*N]` stores whole points. In a nonempty queue, `front` identifies its first data’s index and `rear` identifies its last data’s index. Empty queues have neither first nor last data, even if old values remain in the array. Reset to 0/-1. Enqueue increments rear before writing; dequeue reads before incrementing front. Empty is front>rear. The maintained position bound is `0 <= front <= rear + 1 <= N*N`; a nonempty queue and an available write position are caller preconditions for the unchecked operations. After 25 writes and removals, 25/24 is empty but has no unused write position. Queue operations are unchecked.
 
-Trace linked head/tail through empty, first insertion, and final removal. `enqueue(value)` allocates and appends a node, returning `false` without queue changes when the pool is exhausted. `dequeue()` returns the oldest value and automatically recycles its node. Check `is_empty_queue()` before dequeue; `-1` is a valid payload, not an empty-result sentinel. BFS uses those wrappers and never frees a queue node itself. The raw helper returns indices and leaves recycling to the wrapper. Array functions have distinct `_linear`/`_circular` names and remain unchecked. Initialize the otherwise unowned pool with `init_lnodes_pool()` and reset head/tail before independent BFS runs.
+Compare a paper circular queue with the same endpoint meanings. Modulo 25 and one reserved slot give empty `front==(rear+1)%25` and full `front==(rear+2)%25`. Fill 0–23, remove 0/1, append 24/25: front 2/rear 0, next value 2. The supplied maze remains a linear queue.
 
-For the linear 25-slot queue, fill 0..24 and drain: front 25, rear 24 is both empty and full. For circular modulo 25, one reserved position leaves 24 values. Fill 0..23, remove 0/1, append 24/25: front 2, rear 0; draining gives 2..25.
+## Why does a tree emerge by level?
 
-## Tree board walkthrough
+Use an illustrative tree A→B/C, B→D/E, C→F. Enqueue existing left children before right children. Queues after A/B/C are `[B,C]`, `[C,D,E]`, `[D,E,F]`. Output A/B/C/D/E/F has depths 0/1/1/2/2/2. Store a depth with each queued node or process a saved number of current-level entries. The valid tree has no cycle or shared child. A graph may offer the same destination while it still waits.
 
-Reuse [Module 2's tree](../module_02_binary_tree/student/lab.c), with root F(index 5), children A/G, A→B/C, B→D/E. Enqueue the root and then enqueue existing left children before right children after processing each index. Pending after F, A, G, B is [0,6], [6,1,2], [1,2], [2,3,4]. The output F, A, G, B, C, D, E has depths 0, 1, 1, 2, 2, 3, 3.
+Tree traversal is a conceptual bridge; no supplied tree function or imported linked-node pool is required for this lesson.
 
-[tree_bfs(root, order)](../module_08_graph_bfs/student/tree_bfs.c) returns 7 here and 0 for root -1. The output has room for ten indices. A valid tree has no cycles or shared children; each reached node enters once without a discovery array. Ask what changes when two graph routes reach the same waiting vertex.
+For the graph comparison, distinguish BFS discovery from DFS processing. BFS skips every previously discovered neighbor, including a node still waiting. In the described pending-node stack DFS, an unprocessed neighbor may be pushed again and its newer entry can be handled before the old copy. Mark it processed on its first pop and skip later copies before expanding neighbors. This explains the concept slides' duplicate-stack question; Chapter 6's actual DFS uses recursion.
 
-## Graph board walkthrough
+## How does the maze establish shortest distances?
 
-The maze [lab.c](../module_08_graph_bfs/student/lab.c) is graph BFS. Passages are vertices; orthogonal moves are equal-cost edges. Start (1,1), target (5,5). Trace right, left, down, up. Coordinates are{x, y}; access is [y][x]; ID is 7*y+x. ID 25 is valid, while distance 25 means unseen.
+The current maze is 5×5. Coordinate pairs mean `{y,x}` and index `maze[y][x]`. Start `{1,1}` and target `{3,3}`. The iterator produces right, left, down, up with `init_iter`, `has_next_iter`, and `next_iter`. Complete one point's iterator before initializing the next.
 
-First discovery sets distance before enqueue. An equal-distance arrival appends a predecessor without another enqueue. An earlier distance is skipped. The goal distance is 8, with predecessors (5,4),(4,5). The two choices at (3,5), namely(3,4),(2,5), give three complete shortest routes. One recovered route contains nine cells/eight moves. The source records predecessors without printing routes.
+`bfs` resets the queue and fills all 25 distances with `INF=25` on each call. A passage start gets distance 0 before enqueue. Skip a wall or any finite-distance neighbor. First discovery writes current distance+1 before enqueue. When `{3,1}` checks waiting `{3,2}`, its distance is already 3, so it is skipped. FIFO processes closer layers first and makes the first assigned distance shortest.
 
-Before each maze run call init_info, ensure every prior allocation is recycled, call the guarded initializer with init_lnodes_pool, and set qhead = qtail = -1. The start must be an interior passage and the zero wall border remains intact. The shared neighbor iterator completes each cell before starting another. Twenty passages enter once; the linked frontier peaks at four entries, and every supplied start peaks at most six. Public dequeue returns the cell ID and recycles its node before neighbors are added. Final head/tail are -1 and all ten pool slots return. Tree and maze include the same guarded local queue; the combined driver compiles directly without a prepared copy.
+Here every move costs one. Distances in the pending queue are nondecreasing, so a first-discovered neighbor cannot have a shorter undiscovered route. A stack or unequal move costs removes this guarantee. A later shorter distance would have to be recorded and propagated through the neighbors. A discovered node has a known distance; a processed node has also had its neighbors checked.
 
-## Pause and final evidence
+Processing order is `{1,1}`, `{2,1}`, `{2,2}`, `{3,1}`, `{2,3}`, `{3,2}`, `{3,3}`, `{1,3}`. Goal distance is 4. There are eight insertions/removals, 32 neighbor checks, and a peak of three pending points. Final front/rear are 8/7. The linear array uses eight write slots even with a peak of three.
 
-Use the lesson plan's three-target pause: queue boundaries/wraparound, tree order/valid-tree assumptions, and graph merge/distance/routes. Preserve original predictions and add labeled corrections. Run the [combined driver](../module_08_graph_bfs/student/lab_driver.c) and add original queue/tree/maze assertions. The separate checked matrix/list API and older staged worksheets remain optional references.
+The start must be inside the array and the border must remain walls. An in-bounds wall start leaves every distance `INF`. Every independent `bfs` resets itself. The concept slides' previous-point recording explains path reconstruction, but the actual lab stores distances only. One paper route is `{1,1}→{2,1}→{2,2}→{2,3}→{3,3}`.
 
-Count seven processed tree nodes/fourteen child checks and twenty maze passages/eighty neighbor checks. Separate 49-cell initialization, fixed reserved arrays, peak linked pending count versus total discoveries, array-comparison writes, and route-output work. The final explanation connects one FIFO rule to arrival order, tree levels, and shortest graph distances with a discovery record.
+## Which evidence closes the lesson?
+
+Run `make -C module_08_graph_bfs/code lecture`. The [separate driver](../module_08_graph_bfs/code/tests/test_lecture.c) calls the unchanged lab, which has no main. Use the [three-target pause](../module_08_graph_bfs/student/cognitive_pause.md) for queue positions, tree levels, and graph discovery. Check baseline, reverse start, wall start, temporary isolation/restoration, and one original valid assertion outside `lab.c`.
+
+Count six illustrative tree nodes/twelve binary child checks, then 25 maze initializations/eight processed passages/32 neighbor checks. General grid reset/storage is O(RC); traversal is O(P) for P reached passages. Keep total linear writes distinct from peak pending. The optional checked matrix/list library and historical staged worksheets remain separate references.

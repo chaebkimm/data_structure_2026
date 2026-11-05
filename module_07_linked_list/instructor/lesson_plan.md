@@ -56,6 +56,6 @@ Diagnose claims that allocation writes data, initialization resets, detachment r
 
 Known-position relinking and endpoint operations take O(1); predecessor search/traversal O(n); reaching position i follows i links. First initialization O(C), later calls O(1); pool storage O(C), with one extra next integer per slot and saved endpoints. Shared storage avoids fixed partitions without increasing ten-slot capacity.
 
-Grade A30/B25/C25/D20 inside one artifact. Require exact expected/observed state, three original groups, restored ownership, compiler output, costs, and corrected prediction. Module 8 adds local value adapters around these raw node operations, then uses FIFO for tree/graph BFS and compares array queues. DSU/optional pointer libraries remain [Week 14](../../module_14_prim_kruskal/week_14/instructor.md) references.
+Grade A30/B25/C25/D20 inside one artifact. Require exact expected/observed state, three original groups, restored ownership, compiler output, costs, and corrected prediction. Module 8 transfers FIFO to array queue comparisons and tree levels, then uses a coordinate array queue for maze BFS. DSU/optional pointer libraries remain [Week 14](../../module_14_prim_kruskal/week_14/instructor.md) references.
 
 For release QA run the [packager](../release/prepare_student_release.py), extract separately, verify source bytes/local links, and build there. Keep faculty answers outside the archive.

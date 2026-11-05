@@ -5,4 +5,5 @@ The current course has **14 instructional weeks**. Use the
 
 Module 13 covers searching, sorting, and consolidation. Prim, Kruskal, and
 Union-Find are now Module 14. Earlier modules retain their current order,
-including Module 7's linked queue example and its reuse for BFS in Module 8.
+including Module 7's linked queue example and the transfer of its FIFO rule
+to Module 8's array queues, tree levels, and maze BFS.

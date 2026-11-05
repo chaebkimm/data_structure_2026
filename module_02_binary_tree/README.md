@@ -3,42 +3,59 @@
 ## Expression Trees with Array Indices in C
 
 This module follows [Chapter 2](student/textbook.md) and its
-[Korean edition](student/textbook_korean.md). Students build the hierarchy
-of `1+2*3` and evaluate it to obtain `7`. The chapter extends Chapter 1's
-fixed arrays with structures, child indices, and recursive evaluation.
+[Korean edition](student/textbook_korean.md). The chapter introduces nodes,
+a single root, and parent/child relationships before storing child indices
+in an array. Its examples connect letters into a tree, then build and
+evaluate `1+2+3` as `(1+2)+3`, returning `6`.
+
+The classroom code is [student/lab.c](student/lab.c). It uses `nodes[10]`,
+`capacity`, and `nodes_size`. The separate staged application lab in
+`code/` extends those ideas to multiplication precedence with `nodes[20]`,
+`size`, and a shared input position `pos`. Its four-function interface is
+not the textbook's interface.
+
+## Textbook sequence and examples
+
+1. Explain a tree as one connected hierarchy: the root has no parent,
+   every other node has one parent, and every parent chain leads to that root.
+2. Store at most two child links as `left` and `right` indices. Use `-1`
+   for absence. Access the tree from its root by following present children.
+3. Initialize `A` through `J`, then connect the tree rooted at `F` (index 5).
+   Ten slots are in use, but only seven belong to this tree. Recursive
+   left/right/current reading gives `D E B C A G F`; it does not print them.
+4. Model each binary `+` as a parent with two operands. An operand may be
+   an entire subtree. Initialize all five characters of `1+2+3` with absent
+   children, then make each successive `+` the new parent of the old root
+   and the next digit. The root indices are `0`, `1`, then `3`.
+5. Evaluate digit leaves directly and add the returned child values.
+   `eval(3)` returns `6` without replacing the stored characters.
+
+The alphabet and addition demonstrations reuse one array. `nodes_size`
+counts initialized slots, while traversal visits only nodes reachable from
+the selected root. The guards stop absent-child traversal; they do not
+validate cycles or make `eval(-1)` valid.
 
 ## Optional help with reading C
 
-Both textbooks now include **Full C Code Explanation** (Korean:
-**C 코드 전체 설명 (Full C Code Explanation)**), a companion that assumes no
-previous C knowledge. Keep the original chapter as the main reading path.
-After Stage D is released, use a small part of the companion when a symbol
-or statement needs explanation; reading all 15 topics is not a prerequisite
-or an additional submission.
+Use **New C Syntax Explained** and **C Code** in either textbook for the
+chapter's syntax and classroom examples. After Stage D is released,
+students using the Chapter 2 webpage can select **Ask GPT** at the end of a
+subsection to ask about its content or code. The downloaded textbooks
+remain usable without the webpage.
 
-The topic numbers match in both languages:
+The [lab](student/lab.md#help-with-reading-the-c-code) explains the supplied
+header, starter, and tests. Select one statement, explain it in your own
+words, and predict its next state before returning to the lab checkpoint.
+This reading support adds no submission requirements. Keep the textbooks
+and worked models in Stage D, after the initial inquiry, Cognitive Pause,
+calibration, and Stage C attempt.
 
-| When a reader needs help with… | Companion topics |
-|---|---|
-| Program execution, variables, types, punctuation, and conditions | 1–3 |
-| Structures, member access, the node array, and `-1` | 4–5 |
-| Function calls, node creation, characters, strings, and `pos++` | 6–7 |
-| `term`, `terms`, and a complete construction trace | 8–10 |
-| Every evaluator statement and the recursive return trace | 11–12 |
-| The complete program, printing, and terminal commands | 13 |
-| Input boundaries, independent runs, and optional prediction practice | 14–15 |
-
-The [lab](student/lab.md) also explains how this single-file example maps
-to the supplied header, starter, and tests. The appendix includes worked
-examples and practice answers, so it remains part of Stage D, after the
-initial inquiry, Cognitive Pause, calibration, and Stage C attempt.
-
-## Module question
+## Application-lab question
 
 > How can array elements record an expression's hierarchy, and how can we
 > build and evaluate that hierarchy while preserving operator precedence?
 
-## Canonical representation
+## Application-lab representation
 
 ```c
 struct TreeNode {
@@ -78,7 +95,7 @@ ending `'\0'`. `term()` completes multiplication groups before `terms()`
 attaches them beneath addition. Evaluation returns `6` from the `*` subtree
 and then `7` from the root, without changing any node.
 
-## Input contract and tree rules
+## Application-lab input contract and tree rules
 
 Use one nonempty expression that starts with a single digit and continues
 with zero or more operator-and-digit pairs. Only `+` and `*` are supported.
@@ -96,7 +113,7 @@ Every operator has two operands and every digit is a leaf. The underlying
 binary-tree structure can represent a single child, but that is not a
 completed operator for this evaluator.
 
-## Core learning targets
+## Application-lab learning targets
 
 Students will:
 
@@ -105,7 +122,7 @@ Students will:
 3. Reserve initialized nodes and distinguish a character, index, and result.
 4. Trace `size`, `pos`, and changing subtree roots during construction.
 5. Explain multiplication precedence and left grouping within operator chains.
-6. Implement all four chapter functions and trace the evaluator's base case
+6. Implement all four lab functions and trace the evaluator's base case
    and separate local results.
 7. Explain why fresh nodes preserve the root, single-parent, and no-cycle rules.
 8. Support correctness and operation costs with tests and diagnostic evidence.
@@ -117,7 +134,7 @@ depth; recursive evaluation uses temporary call space proportional to the
 longest root-to-leaf path, including the root call. Capacity is fixed in
 this example; distinguish reserved array space from its used positions.
 
-## Teaching and release sequence
+## Staged application-lab teaching and release sequence
 
 Use two 90-minute meetings and a 100-point rubric. Standard and linear
 inquiry/worksheet versions have the same learning targets.
@@ -140,8 +157,8 @@ of the staged student archives.
 
 - `student/`: bilingual textbooks, both inquiry/worksheet formats, reveal,
   vocabulary, Cognitive Pause, lab, rubric, evidence, and autopsy worksheet.
-- `diagrams/tree_models.md`: correct hierarchy, index, construction, and
-  evaluation models with text equivalents.
+- `diagrams/tree_models.md`: textbook alphabet/addition models followed by
+  clearly marked application-lab models, all with text equivalents.
 - `instructor/`: lesson plan, answer key, and implementation notes.
 - `code/`: public header, four-function starter and solution, core/student/
   extension tests, lecture driver, standalone autopsy, and build files.
@@ -151,7 +168,7 @@ of the staged student archives.
 See [code/README.md](code/README.md) for reference checks and
 [release/release_manifest.md](release/release_manifest.md) for packaging.
 
-## Core submission
+## Application-lab submission
 
 Submit the completed `code/starter/binary_tree.c`, three distinct tests in
 `code/tests/test_student.c`, passing core/student transcripts, compiler and

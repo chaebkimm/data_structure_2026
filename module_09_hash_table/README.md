@@ -10,9 +10,9 @@ chains. Students trace the supplied functions and write a test driver;
 there are no required implementation TODOs in the supplied lab.
 
 The hash table uses the node-pool interface directly: `struct Linked_Node`,
-`init_lnodes_pool()`, and `new_lnode()` followed by caller data/next assignments. Module 8's local queue adapters
-`enqueue(value)` and `dequeue()` belong to FIFO use; hash chains retain and
-recycle their own nodes rather than passing them through those wrappers.
+`init_lnodes_pool()`, and `new_lnode()` followed by caller data/next assignments.
+Hash chains retain and recycle their own nodes. Module 8's maze uses a separate
+coordinate array queue and does not supply adapters for these pool operations.
 
 ## Teach the current source
 

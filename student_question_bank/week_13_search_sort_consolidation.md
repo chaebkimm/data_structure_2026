@@ -103,7 +103,7 @@ justified structure/algorithm choice.
 - When do ordered range queries justify an AVL index rather than a hash table?
 - Why does a Heap support repeated minimum selection without keeping its whole array sorted?
 - Why do linked-list insertion after a known predecessor and searching for that predecessor have different costs?
-- Which public linked-queue API did Module 8 use for BFS, and where does dequeue recycle its pool slot before expansion?
+- How does Module 8 store and return whole coordinates in its linear array queue, and why does capacity follow total discoveries rather than peak pending work?
 - Why does FIFO unweighted BFS answer a different path question from indexed-Heap Dijkstra?
 - How can sorting prepare Kruskal's edge scan without deciding which edges form cycles?
 - Which trace, original assertions, costs, and corrected explanation belong in the single Week 13 artifact?

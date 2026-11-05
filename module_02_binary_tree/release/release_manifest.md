@@ -4,6 +4,11 @@ Run `prepare_student_release.ps1` to create five ZIP archives in `../dist`.
 The script validates all sources before writing and refuses to overwrite an
 existing archive. Verify reference code and release contents first.
 
+The staged inquiry and implementation lab extend the current textbook's
+alphabet/`1+2+3` examples to `+`/`*` precedence. Their `nodes[20]`, `size`,
+`pos`, and four lab functions remain separate from the textbook's
+`nodes[10]`, `nodes_size`, and classroom functions.
+
 ## Stage A — Initial Hierarchy Inquiry
 
 Release before Meeting A: the standard and linear inquiry prompts for
@@ -34,12 +39,13 @@ Release after the Stage C attempt is preserved:
 - `textbook_korean.md`, its Korean edition; and
 - `diagrams/tree_models.md`, correct models with text equivalents.
 
-Both editions use the same C representation and executable examples.
-Each complete textbook includes its **Full C Code Explanation** companion,
-with 15 matching topics, a complete program, traces, and practice answers.
-Keep these sections in Stage D, after the Stage C attempt; do not move
-their worked material into an earlier release. They provide optional
-syntax support and do not create additional assessed work.
+Both editions use the same alphabet and `1+2+3` classroom examples.
+The models present these first, followed by labeled application-lab models.
+The textbooks retain **New C Syntax Explained** and **C Code** for reading
+support. The Chapter 2 webpage also provides **Ask GPT** for individual
+subsections; the downloaded materials do not require it. Keep the textbooks
+and worked models in Stage D, after the Stage C attempt. Reading support
+does not create additional assessed work.
 This stage contains no worked Stage E fault prediction or repair answer.
 
 ## Stage E — Lab and Evidence
@@ -73,12 +79,14 @@ additional implementation requirements.
 ## Instructor verification
 
 Use `../code/README.md` to run reference core/extension checks, the lecture,
-and autopsy with warnings and supported sanitizers. Compile both textbook
-programs and compare their output. Check that the incomplete starter and
+and autopsy with warnings and supported sanitizers. Compile the classroom
+snippets from each textbook with a temporary driver and check root indices,
+links, and `eval` returning 6; the snippets have no `main` or printed output.
+The unused `data_read` may produce a warning. Check that the incomplete starter and
 student placeholders fail cleanly.
 
 Verify every release source and unique destination name. Stage D must
-include both language editions with their full C companions. The Stage E
+include both language editions and the shared models. The Stage E
 lab and READMEs refer back to those Stage D textbooks without adding
 textbooks or worked solutions to Stage E. Student build scripts must work
 using only Stage E entries and expose only starter core/student tests and autopsy.

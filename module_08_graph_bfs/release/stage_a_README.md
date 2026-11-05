@@ -1,5 +1,5 @@
-# Module 8 Facilitation Checkpoint A
+# Chapter 8 Facilitation Checkpoint A
 
-Predict arrival order for17, 23, 31 before naming FIFO; preserve linked, linear, and circular queue predictions.
+Predict the arrival order for 17, 23, 31. Recall the linked-list FIFO rule, then represent the same order with array front/rear indices.
 
-Use the current combined release described in release_manifest.md. This checkpoint is part of one queue/tree/graph lesson and creates no separate submission or staged archive. The older checked matrix/list scaffold remains optional reference.
+Use the current combined release described in [release_manifest.md](release_manifest.md). This checkpoint belongs to one queue/tree/graph lesson and creates no separate submission or staged archive. The checked matrix/list scaffold remains an optional repository reference.

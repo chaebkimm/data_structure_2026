@@ -40,17 +40,16 @@ state after rejection. They do not provide the answer key.
 
 Release after the Meeting A investigation and exit ticket:
 
-- English and Korean fixed-array Chapter 1 textbooks, each with its optional
-  **Full C Code Explanation** reference;
+- English and Korean fixed-array Chapter 1 textbooks with short C examples;
 - student summary and lab bridge; and
 - fixed-array diagrams with text equivalents.
 
 These diagrams do not include a worked Stage E autopsy. Keep its faulty-code
 prediction and repair answers out of Stage D materials.
-The appendix's complete program and explained practice answers are available
-at this gate as part of the textbook. They do not add required reading or
-assessment. The separate `code/lecture/` source is an instructor convenience
-copy of the textbook program; it is not included in the staged archives.
+Detailed syntax and execution questions can be asked through **Ask GPT**
+on the webpage. The separate `code/lecture/` source combines the textbook
+snippets into a runnable instructor companion; it is not included in the
+staged archives.
 
 ## Stage E — Lab and Evidence
 

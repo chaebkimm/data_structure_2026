@@ -1,6 +1,6 @@
 # Korean Data Structures Textbook
 
-Chapter numbers identify resources; the teaching sequence follows the 14-week delivery guide. Module 7 teaches acyclic index-linked lists, shared-pool recycling, and linked stack/queue applications, following the updated concept slides and current `student/lab.c`. Module 8 compares queue representations and reuses Module 7's linked queue for tree BFS and graph BFS in Week 8. DSU is introduced with Kruskal in Week 14; its reference code remains in the Module 7 resource library. For new concepts, we first show why they are needed, and then give them a name.
+Chapter numbers identify resources; the teaching sequence follows the 14-week delivery guide. Module 7 teaches acyclic index-linked lists, shared-pool recycling, and linked stack/queue applications, following the updated concept slides and current `student/lab.c`. Module 8 recalls FIFO, compares array queues, traces tree level order, and uses a direct coordinate array queue for maze BFS in Week 8. Chapter 8's Korean manuscript is frozen as of 2026-11-03; its English edition follows the same seven sections and 50 subsections. DSU is introduced with Kruskal in Week 14; its reference code remains in the Module 7 resource library. For new concepts, we first show why they are needed, and then give them a name.
 
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](module_00_datastructure/textbook.md).
 
@@ -13,7 +13,7 @@ Before starting the course, first read about what data structures and efficiency
 | 5 | [Following One Path to the End](module_05_tree_dfs/student/textbook.md) |
 | 6 | [Graph DFS, Edge Lists, and Biconnected Components](module_06_graph_dfs/student/textbook.md) · [Korean](module_06_graph_dfs/student/textbook_korean.md) |
 | 7 | [Linked Lists — Week 7](module_07_linked_list/student/textbook.md) · [Korean](module_07_linked_list/student/textbook_korean.md) · [Class workbook](module_07_linked_list/student/class_material.md) |
-| 8 | [Queues, Tree BFS, and Graph BFS — Week 8](module_08_graph_bfs/student/textbook.md) · [Korean](module_08_graph_bfs/student/textbook_korean.md) · [Class workbook](module_08_graph_bfs/student/class_material.md) |
+| 8 | [Processing data in stored order — Week 8](module_08_graph_bfs/student/textbook.md) · [Korean](module_08_graph_bfs/student/textbook_korean.md) · [Class workbook](module_08_graph_bfs/student/class_material.md) |
 | 9 | [Finding a Pair with a Hash Table](module_09_hash_table/student/textbook.md) |
 | 10 | [Integer Heaps and Shared On-Time](module_10_binary_heap/student/textbook.md) |
 | 11 | [Minimum-Cost Routes with an Indexed Heap](module_11_graph_dijkstra/student/textbook.md) |

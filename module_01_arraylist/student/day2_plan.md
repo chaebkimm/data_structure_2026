@@ -20,18 +20,17 @@ insert, and remove are all core operations.
 
 ## Find C help when you need it
 
-Keep the English or Korean Stage D textbook nearby. **Full C Code
-Explanation** is an optional reference: choose the topic that explains the
-line you are reading, then return to the lab. Stage D's `notes.md` has a
-topic map. You do not need to read every topic or complete its practice
-questions before starting.
+Keep the English or Korean Stage D textbook nearby for its model and
+short C examples. Use **Ask GPT** beside the relevant webpage section for
+help with a symbol, condition, or execution trace. Stage D's `notes.md`
+summarizes the model and shows the operation sequence.
 
 For the function inputs, returned sizes, and provided test code, use
 **Reading the supplied C scaffold** in `lab.md`. Ask for a short trace or
 syntax explanation whenever a line is unclear; the schedule can be adjusted
 without changing the core learning targets.
 
-The textbook's complete program starts with five active values. Smaller
+The textbook's setup starts with five active values. Smaller
 lists in the inquiry and tests follow the same rules. In the lab, save each
 mutation's returned size and treat a search result of `-1` as absence. The
 textbook's inline search instead reaches `index == size` for absence.

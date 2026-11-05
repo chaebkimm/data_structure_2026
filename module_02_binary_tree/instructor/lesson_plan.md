@@ -2,12 +2,16 @@
 
 ## Purpose and limits
 
-This module follows Chapter 2 in `student/textbook.md` and
-`student/textbook_korean.md`. Students represent expression structure in a
-fixed array, construct that structure with operator precedence, and evaluate
-it recursively. Every node stores one character and two integer child
-indices. The four core implementations are `new_node`, `term`, `terms`, and
-`eval_tree`.
+The current Chapter 2 in `student/textbook.md` and
+`student/textbook_korean.md` introduces a tree's one-root, one-parent
+hierarchy, then represents at most two children with array indices. It
+connects an alphabet tree and builds `1+2+3` as `(1+2)+3` in `nodes[10]`.
+The classroom source is `student/lab.c`.
+
+The staged application lab below extends the same representation to
+operator precedence in `nodes[20]`. Its four required implementations are
+`new_node`, `term`, `terms`, and `eval_tree`. Its shared `pos` and two parser
+levels are additions to the textbook, not assumed textbook content.
 
 Chapter 1 supplies fixed arrays, indices, conditions, loops, and invariants.
 Introduce structure tags, member access, a shared parsing position, and
@@ -21,7 +25,34 @@ fitting in an `int`. These are assumptions, not required input-validation
 features. Binary-search ordering, dynamic allocation, graph validation, and
 additional expression operators are outside the core.
 
-## Learning targets
+## Teaching the revised textbook
+
+Follow the opening questions in order. First describe nodes and their
+parent/child relationships. Establish one root and one parent per other
+node before introducing binary nodes and the `left`/`right` indices.
+Explain that `-1` marks an absent child and that access starts at the root.
+Changing a link or the root index does not move an array element.
+
+Use the alphabet example to separate storage from reachability: ten
+initialized letters, root F at index 5, seven reachable nodes, and the
+left/right/current read order `D E B C A G F`. Have students identify
+H, I, and J as initialized entries outside this tree.
+
+Next ask how an operator can take a whole expression as an operand. Each
+`+` becomes a parent, and digits are leaves with both links `-1`. Prepare
+all five nodes for `1+2+3` before connecting. Trace root 0, then 1, then 3;
+node 3 has left child 1 and right child 4. These links record `(1+2)+3`
+before evaluation begins. Trace `eval(3)` returning 6 using separate local
+child results. A digit stops evaluation; `-1` stops the guarded reader.
+
+For costs, count seven reached alphabet nodes separately from the ten
+reserved/initialized slots. The path F–A–B–D has height 3 and four node
+calls, plus a brief missing-child call. Connect that count to `O(h + 1)`.
+Use the chapter guide and the first part of `diagrams/tree_models.md` for
+these board models. The remaining schedule and assessments below belong
+to the separate precedence application lab.
+
+## Application-lab learning targets
 
 Students will be able to:
 
@@ -35,7 +66,7 @@ Students will be able to:
 8. evaluate children before their operator without changing the tree; and
 9. support claims with tests, compiler evidence, and an autopsy explanation.
 
-## Canonical representation and fixture
+## Application-lab representation and fixture
 
 ```c
 struct TreeNode {
@@ -107,27 +138,23 @@ is a relationship: this structure stores no upward link. Require students
 to identify whether an integer in a trace is an array index or a returned
 arithmetic value.
 
-### Using the full C companion without adding reading pressure
+### Supporting C reading without adding reading pressure
 
-The English and Korean textbooks each contain 15 matching **Full C Code
-Explanation** topics for readers with no C background. Release this
-companion with the rest of Stage D: it contains complete code, execution
-traces, and practice answers. Keep the earlier inquiry and calibration
-gates in place.
+Release the English and Korean textbooks with the rest of Stage D. Use
+**New C Syntax Explained** and **C Code** for syntax and classroom examples,
+keeping the earlier inquiry and calibration gates in place.
 
-During Meeting B, use the lab's topic map to select a short explanation for
-the statement a student is reading. Topics 1–3 cover basic notation, 4–7
-cover nodes and character consumption, 8–10 cover construction, and 11–12
-cover evaluation. Topic 13 assembles and runs the complete program; 14–15
-cover boundaries and optional practice. Ask the student to explain one
-line and predict its next value before returning to the lab task.
+During Meeting B, select the statement a student is reading. Students on
+the Chapter 2 webpage can use **Ask GPT** at the end of that subsection for
+an explanation. Ask them to check the response against the code, explain
+one line, and predict its next value before returning to the lab task.
+The downloaded chapter and instructor support remain available without GPT.
 
 Treat any symbol as potentially new, including `;`, `()`, `[]`, and `=`.
-Use the lab's file-layout bridge for `extern`, header guards, placeholders,
-and test helpers. The standalone textbook program and the multi-file test
-program have different `main` functions; students retain the supplied test
-runner. The companion supports the existing checkpoints and rubric. It
-adds no required reading completion, extra test, or new submission.
+Use the lab's file-layout guide for `extern`, header guards, placeholders,
+and test helpers. Students retain the supplied test runner and implement
+the four starter bodies. This support adds no required reading completion,
+extra test, or new submission.
 
 ## Five release gates
 
@@ -228,7 +255,8 @@ evaluation. A structurally valid tree can still encode the wrong grouping.
 1. Preserve the Stage C attempt before releasing Stage D.
 2. Ask students to annotate earlier answers using either textbook language
    and the shared models; make both textbooks available. Point out the
-   optional full C companion as a reference for individual statements.
+   syntax and code sections, and the webpage's subsection-level **Ask GPT**
+   button for questions about individual statements.
 3. Release Stage E for Meeting B.
 4. Validate reference tests and the standalone autopsy with strong warnings
    and supported runtime checks.

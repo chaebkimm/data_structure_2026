@@ -3,7 +3,8 @@
 Open this stage after preserving your initial inquiry. Use
 `representation_reveal.md` when directed and `vocabulary.md` as a reference.
 
-The chapter stores character data and left/right indices in `nodes[20]`.
+This application lab stores character data and left/right indices in `nodes[20]`.
+The textbook uses a separate 10-slot alphabet/addition demonstration.
 A missing child uses `-1`; index `0` remains valid. The five-node fixture
 represents `1+2*3` with `'+'` at the root and `'*'` below its right side.
 

@@ -114,24 +114,16 @@ starts with at least one current item.
 
 ## 8. Optional help when any C syntax is unfamiliar
 
-Choose the English `textbook.md` or Korean `textbook_korean.md`. Both have a
-**Full C Code Explanation** appendix with the same topic numbers. Open the
-one topic that helps with your current line, then return to your trace or
-lab. There is no requirement to finish the appendix or submit its practice
-answers.
+Choose the English `textbook.md` or Korean `textbook_korean.md` for the
+concepts and short C examples. On the webpage, use **Ask GPT** beside the
+section you are reading and name the line or symbol you want explained.
+Useful questions include:
 
-| Your question | Appendix topic |
-|---|---|
-| What is a program, variable, statement, or expression? | 1–2 |
-| What do names, comments, punctuation, and semicolons mean? | 1–2 |
-| How do array declarations, initial values, size, and capacity work? | 3 |
-| What do assignment, comparison, `&&`, `if`, and braces do? | 4 |
-| How do I read or change an array item? | 5 |
-| How do `for`, `break`, and the search result work? | 6 |
-| How does each left or right shift run? | 7–8 |
-| How do the examples share one changing array? | 9 |
-| Where do `main`, `printf`, and compiler commands fit? | 10 |
-| Where can I try a small prediction with an explained answer? | 11 |
+- What does this condition check before the array is accessed?
+- What values do the loop index and array contain after each iteration?
+- Why does insertion copy from the back while removal copies from the front?
 
-The lab's **Reading the supplied C scaffold** section connects these
-examples to function parameters, returned sizes, and student test bodies.
+Compare the answer with the code and trace the operation yourself. The
+sequence in section 4 shows how the examples share one changing array.
+The lab's **Reading the supplied C scaffold** section explains function
+parameters, returned sizes, and student test bodies.

@@ -28,4 +28,4 @@ Total: 100 points. Both investigation formats assess [lab.c](lab.c). Typed, spok
 
 A crash-free or sanitizer-clean run does not prove ownership. Invalid non-sentinel indices and invalid membership calls are paper diagnoses; only defined -1 no-ops and empty/tail results are executable boundaries. Keep mutations outside assert and return all owned slots between tests or use separate processes.
 
-Stack/Queue are required applications within this artifact. The source supplies no Stack API or value Queue wrappers. Module 8 adds local adapters for BFS and compares array queues. Pointer-list/DSU/edge-builder/Kruskal implementations earn no required Week 7 points.
+Stack/Queue are required applications within this artifact. The source supplies no Stack API or value Queue wrappers. Module 8 compares array queues and uses a coordinate array queue for maze BFS. Pointer-list/DSU/edge-builder/Kruskal implementations earn no required Week 7 points.

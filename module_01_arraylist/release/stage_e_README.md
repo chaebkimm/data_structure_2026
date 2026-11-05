@@ -6,9 +6,10 @@ Start with `student/lab.md`, then edit only:
 - `code/tests/test_student.c`.
 
 `student/day2_plan.md` outlines the meeting. Keep the Stage D textbook in
-your preferred language nearby for optional C syntax help. The lab's
-**Reading the supplied C scaffold** section explains the step from the
-textbook's single program to the functions and test bodies you will edit.
+your preferred language nearby for its model and short C examples. Use the
+webpage's **Ask GPT** button for focused syntax or execution questions. The
+lab's **Reading the supplied C scaffold** section explains the step from the
+textbook's snippets to the functions and test bodies you will edit.
 
 Checked indexed read/update, first-match find, append, insert, and remove are
 all core. The extension suite adds boundary and sequence cases for those same

@@ -1,6 +1,740 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-10-30.
+Updated: 2026-11-04.
+
+## Chapter 8 interactive visuals improved — 2026-11-04
+
+Published Sites version **233**, source commit
+`f1873ad64becf2a87f82fc735cba58079902d480`.
+Deployment `appgdep_6aeb3c16dc308191949466c2249896cd` succeeded at
+https://data-structures.chaebinkim.chatgpt.site/chapter-8.
+Public access, environment revision 2, runtime bindings, and Chapter 8 homepage
+routing remain unchanged.
+
+The Chapter 8 maze cards now place the maze, fixed 2×2 controls, single live
+status, and stable-height queue in that order. Numeric queue indices remain
+visible when empty, while first/last data are separately shown as absent.
+Linear and circular empty relations use their respective rules. Route recovery
+starts with the destination, reveals one parent cell per action, enables reversal
+only at the start, and resets on destination changes. Walls and start==target
+produce no-route and completed zero-move states.
+
+Validation: 33 BFS/content/queue/route/feedback tests, TypeScript, whitespace
+checks, and the production build passed. Korean and English were inspected at
+390×844 and 320×844. Twenty consecutive BFS transitions at each language/width
+kept identical button coordinates; cells measured at least 44.59px wide and 48px
+high, controls 48px high, and each maze status had exactly one live region.
+Maze, controls, and explanation remained visible together. Tested numeric
+0/-1 → 0/0 → 1/0, drained linear front=6/rear=5, circular wrapping including
+front=0/rear=5 and 0==(5+1)%6, parent stepping/reversal/reset/target changes,
+walls, and zero moves. Desktop /ko/chapter-8, bilingual navigation, all 10
+visuals, and 50 topics were checked. Published Korean BFS and English route
+controls were exercised successfully. Local analytics storage was not configured;
+feedback validation used its automated tests rather than local submissions.
+
+Frozen Korean SHA-256 remains
+`46e22caa51f82adf051aaca5a4ece403ebc81759eede90e448dd91abc0596960`.
+Content/download/anchor tests pass. All 35 protected course references and all
+16 pre-existing website working files retain their baseline hashes. Only eight
+Chapter 8 display/helper/test files were published from an isolated version-232
+checkout. Main website source was fast-forwarded with autostash, then all existing
+working-file hashes were verified. Owned preview server was stopped and the
+browser viewport restored.
+
+Published mobile proof:
+`student-textbook-web/outputs/chapter-eight-visual-improvements-published.jpg`.
+
+
+## Chapter 8 made the default — 2026-11-04
+
+Published Sites version **232**, source commit
+`eeb7d52a508b47038aa17109bbb09edd055d6fcc`.
+Deployment `appgdep_6aeae8085bc08191b5759db3955b7fa1` succeeded at
+https://data-structures.chaebinkim.chatgpt.site.
+
+The root, `/ko`, and `/en` now render Chapter 8. Navigation, language-specific
+canonical URLs, and homepage feedback/analytics attribution use Chapter 8.
+Chapter 7 remains at its explicit chapter URLs. Historical stored feedback
+and analytics are unchanged; no data migration was needed.
+
+Validation: all 21 relevant analytics, feedback, and tutor-contract tests,
+TypeScript, production build, and changed-file whitespace checks pass. Browser
+checks confirmed all three home routes render Chapter 8 with 50 topics, correct
+canonical URLs, and working links to Chapter 7. The published root visibly
+renders Chapter 8. Screenshot:
+`student-textbook-web/outputs/chapter-eight-default-published.png`.
+
+The isolated checkout began at version 231. Only ten routing, metadata,
+feedback/analytics, and test files changed. The main website checkout was
+fast-forwarded to the published source, preserving all 16 pre-existing working
+changes byte-for-byte. Frozen Korean, course downloads, lab/PPT sources,
+public access, runtime bindings, and environment revision 2 are unchanged.
+
+## Chapter 8 frozen manuscript published — 2026-11-03
+
+Published Sites version **231**, source commit
+`9229502bb6c5ae1cda697b45b96cfa87428b45a0`, at
+https://data-structures.chaebinkim.chatgpt.site/chapter-8.
+Deployment `appgdep_6aeadfc488b48191806f27de262683b3` succeeded. Existing public
+access, project identity, runtime bindings, and environment revision 2 remain.
+The source was opened from version 230 in the isolated
+`student-textbook-web/outputs/chapter-eight-freeze-publication` checkout, retaining
+the recent arrival-queue fixes. The 20-file publication contains only Chapter 8
+content, schema, visuals, labels, navigation/metadata, downloads, and tests.
+
+Both languages now follow the frozen seven sections and 50 topics with counts
+`[14, 2, 15, 4, 5, 3, 7]`. Three new topic IDs are `initial-values`,
+`graph-queue-order`, and `graph-shortest-distance`; surviving semantic IDs remain.
+Eight retired anchors resolve at their current explanatory topics. Historical
+analytics labels remain, with active Chapter 8 labels updated. All ten demos
+remain: circular reuse follows the linear-limit demo, and the full-search cost
+experiment sits under queue memory with explicit distinction from O(1) queue
+operations. Path-recovery copy now uses the Korean term '부모 칸'.
+
+Web readings and public student downloads match the canonical course sources.
+The 20-member ZIP excludes instructor material. Frozen Korean and every
+protected lab/PPT source remain byte-identical. The primary website checkout
+was fast-forwarded to the published commit with all 16 prior working changes
+restored; all non-Chapter-8 label values and the other dirty files were verified
+unchanged.
+
+Validation: 43 relevant content/model/feedback/analytics/tutor-contract tests,
+TypeScript, and the production build pass. Browser checks covered all three
+language routes, retained/new/retired anchors, language switching, ten demo
+placements, queue add/remove/reset, circular wrapping, BFS completion, path/cost
+displays, mobile navigation and question-panel opening, and a byte-exact ZIP
+download. Mobile and desktop had no horizontal document overflow. The local
+preview lacks production analytics storage and tutor configuration, so actual
+feedback writes and GPT responses were not exercised. These services were not
+changed. Whitespace checks pass except for the three existing trailing spaces
+in each exact frozen-Korean mirror, intentionally preserved.
+
+The published page visibly has 50 topics, eight aliases, and ten demos.
+Screenshots: `student-textbook-web/outputs/chapter-eight-freeze-published.png`
+and `student-textbook-web/outputs/chapter-eight-freeze-mobile.png`.
+The local preview was stopped and the temporary viewport override cleared.
+
+## Chapter 8 Korean freeze and English/course synchronization — 2026-11-03
+
+The user approved freezing `module_08_graph_bfs/student/textbook_korean.md`.
+It already matched the latest approved pasted manuscript and was not changed.
+Its SHA-256 is
+`46e22caa51f82adf051aaca5a4ece403ebc81759eede90e448dd91abc0596960`.
+`module_08_graph_bfs/AGENTS.md` records the freeze and makes the Korean manuscript
+authoritative for chapter structure and prose. Revise it only when the user
+explicitly requests a change to the frozen Korean textbook.
+
+The English textbook, **Chapter 8. Processing data in stored order**, now follows
+the frozen seven sections and 50 subsections, with subsection counts
+`[14, 2, 15, 4, 5, 3, 7]`. The three new C topics are nested two-dimensional
+array initialization, whole-structure copying/passing/returning, and logical OR
+short-circuit evaluation. Previously introduced syntax is marked as review.
+The seven C excerpts retain the protected lab's tokens. Predecessor recovery
+remains a conceptual extension of the distance-only lab.
+
+Student workbooks, lab guidance, evidence and rubric, vocabulary, instructor
+plans and notes, diagrams, course indexes/guides, and release documentation now
+align with the frozen Korean manuscript and the read-only PPT materials.
+Week 8 retains 48 questions, with its consolidated copy synchronized exactly;
+later weeks in that consolidated file are unchanged. The 180-minute class and
+single-submission structure remain. All 710 protected lab/PPT files are
+byte-identical to the start-of-task snapshot; no implementation code changed.
+
+Generated student package:
+`module_08_graph_bfs/dist/module_08_graph_bfs_2026-11-03.zip`.
+SHA-256:
+`2fc874c057dd80cb277211cc7762b0762f3d91c8f29677c48be893f7a6c48dee`.
+Its 20 members match the intended source/template bytes. The extracted package
+passes the strict Clang lecture harness with AddressSanitizer and
+UndefinedBehaviorSanitizer, including 12,800 bordered-maze searches.
+
+Markdown fences and changed-file whitespace checks pass. Of 309 local link
+destinations checked across 40 Markdown files, 293 resolve; the remaining 16
+are unchanged references to absent older Module 10/11 paths. Every Chapter 8
+destination resolves, and this synchronization introduces no broken links.
+
+These changes are local and uncommitted. No website source synchronization or
+deployment was performed in this task. The previously published site remains
+at version 226 described below; a later requested website update must reconcile
+its older 55-subsection schema and visual mappings with the frozen 50-subsection
+manuscript.
+
+## Chapter 8 Korean headings and concept-first examples — 2026-11-02
+
+Published Sites version **226**, source commit
+`ea3d6ab925de40ed7ee8ace0d49909f457745d76`. Chapter 8 now uses Chapter 1's
+Korean section labels and Korean subsection headings. Both manuscripts use
+abstract explanations without worked numeric queue/tree/maze traces. Actual
+C literals, symbolic formulas, and exercise data remain where needed.
+For a nonempty queue, `front` identifies the first stored data and `rear` the
+last; the implementation holds their indices. Empty queues have neither queued
+endpoint, even when old values remain in memory.
+
+Ten interactive examples now carry the concrete data: FIFO arrival, array
+endpoints, linear capacity, circular reuse, tree BFS/DFS, maze representation,
+neighbor iteration, BFS discovery/queue changes, predecessor recovery, and
+workload counts. The neighbor iterator stops after all directions; the BFS
+visual records discovery before enqueueing and distinguishes current, waiting,
+and processed points. Predecessor recovery is labelled as an extension of the
+distance-only C lab. Current supporting definitions, style guidance, downloads,
+and the student package are synchronized. Stable bilingual topic IDs remain.
+
+Validation: all 35 affected tests, TypeScript, production build, and whitespace
+checks pass. Browser checks cover both languages, all 55 topics, ten examples,
+singleton/empty endpoint markers, circular wraparound, BFS/DFS ordering,
+discovery-before-enqueue, iterator termination, and narrow Korean layouts.
+The live Korean revision is verified. Proof:
+`student-textbook-web/outputs/chapter-eight-concepts-published.jpg`.
+All 590 pre-existing protected lab/presentation copies retain their hashes.
+The website checkout matches publication with all 16 unrelated working edits
+preserved. Course documents and logs remain local and uncommitted.
+
+## Chapter 8 Korean style, course synchronization, and website — 2026-11-02
+
+The Korean textbook now follows the updated English textbook and Chapter 2's
+style: seven manuscript sections, 55 matching topics, and seven annotated C
+blocks. English prose and code remain unchanged. Current course indexes,
+Chapter 8 student/instructor materials, release guidance, question-bank labels,
+and neighboring-chapter references use the revised title and array-queue scope.
+
+Published Sites version **225**, source commit
+`c8bd75c6668b9798c3f1fb0b6542f5ff136c050b`, with the existing public audience.
+Korean is at `/chapter-8` (also `/ko/chapter-8`), and English at `/en/chapter-8`.
+The new reader preserves all manuscript topics and code, renders the six-node
+tree, and includes shared language anchors, feedback/tutor identities, navigation,
+metadata, and current downloads. The home page remains Chapter 7.
+`module_08_graph_bfs/release/sync_web.py` refreshes the readings and student pack
+while refusing changes to existing protected lab/presentation copies.
+
+Validation: 39 affected website tests, TypeScript, production build, and
+whitespace checks pass. Desktop English and mobile Korean checks cover all
+55 topic identities, seven C blocks, language/anchor switching, tutor context,
+and no page overflow. The published Korean page is verified. The 20-member
+download package matches the current release inputs and passes strict C checks
+with NDEBUG and 12,800 maze searches. All 546 preserved hashes (existing
+lab/presentation files plus the English textbook) match. Proof:
+`student-textbook-web/outputs/chapter-eight-published.jpg`.
+
+The primary website HEAD matches publication. All 16 pre-existing working
+changes are preserved, including the existing labels alongside the new Chapter 8
+entries. Course manuscript/support/log changes remain local and uncommitted.
+
+
+## Chapter 8 aligned with current PPTs — 2026-11-02
+
+Both Chapter 8 textbooks and their supporting lab/workbook/instructor materials
+now follow the current four PPT inputs and read-only maze lab. The lesson uses
+linear array queues, conceptual circular wraparound and tree level order, then
+5×5 maze BFS with `{y,x}` points stored directly in `queue[N*N]`. Each `bfs` resets
+its queue and distances; first discovery writes distance before enqueue. The
+canonical search reaches eight passages, gives `{3,3}` distance 4, and ends at
+`front=8,rear=7`. Path predecessors are conceptual, not fields in the supplied lab.
+
+Current course scope references, Week 8 question-bank mirrors/counts, and Chapter 8
+pilot materials match. Deleted queue/tree/driver dependencies and former linked-
+pool/7×7/predecessor-list claims were removed from current Chapter 8 materials.
+A separate `code/tests/test_lecture.c` supports `make -C module_08_graph_bfs/code lecture`;
+`core`/`student-tests` run the same current lab. The student packager now includes
+20 self-contained members and copies all protected inputs byte-for-byte.
+
+Verification: textbook C token fidelity, strict compiler warnings, ASan/UBSan,
+12,800 bordered-maze searches against an independent oracle, final extracted
+release with NDEBUG, all 33 packaged links, manifest, and overwrite guard pass.
+Optional reference core/extension pass; existing optional student-test TODOs
+remain. PowerShell was inspected only. All 545 protected source hashes match.
+See the new Chapter 8 entry in `TEXTBOOK_VALIDATION.md` for scope and evidence.
+
+Changes remain local and uncommitted. The separate website has no Chapter 8
+route, and was not modified or published. Unrelated concurrent workspace changes
+were preserved.
+
+## Chapter 2 unread characters stay in the input row — 2026-11-01
+
+Published Sites version **224**, source commit
+`f591a63f45b454eaf93ad2ece2755e345334456a`. In the four-step addition-tree
+construction, step 3 now keeps the unread second `+` and `3` at their
+initial positions `(280,100)` and `(360,100)`. Only the consumed `1+2`
+nodes rearrange. Step 4 retains the complete `(1+2)+3` layout and links.
+Frame data, prose, controls, playback, and animation timings are unchanged.
+
+TypeScript, production build, and whitespace checks pass. Browser checks
+verify all four English states, the Korean third state (including computed
+transforms), and the published English third state. Proof:
+`student-textbook-web/outputs/chapter-two-unread-nodes.png`.
+Primary website HEAD matches the publication; unrelated working files and
+all 545 protected lab/presentation files are byte-preserved. These logs
+remain local and uncommitted.
+
+## Chapter 3 style and Korean synchronization — 2026-11-01
+
+Updated the Korean textbook and both website readings to match the current
+English manuscript and Chapter 2's seven-section style. Both editions contain
+46 subsections and seven annotated C blocks. The chapter uses general graph
+operations without a worked graph dataset, diagram, or fixed traversal trace.
+The reader preserves the manuscript title and introduction, shared bilingual
+anchors, feedback/tutor controls, and literal code indentation. Navigation,
+metadata, analytics labels, and downloadable Markdown are synchronized.
+
+Published Sites version **223**, source commit
+`04a9fd00acd08d73b6c2b52a09f4ee52f94f2e94`, with public access preserved.
+The publication merge includes the concurrent Chapter 2 version 222 update.
+All 125 publication tests, TypeScript, production build, and whitespace checks
+pass. Browser QA verified both languages, seven sections, 46 topics, seven C
+blocks, section navigation, language switching, no duplicate IDs, and no page
+overflow at the default viewport. The live Korean reading was verified.
+Proof: `student-textbook-web/outputs/chapter-three-style-published.png`.
+
+The primary website checkout matches the published commit, with unrelated
+working edits preserved. All protected course lab/presentation sources remain
+unchanged. Course manuscript and log changes remain local and uncommitted.
+
+## Chapter 2 visuals focused on subsection ideas — 2026-11-01
+
+Published Sites version **222**, source commit
+`f780fc0d7e4df820fa9258ba14b04ec5fffa3a88`. The user prefers visuals
+that teach the subsection's core idea over repeated generic classroom-tree
+inspectors. Replaced the conceptual lesson routing with 38 focused bilingual
+widgets. The existing addition-construction diagram and seven C-code tracers
+remain specific to their respective lessons.
+
+Hierarchy follows one parent chain; array links show a selected child index;
+root access reveals reachable nodes; attachment preserves an old subtree;
+operators highlight operand subtrees; evaluation receives left then right
+values before returning 6. Glossary controls isolate the named relationship.
+Invariant examples expose an invalid index, sharing, or a cycle, with explicit
+repair/prevention actions. Efficiency widgets count reserved/initialized
+slots, active calls, assignments, and reachable-node reads. Syntax widgets
+focus on node members, array objects, member access, postfix values, separate
+call state, stopping calls, and digit-character conversion. Compact recursion
+uses the canonical B/D/E subtree rather than repeating the entire tree.
+
+All 121 tests, TypeScript, production build, and whitespace checks pass.
+Browser checks cover both languages, representative state transitions,
+correct postorder/call completion and evaluation, stable subsection keys,
+no duplicate IDs, all 38 concept widgets and seven C tracers, and no generic
+inspector text. At a 390px viewport no concept card or page overflows; the
+normal viewport was restored. No tutor question or feedback vote was sent.
+The published English digit selector is verified. Proof:
+`student-textbook-web/outputs/chapter-two-focused-visuals.png`.
+
+Both website manuscripts are byte-preserved. All 515 protected lab and
+presentation files match the pre-task snapshot. The primary website HEAD
+matches the published commit, and all 315 unrelated tracked website files
+are byte-preserved. Existing unrelated Chapter 0/3 edits remain local and
+unpublished. These course handoff/validation log edits remain uncommitted.
+
+## Chapter 2 current English synchronization — 2026-11-01
+
+Updated the Korean manuscript and both website readings from the current
+English manuscript. All editions now have seven sections, 46 subsections,
+and seven C examples. The chapter introduction, evaluation walkthrough,
+invariant benefits, digit-character conversion, compact efficiency text,
+and removed Sibling entry follow the English source. Existing Korean C
+blocks, comments, and eight-space indentation are byte-preserved.
+
+Published Sites version **221**, source commit
+`7b99536f9090592d614273b162d37cca3fb30d58`. The parser now retains the
+chapter introduction above the first section. Renamed bilingual headings
+keep their stable topic, animation, feedback, and tutor identities. New
+invariant-benefit and digit-conversion topics reuse the tree inspector and
+evaluation animation; analytics labels include their shared keys.
+
+All 111 website tests, TypeScript, production build, and whitespace checks
+pass. Browser checks verify both languages, 46 topics, seven C topics,
+chapter introductions, digit-conversion advancement, tutor opening without
+submitting a question, no duplicate IDs, and no page overflow. The published
+Korean page is verified. Proof:
+`student-textbook-web/outputs/chapter-two-editions-published.png`.
+
+The primary website HEAD matches the published commit. Unrelated website
+working files and non-Chapter-2 analytics labels are preserved and remain
+unpublished. No protected lab or presentation source was edited by this
+task. A final comparison observed concurrent changes to eight protected
+paths in Modules 8/9 after the earlier 515-file check; these external changes
+were left untouched. Course manuscript/log edits remain local and uncommitted.
+
+## Standing user rule: never modify lab.c — 2026-11-01
+
+All files named `lab.c` are user-maintained and read-only for agents. Never
+edit, reformat, comment, fix, or synchronize them when updating textbooks,
+materials, or webpages. The rule is also recorded in root `AGENTS.md`.
+
+Restored `module_02_binary_tree/student/lab.c` byte-for-byte from the
+snapshot immediately before our indentation/comment edit. The textbook
+and webpage formatting/comments remain in place. No other lab files were
+changed by this correction.
+
+## Chapter 2 eight-space C indentation and comments — 2026-11-01
+
+Published Sites version **220**, source commit
+`86e5e6e099893fe00a57bae4fa794065ecdad505`. All seven C examples in the
+English/Korean manuscripts and webpage now use eight literal spaces per
+nesting level. Added 24 concise explanatory comments per language covering
+node fields, missing-child links, root changes, traversal, index increments,
+and returned values. The accompanying `student/lab.c` edit was subsequently
+reverted at the user's instruction; lab files are now protected as read-only.
+Executable C tokens and all prose outside the code fences are preserved.
+Recent English prose revisions discussed in reviews are therefore still
+pending separate Korean/web synchronization; this was a code-only request.
+
+Classroom animation source selection now follows the page language so
+Korean conceptual call-stack cards display Korean comments. Statement
+matching uses trimmed line starts, avoiding comments that quote code.
+Both languages retain all 154 trace frames and correct statement highlights.
+Immediate playback and timing are unchanged.
+
+All 107 website tests, TypeScript, production build, and whitespace checks
+pass. Classroom C syntax compiles with existing empty-prototype and unused
+`data_read` warnings. Browser checks confirm bilingual comments, eight-space
+indentation, correct recursive-call highlights, immediate Play, and no page
+overflow. Published Korean proof:
+`student-textbook-web/outputs/chapter-two-indentation-comments.png`.
+Primary website HEAD is synchronized with all unrelated working edits
+preserved. Course edits remain uncommitted. Before snapshots are under
+`student-textbook-web/outputs/indent-comments-before/`.
+
+## Chapter 2 evaluation child-index explanations — 2026-11-01
+
+Published Sites version **219**, source commit
+`5c6c1baab6a628a0df0fd15356995a3841ad7bba`. Evaluation calls now show the
+caller index and actual child-link value, e.g.
+`nodes[i].left = nodes[3].left = 1 → eval(1)`, in the flow panel through
+both call-site and child-entry snapshots. Left/right trace captions are
+updated in Korean and English. Return/completion frames keep return-value
+messages. Trace steps, C source, immediate Play, and movement speed are
+unchanged.
+
+Verified all four lookups across the 14-frame Korean trace, including
+`nodes[1].left = 0`, all returns, and final result 6; English and published
+Korean render correctly. All 107 tests, TypeScript, production build, and
+whitespace checks pass. Proof:
+`student-textbook-web/outputs/chapter-two-evaluation-arguments.png`.
+The two published files and primary Git HEAD are synchronized; unrelated
+working edits remain preserved and unpublished by this deployment.
+
+## Immediate Play for all website animations — 2026-11-01
+
+Published Sites version **218**, source commit
+`883b26cbb9261e1f2ff428c9b0ce857cfaa86261`. All animation Play controls now
+advance immediately on Play/resume/replay: enabled the shared tree and graph
+behavior by default and updated the Chapter 5 and Chapter 6 controls.
+Chapter 4 already advances immediately. Pause remains stationary and Reset
+returns to the initial frame. Two-frame graph replays visibly reset first.
+All timer effects, subsequent intervals, movement speed, CSS transitions,
+and reduced-motion behavior are unchanged.
+
+All 107 tests, TypeScript, production build, and whitespace checks pass.
+Browser checks covered shared tree/graph/stack controls, all three Chapter 5
+players, and all 16 Chapter 6 players, including pause/reset and completion.
+The published Korean Chapter 2 player advanced within the Play click round
+trip. Proof: `student-textbook-web/outputs/all-animations-immediate-start.png`.
+The primary website checkout is advanced to the published commit with all
+tracked working files byte-preserved. Unrelated Chapter 0 and concurrent
+Chapter 3 changes remain local and unpublished by this deployment.
+
+## Chapter 2 addition-tree immediate playback start — 2026-11-01
+
+Published Sites version **217**, source commit
+`dd752d3de2f0436856d4f1103ebc4678557e4f75`. The user clarified that the
+addition-tree lesson's slow start meant the wait after pressing Play.
+An opt-in `advanceOnPlay` on `TreeStepper`, enabled only by
+`AdditionTreeDiagram`, advances immediately on Play/resume and Replay.
+Reset still shows the initial disconnected nodes; Pause does not advance;
+reaching the last frame stops playback. Later intervals, movement speed,
+other lessons, and reduced-motion styling are unchanged.
+
+All 107 tests, TypeScript, production build, and whitespace checks pass.
+Browser checks verified Korean controls, English immediate advancement
+and automatic completion, unchanged neighboring-stepper behavior, and
+live Korean response within the click round trip (about 0.3 seconds).
+Proof: `student-textbook-web/outputs/chapter-two-immediate-start.png`.
+The primary website checkout matches the published commit; its three
+unrelated Chapter 0 edits remain preserved and unpublished.
+
+## Chapter 2 hierarchy introduction and materials alignment — 2026-11-01
+
+Updated the Korean textbook to follow the user's revised hierarchy-first
+English opening: one root and parent chains, indexed binary child links,
+root-based traversal, attaching a node, operators with operand subtrees,
+and explicit `-1` initialization before building `(1+2)+3`. Applied the
+style guide's `data`/`root` terms. English prose and code are preserved;
+only one trailing space was removed. Both editions have seven sections,
+45 subsections, and seven byte-identical C blocks matching `student/lab.c`
+apart from whitespace. The removed appendix stays removed.
+
+Aligned module/instructor guidance, vocabulary, diagrams, lab bridges, and
+release descriptions with the `nodes[10]` alphabet/addition lesson. The
+existing `nodes[20]` four-function precedence lab remains a distinct
+application with unchanged implementations, tests, grading, and release
+gates. The weekly and consolidated question views add 20 classroom prompts
+and retain all 40 parser prompts; the question-bank index counts match.
+
+Published Sites version **216**, source commit
+`68729886531094e7efc1ae1c53651be1209b2af1`. Both web readings exactly match
+the manuscripts. Renamed heading mappings retain all 45 bilingual topic
+identities, diagrams, animation assignments, and feedback keys. Updated
+the nine affected analytics labels. All 107 website tests, TypeScript,
+production build, and whitespace checks pass. Browser checks verified
+both languages, seven code topics, matching keys, no duplicate IDs or
+horizontal overflow, addition-step advancement, Korean tutor opening,
+and the published Korean expression section. No GPT question or feedback
+vote was submitted. Proof: `student-textbook-web/outputs/chapter-two-introduction-published.png`.
+
+All 13 parser checks, the lecture example, and intentional faulty autopsy
+pass. All 29 release sources and 20 local Markdown links resolve; release
+ZIPs were not regenerated. The primary website checkout is advanced to
+the published commit, with all 315 tracked working files byte-preserved;
+its three pre-existing Chapter 0 edits remain unpublished. Course edits
+remain local and uncommitted.
+
+## Shared animation speed for Chapters 1–7 — 2026-11-01
+
+Published Sites version **215**, source commit
+`959a74d1b80c2ff8382f3ee7bd7a5c924217baa3`. Chapters 2–7 now share
+Chapter 1's 960ms highlights, 1920ms movement, 2400ms copy, and 200ms copy
+delay in both languages. Chapter markers scope these values to 1–7;
+Chapter 0 keeps its previous timings. Chapter 5/6's separate CSS now uses
+the same variables, including cursor arrival and playback timers. Playback
+allows transitions to finish, retaining reading pauses and the 4-second
+prose-card interval. Stack playback uses the shared interval while keeping
+immediate first advancement. Stack diagram highlights and the Chapter 7
+node array use shared highlight timing. Reduced-motion rules remain intact.
+
+All 107 tests, TypeScript, production build, and whitespace checks pass.
+Browser checks verified timings on all twelve English/Korean Chapter 2–7
+pages, Chapter 5 traversal playback/pause/reset, Korean Chapter 6 playback
+and reset, stack playback through completion/reset, Chapter 0 defaults,
+and published Korean Chapter 6 timings. No GPT questions or feedback votes
+were sent. The three unrelated Chapter 0 website edits remain unpublished.
+
+## Faster Chapter 1 animations — 2026-11-01
+
+Published Sites version **214**, source commit
+`de7305aecfe81ab5ae76456519c0f833626d6ad0`. Chapter 1 now uses 20% shorter
+teaching animation durations in both languages: highlight 960ms, movement
+1920ms, copy 2400ms, and copy delay 200ms. A Chapter 1 main-element marker
+activates root CSS variables, keeping the existing copy-control timers
+synchronized. Other chapters retain their defaults; UI timing and
+reduced-motion handling are unchanged.
+
+The existing animation-timing test, TypeScript, production build, and
+whitespace checks pass. Browser verification was unavailable because the
+browser connection could not be recovered; the new pace was not visually
+verified. The three unrelated Chapter 0 website edits remain unpublished.
+
+## Array selection outline clipping — 2026-11-01
+
+Published Sites version **213**, source commit
+`f729552c3fa8054bc2bb23f255da3ad95dd8a03a`. Added 4px horizontal padding
+inside the shared array grid so the 2px selection ring and its 2px offset
+are contained within the scroll area. Chapter 1's first selected cell now
+shows the full left border; the same gutter protects the final cell.
+The array content, controls, and animation gaps are unchanged.
+
+TypeScript, production build, and whitespace checks pass. Browser checks
+confirmed the Korean visual, English selection advancement, and both edge
+gutters at a 390px viewport (including the right scroll limit). The three
+unrelated Chapter 0 website edits remain unpublished.
+
+## Chapter 3 appendix removal alignment — 2026-11-01
+
+Published Sites version **212**, source commit
+`e55352e16a5a3356d6e135b4284bf430ef637798`. Removed the Korean Full C Code
+Explanation appendix to match the user's English deletion. Both retained
+manuscript bodies are unchanged and contain seven main sections and six
+byte-identical C blocks. The supporting module documents and Chapter 3
+instructor guide contain no references to the removed appendix, so they
+required no edits; all 28 release source mappings resolve.
+
+Both website readings exactly match the manuscripts. The graph outline
+now lists the seven retained sections, preserving their topic IDs and
+animations. The existing activity coverage test checks the 81 retained
+English/Korean subsections and their section counts. All 106 tests,
+TypeScript, build, and whitespace checks pass. Browser checks cover both
+languages, six C topics, Korean animation advancement and tutor opening,
+and the published Korean page. No GPT question or feedback vote was sent.
+The three unrelated Chapter 0 website edits remain unpublished.
+
+## Chapter 2 appendix removal alignment — 2026-11-01
+
+Published Sites version **211**, source commit
+`d82684e512f94d28cd74a061893254e8004acc79`. The user's English deletion of
+Full C Code Explanation is mirrored in the Korean textbook. Both retain
+seven main sections and seven identical C blocks; all pre-appendix
+manuscript content is unchanged. Ten Chapter 2 supporting documents now
+point to retained syntax/code sections and optional subsection Ask GPT
+help. The Stage D description now identifies the alphabet/addition examples;
+the separate four-function lab and its assessments remain unchanged.
+
+Both website readings are exact copies of the current manuscripts,
+including the already-saved depth/height and `O(h + 1)` clarification.
+The optional appendix no longer renders or appears in navigation. Only
+these two reading files changed in the publication; components and
+animations are unchanged. All 106 tests, TypeScript, build, and whitespace
+checks pass. Browser checks confirm seven sections/code topics in both
+languages, Korean step advancement and tutor opening, and the published
+Korean navigation. No GPT question or feedback vote was submitted.
+All 29 release source mappings resolve; PowerShell archives were not
+regenerated for this editorial update. The three unrelated Chapter 0
+website edits and the user's Chapter 3 manuscript edit remain untouched.
+
+## Readable C code in Ask GPT context — 2026-11-01
+
+Published Sites version **210**, source commit
+`05c364afd1ec3482c09256bd9522e53f29cf31e8`. The tutor context now preserves
+line breaks, indentation, and blank rows in the CSS-grid C listings and
+excludes decorative line numbers. Chapter 1's code tracers separate each
+variable value and provide a localized array-memory summary with explicit
+`array[index] = value` labels. The summary follows the current animation
+frame. The shared tree and recursion listings also mark code rows.
+
+The collector still excludes hidden copies, form values, and controls;
+authored diagram summaries replace their visual descendants exactly once.
+All 106 tests, TypeScript, production build, and diff checks pass. Browser
+checks cover English/Korean Chapter 1, Korean animation-step refresh,
+Chapter 2 recursion code formatting, and the published Korean tutor's
+included-text preview. No GPT questions or feedback votes were submitted.
+The five unrelated local website edits remain unpublished.
+
+## Chapter 7 Korean section headings — 2026-11-01
+
+Published Sites version **209**, source commit
+`07e3b5f21175c5130926a2d148c166b964269b41`. The Korean chapter's five
+section headings now read 논리적으로 생각해 보기, 효율 계산해 보기,
+용어 정리, 코딩 계획, and C 코드, matching Chapter 1's terminology.
+These labels also appear in the section navigation. Updated the canonical
+`module_07_linked_list/student/textbook_korean.md`, webpage reading, direct
+download, and the same textbook inside the source ZIP. Existing archive
+membership was preserved; the full synchronizer's additional `ppt_lab.md`
+was excluded from this narrow publication.
+
+The three sync tests and production build pass. Archive CRCs and member
+comparison confirm only the Korean textbook changed inside the ZIP; other
+textbook lines are identical. Browser verification covers headings, section
+links, mobile menu labels, and the published page. Section IDs, subsection
+keys, content, and animations are unchanged. Unrelated local edits remain
+unpublished.
+
+## Subsection footer controls — 2026-11-01
+
+Published Sites version **208**, source commit
+`adc158eda973e8deac906967d550ff27d7deffdf`. In all chapters and both
+languages, Helpful / Needs work now precede Ask GPT at the end of each
+subsection or interactive activity. Headings contain no feedback/tutor
+controls, and whole-section h2 headings still have no action footer.
+
+`QuestionSection` provides the explicit content boundary, unique heading
+identity, and footer. Existing `SubsectionScope` wrappers opt in using
+`feedbackFor="heading"`. `QuestionBlocks` groups Markdown h4 headings with
+their following blocks, retaining original indices and subsection keys.
+The tutor reads the matching complete boundary, including nested examples,
+while excluding controls, form values, and hidden measurement copies.
+Content, animations, and analytics keys are preserved; hidden animation
+copies keep identical footer geometry and distinct IDs.
+
+All 104 tests, TypeScript, production build, and diff checks pass. Browser
+coverage verified matching heading/footer ownership on all 16 Chapter
+0–7 language routes. At 390px, Chapters 1–7 in both languages keep feedback
+and Ask GPT on one row with no horizontal overflow. Appendix h4 boundaries,
+the tutor's included text, tree/graph stable reserved heights after
+initialization, and linked-list playback/reset were checked. Published
+English/Korean Chapters 1 and 7 also passed footer checks. The five unrelated
+local website edits remain unpublished.
+
+## Chapters 5–7 title labels — 2026-11-01
+
+Published Sites version **207**, source commit
+`6c599feee0f766d3fe4e8ad86a74ee225325cc88`. The shared chapter layout now
+removes the manuscript's `Chapter N.`, `제N장.`, or `N장.` prefix from its
+display title. Main headings, sidebar titles, and mobile menu descriptions
+show the topic alone; their separate chapter labels retain the number.
+Manuscripts, content, and animations are unchanged. TypeScript and the
+production build pass, and all six English/Korean Chapter 5–7 routes were
+verified locally and after publication. Unrelated local edits remain
+unpublished.
+
+## Chapters 5–7 follow Chapter 1's layout — 2026-11-01
+
+Published Sites version **206**, source commit
+`92560aa4bae1986a005cbef411ad20dbfcbc8700`, at
+https://data-structures.chaebinkim.chatgpt.site . The new shared
+`components/textbook/chapter-layout.tsx` applies Chapter 1's header, mobile
+menu, numbered active section navigation, 280px sidebar, centered 768px
+reading column, serif headings, section counters, and spacing to Chapters
+5–7 in English and Korean. Their outer text/animation layouts now stack
+within that reading column. Future layout edits to these chapters should
+use the shared shell and keep Chapter 1 as the visual reference.
+
+Raw manuscripts, model/parsing code, downloads, animation sources and
+measurement behavior, named lesson anchors, and subsection keys are
+preserved. Chapter 7 retains glossary search, its shortcuts, and the
+`#main`, `#invariants`, and `#pool-explorer` targets. Ask GPT and direct
+feedback remain exclusive to subsections. Chapter 1 itself is unchanged.
+
+All 102 tests, TypeScript, production build, and whitespace checks pass.
+Browser comparisons at 1440px and 390px cover both languages of Chapters
+1/5/6/7: heading sizes and reading widths match, all local anchors resolve,
+and pages do not overflow horizontally. Tree/graph step/reset checks retain
+reserved height and following-content position; mobile Korean playback and
+linked rewiring also pass. Mobile section navigation and language switching
+preserve the selected hash. All six published Chapter 5–7 routes were checked.
+Screenshot: `student-textbook-web/outputs/chapter-layout-unified-live.png`.
+
+Publication used `outputs/chapter-layout-publication` and excludes the five
+pre-existing unpublished website edits. Public access and runtime environment
+revision 2 are preserved. Course-repository changes remain uncommitted.
+
+## Subsection-only GPT and feedback controls — 2026-11-01
+
+Published Sites version **205**, source commit
+`f5a2a2454aea7acd6e01b5aa1bfe2df27ecaa242`, at
+https://data-structures.chaebinkim.chatgpt.site . The shared heading now
+renders whole-section `h2` headings without Ask GPT, direct feedback, or
+tutor/feedback target attributes. Subsection `h3`/`h4` headings retain both
+controls. Section headings still bound reading spans, so the previous
+subsection cannot accumulate watched time from the next section's preamble.
+The tutor setup notes document this rule; historical analytics are retained.
+
+All 102 website tests, TypeScript, production build, and whitespace checks
+pass. A new regression covers the section/preamble gap between subsections.
+Browser checks across all 16 English/Korean Chapter 0–7 routes confirm no
+section controls/targets and matching subsection/control counts. Published
+Chapter 1 has zero section controls and 39 subsection Ask GPT/feedback pairs.
+Screenshot: `student-textbook-web/outputs/subsection-only-controls-live.png`.
+Public access and runtime environment revision 2 are preserved. Publication
+used the isolated `outputs/subsection-only-publication` checkout; the five
+pre-existing unpublished website edits remain excluded and preserved.
+
+## Chapter 1 shortened textbook and GPT support — 2026-11-01
+
+The user's deletion of **Full C Code Explanation** from the English
+Chapter 1 textbook is authoritative. The Korean textbook now ends after
+the same five short C examples. Both retain seven main sections. Thirteen
+Chapter 1 support documents now point detailed syntax/execution questions
+to the webpage's **Ask GPT** controls instead of the removed appendix.
+The standalone lecture remains an instructor companion; lab code,
+assessment, release gates, and required operations are unchanged.
+
+Published Sites version **204** at
+https://data-structures.chaebinkim.chatgpt.site, source commit
+`d80aa86b327b5a06be0b3698f67c14515cb784a1`. Chapter 1's appendix navigation,
+rendered section, bilingual content copies, and exclusive loader are removed.
+Other chapters still use the shared explanation renderer. The old Chapter 1
+heading label is retained for historical analytics. Public access and runtime
+environment revision 2 are preserved.
+
+Verification: bilingual section/code parity, all 31 release source mappings,
+local Markdown destinations, and whitespace checks pass. All 101 website
+tests, TypeScript, and production build pass. Browser checks cover both
+languages locally; the published Korean page has seven sections, five
+code examples, and a ready GPT question panel. No provider question was
+submitted. Screenshot: `student-textbook-web/outputs/chapter-one-gpt-update.png`.
+Publication used `student-textbook-web/outputs/chapter-one-publication` to
+exclude and preserve the five pre-existing unpublished website edits.
+The primary website checkout now points at the published commit; all 313
+tracked working-file states were preserved during synchronization, leaving
+only those five unpublished edits. The local preview is stopped.
+Course-repository edits remain uncommitted.
 
 ## Six textbook review repairs — 2026-10-30
 

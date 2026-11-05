@@ -20,10 +20,10 @@ and functions.
 
 Stage D's textbook and notes become available after Meeting A's investigation
 and exit ticket. Stage E's code and lab materials are released for Meeting B.
-Keep either Stage D textbook available: its **Full C Code Explanation** is
-optional help for a specific symbol or operation. Use the topic map in
-Stage D's `notes.md` to find a starting point. Its practice questions are
-not another required submission.
+Keep either Stage D textbook available for its model and short C examples.
+For detailed help with a symbol or operation, use **Ask GPT** beside the
+relevant webpage section. Stage D's `notes.md` summarizes the model and
+traces the examples.
 
 ## Files
 
@@ -92,7 +92,7 @@ a successful `int_list_valid_index` check.
 
 ## Reading the supplied C scaffold
 
-The textbook puts its operations inside `main`; the lab gives each operation
+The textbook presents short operation snippets; the lab gives each operation
 a function that tests can call with different arrays and counts. The lab
 name `capacity` has the same role as the textbook's `array_capacity`.
 
@@ -118,7 +118,7 @@ to use in brackets.
 In `tests/test_student.c`, edit the three marked test bodies. `bool` comes
 from `<stdbool.h>` and holds a true/false result; return `true` only when
 your test's claim holds, and `false` when it fails. You can use ordinary
-`if` checks and return statements already covered in the chapter. Each
+`if` checks and the `return` statements explained above. Each
 supplied `static bool test_student_case_1(void)` defines a private function
 with no input parameters that reports whether its test passed.
 

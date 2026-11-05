@@ -10,7 +10,7 @@ SUPPORT_SOURCES := support/graph_matrix.c support/graph_adj_list.c \
 STARTER_SOURCES := $(SUPPORT_SOURCES) starter/graph_bfs.c
 SOLUTION_SOURCES := $(SUPPORT_SOURCES) solution/graph_bfs.c
 
-.PHONY: all core lab-compile student-tests starter-core starter-extension starter-student-tests \
+.PHONY: all core lecture lab-compile student-tests starter-core starter-extension starter-student-tests \
 	solution-core solution-extension solution-student-tests autopsy clean
 
 all: core
@@ -18,19 +18,17 @@ all: core
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-LAB_DIR ?= ../student
-REPOSITORY_ROOT ?= ../..
-LAB_SOURCES := $(LAB_DIR)/lab_driver.c $(LAB_DIR)/lab.c $(LAB_DIR)/queue.c $(LAB_DIR)/tree_bfs.c \
-	$(REPOSITORY_ROOT)/module_07_linked_list/student/lab.c \
-	$(REPOSITORY_ROOT)/module_02_binary_tree/student/lab.c
+LAB_SOURCES := tests/test_lecture.c ../student/lab.c
 
 $(BUILD_DIR)/lab_core: $(LAB_SOURCES) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -I$(REPOSITORY_ROOT) $(LAB_DIR)/lab_driver.c -o $@
+	$(CC) $(CFLAGS) tests/test_lecture.c -o $@
 
 lab-compile: $(BUILD_DIR)/lab_core
 
-core: lab-compile
+lecture: lab-compile
 	$(BUILD_DIR)/lab_core
+
+core: lecture
 
 student-tests: core
 

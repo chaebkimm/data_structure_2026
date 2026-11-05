@@ -4,7 +4,7 @@
 
 ### Curriculum status and assumptions
 
-This document defines an operational **14-week curriculum supported by 14 teaching packages**. Priority Queue is part of Module 10, and Hash Table is Module 9. Module 7 covers linked lists with linked stack and queue examples. Module 8 compares queue representations and reuses that linked queue for tree BFS and graph BFS. Teaching packages are numbered consecutively from 1 to 14, matching their teaching weeks. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
+This document defines an operational **14-week curriculum supported by 14 teaching packages**. Priority Queue is part of Module 10, and Hash Table is Module 9. Module 7 covers linked lists with linked stack and queue examples. Module 8 compares array queues, traces tree level order, and uses a coordinate array queue for maze BFS. Teaching packages are numbered consecutively from 1 to 14, matching their teaching weeks. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
 
 Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
 
@@ -48,19 +48,19 @@ By the end of the course, students will be able to:
 |---|---|---|---|---|
 | 1 | 1. Keeping ordered data together with an ArrayList | 2. Expression-tree model and binary-tree links | 3. Graph models and representations | Representing relationships in memory |
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
-| 3 | 7. Index-linked lists, shared-pool reuse, linked stack/queue examples; 8. Queue comparisons | 8. Tree BFS using the same linked queue | 8. Graph BFS using the same linked queue | Explicit links, storage reuse, and FIFO-controlled exploration |
+| 3 | 7. Index-linked lists, shared-pool reuse, linked stack/queue examples; 8. Queue comparisons | 8. Tree level order using FIFO | 8. Maze BFS using a coordinate array queue | Explicit links, storage reuse, and FIFO-controlled exploration |
 | 4 | 10. Numeric priority and optional scan reference | 10. Integer min/max and dual ID Heaps | 11. Dijkstra | Priority-controlled exploration |
 | 5 | Union-Find (introduced within Module 14 in Week 14) | 12. BST-to-AVL synthesis | 14. Prim and Kruskal | Maintaining global invariants while optimizing |
 
 This map contains deliberate previews and returns:
 
-- The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Module 7 applies linked lists to a stack and a queue; Module 8 compares queue representations and reuses that linked queue for trees and graphs. Module 10 contains integer min/max Heaps and a dual-Heap interval application in one week.
+- The table maps concepts and packages, not one package to one lecture week. In the required 14-week path, Module 7 applies linked lists to a stack and a queue; Module 8 compares array queues, traces tree levels, and applies FIFO to maze distances. Module 10 contains integer min/max Heaps and a dual-Heap interval application in one week.
 - Module 9 bridges Spirals 3 and 4 through a supplied two-sum application. It revisits Module 1's array bounds and Module 7's node-pool lifecycle and remainder calculation; adds signed hash normalization, collisions, and separate chaining; and stores earlier array positions for complement lookup.
 - Array-indexed nodes appear in Module 2. Week 7 adds a free chain and separate detachment/recycling in a fixed ten-node pool. Module 9 reuses that pool for bucket chains. Dynamic allocation and owned-storage release remain optional container-reference topics; the allocated-list library in Module 7 and open-addressed map in Module 9 remain optional. DSU is introduced with Kruskal in Week 14.
 - Module 2 uses expression trees to introduce indexed binary links, loop-based construction, and recursive evaluation. The Module 5 textbook develops preorder, inorder, and postorder using explicit stacks without recursion.
 - Hash-table exact lookup is compared with AVL ordered lookup before the final graph synthesis; neither backend is presented as universally superior.
 - The adjacency matrix appears first because it has low pointer complexity. Adjacency-list reasoning is introduced later as pointer and dynamic-array fluency grows.
-- Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Week 7 applies linked lists to a LIFO stack and a FIFO queue. Week 8 compares array queue variants, then uses that linked queue for tree BFS and graph BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find is introduced immediately before Kruskal within Week 14.
+- Stack precedes explicit-stack DFS; Module 2 first introduces the depth-first idea through recursion. Week 7 applies linked lists to a LIFO stack and a FIFO queue. Week 8 compares array queue variants, traces tree BFS, then uses an array queue for maze BFS; Heap precedes Dijkstra and Prim; Hash Table precedes the final index-selection comparison; Union-Find is introduced immediately before Kruskal within Week 14.
 
 ---
 
@@ -716,7 +716,7 @@ New nodes point to the previous first. After a successful allocation the caller
 updates `first`. Removal checks nonempty, saves the old first and value, advances
 to the next node, isolates old.next=-1, then recycles. The lab has no separate linked-stack API.
 
-As a linked-list application, students maintain FIFO `qhead` and `qtail` with `enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. Allocate/check/assign data before appending an isolated node. Dequeue returns an isolated node index without recycling; caller copies payload and recycles once. Both endpoints become -1 after the last removal. Module 7 supplies no value wrappers; Module 8 adds local adapters for BFS. Pool initialization is first-only through a static guard; later calls do not reset active, free, or exhausted state.
+As a linked-list application, students maintain FIFO `qhead` and `qtail` with `enqueue_lnode`, `dequeue_lnode`, and `is_empty_queue`. Allocate/check/assign data before appending an isolated node. Dequeue returns an isolated node index without recycling; caller copies payload and recycles once. Both endpoints become -1 after the last removal. Module 7 supplies no value wrappers; Module 8 instead stores coordinates directly in an array queue. Pool initialization is first-only through a static guard; later calls do not reset active, free, or exhausted state.
 
 ### Macro-Question
 
@@ -749,109 +749,104 @@ hooks, doubly linked lists, and DSU work are optional in Week 7. Follow the
 180-minute plan.
 
 **Revisits:** arrays, indexes, structs, explicit links, and caller preconditions.
-**Forward:** reuse the linked queue for tree BFS and graph BFS in Week 8; separate-chained hashing and pool reuse in Module 9; DSU arrays in Week 14.
+**Forward:** apply FIFO to tree level order and array-queue maze BFS in Week 8; separate-chained hashing and pool reuse in Module 9; DSU arrays in Week 14.
 
 ---
 
-## Module 8 — Queues, tree BFS, and graph BFS
+## Module 8 — Processing data in stored order
 
 Production materials: [Module 8 teaching package](module_08_graph_bfs/README.md)
 
-**14-week role:** compare queue representations, then reuse Module 7's linked
-queue for tree BFS and graph BFS within one 180-minute lesson and one
-submission. Week 7 supplies both linked storage and the FIFO example.
-The current graph example is the maze in
-[`student/lab.c`](module_08_graph_bfs/student/lab.c).
+**14-week role:** recall the linked queue's FIFO rule, compare array queue
+representations, trace tree levels, and run the 5×5 maze BFS in one
+180-minute lesson and one submission. The current PPTs say 10주차;
+Chapter/Module 8 remains the repository resource number. The English textbook follows the Korean manuscript frozen on 2026-11-03. Its Chapter 2-style seven-section flow connects nondecreasing pending distances, equal move costs, first-discovery shortest paths, and discovery-before-enqueue. The three new C topics are nested initializer braces, whole-structure copying/passing/returning, and short-circuit OR; `enum`, increment operators, `switch`/`break`, and `continue` are review. Use these explanations with the existing code trace, without adding another assignment.
 
 ### Learning objectives
 
 Students will:
 
-- preserve FIFO with linked endpoints and compare linear/circular queue storage;
-- explain full/empty predicates, caller checks, reset, and wraparound;
-- distinguish internal pool slots from queued tree/cell IDs and explain automatic recycling in the public value API;
-- trace level-order tree BFS using integer node IDs and left-before-right enqueueing;
-- explain why a graph needs discovery state when branches merge or cycle;
-- trace first-discovery distance and all equal-distance shortest predecessors;
-- recover one shortest unweighted route and report an unreachable target;
-- count tree work, four-neighbor maze work, and reserved versus active storage.
+- explain linear front/rear updates and distinguish empty from exhausted write space;
+- trace circular wraparound under an explicit reserved-slot convention;
+- process a tree one level at a time and track the current depth;
+- explain why graphs need discovery state when routes merge or cycle;
+- distinguish BFS discovery-before-enqueue from a conceptual pending-node DFS stack that permits unprocessed duplicates and skips already-processed popped copies;
+- represent maze cells as row-first `struct point` values stored directly in a queue;
+- use the right/left/down/up iterator and a distance array to discover each passage once;
+- distinguish the implemented distance result from conceptual predecessor-based path recovery;
+- explain reset, border, start, capacity, and cost conditions using concrete traces.
 
 ### Macro-Question
 
-> How can arrival order help us process one tree level at a time and find a
-> route with the fewest moves when paths merge or cycle?
+> How does arrival order help us process one tree level at a time and find
+> the fewest moves through a maze?
 
 ### Micro-Questions
 
-- Which end of a waiting line must supply the next item?
-- Why can a linear queue exhaust its writes after earlier items leave?
-- Why does the circular convention leave one array slot unused?
-- How does adding children behind waiting nodes preserve tree levels?
-- Why must graph discovery be recorded before enqueueing?
-- Why can an equal-distance arrival add a predecessor without another enqueue?
+- Why does removing an array entry not restore a linear write position?
+- How does circular wraparound reuse space without changing FIFO order?
+- How does placing children behind waiting nodes preserve tree levels?
+- Why must BFS discovery be recorded before enqueueing, while the pending-node DFS comparison may push another copy of a still-unprocessed neighbor?
+- Why is the first distance minimal when every move costs one?
+- What extra record would recover a route rather than only its length?
 
 ### Learning sequence and representation spiral
 
-Begin with [`student/queue.c`](module_08_graph_bfs/student/queue.c), which
-imports Module 7's node queue and defines local value adapters. Retrieve its `qhead`/`qtail`
-transitions and the public value wrappers. Compare
-linear and circular `queue[25]`: 25 writes before a linear reset versus
-24 usable circular positions under the reserved-slot convention. Predicates
-report state; callers guard unchecked operations and reset between variants.
-The linear comparison uses `enqueue_linear`, `dequeue_linear`,
-`is_empty_linear`, and `is_full_linear` so it does not redefine the linked API.
-The tree and maze BFS use the linked queue rather than the array variants.
-Before each independent traversal require every prior pool owner already recycled and empty endpoints `qhead = qtail = -1`. The pool initializer is one-time and cannot reset ownership. Module 8 defines the value adapters locally. Call `enqueue(id)` and check its Boolean result. Guard
-with `is_empty_queue()`, then call public `dequeue()` to obtain a payload ID.
-That function reads and recycles the internal slot before BFS adds children
-or neighbors; callers do not recycle its returned value. Keep enqueue calls
-outside assertions so `NDEBUG` cannot remove their side effects. The pool limits
-pending work rather than the total number of discoveries.
+Recall Module 7's FIFO behavior. Use `front=0,rear=-1` to trace linear
+array writes and reads. Compare a circular convention with
+`front==(rear+1)%25` for empty and `front==(rear+2)%25` for full;
+25 reserved slots then hold at most 24 pending values. Circular operations
+are a concept comparison, not functions in the supplied maze source.
 
-Next use [`student/tree_bfs.c`](module_08_graph_bfs/student/tree_bfs.c) with
-Module 2's indexed F-root tree. Processing order is `F,A,G,B,C,D,E`. Trace
-left-before-right child insertion behind waiting nodes. A valid tree has no
-shared child or cycle, so each reachable node enters once without graph
-discovery state. Compare the result with the Stack-based DFS choice.
+Trace the illustrative tree A(B(D,E),C(F)). Left-before-right child insertion
+produces A, B, C, D, E, F. Track levels with depths or a per-level queue count.
+A valid tree offers each child once; cycles and merging graph routes require
+a discovery record. Compare the queue's order with Stack-based DFS.
 
-Then trace the 7 × 7 maze as an implicit graph. Reset `info` and verify all pool slots recycled with empty linked endpoints before each independent run; the pool initializer is one-time. Process neighbors right, left, down, up.
-First discovery sets distance before enqueueing; an equal shortest arrival
-adds a predecessor without enqueueing again. Start `{1,1}` reaches all 20
-passages. Target `{5,5}` has distance 8 and three shortest routes.
-The supplied ten-slot pool fits the tree's peak of three pending nodes,
-the canonical maze's peak of four, and the peak of six over all starts in
-that maze. The queue drains and all slots return to the free chain.
+The [current lab](module_08_graph_bfs/student/lab.c) uses a 5×5 wall-bordered
+maze, `struct point {y,x}`, `queue[N*N]`, and `distance[N][N]`.
+`init_bfs` resets the queue and all 25 distances before each call.
+`INF=N*N=25` marks unseen or unreachable cells. An in-bounds wall start
+leaves an empty queue and all distances `INF`. The border stays closed;
+out-of-range starts are outside the source contract.
 
-Allocate 60 minutes to queues, 30 to tree BFS, 60 to graph/maze BFS, and 30
-to tests, costs, corrections, and synthesis. The older checked matrix/list
-API and representation-cost comparison remain optional reference work.
+The iterator generates right, left, down, up. First discovery records a
+distance before enqueue; every already-discovered neighbor is skipped.
+From `{1,1}`, the search reaches eight passages and gives `{3,3}` distance 4.
+There are eight writes, eight removals, 32 candidate checks, and at most three
+pending points. Final positions are `front=8,rear=7`. Linear capacity follows
+total writes, not the maximum number waiting. A cell is added once, so
+`N*N` slots suffice. No linked pool or coordinate-ID map is used.
 
-### C lab and cybersecurity context
+Allocate 60 minutes to queues, 30 to tree level order, 60 to maze representation
+and BFS, and 30 to tests, costs, corrections, and conceptual path recovery.
+The supplied source stores distances only. A first-discovery predecessor
+would support one shortest path; adding that implementation is optional.
 
-Submit queue checks, a tree trace, and a maze driver with distance and
-predecessor assertions, one recovered route, and an unreachable case.
-The maze's zero border, interior start, distance-25 sentinel, and queue
-capacity are explicit preconditions. Generalizing the maze or printing all
-routes is extension work. As a transfer question, interpret unit graph
-edges as communication hops; hop count alone does not model real risk.
+### C lab and transfer
+
+Use [the separate lecture driver](module_08_graph_bfs/code/tests/test_lecture.c)
+to exercise the unchanged lab. Run `make -C module_08_graph_bfs/code lecture`.
+Submit array queue traces, the tree-level trace, full maze distances,
+repeat/wall/unreachable evidence, and one original caller-side check.
+The checked matrix/list library is optional and has a different contract.
+As a transfer question, unit graph edges can model communication hops;
+hop count alone does not describe other movement costs.
 
 ### Evidence of learning
 
-- linked/linear/circular queue states and boundary checks;
-- tree level-order and maze distance/predecessor traces;
-- discovery-before-enqueue and equal-arrival evidence;
-- one recovered shortest route and an unreachable result;
-- tree/maze costs and a Stack-versus-Queue explanation, all in one submission.
+- linear/circular queue states under explicitly stated conventions;
+- tree level order and the depth of each processed node;
+- discovery-before-enqueue and one queue entry per reached passage;
+- distance 4 at the target, an unreachable result, and independent-run resets;
+- 25 initializations, 32 direction checks, and eight linear writes in the canonical run;
+- a conceptual shortest route and a Stack-versus-Queue explanation in one submission.
 
 ### Spiral 3 synthesis
 
-Students compare what a frontier item and “discovered but unprocessed” mean in:
-
-1. a FIFO queue;
-2. tree BFS;
-3. graph BFS, compared with Stack-backed graph DFS.
-
-They explain why FIFO order, unit/unweighted edges, and marking vertices when enqueued together produce minimum-hop distance. FIFO alone is not a shortest-path guarantee.
+Compare waiting work in a queue, tree BFS, and graph BFS. Explain why FIFO,
+unit movement costs, and a discovery record together produce minimum-hop
+distances. Distinguish three pending points from eight total linear writes.
 
 ---
 
@@ -1515,7 +1510,7 @@ The capstone is built incrementally so Week 14 is integration rather than a new 
 | Week 3 / Module 3 | Bounded directed matrix, tested operations, and capstone skeleton |
 | Week 6 / Module 6 | Stack-backed DFS and reachability |
 | Week 7 / Module 7 | Acyclic links, safe insertion/detachment, shared-pool reuse, stale-access rules, and linked LIFO/FIFO applications |
-| Week 8 / Module 8 | Queue representation comparisons; the same linked queue for tree BFS, graph BFS, and unweighted paths |
+| Week 8 / Module 8 | Array queue comparisons; tree level order, maze BFS distances, and conceptual unweighted path recovery |
 | Week 9 / Module 9 | Separate-chained complement lookup and pool-reuse evidence; external-label index adaptation belongs to later integration |
 | Week 11 / Module 11 | Heap-backed Dijkstra |
 | Week 12 / Module 12 | AVL-backed ordered asset/indicator index and backend-selection comparison |
@@ -1603,8 +1598,7 @@ valid null-terminated input assumptions (at most seven characters), including
 balanced parentheses through the dedicated converter. Its Stack operations are unchecked; the
 full/empty predicates do not guard operations or validate expressions. Module 7 introduces
 index-linked pool nodes, shared storage, separate detachment and recycling,
-and linked LIFO stack/FIFO queue applications. Module 8 compares unchecked array queues and reuses
-that linked queue for tree BFS and graph BFS,
+and linked LIFO stack/FIFO queue applications. Module 8 compares array queues and uses a direct coordinate array queue for maze BFS,
 with explicit caller preconditions. Module 9
 reuses that pool for separate-chained hashing and complement lookup. Module 10 uses fixed integer and ID Heaps with caller preconditions. Dynamic
 allocation, owned-storage release, and checked rebuilding remain optional
@@ -1649,10 +1643,10 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Recursive base cases and child-results-first evaluation | Module 2 | Explicit-stack traversal and later tree algorithms |
 | Depth-first search idea | Module 2 recursive examples | Module 5 traversal orders and Module 6 graph DFS |
 | Named traversal orders and explicit traversal stacks | Module 5 textbook core: nonrecursive preorder, inorder, and postorder | Tree and graph algorithms |
-| Queue | Module 7 linked FIFO example; Module 8 compares linear/circular arrays | Reuse the Module 7 linked queue for tree BFS, then graph BFS in Week 8 |
+| Queue | Module 7 linked FIFO example; Module 8 compares linear/circular arrays | Apply FIFO to tree levels and direct-coordinate array-queue maze BFS in Week 8 |
 | Height and balance | Module 12 | AVL validation and rotation |
 | Adjacency list | Module 3 graph representation | Later graph-algorithm reference APIs |
-| Shortest predecessors | Module 8 maze BFS in Week 8 | Path recovery and later shortest-path comparisons |
+| Shortest predecessor concept | Module 8 concept slides in Week 8; the lab records distances only | Optional path recovery and later shortest-path comparisons |
 | Hash Table, signed hashing, separate chaining, and complement lookup | Module 9 supplied lab.c | Exact-lookup comparison with AVL; later external-label index adaptation |
 | Priority selection and optional linear reference | Module 10 fixed integer Heap; alert-record baseline is optional | Heap comparison, Dijkstra, and Prim |
 | Binary Heap | Module 10 main lab in Week 10 | Dijkstra and Prim |
@@ -1670,7 +1664,7 @@ Scope controls:
   Module 4 reuses fixed storage for a Stack, while later modules introduce
   allocation and growable storage in their own contracts.
 - Module 2's textbooks and lab use loop-based expression-tree construction and recursive evaluation of valid single-digit `+`/`*` input. Module 5's textbook focuses on explicit-stack preorder, inorder, and postorder without recursion; existing package labs remain separate. Module 6 requires iterative graph DFS; recursive graph DFS is an extension.
-- Module 7 applies linked lists to a stack and a queue. Module 8 compares queue representations and uses that same linked queue for required tree BFS and graph BFS in one Week 8 submission. Queue boundaries, pool-slot recycling, tree levels, graph discovery, distances, predecessors, and path recovery share one lesson; Week 6 DFS provides the frontier-control comparison.
+- Module 7 applies linked lists to a stack and a queue. Module 8 compares array queues, traces tree levels, and uses an array queue for maze BFS in one Week 8 submission. Queue positions, graph discovery, distances, resets, and conceptual path recovery share one lesson; Week 6 DFS provides the frontier-control comparison.
 - Module 10 combines fixed integer min/max Heaps and ten-device interval search in one Week 10 driver/evidence submission. Its alert-record Heap and unsorted baseline remain optional.
 - Module 9 traces and tests the supplied separate-chained two-sum program in one driver/evidence submission. It reuses Week 7's fixed pool; open-addressed rebuilding is optional. Week 14 combines bounded DSU work and Kruskal. Complete reference-package menus are optional resources.
 - AVL insertion is core; AVL deletion is an extension.
@@ -1693,7 +1687,7 @@ Scope controls:
 | 5 | Tree DFS | Module 5 textbook: explicit-stack preorder, inorder, and postorder; existing package lab remains separate |
 | 6 | Graph DFS | Module 6 iterative core; Spiral 2 synthesis and Practical 1 replace the ordinary lab |
 | 7 | Linked lists with linked stack and queue examples | Module 7 acyclic links, shared pool, safe insertion/detachment, recycling, LIFO first-node operations, and FIFO endpoint transitions |
-| 8 | Queues, tree BFS, and graph BFS | Module 8; queue comparison and linked-queue reuse for tree levels, graph discovery, distances, predecessors, path reconstruction, and frontier-control synthesis in one submission |
+| 8 | Processing data in stored order | Module 8; array queue comparison, tree levels, maze discovery/distances, conceptual path recovery, and frontier-control synthesis in one submission |
 | 9 | Hash Table and two-sum | Module 9 supplied lab.c; signed hashing, separate chains, pool reuse, and one driver/evidence submission |
 | 10 | Integer Heaps and shared on-time | Current Module 10 lab.c, driver, repairs, dual ID Heaps, maps, and interval reasoning; one submission |
 | 11 | Dijkstra | Module 11; Spiral 4 synthesis and Practical 2 replace the ordinary lab |

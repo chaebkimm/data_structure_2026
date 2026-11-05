@@ -1,43 +1,53 @@
-# Module 8 Vocabulary — Queues, Tree BFS, and Graph BFS
+# Module 8 Vocabulary — Processing data in stored order
 
-Use these names after working through queues, the tree, and the maze in the [textbook](textbook.md) or [class workbook](class_material.md).
+The first table follows the fifteen terms in the frozen [Korean textbook](textbook_korean.md), **저장된 순서대로 데이터 처리하기**, in the same order. Use the [workbook](class_material.md) for concrete queue, tree, and maze examples.
 
-| Name | Meaning in the current queue/tree/maze sources |
+## Textbook terms / 교재 용어
+
+| Name | Meaning in this chapter |
 | --- | --- |
-| FIFO | Remove in arrival order / 먼저 들어온 값부터 꺼냄 |
-| Queue | Add at the back and remove at the front / 뒤에 넣고 앞에서 꺼내는 구조 |
-| Linked queue | Module 7 node primitives plus Module 8 local value adapters; qhead/qtail identify pool slots / 7장의 노드 연산을 8장의 값 어댑터로 감싼 큐 |
-| Queue-node payload | Tree index or maze cell ID in lnodes[slot].data, separate from the pool-slot index / 풀 위치와 저장한 탐색 번호를 구분 |
-| Peak pending | Largest simultaneous linked frontier; four canonical, at most six over this maze's starts / 동시 대기 최대 개수 |
-| Recycling | Public dequeue reads the payload and returns its node to the pool before returning / 공개 꺼내기가 값을 읽고 칸을 자동 반환 |
-| Linear queue | Increasing front/rear; no slot reuse before reset / 위치를 증가시키며 초기화 전 칸 재사용 없음 |
-| Circular queue | Modulo25 positions; one reserved slot gives 24 usable values / 위치 순환과 한 칸 비우기 |
-| Enqueue / dequeue | Add / remove; linked public API accepts/returns values and owns node recycling / 넣기와 꺼내기 |
-| Level order | Process by increasing tree depth / 깊이가 작은 층부터 처리 |
-| Tree BFS | FIFO pending indices; left child before right / 인덱스를 FIFO에 두고 왼쪽 자식을 먼저 넣음 |
-| passage / 통로 | A cell whose maze value is 1; movement may enter it |
-| wall / 벽 | A cell whose maze value is 0; BFS skips it |
-| coordinate / 좌표 | `{x, y}` means column and row; arrays use `[y][x]` |
-| vertex / 정점 | One passage in the maze's graph model |
-| edge / 간선 | One allowed orthogonal move between passages |
-| implicit graph / 암시적 그래프 | Connections generated from the grid rather than stored as edge records |
-| source / 출발점 | The interior passage supplied as `start` |
-| hop / 이동 한 번 | Following one edge; every move costs one hop |
-| unweighted graph / 비가중 그래프 | A graph whose edges all count equally |
-| breadth-first search | FIFO search that processes smaller distances before larger distances |
-| frontier / 대기 중인 정점 | Discovered passage IDs stored as payloads along the linked queue from head to tail |
-| discovered / 발견됨 | Given a distance below 25 before entering the queue; no separate flag exists |
-| processed / 처리됨 | Dequeued and examined through all four neighbor candidates |
-| cell index / 칸 인덱스 | `7*y+x`, stored in a linked queue node's data field |
-| inverse mapping / 역방향 대응 | `points[index]` recovers the coordinate |
-| distance / 거리 | Minimum move count from the start; the start has distance 0 |
-| sentinel / 특별값 | Distance 25 represents unseen cells and, after completion, unreachable cells |
-| predecessor / 이전 칸 | A neighbor one distance smaller on a shortest path |
-| predecessor list / 이전 칸 목록 | The active `prev[0..prev_size)` entries; several shortest predecessors may exist |
-| equal-distance arrival / 같은 거리의 도착 | Another route of length `current_distance+1` equals the stored distance; append a predecessor without reenqueueing |
-| neighbor iterator / 이웃 반복자 | `init_iter`, `has_next`, and `next_iter` generate right, left, down, and up |
-| path reconstruction / 경로 복원 | Follow predecessors backward, then reverse the selected sequence |
-| unreachable / 도달 불가 | A passage left at distance 25 after BFS; check `maze` to distinguish a wall |
-| caller precondition / 호출 전제 | Reset metadata, require all pool slots recycled and the queue empty, choose a valid passage, and preserve the zero border |
+| queue / 큐 | Add data at the back and remove the earliest added data from the front. |
+| first-in first-out / 선입선출 | Remove data in the order in which it was added; abbreviated FIFO. |
+| enqueue / 추가 | Add data at the back of the queue. The lab stores a whole point at `queue[++rear]`. |
+| dequeue / 꺼내기 | Remove and return the first queued data. The lab returns `queue[front++]`. |
+| front / 맨 앞 | Index of the first data in a nonempty queue. An empty queue has no first data. |
+| rear / 맨 뒤 | Index of the last data in a nonempty queue. An empty queue has no last data. |
+| linear queue / 선형 큐 | An array queue whose active range advances without reusing removed positions until reset. |
+| circular queue / 원형 큐 | An array queue whose indices wrap around to reuse removed positions. |
+| level order / 층별 순서 | Process all nodes at one tree depth before the next depth. |
+| breadth-first search / 너비 우선 탐색 | Use a queue to process nodes in nondecreasing minimum edge count from the start. Equal-cost moves make these paths shortest by cost as well. |
+| discovered / 발견 | A node whose distance from the start has been established. Includes waiting and processed nodes. |
+| processed / 처리 | A node removed from the queue whose neighbors have been inspected. |
+| iterator / 반복자 | A mechanism that provides the next item in a defined order, such as a cell's next neighbor candidate. |
+| sentinel / 특별한 표시값 | A value with a special meaning. `INF` marks a distance not yet established. |
+| parent cell (predecessor) / 부모 칸 | The current cell from which another cell was first discovered. Save it to recover a shortest path. |
 
-Cell index 25 is valid. The sentinel belongs to the distance field only. `prev_size == 0` means there are no active predecessors; unused `prev` slots have no meaning. The lab supplies no stored visit-order array, heap allocation, or path-reconstruction function. Linked enqueue returns Boolean success; dequeue requires a nonempty queue.
+## Terms used in the activities / 활동에서 사용하는 용어
+
+| Name | Meaning in the activities |
+| --- | --- |
+| capacity / 용량 | Reserved array positions. The linear queue needs room for all additions between resets. |
+| active range / 대기 구간 | Positions `front` through `rear` containing data still waiting. Empty when `front > rear`. |
+| reserved slot / 비워 두는 자리 | One position left unused to distinguish empty and full in the circular comparison. |
+| depth / 깊이 | Number of edges from the tree root; a child's depth is its parent's depth plus one. |
+| passage / 통로 | A cell whose maze value is 1. |
+| wall / 벽 | A cell whose maze value is 0; BFS skips it. |
+| coordinate / 좌표 | `{y,x}` gives row then column, matching `[y][x]` array access. |
+| vertex / 노드 | One passage in the maze's graph model. |
+| edge / 간선 | One horizontal or vertical move between adjacent passages. |
+| implicit graph / 암시적 그래프 | Connections are computed from neighboring cells instead of stored as edge records. |
+| start / 시작점 | The point passed to `bfs`; it must be inside the array. |
+| unweighted graph / 비가중 그래프 | Each edge counts as one move when measuring path length. |
+| pending / 대기 중 | Discovered points still in the queue. |
+| peak pending / 최대 대기 수 | Largest number of points waiting together during a run. |
+| distance / 거리 | Minimum move count from the start, stored in `distance[y][x]`. |
+| path reconstruction / 경로 복원 | Follow saved parent cells backward from the target to the start, then reverse the collected sequence. |
+| unreachable / 도달 불가 | An open passage left at `INF` after BFS; walls also retain `INF`. |
+| invariant / 규칙 | A property preserved during the algorithm. Pending BFS distances never decrease from front to back. |
+| caller precondition / 호출 전제 | Keep the zero border, use an in-bounds start, and respect unchecked queue and iterator conditions. |
+
+`front` and `rear` are indices, not stored coordinate values. In a nonempty queue, `queue[front]` is its first data and `queue[rear]` its last data. In an empty queue, neither identifies data belonging to the queue, even if old values remain in the array. `front`와 `rear`는 데이터 자체가 아닌 인덱스다. 빈 큐에는 첫 데이터와 마지막 데이터가 없다.
+
+The lab stores point values directly. It has no cell-ID mapping, linked-node pool, predecessor array, or separate visit-order array. Every `bfs` resets queue positions and distances. An in-bounds wall start leaves the queue empty and all distances at `INF`. Circular queues, tree traversal, the graph-stack comparison, and parent-cell recovery are conceptual activities; they do not add functions to the supplied source.
+
+The new C explanations cover row-by-row brace initialization, whole-structure copying/passing/returning, and short-circuit logical OR. Named constants, increment operators, `switch`/`break`, and `continue` are earlier material used again in this chapter.

@@ -1,43 +1,54 @@
-# Instructor Technical Notes — Module 8 Graph BFS
+# Instructor Technical Notes — Chapter 8: Processing data in stored order
 
-Current source boundary / 현재 소스 경계: Module 7 supplies node-index operations; Module 8's `queue.c` defines the value adapters. `init_lnodes_pool()` initializes once and later calls do nothing. Between independent runs, drain/recycle every pool owner and require `qhead == qtail == -1`; reset maze metadata separately. 초기화 함수를 다시 불러도 풀은 재설정되지 않는다. 8장의 값 어댑터가 할당·값 대입·반환을 맡으며, 노드 연산 자체는 값을 반환하거나 자동 재활용하지 않는다.
+The current [lab.c](../student/lab.c) follows the PPT's simple 5×5 maze. It is self-contained, has no main function, and stores `struct point` values directly in a linear array queue. Use the [lecture driver](../code/tests/test_lecture.c) and `make -C module_08_graph_bfs/code lecture` for executable validation. The tree and circular-queue portions are conceptual exercises.
 
+The frozen [Korean textbook](../student/textbook_korean.md), **저장된 순서대로 데이터 처리하기**, fixes the chapter's content and seven-section sequence. Its topic counts are 14 concepts, two efficiency topics, 15 glossary terms, four invariant questions, five coding-plan steps, three new C explanations, and seven code blocks. Teach its prose as written. Use these notes for precise source preconditions, worked traces, and optional-library distinctions without changing the Korean manuscript or the user's PPT/lab sources.
 
-## Required queue and tree checkpoints
+## Actual source contract
 
-Week 7 teaches linked lists with a linked queue example. Week 8 retrieves that queue, compares array queues, then uses the same linked implementation for tree BFS and graph BFS. The combined driver is [lab_driver.c](../student/lab_driver.c). The [lesson plan](lesson_plan.md) budgets 60/30/60/30 minutes,180 total, for those topics and testing/synthesis.
+The type has fields `y` then `x`. A positional initializer `{2,3}` accesses row 2, column 3. `N` is 5. `maze` uses 0 for walls and 1 for passages. Keep the outer border zero and pass a start inside the array. `is_wall` performs no bounds validation. An in-bounds wall start is supported and leaves all distances `INF`.
 
-- Linked value queue: `enqueue(value)` allocates and appends a node, returning `false` without queue changes when the pool is exhausted. `dequeue()` returns the oldest value and automatically recycles its node. Check `is_empty_queue()` before dequeue; `-1` is a valid payload, not an empty-result sentinel. Raw `enqueue_lnode`/`dequeue_lnode` still exchange pool indices; raw dequeue returns -1 on empty and does not recycle.
-- Linear queue[25]: after filling 0..24 and draining, front 25, rear 24 makes both full/empty true. It does not reclaim earlier writes.
-- Circular queue[25]:24 usable values; after filling 0..23, removing 0/1, and appending 24/25, front 2, rear 0 and full true. Drain order 2..25.
-- Module 2's tree: root F(index 5), children A/G, A→B/C, B→D/E. Pending after F, A, G, B is [0,6], [6,1,2], [1,2], [2,3,4]. Output indices 5,0,6,1,2,3,4 or F, A, G, B, C, D, E. Seven processed nodes and fourteen child checks. Empty root -1 returns 0; one-node root3 returns 1.
-- Tree inputs are acyclic with no shared children and at most ten nodes. The tree needs no discovery flag under that contract. General graph cycles/merges require discovery-before-enqueue.
-- Array variants share one queue and counters. Reset front 0, rear -1 before independent array comparisons. Tree/maze runs ensure every prior allocation is recycled, call the guarded initializer and set qhead = qtail = -1; maze runs also call init_info. No prepared teaching copy is needed.
+`init_iter` copies a point into global `cur_point` and sets global `state` to 0. `has_next_iter` means state < 4. `next_iter` copies the original point, applies one east/west/south/north change, then increments state. Call only after initialization and while the predicate is true. A second initialization overwrites the first iterator; nested or interleaved use is unsupported. The wall border ensures neighbors of queued passages are in bounds.
 
+`queue[N * N]` stores whole points. For a nonempty queue, `front` is the index of the first stored data and `rear` is the index of the last stored data. `queue[front]` and `queue[rear]` are the values at those positions. When empty, the indices identify no data belonging to the queue, even if old values remain in the array. `init_queue` restores 0/-1; empty is front > rear. Enqueue requires rear+1 < N*N, then increments rear before writing. Dequeue requires nonempty, reads the old front entry, advances front, and returns the saved value. Functions do not check these conditions or return status codes. No allocation, recycling, IDs, or linked imports are involved.
 
-Both BFS loops call public `enqueue(id)` and `dequeue()` without manual queue-node allocation or recycling. Enqueue is executed outside assert, its Boolean result is saved, and success is asserted. With NDEBUG, valid enqueue calls still execute. The supplied tree peaks at three entries; the canonical maze peaks at four and all current-maze starts at six. All ten slots return after traversal. An open 5 × 5 interior peaks at ten over all starts. BFS capacity assertions diagnose a violated precondition; the public enqueue itself reports pool exhaustion as false. Array queues are comparisons only.
+`distance[N][N]` holds results through `get_distance` and `set_distance`. `INF = N*N` exceeds every possible finite shortest distance because a shortest path can be simple. `init_bfs` resets the queue and all distances, then sets a passage start to 0 and enqueues it. Every call to `bfs` begins with `init_bfs`; there is no caller-controlled metadata reset.
 
-## Current maze source and optional API boundary
+The coding plan's start-at-zero step describes a valid passage start. In the supplied code, the start must first be an in-bounds coordinate and `!is_wall(s)` guards zero assignment and enqueue. A wall start never becomes an iterator center. There is no coordinate-range test inside `is_wall` or `init_bfs`.
 
-The current Week 8 teaching source is [student/lab.c](../student/lab.c).
-Its contract is explained in the [maze textbook](../student/textbook.md),
-[lab](../student/lab.md), and [lesson plan](lesson_plan.md). The notes below
-remain reference documentation for the separate library in `code/`.
+The loop skips walls and every neighbor already assigned a finite distance. A first discovery stores current distance+1 before enqueue. Consequently each reachable passage enters once, including passages reached by multiple routes. The linear array's 25 writes suffice for at most 25 cell discoveries. Capacity follows total enqueues since reset, not just simultaneous pending entries. BFS stores only distances; predecessor recording from the concept slides is an extension.
 
-The maze uses global `info[7][7]`, a distance sentinel of 25, all shortest
-predecessors in `prev[4]`, the original linked FIFO from Module 7, and neighbor
-order right/left/down/up. `init_info()` resets metadata and the inverse
-coordinate mapping; it does not reset the queue. The caller initializes the unowned pool and resets linked endpoints and supplies an interior passage inside an intact zero
-border. Discovery writes distance and a predecessor before enqueue; an
-equal shortest arrival appends only another predecessor. The maze function
-returns `void` and writes global results during traversal.
+In this chapter, discovered means a distance is known; it includes waiting nodes, the current node, and finished nodes. Processed means the node has been removed and its neighbors checked. The initial `INF` writes do not discover nodes. The pending distances stay nondecreasing because each newly discovered neighbor is one step beyond the node removed at the front. With unit-cost moves, this proves that first discovery fixes the shortest distance. Using a stack or varying move costs invalidates that first-discovery argument; a later improvement must be propagated instead of discarded.
 
-Module 7 taught the linked queue as a list example. queue.c imports that original queue and node pool without redefining them. tree_bfs.c imports Module 2's tree and the guarded queue; maze lab.c includes the same queue. Compile the combined driver directly.
+The textbook's stack comparison is a pending-node iterative DFS that marks processing on pop. It pushes neighbors that have not yet been processed even when older copies are pending, and skips a popped copy if the node was already processed. Mark before expanding neighbors so cycles cannot reprocess the node. A newer entry is above an older copy and can advance processing. This comparison is not a claim that every DFS implementation needs duplicate entries: Chapter 6's actual graph DFS is recursive.
 
-`GraphBfsResult`, sentinel 16, single-predecessor tie handling, typed circular
-queue statuses, matrix/list equivalence, and output preservation in the
-following sections belong only to the optional checked library. Its tests
-are not tests of the maze source.
+## New C syntax and prior learning
+
+Only three C topics receive new explanations in the frozen text:
+
+| Topic | Explanation to retain |
+| --- | --- |
+| Nested row initializers | The outer braces initialize the array and each inner brace pair initializes a row. Two-dimensional declaration and row/column access were already covered in Chapter 6. |
+| Whole-structure values | Assigning `struct point` copies its two integer members. A value parameter and returned point copy those member values; changing a local candidate does not change `cur_point`. |
+| Short-circuit logical OR | A true left operand of `||` prevents evaluation of the right operand. Here a wall bypasses the distance read and takes the surrounding `continue`. The operator does not supply an index bounds check. |
+
+`enum` and named integer constants are review from Chapter 7. Prefix/postfix increments were explained in Chapter 3, `switch` and `break` in Chapters 4–5, and `continue` in Chapter 6. The code slides revisit those constructs, so use their questions to connect existing syntax to queue and iterator state rather than presenting seven new syntax topics.
+
+## Source and slide names
+
+The summary deck uses `dist[5][5]`, `has_next`, `next`, and literal 25. The actual lab uses `distance[N][N]`, `has_next_iter`, `next_iter`, `N`, `INF`, and distance accessors. They express the same operations. Explanatory materials use actual source names and describe the correspondence. Neither presentation files nor the user-owned lab are edited.
+
+## Baseline, costs, and concept comparisons
+
+Start `{1,1}` and target `{3,3}` give goal distance 4. Processing order is `{1,1}`, `{2,1}`, `{2,2}`, `{3,1}`, `{2,3}`, `{3,2}`, `{3,3}`, `{1,3}`. Eight points are enqueued/dequeued; 32 neighbors are inspected after 25 distance initializations. Pending peaks at three; front/rear end at 8/7. Repeated calls reset these counters. Blocking `{2,1}` isolates the start without changing the border; restore the cell afterward.
+
+For a generalized R×C grid with P reached passages, resetting distances costs O(RC), traversal costs O(P), and reserved queue/distance storage costs O(RC). The maze array is a grid of cell states, not a V×V adjacency matrix. The illustrative six-node binary tree costs six processing steps and twelve child-position checks. Its BFS order is A/B/C/D/E/F with depths 0/1/1/2/2/2 for A→B/C, B→D/E, C→F.
+
+In the paper circular comparison, preserve front=first queued data index and rear=last queued data index whenever the queue is nonempty. With 25 slots and one reserved position, empty is front==(rear+1)%25 and full is front==(rear+2)%25. Fill 24 labels, remove two, append two: front 2/rear 0, 24 values pending. These predicates do not replace the actual linear queue's front>rear test.
+
+## Optional library boundary
+
+Everything below describes the separate checked matrix/list API and its historic staged fixtures. Sentinel 16, typed circular queue, status returns, predecessor results, and output-preservation guarantees apply only to that library. Its core/extension tests do not exercise the current maze lab. Its staged pause answers are reference fixtures, separate from the current three-target maze pause.
 
 ## Optional checked-library contract
 

@@ -1,21 +1,11 @@
-# Module 8 Current Student Release
+# Chapter 8 Current Student Release
 
-Run `python3 release/prepare_student_release.py` from this module, or the PowerShell wrapper, to create `dist/module_08_graph_bfs.zip`. Use --output to choose another new path. Existing archives are never overwritten.
+Run `python3 release/prepare_student_release.py` from this module, or its PowerShell wrapper, to create `dist/module_08_graph_bfs.zip`. Pass `--output` to choose another new path. Existing archives are never overwritten.
 
-The single archive teaches queues, tree BFS, and graph BFS in that order and supports one submission. It includes current bilingual textbooks, workbook, concept/lab slides, lab/evidence/rubric/vocabulary, and exact canonical queue.c, tree_bfs.c, maze lab.c, and lab_driver.c. It includes Module 2's tree and Module 7's linked queue and node pool at their repository-relative paths. Its code/Makefile and build.ps1 build only the required combined driver. MANIFEST.txt lists every member. Instructor materials, solutions, optional checked-library scaffolds, and old staged worksheets are excluded.
+The single archive follows queue → tree level order → graph BFS and supports one submission. Its current textbooks are titled **Processing data in stored order** / **저장된 순서대로 데이터 처리하기** and follow `Thinking logically` → `Calculating efficiency` → `Glossary` → `Invariant` → `Coding plan` → `New C syntax explained` → `C code`. The Korean edition is the user-approved 2026-11-03 frozen manuscript, copied unchanged; the English edition follows its 14/2/15/4/5/3/7 subsection structure. The three new syntax topics are nested two-dimensional initializers, whole-structure values, and short-circuit OR. The archive includes both textbooks, the class workbook, all four unchanged PPT Markdown sources, lab/evidence/rubric/vocabulary/pause materials, unchanged `student/lab.c`, and `code/tests/test_lecture.c`. The packaged Makefile and PowerShell runner build only this lecture harness. `MANIFEST.txt` lists every member. No Module 2 or Module 7 source is needed. Instructor materials, answers, solutions, and the optional checked matrix/list library are excluded.
 
-Extract the archive as a whole and run `make -C module_08_graph_bfs/code core` from its root. The combined driver checks queue boundaries/recycling/wraparound, exact tree order/empty/single-node cases, maze mappings/distances/all predecessors/three routes, and independent runs. Instructor release verification also builds with sanitizers where available.
+Extract the whole archive and run `make -C module_08_graph_bfs/code lecture`. `core` and `student-tests` run the same checks. Compile only `tests/test_lecture.c`; it includes `student/lab.c`, which has no `main` of its own.
 
-Stage A–E README files describe optional facilitation checkpoints. The current packager produces one combined archive, not the previous five checked-graph archives. Do not distribute an older Stage E archive as the required Week 8 lab.
+The harness checks FIFO and iterator behavior, all canonical distances and the processing order, queue capacity, repeated calls, in-bounds wall starts, an isolated start, and all 512 bordered 3×3-interior layouts from every in-bounds start. The 12,800 searches are checked against an independent distance-relaxation oracle. The canonical 5×5 maze reaches eight passages from `{y=1,x=1}` and gives `{y=3,x=3}` distance 4. Coordinates, rather than cell IDs or linked nodes, occupy the array queue. Every `bfs` call resets the queue and distance array. No predecessor records are present in the source.
 
-The linked queue-node slot and its payload ID are distinct. Both searches receive payload IDs from the Module 8 `queue.c` value adapter `dequeue()`; it calls Module 7's index-returning `dequeue_lnode()`, reads the payload, and recycles the isolated node before returning. The canonical maze makes 20 insertions/removals with a peak of four pending entries; all supplied starts peak at six. Call `init_lnodes_pool()` once; later calls preserve the pool. Drain/recycle every owner before an independent BFS and require `qhead == qtail == -1`; maze runs also call `init_info()`. Array front/rear resets belong only to the array comparisons.
-
-Module 8's local value interface in `student/queue.c` is `bool enqueue(value)`
-and `int dequeue(void)`, built on Module 7's unchanged node operations.
-Enqueue reports false without mutation on pool exhaustion. Dequeue requires
-nonempty input, returns the value, and recycles automatically. Payload -1 is
-valid. Save enqueue's result outside assert so NDEBUG retains the operation.
-Linear array comparisons use enqueue_linear/dequeue_linear and matching
-is_empty_linear/is_full_linear names; circular comparison names are unchanged.
-The pool initializer cannot reset live ownership; return every allocation
-between independent runs. The imported queue endpoints are `qhead`/`qtail`.
+Stage A–E README files are optional facilitation checkpoints within the one lesson. The packager produces one archive. Circular storage, tree level order, and the concept of recording one previous coordinate are textbook comparisons; no separate queue/tree source or imported pool is required.

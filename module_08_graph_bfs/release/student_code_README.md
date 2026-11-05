@@ -1,15 +1,9 @@
-# Module 8 Combined Lab Build
+# Chapter 8 Lecture Lab Build
 
-From this directory run `make core` or `powershell -File ./build.ps1`. The default builds ../student/lab_driver.c and runs queue, tree BFS, and maze BFS checks. `make student-tests` runs the same driver with your added assertions. Module 2 and Module 7 dependencies live at the archive root. Compile only the driver; other C files are included sources.
+Run `make lecture`, `make core`, or `powershell -File ./build.ps1 -Target lecture` from this directory. The default target runs the same lecture checks. `tests/test_lecture.c` includes the unchanged `../student/lab.c` and supplies `main`. Compile only the test file; no other module is a dependency.
 
-The linked queue-node slot and its payload ID are distinct. Both searches receive payload IDs from the Module 8 `queue.c` value adapter `dequeue()`; it calls Module 7's index-returning `dequeue_lnode()`, reads the payload, and recycles the isolated node before returning. The canonical maze makes 20 insertions/removals with a peak of four pending entries; all supplied starts peak at six. Call `init_lnodes_pool()` once; later calls preserve the pool. Drain/recycle every owner before an independent BFS and require `qhead == qtail == -1`; maze runs also call `init_info()`. Array front/rear resets belong only to the array comparisons.
+The harness checks the array FIFO, four-direction iterator, canonical distances and order, repeated searches, wall starts, isolated starts, and 12,800 bordered-maze cases against independent expected distances. `make student-tests` is an alias; add one original valid experiment to the harness and record its predicted and observed result.
 
-Module 8's local value interface in `student/queue.c` is `bool enqueue(value)`
-and `int dequeue(void)`, built on Module 7's unchanged node operations.
-Enqueue reports false without mutation on pool exhaustion. Dequeue requires
-nonempty input, returns the value, and recycles automatically. Payload -1 is
-valid. Save enqueue's result outside assert so NDEBUG retains the operation.
-Linear array comparisons use enqueue_linear/dequeue_linear and matching
-is_empty_linear/is_full_linear names; circular comparison names are unchanged.
-The pool initializer cannot reset live ownership; return every allocation
-between independent runs. The imported queue endpoints are `qhead`/`qtail`.
+The queue stores `{y,x}` coordinates, starts at `front=0,rear=-1`, and removes in arrival order. For the canonical start `{1,1}`, target `{3,3}` has distance 4; eight passages enter and leave the queue. The final indices are `front=8,rear=7`. A new `bfs` call resets all search state. Wall starts are allowed if in bounds and leave all distances `INF`; the outer border must remain walls. Queue mutations and coordinate reads do not perform their own capacity or bounds checks.
+
+Tree level order, circular queue reuse, and one-parent path reconstruction are discussed in the textbook. They are not extra implementations required to build this source.
