@@ -1,102 +1,86 @@
 enum {CAPACITY = 10};
 
 int queue[CAPACITY];
-int size;
+int size = 0;
 
 int is_empty_queue(void) { return size == 0; }
 
 int (*comp)(int, int);
 
-void enqueue_linear(int data) { queue[size++] = data; }
-int dequeue_linear(void) { 
-    int urgent = 0;
-    for (int i = 1; i < size; i++) {
-        if (comp(queue[i], queue[urgent])) {urgent = i;}
+void enqueue(int data) { 
+    int pos = 0;
+    while (pos < size && !comp(data, queue[pos])) {pos++;}
+    for (int i = size; i > pos; i--) {
+        queue[i] = queue[i - 1];
     }
-    int temp = queue[urgent];
-    queue[urgent] = queue[--size];
-    return temp;
+    queue[pos] = data;
+    size++;
+}
+
+int dequeue(void) { 
+    int most = queue[0];
+    for (int i = 0; i < size - 1; i++) {
+        queue[i] = queue[i + 1];
+    }
+    size--;
+    return most;
 }
 
 void init_queue(int (*compare)(int, int)) {
     comp = compare; 
-	size = 0;
+    size = 0;
 }
 
-void (*enqueue)(int);
-int (*dequeue)(void);
+enum {USER_SIZE = CAPACITY, EPOCH_SIZE = 5};
 
-void init_queue_linear(int (*compare)(int, int)) {
-    init_queue(compare);
-    enqueue = enqueue_linear;
-    dequeue = dequeue_linear;
-}
+int timelog[USER_SIZE][EPOCH_SIZE * 2];
 
-enum {LSIZE = CAPACITY, EPOCH_SIZE = 5};
-
-struct Light {
-    int on_time;
-    int off_time;
+struct User {
+    int login;
+    int logout;
     int epoch;
 };
+struct User users[USER_SIZE];
 
-struct Light lights[LSIZE];
-
-int toggle_info[LSIZE][EPOCH_SIZE * 2];
-
-void init_lights() {
-    for (int i = 0; i < LSIZE; i++) {
-        lights[i].on_time = toggle_info[i][0];
-        lights[i].off_time = toggle_info[i][1];
-        lights[i].epoch = 0;
+void init_users(void) {
+    for (int id = 0; id < USER_SIZE; id++) {
+        users[id].epoch = 0;
+        users[id].login = timelog[id][0];
+        users[id].logout = timelog[id][1];
     }
-}
-
-int greater_on_time(int id_x, int id_y) {
-    return lights[id_x].on_time >= lights[id_y].on_time;
-}
-
-int lesser_off_time(int id_x, int id_y) {
-    return lights[id_x].off_time <= lights[id_y].off_time;
-}
-
-int last_on_id = -1;
-int first_off_id = -1;
-
-void init_on_off() {
-    init_queue_linear(lesser_off_time);
-    last_on_id = 0;
-    for (int i = 0; i < LSIZE; i++) {
-        if (greater_on_time(i, last_on_id)) {last_on_id = i;}
-        enqueue(i);
-    }
-    first_off_id = dequeue();
 }
 
 int next_epoch(int id) {
-    int ep = ++lights[id].epoch;
+    int ep = ++users[id].epoch;
     if (ep >= EPOCH_SIZE) {return -1;}
-    lights[id].on_time = toggle_info[id][ep * 2];
-    lights[id].off_time = toggle_info[id][ep * 2 + 1];  
+    users[id].login = timelog[id][ep * 2];
+    users[id].logout = timelog[id][ep * 2 + 1];  
     return 0;
 }
 
-void update_on_off(int id) {
-    if (greater_on_time(id, last_on_id)) {last_on_id = id;}
-    enqueue(id);
-    first_off_id = dequeue();
+int earlier_logoff(int i, int j) {
+    return users[i].logout < users[j].logout;
 }
 
-int check_all_on() {
-    return lights[last_on_id].on_time <= lights[first_off_id].off_time;
-}
+int all_login(void) {
+    init_users();
 
-int all_on_time() {
-    init_lights();
-    init_on_off();
-    while (!check_all_on()) {
-        if (next_epoch(first_off_id) == -1) {return -1;}
-        update_on_off(first_off_id);
+    int last = 0;
+    for (int id = 0; id < USER_SIZE; id++) {
+        if (users[id].login > users[last].login) {last = id;}
     }
-    return lights[last_on_id].on_time;
+
+    init_queue(earlier_logoff);
+    for (int id = 0; id < USER_SIZE; id++) {
+        enqueue(id);
+    }
+    int go = dequeue();
+
+    while (users[last].login > users[go].logout) {
+        if (next_epoch(go) == -1) {return -1;}
+        enqueue(go);
+        if (users[go].login > users[last].login) {last = go;}
+        go = dequeue();
+    }
+    return users[last].login;
 }

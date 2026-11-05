@@ -3,23 +3,27 @@ int queue[CAPACITY];
 int size = 0;
 
 int (*comp)(int i, int j);
+
+int comp_q(int i, int j) {
+    return comp(queue[i], queue[j]);
+}
+
 void swap(int i, int j) {
     int old_i_val = queue[i];
     int old_j_val = queue[j];
     queue[i] = old_j_val;
     queue[j] = old_i_val;
 }
-int left(int id) {return id * 2 + 1;}
-int right(int id) {return id * 2 + 2;}
-int parent(int id) {return id == 0 ? -1 : (id - 1) / 2;}
 
 void sift_down(int id) {
-    while (left(id) < size) {
-        int child = left(id);
-        if (right(id) < size && comp(right(id), left(id))) {
-            child = right(id);
+    while (id * 2 + 1 < size) {
+        int l = id * 2 + 1;
+        int r = id * 2 + 2;
+        int child = l;
+        if (r < size && comp_q(r, l)) {
+            child = r;
         }
-        if (comp(id, child)) { break; }
+        if (comp_q(id, child)) { break; }
         swap(id, child);
         id = child;
     }
@@ -27,9 +31,9 @@ void sift_down(int id) {
 
 void sift_up(int id) {
     while (id > 0) {
-        int p = parent(id);
-        if (comp(p, id)) { break; }
-        swap(id, p);
+        int p = (id - 1) / 2;
+        if (comp_q(p, id)) { break; }
+        swap(p, id);
         id = p;
     }
 }
@@ -41,12 +45,12 @@ void init_queue(int (*compare)(int, int)) {
 	size = 0;
 }
 
-void enqueue_heap(int data) {
+void enqueue(int data) {
     queue[size++] = data;
     sift_up(size - 1);
 }
 
-int dequeue_heap(void) {
+int dequeue(void) {
     if (is_empty_queue()) { return -1; }
     int temp = queue[0];
     queue[0] = queue[--size];
@@ -54,14 +58,6 @@ int dequeue_heap(void) {
     return temp;
 }
 
-void (*enqueue)(int);
-int (*dequeue)(void);
-
-void init_queue_heap(int (*compare)(int, int)) {
-    init_queue(compare);
-    enqueue = enqueue_heap;
-    dequeue = dequeue_heap;
-}
 
 enum {LSIZE = CAPACITY, EPOCH_SIZE = 5};
 
