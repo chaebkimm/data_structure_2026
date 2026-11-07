@@ -1,6 +1,18 @@
-# Instructor Answer Key — Module 07 Linked Lists
+# Instructor Answer Key — Chapter 7: Organizing data with links
 
-Use the [rubric](../student/rubric.md) and [investigation](../student/investigation_worksheet.md). Both formats have identical questions/scoring.
+Use the [rubric](../student/rubric.md), [investigation](../student/investigation_worksheet.md), and revised [workbook](../student/class_material.md). The investigation formats keep identical questions/scoring. The workbook follows the textbook’s seven sections; its discussion and syntax answers below support the same single submission.
+
+## Workbook discussion and syntax answers
+
+The opening workbook fixture follows indices 0, 2 and reads values 17, 31. Slot 1 is allocated but separate. After insertion, the indices are 0, 1, 2 and values 17, 23, 31. The link table is `(2, -1, -1)` before, `(2, 2, -1)` after the first assignment, and `(1, 2, -1)` after the second. Follow two links to reach the third logical node; physical slot 2 need not occupy that position.
+
+The lifecycle table records: detachment returns 1 with active `0 → 2 → -1`, `free_head = 3`, data 23, next -1; recycling changes free head to 1 and next to 3; allocation returns 1, restores free head 3, and clears next to -1; only the caller assignment changes data to 8. Active links remain unchanged after detachment throughout these later steps.
+
+The four efficiency categories are reserved pool/endpoint storage, constant iterative traversal state, constant known-node updates after the first O(C) initialization, and O(n) traversal/search. Ten slots bound simultaneous allocations; recycling permits more than ten values over time.
+
+For the invariant discussion, require valid indices, acyclic chains, exclusive ownership, isolated detached nodes, and matching queue endpoints. Their benefit is terminating traversal, safe sharing, and FIFO. A valid numeric index alone does not prove the caller owns a node. Preserve successors, check returned indices, and detach/read/recycle in the required order.
+
+Syntax answers: `CAPACITY` names 10 and is used in the array and initialization limits; local `static initialized` retains 1 after the first call; `(void)` means no arguments and a `void` result means no value; assigning `node = 4` through `qhead = qtail = node` leaves both endpoints 4; `return qhead == -1` returns 1 for -1 and 0 for 4.
 
 ## Inquiry and pause
 
@@ -34,7 +46,7 @@ C3 (5): Autopsy first returns a still-referenced non-isolated node, overwriting 
 
 D1 (12): Three original groups: allocation/exhaustion/shared pool; insertion/traversal; detach/recycle/reuse including Stack/Queue. Require exact state, retained data, repeat-init preservation, isolation, LIFO/FIFO/endpoints, empty sentinel, payload -1, and explicit recycling. Restore all ownership between tests; execute mutations outside assert. Invalid calls stay on paper.
 
-D2 (4): Local work O(1), search/traversal O(n), position i follows i links, first init O(C), subsequent init O(1), reserved memory O(C) with extra next integer per slot and saved endpoints.
+D2 (4): Local work O(1), search/traversal O(n), the third logical node follows two links from the first, first init O(C), subsequent init O(1), reserved memory O(C) with extra next integer per slot and saved endpoints.
 
 D3 (4): Preserve predictions, label corrections, and cite exact trace/test plus reproducible commands/output. A clean sanitizer run alone does not prove chain ownership.
 

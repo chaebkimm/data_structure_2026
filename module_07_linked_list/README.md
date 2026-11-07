@@ -1,6 +1,12 @@
-# Module 7 — Linked Lists
+# Module 7 — Organizing data with links
 
 Read the [English textbook](student/textbook.md) or [Korean textbook](student/textbook_korean.md), then use the [workbook](student/class_material.md) and [lab](student/lab.md). Exact executable contracts come from [student/lab.c](student/lab.c).
+
+## Textbook and lecture sequence
+
+Both textbook editions follow seven sections: Thinking logically, Calculating efficiency, Glossary, Invariant, Coding plan, New C syntax explained, and C code. Start with physical slots and logical order, then trace insertion, detachment, shared-pool reuse, stack LIFO, and queue FIFO. The [workbook](student/class_material.md) follows the same sections and retains predictions, exact-state traces, syntax questions, and the single lab submission.
+
+The C section separates the implementation into nine blocks with explanatory comments. The new syntax section covers `enum`, a local `static` variable, `void`, chained assignment, and returning a comparison. Use [lab.c](student/lab.c) as a read-only executable reference and put caller experiments/tests in separate files.
 
 ## Slide sources and sequence
 

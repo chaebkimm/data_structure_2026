@@ -1,13 +1,19 @@
-# Module 5 Lesson Plan
+# Module 5 lesson plan: Visiting nodes in a tree
 
 ## Outcomes and materials
 
-Use the [lab](../student/lab.c), [lab slides](../student/ppt_lab_material.md),
-[textbook](../student/textbook.md), and
-[chapter guide](../../instructor_guide/chapter_05.md). Follow the lab slides'
-sequence: recursive DFS, explicit-stack DFS, postfix tree construction,
-and precedence-aware inorder writing. The schedule totals 160 minutes
-across two meetings, leaving 20 minutes within the 180-minute weekly limit.
+Use the revised [textbook](../student/textbook.md), the
+[lab](../student/lab.c), and the
+[chapter guide](../../instructor_guide/chapter_05.md). Begin with the
+textbook's `F`-rooted alphabet tree, then use `12+34-*` to connect postfix
+construction with grouping-preserving infix writing. The schedule totals
+160 minutes across two meetings, leaving 20 minutes within the 180-minute
+weekly limit.
+
+- **Thinking logically:** predict visit orders, explain saved work, and build and read an expression tree.
+- **Calculating efficiency** and **Glossary:** distinguish reserved storage, used path space, and reachable nodes; name the ideas after tracing them.
+- **Invariant:** state the rules, explain their benefit and failures, and show how each operation preserves them.
+- **Coding plan**, **New C syntax explained**, and **C code:** connect each plan to its source, including progress increments, `switch`, shared output position, and termination.
 
 ## Meeting A — 80 minutes
 
@@ -31,13 +37,15 @@ across two meetings, leaving 20 minutes within the 180-minute weekly limit.
 
 ## Meeting B — 80 minutes
 
-1. **Build from postfix (20 minutes).** Prepare `123*+`; trace indices,
-   right-before-left pops, node count, and the final root pop. Compare with
-   Chapter 4's value stack and note that construction replaces old nodes.
+1. **Build from postfix (20 minutes).** Prepare `12+34-*`; trace indices,
+   right-before-left pops, node count, and the final root pop. Root 6 joins
+   `1+2` on its left and `3-4` on its right. Compare with Chapter 4's value
+   stack and note that construction replaces old nodes.
 2. **Write with grouping (25 minutes).** Trace the implemented writer for
-   `123*+`, `12+3*`, and `123--`. Compare each child with its parent using
-   `prec2()`: left `<`, right `<=`. Digits get precedence 3, above every
-   supported operator. Locate opening and closing parentheses around child
+   `12+34-*`: bare inorder gives `1+2*3-4`, but the writer gives
+   `(1+2)*(3-4)`. Compare each child with its parent using `prec2()`:
+   left `<`, right `<=`. Use `832--` to explain `8-(3-2)` and right-side
+   equality. Digits get precedence 3. Locate parentheses around child
    calls and connect those positions to preorder, inorder, and postorder.
 3. **Trace state and capacity (15 minutes).** Track `write_char()`,
    `infix_pos = 0`, and the terminator. Write another expression and explain
@@ -49,17 +57,24 @@ across two meetings, leaving 20 minutes within the 180-minute weekly limit.
    the visit comments to recover full traversal orders.
 5. **Count and revise (10 minutes).** Explain linear work and height-based
    path storage, with separate progress storage. Revise one prediction
-   using a source statement. Explain why `123--` writes `1-(2-3)` while
-   `12-3-` writes `1-2-3`.
+   using a source statement. Explain why `832--` writes `8-(3-2)` while
+   `83-2-` writes `8-3-2`.
 
 ## Supplement and scope
 
-The [concept slides](../student/ppt_material.md) also give reconstruction
-from preorder `ABDECFG` and inorder `DBEAFCG`: split at `A`, count subtree
-sizes, repeat, and verify postorder `DEBFGCA`. Use the remaining 20 minutes
-if needed. This `A`-rooted tree differs from the supplied `F`-rooted tree;
-distinct labels make the splits unique. No reconstruction function is
-supplied in `lab.c`.
+Use the remaining 20 minutes for the textbook's optional reconstruction.
+Preorder `F A B D E C G` and inorder `D B E A C F G` identify root `F`.
+Split inorder into `D B E A C` and `G`, take the five-node preorder segment
+`A B D E C` for the left subtree, and repeat. Verify postorder
+`D E B C A G F`; distinct labels make the splits unique. No reconstruction
+function is supplied in `lab.c`.
+
+The existing worksheets retain `123*+` for construction and the separate
+`A`-rooted reconstruction from the [concept slides](../student/ppt_material.md).
+Use these as additional practice, with the corresponding
+answers in the answer key. The [lab slides](../student/ppt_lab_material.md)
+cover the same four core algorithms; the textbook supplies this plan's
+main examples and section names.
 
 Current input is nonempty valid postfix, at most seven tokens, with single
 digits and binary `+ - * / %`, no spaces. The writer includes parentheses

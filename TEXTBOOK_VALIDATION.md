@@ -1,5 +1,42 @@
 # Korean Textbook Validation Record
 
+## Chapter 7 Korean, teaching, and website editions updated — 2026-11-06
+
+Published Sites version **234**, source commit
+`e786ffde1ec5cc87ddf708f4e0dfc44500e41467`.
+Deployment `appgdep_6aede490703881918bad9dce3bd67c39` succeeded at
+https://data-structures.chaebinkim.chatgpt.site/chapter-7
+and https://data-structures.chaebinkim.chatgpt.site/en/chapter-7.
+
+The Korean textbook now follows the revised English chapter and Chapter 2's
+seven-section style. The user's Korean title and opening paragraph are preserved.
+The workbook, vocabulary, lab guide, lesson plan, answer key, technical notes,
+module README, and instructor guide follow the updated sequence. The 180-minute
+lesson and A30/B25/C25/D20 rubric remain in place.
+
+Both web readings and textbook downloads match their canonical editions. The
+reader supports seven sections, 55 topics, 18 searchable glossary entries, nine
+commented C blocks, a responsive linked-sequence diagram, the existing interactive
+exercises, and aliases for previous topic links. The 27-member student ZIP and
+editable student downloads were refreshed; instructor materials are excluded.
+No lab.c, ppt_material.md, ppt_lab_material.md, ppt.md, or ppt_lab.md was edited.
+Existing protected website files and course references retain their hashes.
+
+Validation: 34 relevant website tests, 3 synchronization tests, TypeScript,
+strict C11 checks for both textbooks, source-equivalence checks, whitespace
+checks, and production build passed. Browser checks covered Korean and English,
+glossary search, queue enqueue/dequeue, empty endpoints, language switching with
+anchor preservation, legacy anchors, nine code blocks, and 390px mobile layouts
+without horizontal document overflow. Canonical/download tests passed again in
+the main checkout. Production visibly renders the revised Korean chapter.
+Local feedback submission and live GPT responses were not exercised.
+
+Publication used an isolated checkout of version 233. The published Chapter 7
+patch was applied to the main website working tree without committing or changing
+its HEAD. All 15 other pre-existing dirty files and all non-Chapter-7 label values
+were preserved. Public access and environment revision 2 are unchanged.
+Proof: `student-textbook-web/outputs/chapter-seven-editions-published.png`.
+
 ## Chapter 8 interactive visuals improved — 2026-11-04
 
 Published Sites version **233**, source commit

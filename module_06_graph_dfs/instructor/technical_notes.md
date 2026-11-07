@@ -1,8 +1,13 @@
-# Module 6 Technical Notes — Visit-numbered Concepts and Array Lab
+# Module 6 Technical Notes — Grouping connections in a graph
 
 ## Concept source and numbering
 
-[Concept slides](../student/ppt_material.md) drive the question-led lesson.
+The [textbook](../student/textbook.md) sets the seven-section teaching flow:
+Thinking logically, Calculating efficiency, Glossary, Invariant, Coding
+plan, New C syntax explained, and C code. Use the
+[workbook](../student/class_material.md) in that order; these notes collect
+the detailed reference explanations behind it.
+[Concept slides](../student/ppt_material.md) provide supporting diagrams.
 The diagram shows the completed visit numbering of a fixed DFS, 1–7.
 Refer to vertices by visit number; retrace from visit 1 with ascending
 diagram neighbors. Its endpoint visit pairs are:
@@ -158,10 +163,10 @@ Deleting a vertex removes all incident connections from the stored graph.
 These are three representation choices, not three structures required by
 all graph implementations.
 
-Review storage/addition/deletion, block definition/finding, and Chapter 5
-preorder/inorder reconstruction. The final mini-quiz heading prompts the
-student to submit using classroom instructions. See the [answer key](answer_key.md)
-for the review and the [workbook](../student/class_material.md) for the activity.
+Review storage/addition/deletion and block definition/finding through the
+workbook. The [answer key](answer_key.md) follows its seven sections.
+Chapter 5 reconstruction and instructor-assigned mini-quizzes remain
+separate retrieval activities rather than sections of the revised textbook.
 
 ## Coding source and preconditions
 
@@ -169,8 +174,8 @@ for the review and the [workbook](../student/class_material.md) for the activity
 C behavior. It includes Module 3 graph globals/algorithms and Module 4's
 integer stack. It has no entry point. The
 [original lecture driver](../code/lecture/lab_demo.c) initializes A–J,
-not the new visit-numbered slide graph. [Lab slides](../student/ppt_lab_material.md)
-explain this implementation separately from the revised concept prompts.
+not the seven-vertex conceptual graph. [Lab slides](../student/ppt_lab_material.md)
+provide a supporting view of this implementation.
 
 Assume a valid root in `0..nodes_size-1`, nonempty simple undirected graph,
 symmetric valid stored lists, and fitting fixed capacities. Self-loop
@@ -178,7 +183,7 @@ branches are empty. Parallel and directed inputs are outside the contract.
 No checks enforce these assumptions; globals change directly without
 status codes, allocations, or failure-preservation guarantees.
 
-The revised lab slides introduce `init_visit()` before edge-list storage.
+The textbook introduces `init_visit()` before edge-list storage.
 Teach it as shared traversal preparation: time 0, active discovery cells 0,
 and active parents -1. It does not clear edge storage, lookup, low-link
 values, the pending stack, or block results. The four indexing-wrapper
@@ -197,7 +202,7 @@ same index to both endpoint lookup cells; it does not modify neighbor lists.
 Static zero lookup initialization is insufficient because index 0 is valid;
 `init_edges_list()` resets discovery and parents, clears `edges_size`,
 sets the active lookup to -1, then calls `_init_edges_list(start_node)`.
-Its source parameter is `start_node`; the edge-list slide uses `root`.
+The wrapper parameter `start_node` is a vertex array index.
 
 ## Coding resets and single-call scope
 
@@ -235,6 +240,23 @@ so the boundary is included. Declare `edge` outside the loop for use in
 its condition. The comparison runs in the parent and never indexes the
 root's parent -1. Root children can emit rows; the root's own return emits
 none. An isolate emits no edge row.
+
+## C syntax checkpoints
+
+Use the textbook's syntax section before reading the full implementation.
+Two-dimensional indexing selects a row and then a cell. In `edge_index`,
+both subscripts are vertex indices; in `bcc`, the stored value is an edge
+index. Prefix `++visit_time` assigns visits beginning at 1, while postfix
+`edges_size++` selects record indices beginning at 0. Chained assignment
+increments the counter once and stores the same number twice.
+
+`continue` advances the current neighbor loop rather than returning from
+DFS. `do ... while` pops at least once and stores the boundary before the
+condition ends the loop. `edge` must remain in scope for that condition.
+The included Chapter 3 source already defines `save_back_num()`; the
+textbook shows it for review, not as a second definition to paste beside
+the include. The displayed code keeps the lab's executable behavior while
+adding explanation and consistent indentation.
 
 ## Original A–J reference and cost
 

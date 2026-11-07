@@ -1,9 +1,41 @@
-# Module 6 Vocabulary — Graph Depth-First Search
+# Module 6 Vocabulary — Grouping connections in a graph
 
-> Legacy checked matrix-DFS vocabulary. Current discovery numbers,
-> edge indices, low-link values, and blocks are defined in the repository's
-> `module_06_graph_dfs/student/textbook.md` glossary and practiced in
-> `module_06_graph_dfs/student/class_material.md`.
+## Current textbook terms
+
+Use these terms with the [textbook](textbook.md) and the glossary activity
+in the [bilingual workbook](class_material.md).
+
+| Term / 용어 | Meaning / 뜻 |
+| --- | --- |
+| Depth-first search (DFS) / 깊이 우선 탐색 | Explore an unreached neighbor completely before resuming the current vertex's list. / 미방문 이웃의 탐색을 끝낸 뒤 현재 노드의 이웃 목록을 계속한다. |
+| Visit number / 방문 번호 | Positive discovery order; zero means unvisited. / 처음 도달한 순서의 양수이며, 0은 미방문이다. |
+| DFS parent / DFS 부모 | The vertex that first discovers a child; a root has none. / 자식을 처음 발견한 노드이며 root에는 없다. |
+| Tree edge / 트리 간선 | An edge that first discovers an unreached vertex. / 미방문 노드를 처음 발견하는 간선. |
+| Back edge / 빽 간선 | A non-parent edge from descendant to ancestor in simple undirected DFS. / 단순 무방향 DFS에서 후손에서 부모 이외의 조상으로 가는 간선. |
+| Preorder / 전위 처리 | Work on first entry. / 노드에 처음 들어갈 때 하는 작업. |
+| Postorder / 후위 처리 | Work after all neighbors finish. / 모든 이웃 처리가 끝난 뒤 하는 작업. |
+| Low-link / 빽 번호 | Earliest visit reachable by tree descent and at most one back edge, including self. / 트리 간선으로 내려가 빽 간선을 최대 한 번 사용해 도달하는 가장 이른 방문 번호이며 자신도 후보에 포함한다. |
+| Connected component / 연결 요소 | A maximal group of vertices joined by undirected paths. / 무방향 경로로 연결된 최대 노드 그룹. |
+| Adjacency list / 이웃 목록 | One vertex's neighbors. / 한 노드의 이웃 모음. |
+| Edge list / 간선 목록 | One endpoint-pair record per undirected edge. / 무방향 간선마다 하나씩 저장한 끝점 쌍. |
+| Adjacency matrix / 인접 행렬 | Whether each vertex pair is directly connected. / 두 노드의 직접 연결 여부를 저장한 표. |
+| Edge lookup / 간선 조회표 | Both endpoint orders find the same edge index; -1 means no record in this pass. / 두 끝점 순서가 같은 간선 인덱스를 찾으며, -1은 이번 탐색의 기록 없음을 뜻한다. |
+| Internally vertex-disjoint paths / 내부 노드를 공유하지 않는 경로 | Paths sharing only their endpoints. / 양 끝점만 공유하는 경로. |
+| Biconnected component (block) / 이중 연결 요소(블록) | A maximal connected group with no separating vertex inside; a bridge also forms a single-edge block. / 내부 절단점이 없는 최대 연결 그룹이며 다리 간선도 단일 간선 블록을 만든다. |
+| Cut vertex / 절단점 | A vertex whose removal increases the component count. / 제거하면 연결 요소 수가 증가하는 노드. |
+| Bridge / 다리 간선 | An edge whose removal increases the component count. / 제거하면 연결 요소 수가 증가하는 간선. |
+| Pending-edge stack / 대기 간선 스택 | Handled edges awaiting assignment to a block. / 처리했지만 아직 블록에 배정하지 않은 간선의 스택. |
+| Invariant / 규칙 | A statement that stays true at specified checkpoints. / 정해진 확인 시점마다 계속 참인 설명. |
+
+A visit number, a vertex array index, and an edge record index identify
+different things. The recursive call stack keeps active scans; the explicit
+edge stack keeps pending edge indices.
+
+## Legacy checked matrix-DFS vocabulary
+
+The terms below belong to the separate [checked matrix exercise](lab.md).
+Its Boolean visited array, vertex stack, status codes, and failure guarantees
+do not describe the unchecked array/BCC lecture lab.
 
 Open this reference after completing and preserving the Cognitive Pause.
 

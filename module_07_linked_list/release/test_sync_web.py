@@ -58,7 +58,9 @@ class WebSyncTests(unittest.TestCase):
                                          source.read_bytes())
             for language in ("en", "ko"):
                 reading = (web_root / f"content/chapter-seven.{language}.md").read_text()
-                self.assertIn("](/chapter-7/student/", reading)
+                filename = "textbook.md" if language == "en" else "textbook_korean.md"
+                canonical = (module / "student" / filename).read_text()
+                self.assertEqual(reading, web_reading(canonical, set(names)))
                 self.assertNotIn("](textbook", reading)
             subprocess.run(command, check=True, capture_output=True, text=True)
             self.assertEqual(archive_path.read_bytes(), first_archive)

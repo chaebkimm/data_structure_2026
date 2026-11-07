@@ -1,6 +1,8 @@
-# Module 6 Graph DFS Models — Visit-numbered Slides and Coding Lab
+# Module 6 Graph DFS Models — Grouping connections in a graph
 
-Primary models follow [concept slides](../student/ppt_material.md).
+These models support the revised [textbook](../student/textbook.md) and
+seven-section [workbook](../student/class_material.md). Refer to the
+[concept slides](../student/ppt_material.md) for companion illustrations.
 The numbers 1–7 are the completed visit numbers of the fixed DFS.
 Refer to vertices by these numbers and retrace from visit 1 with ascending
 diagram neighbors. Concept stacks use endpoint visit pairs; every diagram
@@ -88,6 +90,9 @@ giving ten undirected pairs from twenty neighbor entries.
 
 ## Complete pending pairs: bottom → top
 
+The "finish" rows include the parent's comparison after the child returns.
+The postorder checkpoint later in this file is immediately before that return.
+
 | Event | Complete stack | New group, removal order |
 | --- | --- | --- |
 | enter visit 2 | 1–2 | none |
@@ -122,10 +127,31 @@ flowchart LR
 
 Text equivalent: two five-edge blocks share only visit 3 and no edge.
 Each is maximal with two internally vertex-disjoint paths between every
-pair. Removing that vertex leaves triangles on visits 1/2/7 and 4/5/6.
+pair. Removing that vertex leaves the path 1–2–7 and the triangle 4/5/6
+as separate connected components.
 One connected vertex group contains two edge blocks. Peak calls follow
 visits 1/2/3/4/5/6 (six); peak pending stack contains eight pairs.
-The final slide asks for mini-quiz submission; use the workbook's classroom activity.
+Use workbook section 4 to check the accounting and postorder invariants.
+
+## Invariant checkpoints
+
+After each push or completed pop-and-store, every handled edge is exactly
+once pending or assigned. The first block leaves eight handled edges:
+three pending and five assigned. At completion, ten are assigned and none
+remain pending. Include a result row still being filled in the assigned set.
+
+At vertex 4's postorder, before parent 3 compares, separate the stack:
+
+```text
+older prefix: 1–2, 2–3, 1–3
+branch suffix: 3–4, 4–5, 5–6, 3–6, 4–6  <- top
+```
+
+The suffix belongs with incoming edge 3–4. Parent 3 closes it after return.
+At vertex 3's postorder, its suffix is `2–3, 1–3, 3–7, 2–7`, while older
+edge 1–2 below it belongs to the same eventual block. A suffix need not yet
+contain the whole block. Parent/descendant reverse entries never push a
+second copy; the closing pop always includes its boundary edge.
 
 ## Coding model: original A–J example
 
@@ -144,7 +170,7 @@ In this coding example, indexed records are
 0:A→B, 1:B→C, 2:B→D, 3:D→E, 4:E→B, 5:E→F, 6:F→B, 7:F→D.
 Rows `[1]`, `[7,6,5,4,3,2]`, `[0]` have sizes 1/6/1 and share B.
 G–H and isolated I/J are outside A's reach. These outputs do not describe
-the new visit-numbered slide graph.
+the seven-vertex conceptual graph.
 
 ```text
 initialize A–J once

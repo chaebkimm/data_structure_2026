@@ -1,30 +1,32 @@
-# Module 6 Teaching Package — Graph DFS and Blocks
+# Module 6 Teaching Package — Grouping connections in a graph
 
-The [concept slides](student/ppt_material.md) drive the question-led
-lesson. Their diagram displays the completed visit numbers 1–7 of a
-fixed DFS. Refer to vertices by visit number and retrace from visit 1
-with ascending diagram neighbors. The current [lab.c](student/lab.c)
-and [lab slides](student/ppt_lab_material.md) retain the original A–J
-coding example with a separate reference trace.
-The revised lab slides order each call as preorder work, a neighbor loop,
-then postorder work. They teach `init_visit()` separately before edge
-storage and explain the boundary pop using inner blocks already removed
-by deeper child-return comparisons. The lab's behavior is unchanged.
+The [English textbook](student/textbook.md) and [Korean textbook](student/textbook_korean.md)
+set the lesson's seven-section sequence: Thinking logically, Calculating
+efficiency, Glossary, Invariant, Coding plan, New C syntax explained, and
+C code. Use the [concept slides](student/ppt_material.md) and
+[lab slides](student/ppt_lab_material.md) alongside matching questions.
+
+The conceptual graph uses completed DFS visit numbers 1–7. Replay from
+visit 1 with ascending diagram neighbors. The [lab](student/lab.c) uses
+a separate A–J graph and stored neighbor insertion order.
 
 ## Current teaching path
 
-- [English textbook](student/textbook.md) and [Korean textbook](student/textbook_korean.md).
-- [Bilingual workbook](student/class_material.md): neighbor questions,
-  timing, three representations, pair collection, earliest reconnection,
-  full pair stacks/two blocks, review, coding evidence, and mini-quiz submission activity.
+- [Bilingual workbook](student/class_material.md): seven sections of
+  predictions, graph traces, efficiency counts, vocabulary comparisons,
+  invariant checkpoints, a coding plan, syntax questions, and code evidence.
 - [Chapter guide](../instructor_guide/chapter_06.md) and
-  [lesson plan](instructor/lesson_plan.md): two 90-minute meetings in slide order.
-- [Models](diagrams/dfs_models.md): visit-numbered graph, traversal,
-  complete pending pairs, two blocks, and original source reference.
-- [Answer key](instructor/answer_key.md) and [technical notes](instructor/technical_notes.md):
-  concept/coding values, resets, capacities, and costs.
-- [Original driver](code/lecture/lab_demo.c) for original A–J verification.
-- [Optional slide driver](code/lecture/ppt_demo.c) for an independent C experiment.
+  [lesson plan](instructor/lesson_plan.md): the same sequence across two
+  90-minute meetings.
+- [Models](diagrams/dfs_models.md): conceptual graph, tree/back edges,
+  pending stacks, blocks, and the separate alphabet example.
+- [Answer key](instructor/answer_key.md): answers in workbook order.
+- [Technical notes](instructor/technical_notes.md): detailed correctness,
+  reset behavior, capacity limits, and reference outputs.
+- [Vocabulary](student/vocabulary.md): current graph/block terms followed
+  by the separate legacy matrix exercise's vocabulary.
+- [Alphabet driver](code/lecture/lab_demo.c) and
+  [conceptual-graph driver](code/lecture/ppt_demo.c): separate executable examples.
 
 ## Primary concept diagram
 
@@ -42,19 +44,19 @@ emits `[4–6,3–6,5–6,4–5,3–4]` and `[2–7,3–7,1–3,2–3,1–2]`, f
 pairs each, sharing visit 3. Explain the parent's boundary comparison
 immediately after each child returns, including the equality case.
 
-Review graph storage/addition/deletion, block definition/finding, and
-Chapter 5 tree reconstruction. Complete the instructor's mini-quiz and
-submit through the classroom instructions, as requested by the final slide.
+Explain storage/addition/deletion, low-link values, block boundaries, and
+the accounting/postorder invariants. Chapter 5 reconstruction and any
+instructor-assigned mini-quiz remain separate review activities.
 
 ## Coding verification: original A–J source
 
-From `code`, run:
+From the repository root, run both examples:
 
 ```sh
-make lecture
+make -C module_06_graph_dfs/code lecture lecture-ppt
 ```
 
-Plain `make` runs the same original driver. Run `make lab-tests` for nine
+Plain `make` from `code` runs the alphabet driver. Run `make lab-tests` there for nine
 array-lab regression checks, including both supplied graphs, inclusive
 boundaries, root branches, and the separate record/result/stack limits.
 

@@ -1,12 +1,16 @@
-# Chapter 7. Change Order by Changing Links
+# Chapter 7. Organizing data with links
 
-Use the [180-minute plan](../module_07_linked_list/instructor/lesson_plan.md), [question outline](../module_07_linked_list/student/ppt.md), [concept slides](../module_07_linked_list/student/ppt_material.md), [lab slides](../module_07_linked_list/student/ppt_lab_material.md), and exact [lab.c](../module_07_linked_list/student/lab.c). Module 7 teaches acyclic lists, shared-pool lifecycle, caller-linked Stack, and node Queue. The slide outlines are delivered in Week 7.
+Use the [180-minute plan](../module_07_linked_list/instructor/lesson_plan.md), [English textbook](../module_07_linked_list/student/textbook.md), [Korean textbook](../module_07_linked_list/student/textbook_korean.md), and [workbook](../module_07_linked_list/student/class_material.md). Chapter 7 teaches acyclic lists, shared-pool reuse, caller-managed stacks, and queues of node indices. The [question outline](../module_07_linked_list/student/ppt.md), [concept notes](../module_07_linked_list/student/ppt_material.md), [lab slides](../module_07_linked_list/student/ppt_lab_material.md), and [lab.c](../module_07_linked_list/student/lab.c) remain read-only references.
+
+## Reading and lecture flow
+
+Follow the textbook's seven sections: Thinking logically → Calculating efficiency → Glossary → Invariant → Coding plan → New C syntax explained → C code. The workbook uses the same sections. Begin with concrete links and preserve predictions before naming terms; revisit the examples when explaining cost and invariants. The final C section contains nine small implementation blocks.
 
 ## Starting question
 
 > If records stay in numbered slots, how can we change their reading order?
 
-Compare ArrayList shifting with next-index links. After concrete descriptions name node/singly linked list. Save first separately; require every chain to terminate at -1 without revisiting a slot. Follow insertion/deletion, shared-storage benefits/costs, free-chain lifecycle errors, Stack, then Queue.
+Compare array-list shifting with next-index links. After concrete descriptions name node/singly linked list. Save first separately; require every chain to terminate at -1 without revisiting a slot. Follow insertion/deletion, shared-storage benefits/costs, free-chain lifecycle errors, Stack, then Queue.
 
 ## Board walkthrough
 
@@ -28,11 +32,11 @@ A/B fixture: A owns singleton 0(17), B 1(23), free head 2. Detach/recycle A's 0;
 - How can several disjoint lists share one free chain?
 - Why does an old in-range index fail to establish continuing ownership?
 
-## Linked Stack
+## Linked stack
 
 There is no supplied Stack API. To prepend, call `node=new_lnode()` and check success, then write its data, set `lnodes[node].next=first`, and finally set `first=node`. Prepending 17,23,31 in a pristine process gives 2(31)→1(23)→0(17)→-1. Before removal check `first != -1`; save the old index, data, and next, advance `first`, set `lnodes[old].next=-1`, then recycle. The outputs are 31,23,17. Clearing next is required because `free_lnode` accepts only isolated allocations. Never recover data or next through a recycled old index.
 
-## Linked Queue
+## Linked queue
 
 The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a valid allocated, unreferenced, isolated node (`next == -1`). Allocate first with `new_lnode()`, check for `-1`, write `lnodes[node].data=value`, then append. `enqueue_lnode(-1)` is a no-op; the void function does not report allocation failure.
 
@@ -42,6 +46,12 @@ The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtai
 
 Trace reuse of returned 0 behind waiting 1/2: outputs 17,23,31,8 despite nonascending slot order. Require explicit dequeue/copy/recycle and singleton endpoint checks. Module 8 transfers FIFO to array queues and tree levels, then stores whole coordinates in a linear queue for maze BFS.
 
+## New C syntax and code discussion
+
+Have students explain `enum { CAPACITY = 10 };`, the persistent local `static initialized`, no-argument `(void)`, a `void` return type, `qhead = qtail = node`, and the 1-or-0 result of `qhead == -1`. Connect each syntax feature to its purpose: matching limits, preserving live state, expressing a function interface, or updating/querying queue endpoints.
+
+Read the nine commented blocks in textbook order: storage; insertion; detachment; pool initialization; allocation; recycling; queue endpoints; enqueue; dequeue. Callers separately assign data, check returned indices, maintain a stack's first index, and recycle removed nodes.
+
 ## Invariants, costs, and final evidence
 
 - Every active list and the free chain are acyclic, end at `-1`, and contain only indices 0–9.
@@ -50,4 +60,6 @@ Trace reuse of returned 0 behind waiting 1/2: outputs 17,23,31,8 despite nonasce
 - The queue is empty exactly when both endpoints are `-1`; otherwise the tail is reachable and ends at `-1`.
 - Save payload/successor before recycling, then stop using the old owner's index. Index range alone does not establish ownership.
 
-First initialization O(C), later calls O(1); known-position/endpoint mutations O(1); predecessor search/traversal O(n); position i follows i links. Each slot stores extra next integer. Require three original safe test groups and exact traces, compiler output, costs, and corrected prediction in one artifact under the [100-point rubric](../module_07_linked_list/student/rubric.md): A30/B25/C25/D20. Invalid non-sentinel inputs are outside contract. Keep mutations outside assert. Optional pointer libraries/DSU do not widen required work; DSU belongs to Week 14.
+Ask the four invariant questions: what must remain true, what benefit the rules provide, what breaks when they fail, and how operations preserve them. Distinguish preconditions from complete-operation state.
+
+Use the four efficiency categories: reserved pool storage, constant extra traversal state, constant known-position/endpoint updates after initialization, and linear search/traversal. First initialization is O(C), later calls O(1). The third logical node takes two links from the first; direct access to physical slot 2 is different. Each slot stores an extra next integer. Reuse increases the number of values processed over time without increasing simultaneous capacity. Require three original safe test groups and exact traces, compiler output, costs, and corrected prediction in one artifact under the [100-point rubric](../module_07_linked_list/student/rubric.md): A30/B25/C25/D20. Invalid non-sentinel inputs are outside contract. Keep mutations outside assert. Optional pointer libraries/DSU do not widen required work; DSU belongs to Week 14.

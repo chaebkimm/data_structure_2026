@@ -1,4 +1,4 @@
-# Chapter 5. Depth-First Traversal and Expression Trees
+# Chapter 5. Visiting nodes in a tree
 
 ## Starting question
 
@@ -8,19 +8,19 @@ A recursive call frame remembers the paused position. The explicit stack
 version remembers the node index and its next progress step. Preserve
 first predictions before introducing traversal names.
 
-## Board walkthrough
+## Thinking logically: board walkthrough
 
-Use the [lab](../module_05_tree_dfs/student/lab.c),
-[textbook](../module_05_tree_dfs/student/textbook.md), and
-[lab slides](../module_05_tree_dfs/student/ppt_lab_material.md).
-Follow the lab slides' four topics in order.
+Use the revised [textbook](../module_05_tree_dfs/student/textbook.md)
+and the [lab](../module_05_tree_dfs/student/lab.c). Follow the textbook's
+questions from traversal through expression construction and writing.
+Introduce its **Glossary** terms after students explain the examples.
 
 1. Initialize and connect Chapter 2's alphabet tree. Root 5 contains `F`;
    its children are `A [0]` and `G [6]`. `A` has `B [1], C [2]`, and `B`
    has `D [3], E [4]`. `nodes_size` is 10, but only seven are reachable.
-2. Trace preorder `FABDECG`, inorder `DBEACFG`, and postorder `DEBCAGF`
+2. Trace preorder `F A B D E C G`, inorder `D B E A C F G`, and postorder `D E B C A G F`
    at the three visit comment positions. The source does not record or
-   print those symbols; add a recording action to observe them at runtime.
+   print those symbols; use written traces or debugger observations.
    Each leaf makes two calls on `-1`, which return at the base case.
 3. Replace recursive frames with stack indices and progress. Step 0 marks
    preorder and pushes left, step 1 marks inorder and pushes right, and
@@ -28,28 +28,35 @@ Follow the lab slides' four topics in order.
    pushed. The wrapper passes `peek()` to `tree_traversal_proceed(int i)`.
    Include sentinel pushes and immediate pops in the trace. A second run
    requires resetting progress from 3 to 0.
-4. Prepare `postfix` as `123*+`, then trace `build_tree_from_postfix()`:
-   `[0] → [0,1] → [0,1,2] → [0,3] → [4]`. Each operator pops right then
-   left. The final pop returns root 4, leaving `top == -1` and
-   `nodes_size == 5`. Construction records nodes without calculating.
-5. Trace the implemented infix writer for `123*+`, `12+3*`, and `123--`:
-   `1+2*3`, `(1+2)*3`, and `1-(2-3)`. Compare with bare inorder to see
-   why grouping matters. The left comparison is child `<` parent precedence;
-   the right comparison is child `<=` parent. `prec2()` returns 3 for digits
-   and delegates operators to Chapter 4's `prec()`, whose maximum is 2.
+4. Prepare the textbook's `postfix`, `12+34-*`, then trace construction:
+   `[0] → [0,1] → [2] → [2,3] → [2,3,4] → [2,5] → [6]`. Each operator
+   pops right then left. The final pop returns root 6, leaving `top == -1`
+   and `nodes_size == 7`. Its left subtree is `1+2`; its right is `3-4`.
+   Construction records these connections without calculating a value.
+5. Compare bare inorder `1+2*3-4` with the writer's `(1+2)*(3-4)`.
+   Both children need grouping before the root's multiplication. The left
+   comparison is child `<` parent precedence; the right is child `<=`
+   parent. Use `832--` to explain `8-(3-2)`: the right child has equal
+   precedence. `prec2()` returns 3 for digits and delegates operators to
+   Chapter 4's `prec()`, whose maximum is 2.
 6. Follow `write_char()` and the parentheses around each child call.
    `write_infix()` resets `infix_pos` before the helper and appends `'\0'`
-   afterward. For `1+2*3`, final `infix_pos` is 6. A repeated write begins
+   afterward. For `(1+2)*(3-4)`, final `infix_pos` is 12. A repeated write begins
    at index 0; child calls share the advancing position. Count grouped
    `1+(2+(3+4))`: twelve bytes with its terminator fit `infix[20]`.
 
-The companion [concept slides](../module_05_tree_dfs/student/ppt_material.md)
-also reconstruct a separate tree from preorder `ABDECFG` and inorder
-`DBEAFCG`. Root `A` splits inorder into `DBE` and `FCG`; their sizes
-select preorder `BDE` and `CFG`. Repeat to obtain `B` with `D, E` and
-`C` with `F, G`. Verify postorder `DEBFGCA`; require distinct labels.
-Use this as supplemental transfer. No reconstruction function is supplied
-in `lab.c`.
+For optional reconstruction, reuse preorder `F A B D E C G` and inorder
+`D B E A C F G`. Root `F` splits inorder into `D B E A C` and `G`.
+The left subtree has five nodes, selecting preorder `A B D E C`; split
+again at `A`, then `B`. Verify postorder `D E B C A G F` and explain why
+distinct labels matter. No reconstruction function is supplied in `lab.c`.
+
+The existing worksheets retain `123*+` for construction and the separate
+`A`-rooted reconstruction (`ABDECFG`, `DBEAFCG`) from the companion
+[concept slides](../module_05_tree_dfs/student/ppt_material.md). Treat them as additional
+practice; the answer key covers both sets. The
+[lab slides](../module_05_tree_dfs/student/ppt_lab_material.md) cover the
+same core algorithms.
 
 ## Common first thoughts and neutral questions
 
@@ -59,13 +66,26 @@ in `lab.c`.
 - “Resetting the stack restarts traversal.” What progress remains after a run?
 - “All traversal orders describe the same example.” Which root does each example use?
 - “The first pop is the left child.” What tree would that build for `12-`?
-- “Bare inorder preserves meaning.” Which grouping does bare `1-2-3` describe?
+- “Bare inorder preserves meaning.” Does `1+2*3-4` multiply the two subtrees in our expression tree?
 - “Both precedence helpers treat digits alike.” What do `prec()` and `prec2()` return?
 - “Every equal-precedence child needs parentheses.” Which side already groups first?
 - “Every traversal wrapper resets its state.” Which reset is in the writer, and which is absent from stack traversal?
 - “Seven tokens need only eight output bytes.” How many parentheses does `1234+++` produce?
 
-## Scope and evidence
+## Calculating efficiency and invariant
+
+Use the textbook's four efficiency topics to distinguish fixed array
+storage, used traversal memory, constant work per created node, and linear
+work over a complete tree. Both traversals and writing take linear
+reachable-node time; construction is linear in tokens. Used path/call
+storage is `O(h + 1)`, with separate per-node progress storage.
+
+Then use the four **Invariant** questions: state the rules, their benefit,
+what breaks when they fail, and how to preserve them. Focus on valid child
+links, saved traversal progress, complete subtrees on the postfix stack,
+and the written prefix before the shared output position.
+
+## Coding plan, syntax, and evidence
 
 Use [both inquiry formats](../module_05_tree_dfs/student/inquiry_prompt.md)
 and [both worksheet formats](../module_05_tree_dfs/student/investigation_worksheet.md)
@@ -81,22 +101,26 @@ validate input or bounds. Current grouped output needs at most twelve
 bytes and fits `infix[20]`. A ten-node path plus its sentinel needs eleven
 stack entries, exceeding `stack[10]`; the supplied example fits.
 
+Connect **Coding plan** to **New C syntax explained** and **C code**:
+locate early `return`, one-time `{0}` initialization, `progress[i]++`,
+the `switch` cases, and the shared `infix_pos++`. Distinguish resetting the
+writer cursor on each complete call from initializing global progress once.
+
 Run `make lecture` from `module_05_tree_dfs/code`, then `make lab-tests`.
 Predict completion, progress, and conversion/build/write output before
-running; trace or debug for complete visit orders. Both traversals and
-writing take linear reachable-node time; construction is linear in tokens.
-Used path/call storage is `O(h + 1)`, with separate per-node progress
-storage.
+running; trace or debug for complete visit orders. The existing driver
+starts with Chapter 4's converted expression `123*-4+`, so its expected
+output is listed separately in the answer key.
 
 The pointer-based copy/print/evaluate starter, its tests, and autopsy
 remain a separate assignment. Graph visited state comes later.
 
 ## Final check
 
-> For `123--`, what does the current writer emit, why is the right subtree
+> For `832--`, what does the current writer emit, why is the right subtree
 > parenthesized, and what happens if the same tree is written twice?
 
-It emits `1-(2-3)` because the right child has equal precedence to its
+It emits `8-(3-2)` because the right child has equal precedence to its
 parent and must remain grouped before the outer subtraction. Each write
 starts at position 0 and ends at position 8 including the terminator.
 No writer reset or parentheses extension is needed for this repeated output.

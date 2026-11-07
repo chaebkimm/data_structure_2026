@@ -1,6 +1,12 @@
-# Module 07 Lab — Linked Lists
+# Chapter 7 Lab — Organizing data with links
 
-Use [lab.c](lab.c), the [textbook](textbook.md), [workbook](class_material.md), and all three slide Markdown sources: [questions](ppt.md), [concepts](ppt_material.md), and [lab slides](ppt_lab_material.md). Trace supplied operations and add safe caller/tests. Submit one Week 7 artifact.
+Use the [English textbook](textbook.md) or [Korean textbook](textbook_korean.md), the [workbook](class_material.md), and [lab.c](lab.c). Trace the supplied operations and write callers/tests in separate files. Submit one Week 7 artifact. The [question outline](ppt.md), [concept notes](ppt_material.md), and [lab slides](ppt_lab_material.md) remain reference materials.
+
+## Reading and coding sequence
+
+Follow the textbook's seven sections: Thinking logically, Calculating efficiency, Glossary, Invariant, Coding plan, New C syntax explained, and C code. Use the workbook to record a prediction before each experiment. The textbook presents the implementation as nine small C blocks; their comments and indentation explain the same operations as `lab.c`.
+
+Before coding, explain `CAPACITY`, the local `static` initialization guard, `(void)` parameters, a `void` return type, chained assignment, and the comparison returned by `is_empty_queue()`. Then plan allocation, data assignment, linking, removal, data reading, and recycling as distinct steps.
 
 ## Build and test
 
@@ -39,13 +45,13 @@ In another process, allocate all ten and request an eleventh. Expect `-1` with u
 
 For first removal, guard `first != -1`, save index/data/next, advance first, isolate the old node with next=-1, then recycle. Keep each detached allocation owned until attached or returned.
 
-## 4. Shared pool and linked Stack
+## 4. Shared pool and linked stack
 
 In a pristine run A owns singleton 0(17), B singleton 1(23), and free head is 2. Remove A's sole node, set its first to -1, and recycle 0. `new_lnode()` returns 0 with old data 17 and next=-1. Write 8, set its next to B's first 1, then set B's first to 0. B reads 8,23. A's old index is stale; diagnose old reads/writes on paper. Repeated initialization cannot reset this live pool.
 
 There is no supplied Stack API. To prepend, call `node=new_lnode()` and check success, then write its data, set `lnodes[node].next=first`, and finally set `first=node`. Prepending 17,23,31 in a pristine process gives 2(31)→1(23)→0(17)→-1. Before removal check `first != -1`; save the old index, data, and next, advance `first`, set `lnodes[old].next=-1`, then recycle. The outputs are 31,23,17. Clearing next is required because `free_lnode` accepts only isolated allocations. Never recover data or next through a recycled old index.
 
-## 5. Linked Queue
+## 5. Linked queue
 
 The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a valid allocated, unreferenced, isolated node (`next == -1`). Allocate first with `new_lnode()`, check for `-1`, write `lnodes[node].data=value`, then append. `enqueue_lnode(-1)` is a no-op; the void function does not report allocation failure.
 
@@ -71,4 +77,4 @@ In another pristine run allocate/append all ten. An eleventh `new_lnode()` retur
 
 Add three original groups in `code/tests/test_lab_student.c`: allocation/exhaustion with shared-pool accounting; insertion/traversal with first insertion; detachment/recycling/reuse with linked Stack and Queue. Return every owned node between experiments or use separate processes. Compare exact links, endpoints, values, ownership, and retained data.
 
-Submit tests, compiler commands/output, [evidence](evidence_template.md), one corrected prediction, and costs. The [rubric](rubric.md) totals 100 points. Count fixed local work, O(n) search/traversal, O(C) first initialization versus O(1) later calls, and one extra integer link per slot. Pointer-list/DSU references remain optional; array queues/BFS belong to Module 8.
+Submit tests, compiler commands/output, [evidence](evidence_template.md), one corrected prediction, and costs. The [rubric](rubric.md) totals 100 points. Explain the four textbook cost categories: reserved pool storage, constant extra state for iterative traversal, constant work for a known-node update after initialization, and linear traversal/search. The first initialization takes O(C) work; later initializer calls take O(1). Reaching the third node follows two links. Each slot reserves an extra integer link, even when unused. Pointer-list/DSU references remain optional; array queues/BFS belong to Module 8.

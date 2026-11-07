@@ -1,11 +1,12 @@
-# Module 5 Answer Key
+# Module 5 answer key: Visiting nodes in a tree
 
-These answers match the current [lab](../student/lab.c),
-[lab slides](../student/ppt_lab_material.md), [textbook](../student/textbook.md),
-and both worksheet formats. The lab marks visit positions with comments,
-writes grouping-preserving infix, and resets its writer cursor. A progress
-reset for repeated stack traversal remains an extension. The legacy
-pointer exercise has its own contracts.
+Use the revised [textbook](../student/textbook.md) for the teaching examples
+and the [lab](../student/lab.c) for implemented behavior. The lettered
+sections retain the existing worksheets' answers, with the textbook's
+construction and reconstruction examples identified separately. The lab
+marks visit positions with comments, writes grouping-preserving infix,
+and resets its writer cursor. Stack traversal requires the caller to reset
+progress before reuse. The legacy pointer exercise has its own contracts.
 
 ## A–B. Alphabet tree and recursion
 
@@ -19,9 +20,9 @@ pointer exercise has its own contracts.
 | Postorder | `D E B C A G F` | `F` |
 
 These are traces of the visit comment positions. The current lab neither
-records them nor defines `pre_data`, `in_data`, or `post_data`. A student
-can add printing, appending, or another data-processing action at each
-position; the last node alone would not retain a complete order.
+records them nor defines `pre_data`, `in_data`, or `post_data`. Use written
+traces or debugger observations to recover each complete order. Overwriting
+one value would retain only the last node, not the complete order.
 
 At `D`, the real-node calls are `F, A, B, D`; height is three edges.
 Each caller still needs its inorder visit, right subtree, and postorder
@@ -50,6 +51,24 @@ entries to zero before reuse. The wrapper itself resets only `top`.
 
 ## D. Postfix construction
 
+### Textbook example: `12+34-*`
+
+| Token/index | Left | Right | Stack after token | `nodes_size` |
+| --- | ---: | ---: | --- | ---: |
+| `1` / 0 | -1 | -1 | `[0]` | 1 |
+| `2` / 1 | -1 | -1 | `[0,1]` | 2 |
+| `+` / 2 | 0 | 1 | `[2]` | 3 |
+| `3` / 3 | -1 | -1 | `[2,3]` | 4 |
+| `4` / 4 | -1 | -1 | `[2,3,4]` | 5 |
+| `-` / 5 | 3 | 4 | `[2,5]` | 6 |
+| `*` / 6 | 2 | 5 | `[6]` | 7 |
+
+The final pop returns root 6 and leaves `top == -1`; peak usage is three.
+The root joins `1+2` on the left and `3-4` on the right, representing
+`(1+2)*(3-4)`. Reversing the children of node 5 would change `3-4` to `4-3`.
+
+### Existing worksheet example: `123*+`
+
 | Token/index | Left | Right | Stack after token | `nodes_size` |
 | --- | ---: | ---: | --- | ---: |
 | `1` / 0 | -1 | -1 | `[0]` | 1 |
@@ -68,6 +87,9 @@ conversion or supply a valid string before building.
 
 | Postfix | Current writer output |
 | --- | --- |
+| `12+34-*` | `(1+2)*(3-4)` |
+| `832--` | `8-(3-2)` |
+| `83-2-` | `8-3-2` |
 | `123*+` | `1+2*3` |
 | `12+3*` | `(1+2)*3` |
 | `123--` | `1-(2-3)` |
@@ -84,12 +106,18 @@ so digits never receive parentheses. Operator precedences are at most 2.
 The writer preserves the tree's grouping, including `1+(2+3)`, without
 using arithmetic identities to simplify it.
 
-If parentheses were omitted, `12+3*` would produce `1+2*3` and lose its
-left subtree's grouping; `123--` would produce `1-2-3` and lose its right
-subtree's grouping. Those bare strings are comparison examples, not the
-updated writer's output.
+For the textbook tree, bare inorder gives `1+2*3-4`, losing both groups
+required by the multiplication root. Its equal-precedence example needs
+`8-(3-2)` to keep the right subtraction together. In the worksheet,
+omitting parentheses from `12+3*` would give `1+2*3`, and from `123--`
+would give `1-2-3`. These bare strings are comparisons, not writer output.
 
 ## F. Output state and demo
+
+For the textbook's `12+34-*`, the writer emits `(1+2)*(3-4)`: eleven
+visible characters, the terminator at index 11, and final `infix_pos == 12`.
+The output position always points to the next free cell during writing;
+the terminating write advances it once more.
 
 For `123*+`, characters are `1 + 2 * 3 \0`; the terminator is at index 5
 and final `infix_pos` is 6. The wrapper resets the position before writing.
@@ -143,13 +171,23 @@ permit linear time with distinct labels.
 
 ## H. Optional transfer: reconstruction
 
+### Textbook example: the `F`-rooted alphabet tree
+
+Preorder `F A B D E C G` selects `F` as root. Inorder `D B E A C F G`
+splits into the five-node left subtree `D B E A C` and right leaf `G`.
+The left preorder segment is `A B D E C`, so its root is `A`; splitting
+inorder there gives `D B E` and `C`. The remaining left root is `B`, with
+`D` and `E` as its children. Postorder is `D E B C A G F`.
+
+### Existing worksheet and concept-slide example: the `A`-rooted tree
+
 Root `A` splits inorder into `DBE` and `FCG`. Each subtree has three nodes,
 selecting preorder `BDE` and `CFG`. Their roots `B` and `C` split into
 children `D, E` and `F, G`. Postorder is `DEBFGCA`. Distinct labels allow
 unique splits; repeated labels can be ambiguous. This is the companion
 concept slides' `A`-rooted tree, unlike Chapter 2's `F`-rooted tree.
-Reconstruction supplements the lab slides' four-step sequence. No
-reconstruction function is supplied in `lab.c`.
+Both reconstruction examples extend the textbook's recursive reasoning.
+No reconstruction function is supplied in `lab.c`.
 
 Assess preserved predictions and revisions justified by source statements.
 Do not attribute the pointer exercise's copying, evaluation, validation,

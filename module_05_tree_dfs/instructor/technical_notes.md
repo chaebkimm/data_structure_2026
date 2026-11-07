@@ -1,8 +1,8 @@
-# Module 5 Technical Notes
+# Module 5 technical notes: Visiting nodes in a tree
 
 ## Representation and integration
 
-The [lab](../student/lab.c) and [lab slides](../student/ppt_lab_material.md)
+The [textbook](../student/textbook.md) and [lab](../student/lab.c)
 reuse Chapter 2's tree and Chapter 4's stack. `nodes[10]` stores characters
 and integer child indices; `-1` marks an absent child. `nodes_size` counts
 initialized/constructed slots, not reachable nodes. `alphabet_init()`
@@ -23,8 +23,8 @@ Reusable projects should separate declarations into headers.
 and after its two unconditional child calls. The three visit comments are
 positions for data processing; they do not execute an action or assign
 visit globals. For the alphabet tree the potential orders are preorder
-`FABDECG`, inorder `DBEACFG`, and postorder `DEBCAGF`. Leaves make two
-empty-child calls.
+`F A B D E C G`, inorder `D B E A C F G`, and postorder `D E B C A G F`.
+Leaves make two empty-child calls.
 
 The iterative version uses shared `stack[10]` and `progress[10]`. The
 wrapper passes the current top to `tree_traversal_proceed(int i)`.
@@ -46,20 +46,27 @@ progress also assumes links form a tree without shared children or cycles.
 `postfix[8]` initially is empty. Convert Chapter 4's default `eq` to obtain
 `123*-4+`, or supply valid postfix. `build_tree_from_postfix()` resets
 `top` and `nodes_size`, creates one node per token, pops right before left,
-and returns its final root with `pop()`. For `123*+`, root is 4, count 5,
-final `top == -1`, and peak stack use is three. Stack entries are subtree
-indices, not calculated values.
+and returns its final root with `pop()`. The textbook's `12+34-*` creates
+root 6 (`*`), with root 2 (`+`) on its left and root 5 (`-`) on its right.
+It constructs seven nodes, uses at most three stack entries, and leaves
+`top == -1` after the final pop. Stack entries are subtree indices, not
+calculated values. The worksheet's smaller `123*+` example returns root 4
+with five nodes and the same peak stack use of three.
 
 Require nonempty valid postfix of up to seven tokens: single digits and
 binary `+ - * / %`, no spaces or unary/multidigit operands. Every operator
 needs two roots and exactly one root remains before the final pop. Every
 nondigit is treated as an operator; the builder performs no validation.
 
-The companion concept slides reconstruct a tree from preorder and
-inorder, assuming distinct labels: `ABDECFG` and `DBEAFCG` yield root `A`,
-children `B, C`, and leaves `D, E, F, G`. This supplemental activity is
-separate from the lab slides' four core steps; no reconstruction function
-is supplied.
+The textbook's optional reconstruction reuses the alphabet tree:
+preorder `F A B D E C G` and inorder `D B E A C F G` yield root `F`.
+Its left subtree has five nodes (`A B D E C` in preorder); its right is
+`G`. Split again at `A`, then at `B`, to recover the original links.
+Distinct labels permit unique splits. The existing concept slides and
+worksheets instead use `ABDECFG` and `DBEAFCG`, a separate `A`-rooted tree
+with children `B, C` and leaves `D, E, F, G`. Keep that as additional
+practice rather than mixing its orders with the textbook tree. No
+reconstruction function is supplied.
 
 ## Precedence-aware writer
 
@@ -76,8 +83,12 @@ under left associativity, even when arithmetic could simplify it.
 `write_infix()` resets `infix_pos` to zero, calls the helper, and appends
 `'\0'`. Repeated writes therefore replace the visible string, including
 when a new result is shorter. Child calls must not reset the cursor.
-`123*+` produces `1+2*3`, with the terminator at index 5 and final position
-6; `12+3*` produces `(1+2)*3`; `123--` produces `1-(2-3)`.
+The textbook's `12+34-*` produces `(1+2)*(3-4)`, with the terminator at
+index 11 and final position 12; bare inorder would give `1+2*3-4`.
+Its equal-precedence example, `832--`, produces `8-(3-2)`, whereas
+`83-2-` produces `8-3-2`. For the worksheet examples, `123*+` produces
+`1+2*3` with final position 6, `12+3*` produces `(1+2)*3`, and `123--`
+produces `1-(2-3)`.
 
 The helper returns on a negative root, so `write_infix(-1)` writes an
 empty string. For nonempty expressions require digit leaves and binary

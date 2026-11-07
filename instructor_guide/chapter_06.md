@@ -1,56 +1,51 @@
-# Chapter 6. Graph DFS, Edge Storage, and Blocks
+# Chapter 6. Grouping connections in a graph
 
-Teach in the question order of the
-[concept slides](../module_06_graph_dfs/student/ppt_material.md), with the
-[bilingual workbook](../module_06_graph_dfs/student/class_material.md) and
-[models](../module_06_graph_dfs/diagrams/dfs_models.md).
-The [lesson plan](../module_06_graph_dfs/instructor/lesson_plan.md) allocates
-90 + 90 minutes. The final coding exercise follows the current
-[lab](../module_06_graph_dfs/student/lab.c) and
-[lab slides](../module_06_graph_dfs/student/ppt_lab_material.md).
+Teach the revised [English textbook](../module_06_graph_dfs/student/textbook.md)
+and [Korean textbook](../module_06_graph_dfs/student/textbook_korean.md) in
+their seven-section order. Use the [bilingual workbook](../module_06_graph_dfs/student/class_material.md)
+for predictions and corrections, and the [lesson plan](../module_06_graph_dfs/instructor/lesson_plan.md)
+for two 90-minute meetings. The [concept slides](../module_06_graph_dfs/student/ppt_material.md)
+and [lab slides](../module_06_graph_dfs/student/ppt_lab_material.md) support
+matching questions within this sequence.
 
-## Starting question
+## 1. Thinking logically
 
-> At visit 3, which neighbor needs a new exploration, which connection
-> was already handled, and which connection returns to an ancestor?
+Begin with: “How can we record every connection once, then group connections
+that hold together when one vertex is removed?” Build on Chapter 3's
+adjacency lists, Chapter 4's stack, and Chapter 5's entry/return timing.
 
-The diagram's numbers 1–7 are visit numbers from its completed fixed DFS.
-Refer to vertices by these numbers and retrace from visit 1 with ascending
-diagram neighbors. Preserve predictions before revealing completed traces.
+Use the textbook's seven-vertex graph. Numbers 1–7 identify vertices by
+completed DFS visit order, rather than C array positions. Replay from
+visit 1 using ascending diagram neighbors. Preserve predictions before
+showing completed values.
 
 ```text
 1–2, 1–3, 2–3, 2–7, 3–4, 3–6, 3–7, 4–5, 4–6, 5–6
 ```
 
-## Question-led board walkthrough
+1. Compare neighbor lists, edge records, and a presence matrix. Ask how
+   3–6 is stored, how absent edge 1–7 is added, and which references are
+   removed with vertex 7. Distinguish an adjacency matrix from a lookup
+   of recorded edge indices.
+2. At visit 3, classify ancestor 1, parent 2, new child 4, descendant 6
+   after 4 returns, and new child 7. Test the parent before interpreting
+   a smaller number as an ancestor back edge. The graph is simple and
+   undirected; these are not general directed-edge classification rules.
+3. Place discovery at preorder, tree-edge work before recursion, completed
+   branch work immediately after child return, and postorder after every
+   neighbor finishes. Record each tree edge and ancestor back edge once.
+4. Trace visit 6's low-link value: begin at 6, lower it to 3 through 6 → 3,
+   and keep 3 when examining 6 → 4. Pass the result through 5 and 4.
+   Final values are 1/1/1/3/3/3/2 for visits 1–7.
+5. Define maximal blocks with two internally vertex-disjoint paths between
+   every pair when at least three vertices are present. Include bridges
+   as single-edge blocks; an isolate has no edge to group.
+6. Trace the textbook's five stack steps. Compare a child's low-link with
+   its parent's visit number after return. A smaller value stays pending;
+   equality or a larger value closes through the incoming tree edge,
+   including that boundary.
 
-1. Retrieve endpoints, neighbor lists, tree/back connections, and visit/
-   earliest-reconnection numbers. At visit 3 identify ancestor 1, parent 2,
-   child 4, descendant 6 after 4 returns, and child 7. The parent also has
-   a smaller visit number, so recognize it before the ancestor case.
-2. Follow preorder work, the neighbor loop, then postorder work. Number at
-   entry before scanning any neighbor, set a child's parent before descending,
-   resume the paused scan on return, and use postorder after all neighbors. Blank
-   circles ask students to fill visit numbers at the current stage;
-   partially highlighted connections show progress through the same graph.
-3. Review Chapter 3's adjacency lists. Introduce endpoint-pair edge lists
-   and adjacency matrices as new Chapter 6 representations, then compare them.
-   Ask where 3–6 is stored, how each representation inserts/deletes it,
-   and what deleting the vertex at visit 3 must remove. Keep both directions
-   consistent in lists/matrices and one record per undirected pair.
-4. Collect a child connection before descent and a non-parent ancestor
-   connection without repeated descent. Skip parent/descendant reverse
-   entries. Write pairs with the smaller endpoint visit number first.
-5. Ask for visit 6's earliest number. Begin at 6; 6 → 3 lowers it to 3.
-   The later 6 → 4 cannot lower 3. Propagate this value through visit 5
-   to visit 4. Final values are 1/1/1/3/3/3/2 for visits 1–7.
-6. Predict maximal blocks with two internally vertex-disjoint paths
-   between every pair. Push pairs on the edge stack. Immediately after a
-   child returns, its parent compares the child's earliest number with
-   its own visit number. Equality or a larger value closes a block; pop
-   through the parent–child pair, including it. Two five-edge blocks share visit 3.
-
-| Return | Comparison | Emitted visit pairs, removal order |
+| Return | Comparison | Completed block, pop order |
 | --- | --- | --- |
 | 6 → 5 | 3 < 5 | none |
 | 5 → 4 | 3 < 4 | none |
@@ -59,135 +54,126 @@ diagram neighbors. Preserve predictions before revealing completed traces.
 | 3 → 2 | 1 < 2 | none |
 | 2 → 1 | 1 ≥ 1 | 2–7, 3–7, 1–3, 2–3, 1–2 |
 
-Visit 1's own return emits no further group; the stack finishes empty.
-Use the workbook's exact three-target retrieval pause. Require one
-correction supported by a number, pair, or timing statement.
+Two five-edge blocks share cut vertex 3. The connected component contains
+all seven vertices. Root 1 has one DFS child and is not a cut vertex;
+its own return emits no further block.
 
-## Edge-stack invariant checkpoint
+## 2. Calculating efficiency
 
-Use workbook 6.1 after the trace. At every push or completed pop-and-store
-checkpoint, each handled undirected edge is exactly once either pending
-or assigned, with no overlap. Assigned includes edges already stored in
-the result row being formed. Stack order is the recording order of still
-unassigned edges; removal is LIFO. Parent/descendant reverse entries never
-push again.
+Use the textbook's four headings: storage, traversal memory, adding an
+item, and traversal time. Fixed arrays reserve their full capacities.
+A pair table grows quadratically even if few edges are present. A new
+record and two lookup writes take constant time with available capacity;
+a new matrix row and column require work proportional to the vertex count.
 
-Ask students to explain initialization with empty sets, maintenance by
-adding one new edge or transferring one edge to a result row, and
-termination with every reached edge assigned and an empty pending stack.
-The low-link boundary argument additionally establishes the grouping:
-after a child returns, its parent closes the remaining unassigned suffix
-through and including the parent–child pair when the child's earliest
-number is at least the parent's visit number. A smaller value leaves it
-pending; equality closes it. Inner blocks may already have been removed.
-Explain the new lab slide's suffix argument: separately closing inner
-blocks were popped by deeper child-return comparisons. Every remaining
-suffix edge belongs with the boundary edge, and the qualifying low-link
-comparison prevents reconnection above the parent. Only then does that
-suffix form the whole block; without the condition it can remain part of
-a larger BCC.
+The conceptual graph has seven entries and twenty neighbor inspections
+per pass, or 21 and 60 across three passes. Initializing its active lookup
+writes 49 cells. Peak recursion follows 1/2/3/4/5/6, and the peak edge
+stack holds eight edges. Generalized traversal is `O(R + E_R)`; including
+lookup preparation makes the full pipeline `O(V² + E_R)`.
 
-After 4 returns and closes its block, eight edges have been handled:
-three pending and five assigned. After 3 returns to 2, ten have been
-handled: five pending and five assigned. The right block is already
-assigned even though it lies in the returned subtree. After 2 returns
-to 1, zero are pending and all ten are assigned. Keep fitting the fixed
-stack as a separate capacity precondition, outside the logical invariant.
+Distinguish allocated slots from active entries. `edges[45]` and
+`bcc[9][45]` cover the maximum records and edge-block rows for ten vertices,
+but the imported `stack[10]` still limits simultaneously pending edges.
 
-Also stop at **postorder before the parent's comparison**: immediately
-before a nonroot call returns, its full neighbor scan and all child
-boundary decisions are complete. Every edge in that DFS branch has been
-handled and is pending or assigned. The suffix from its still-pending
-incoming parent edge through the top contains exactly that edge and the branch's
-unassigned edges; all are in the same eventual BCC as the incoming edge.
-The older stack prefix may contain other BCCs or other edges of that BCC,
-and future scans may add more. Do not identify the suffix with the whole
-stack or with a necessarily complete BCC.
+## 3. Glossary
 
-루트가 아닌 노드의 postorder에서, 이웃과 자식의 처리는 모두 끝났지만
-부모의 복귀 후 비교는 아직이다. 들어온 부모 간선부터 맨 위까지 남은
-구간의 간선은 모두 그 부모 간선과 같은 최종 BCC에 속한다. 그 아래의
-오래된 대기 간선과 구별하며, 이 구간이 BCC 전체라고 단정하지 않는다.
+Have students explain the workbook's term pairs using the graph. Focus on
+visit number versus array index; tree versus back edge; presence matrix
+versus edge lookup; connected component versus block; cut vertex versus
+bridge; and call stack versus pending-edge stack. Use the textbook's short
+definitions as feedback after students attempt their own explanations.
 
-At visit 4's postorder, the suffix is `3–4, 4–5, 5–6, 3–6, 4–6`;
-older prefix `1–2, 2–3, 1–3` is in a different BCC. After 4 returns,
-parent 3 tests `3 ≥ 3` and closes the suffix inclusively. At visit 3's
-postorder, suffix `2–3, 1–3, 3–7, 2–7` omits older `1–2`, which is
-in the same BCC. Parent 2's `1 < 2` leaves this work pending. A root has
-no incoming parent edge and reaches postorder with the stack empty after
-all child closures.
+## 4. Invariant
 
-## Midterm review and mini-quiz
+Ask the same four questions as the textbook: What are the rules? What do
+they guarantee? What breaks when they fail? How do we preserve them?
 
-Explain graph storage/insertion/deletion in all three representations,
-then block definition and finding. Removing a vertex removes all incident
-connections from the rest of the stored graph.
+After each push or completed pop-and-store step, every handled edge appears
+exactly once, either pending or assigned. Assigned includes a row still
+being filled. Check identities as well as counts. Initialization starts
+with empty collections; pushes add one new edge; pop-and-store transfers
+one edge. The first completed block leaves 8 = 3 + 5, and completion gives
+10 = 0 + 10. An empty stack alone does not establish correct grouping.
 
-Cross-reference [Chapter 5](chapter_05.md): preorder `ABDECFG` and inorder
-`DBEAFCG` split at A into `DBE | A | FCG`; their sizes select preorder
-`BDE` and `CFG`. Repeat and verify postorder `DEBFGCA` for this separate tree.
-The final slide requests mini-quiz submission. Students complete the
-instructor's questions, check their reasoning, and submit through classroom
-instructions. The workbook supplies the activity prompt.
+Stop at non-root postorder before the parent compares. At vertex 4, older
+prefix `1–2, 2–3, 1–3` lies below suffix `3–4, 4–5, 5–6, 3–6, 4–6`.
+Only the suffix belongs with incoming edge 3–4. Parent 3 closes it after
+return. At vertex 3, suffix `2–3, 1–3, 3–7, 2–7` omits older edge 1–2,
+although that edge is in the same eventual block. The suffix need not be
+the entire block or the whole stack.
 
-## Coding connection: original A–J source
+루트가 아닌 노드가 부모에게 돌아가기 직전, 들어온 부모 간선부터 맨 위까지
+남은 구간은 그 부모 간선과 같은 최종 블록에 속한다. 부모는 복귀 후 빽 번호를
+비교한다. 전체 스택이나 완성된 블록 전체와 구별한다.
 
-Only here introduce C names, internal indices, and record IDs. `lab.c`
-includes the Chapter 3 A–J graph and Chapter 4 integer stack; it does not
-initialize the slide graph. Read `_edge_iteration_()` before specializing
-its branches. Follow the lab slide order by isolating `init_visit()` before
-edge-list storage: it resets time, discovery, and parents only. Then read
-the template's child/ancestor specializations with `add_edge()` or `push()`.
-Child order is record or push, assign parent, recurse. `add_edge()` records existing
-adjacency, without constructing it. The source names the `init_edges_list()`
-parameter `start_node`; its slide excerpt uses `root`.
-That wrapper resets discovery/parents, clears the record count, fills the
-active lookup with -1, then indexes the reached edges. `find_bcc()` performs
-the low-link pass, empties the stack, and resets discovery for the extraction
-pass while retaining `back_num`. The latter two passes must reproduce the
-same start and neighbor order. After each child call, strict `<` leaves
-its pending suffix on the stack; otherwise the inclusive pop closes a block.
+Deeper comparisons already removed separate inner blocks. The remaining
+suffix becomes a whole block when the low-link comparison prevents
+reconnection above the parent. Equality reconnects to the parent but
+cannot bypass it. Preserve that boundary inclusively and keep the same
+root/order between saved low-links and extraction. Fitting capacities are
+an additional precondition.
 
-Map the invariant to `stack[0..top]` and the stored edge indices in `bcc`.
-Within `close_bcc()`, entries already stored at `bcc[cur][0..pos-1]` count
-as assigned before `bcc_size[cur]` is finalized. Check after the store
-following each `pop()`. The parent-side comparison is
-`back_num[adj] < visit_num[node]`, immediately after `_find_bcc(adj)`.
-The `tree_edge` boundary was pushed before descent. Preserve the same
-saved-number traversal and fresh result-state assumptions.
+## 5. Coding plan
 
-Run `make lecture` from `module_06_graph_dfs/code` in a fresh process.
-A reaches A/B/C/D/E/F, discovery 1–6, earliest 1/2/3/2/2/2.
-Eight records produce rows `[1]`, `[7,6,5,4,3,2]`, `[0]`, sizes 1/6/1,
-sharing B. G–H and I/J are outside this start's reach. The body-first pop
-loop includes the parent edge. Low-link computation and extraction must
-reproduce the same numbering.
+Explicitly switch to the original A–J graph in the [lab](../module_06_graph_dfs/student/lab.c).
+It includes Chapter 3's graph storage and Chapter 4's integer stack.
+Explain preparation, edge indexing, low-link calculation, pending-edge
+grouping, and result reading before following individual statements.
 
-The optional [slide driver](../module_06_graph_dfs/code/lecture/ppt_demo.c)
-stores neutral A–G data at internal indices 0–6 and prints edge endpoints
-from actual visit numbers 1–7. Its two five-edge rows verify the concept
-trace independently, without changing original A–J output.
+`init_edges_list()` resets visits/parents, clears the edge count, fills
+lookup cells with `-1`, and indexes the starting component. `find_bcc()`
+resets visits, saves low-links, resets the stack and visits, then groups
+edges while retaining `back_num`. There are three DFS passes across the
+two wrappers. Reproduce the same root and neighbor order.
 
-Use the [answer key](../module_06_graph_dfs/instructor/answer_key.md) and
-[technical notes](../module_06_graph_dfs/instructor/technical_notes.md).
-The full array pipeline is `O(V² + E_R)` including lookup initialization;
-traversal is `O(R + E_R)`. Unchecked capacities and missing result-count
-reset limit the source to its supplied one-call scope. The matrix starter
-retains separate legacy assignment contracts.
-The updated arrays reserve `edges[45]`, `bcc[9][45]`, and `bcc_size[9]`.
-The imported `stack[10]` still requires at most ten pending edge indices.
-Distinguish the ten-vertex maximum of 45 simple undirected edges and nine
-edge blocks from the stack's separate capacity.
+Neither wrapper sweeps other components. `find_bcc()` does not clear the
+result count or rows; repeated calls need explicit management. Reindexing
+another component also changes the meaning of old edge indices.
 
-## Neutral questions for common first thoughts
+## 6. New C syntax explained
 
-- “Every smaller-numbered neighbor is an ancestor back connection.” Is it the parent?
-- “3 → 6 is a new child.” When is that neighbor checked?
-- “The blank circle changes the graph.” Which visit numbers are filled at this stage?
-- “Every endpoint entry creates a pair.” Which reverse direction was already processed?
-- “Visit 6's earliest number is 4.” Which earlier visit can 6 reach directly?
-- “The edge stack stores nodes.” Which endpoint pair waits at the top?
-- “Every edge in a returned subtree is still pending.” Which inner block was already assigned?
-- “A popped edge disappears until the row is finished.” Where has that edge already been stored?
-- “Equality leaves the group pending.” Can this branch reconnect above its parent?
-- “The new slide graph changes the original lab output.” Which input does each driver initialize?
+Use the workbook's short expressions before the full code. Explain
+row/column indexing, prefix versus postfix increments, chained assignment,
+`continue`, `do ... while`, and included source definitions.
+
+Ask why `continue` advances the neighbor loop, why `edge` is declared
+outside `do`, and why the boundary is written before the condition ends
+the loop. The textbook's `save_back_num()` is a review of an already
+included function, so students must not create a duplicate definition.
+
+## 7. C code
+
+Read snippets in textbook order: dependencies, visit reset, neighbor
+classification, edge storage, edge indexing, lookup preparation, low-link
+review, result rows, grouping, and wrappers. Preserve the distinction
+between stored vertex indices, visit numbers, and edge indices.
+
+Predict before running both drivers from the repository root:
+
+```sh
+make -C module_06_graph_dfs/code lecture lecture-ppt
+```
+
+A reaches A–F with visits 1–6 and lows 1/2/3/2/2/2. Eight records produce
+rows `[1]`, `[7,6,5,4,3,2]`, `[0]`, of lengths 1/6/1; all three blocks
+share B. G–H and isolated I/J are unreached. The source graph has four
+connected components. Peak calls are five, pending edges seven, neighbor
+inspections sixteen per pass, and lookup writes one hundred.
+
+The conceptual driver uses A–G data at indices 0–6 and prints actual
+visit-number endpoints 1–7. Its two rows are `[7,6,5,4,3]` and
+`[9,8,2,1,0]`. Both drivers finish with an empty stack.
+
+Record commands and compiler diagnostics. Label lookup and intermediate
+stack claims as source, hand-trace, or debugger evidence because the
+drivers print final tables. Use the [answer key](../module_06_graph_dfs/instructor/answer_key.md)
+and [technical notes](../module_06_graph_dfs/instructor/technical_notes.md)
+for detailed checks.
+
+Finish with retrieval of three targets: neighbor cases at 3, equality
+closing at 4 → 3, and saved work in calls versus the edge stack. Preserve
+first answers and require evidence for corrections. Optional Chapter 5
+reconstruction and instructor-assigned mini-quizzes remain separate from
+the seven-section reading. The legacy checked matrix assignment retains
+its own contracts and assessment schedule.

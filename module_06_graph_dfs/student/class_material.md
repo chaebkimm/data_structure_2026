@@ -1,127 +1,81 @@
-# Chapter 6 Class Workbook / 6장 수업 활동 — Graph DFS
+# Chapter 6 Class Workbook / 제6장 수업 활동 — 그래프의 연결 묶기
 
 이름 / Name: ____________________  날짜 / Date: ____________________
 
-[개념 슬라이드 / Concept slides](ppt_material.md)의 질문 순서로 진행한다.
-[영문 교재 / English textbook](textbook.md), [한글 교재 / Korean textbook](textbook_korean.md),
-[실습 슬라이드 / Lab slides](ppt_lab_material.md)를 함께 사용한다.
-Use the concept slides' question order. Preserve initial predictions and
-write corrections beside them. Every table may instead be answered as a
-numbered list with the same fields.
+[영문 교재 / English textbook](textbook.md)와 [한글 교재 / Korean textbook](textbook_korean.md)의 일곱 절 순서로 진행한다. 먼저 예상하고, 확인한 뒤 수정과 근거를 덧붙인다. 표는 같은 항목을 가진 번호 목록으로 답해도 된다.
+Follow the textbooks' seven sections. Preserve predictions, then add corrections with evidence. A numbered list with the same fields may replace any table.
 
-개념 그림의 1–7은 정해진 DFS의 방문 번호다. 아래에서는 노드를 방문 번호로
-가리킨다. 마지막 코딩 활동은 최신 [lab.c](lab.c)와 원래 A–J 그래프를 사용한다.
-The concept diagram's numbers 1–7 are visit numbers from the fixed DFS.
-Refer to vertices by these visit numbers. The final coding activity uses
-the current lab with the original A–J graph; keep its trace separate.
+[개념 슬라이드 / Concept slides](ppt_material.md)와 [실습 슬라이드 / Lab slides](ppt_lab_material.md)는 해당 질문을 설명할 때 함께 참고한다. 이 활동의 개념 예제는 방문 번호 1–7의 그래프다. C 활동의 A–J 그래프는 별도 예제다.
+Use the slides alongside the matching questions. Keep the numbered conceptual graph separate from the alphabet graph used by the C lab.
 
-## 1. 이웃 간선의 종류는? / What kind of neighbor connection is this?
+## 1. 논리적으로 생각해 보기 / Thinking logically
 
-그림은 DFS의 방문 번호가 모두 정해진 상태다. 방문 1에서 시작하고, 그림의
-이웃 번호를 오름차순으로 확인했던 과정을 되짚는다. 방문 번호는 1부터 시작한다.
-The diagram shows the completed numbering of a fixed DFS. Retrace that
-exploration from visit 1, checking diagram neighbors in ascending order.
-Visit numbers begin at 1.
+### 연결을 어떻게 저장하고 탐색할까? / How do we store and explore connections?
+
+개념 그림의 1–7은 정해진 DFS가 끝난 뒤의 방문 번호다. 방문 1에서 시작하여 아래 이웃 순서로 탐색을 되짚는다. 탐색 중에는 처음 도달할 때에만 번호를 붙인다.
+The numbers identify vertices by the completed DFS visit order. Replay from visit 1 in the neighbor order below; assign each number only on first entry.
 
 ```text
-Endpoint visit pairs / 끝점 방문 번호 쌍:
+Edges / 간선:
 1–2, 1–3, 2–3, 2–7, 3–4, 3–6, 3–7, 4–5, 4–6, 5–6
 
 1:[2,3]       2:[1,3,7]     3:[1,2,4,6,7]
 4:[3,5,6]     5:[4,6]       6:[3,4,5]     7:[2,3]
 ```
 
-방문 3에서 각 이웃을 확인했던 시점마다 네 종류 중 하나를 고른다: 아직
-탐색하지 않은 트리 자식, 트리 부모, 부모가 아닌 빽 간선 조상, 이미 처리한 빽 간선 후손.
-At each actual encounter from visit 3, choose: unexplored tree child,
-tree parent, non-parent back-edge ancestor, or processed back-edge descendant.
+3장의 이웃 목록을 복습한 뒤, 간선 목록과 인접 행렬을 비교한다. 3–6은 이미 있으므로, 추가 실험에서는 아직 없는 1–7을 사용한다.
+Review Chapter 3's adjacency lists, then compare edge lists and adjacency matrices. Edge 3–6 already exists; use the absent edge 1–7 for the insertion question.
+
+각 편집 질문은 별도로 생각하고, 이후 DFS 추적에는 원래 그래프를 사용한다.
+Treat each editing question independently; use the original graph for the DFS trace below.
+
+| Representation / 표현 | Store 3–6 / 3–6 저장 | Add 1–7 / 1–7 추가 | Delete 3–6 / 3–6 삭제 |
+| --- | --- | --- | --- |
+| Neighbor lists / 이웃 목록 | | | |
+| Edge list / 간선 목록 | | | |
+| Adjacency matrix / 인접 행렬 | | | |
+
+노드 7을 삭제하면 어떤 간선과 참조를 없애야 할까? 간선 기록이 이동하면 조회표는 어떻게 바꿀까?
+Which edges and references disappear when vertex 7 is removed? What lookup entries must change if edge records move?
+
+예상과 수정 / Prediction and correction: ___________________________
+
+### 방문 3의 이웃을 어떻게 구별할까? / How do we classify vertex 3's neighbors?
+
+각 이웃을 실제로 확인하는 시점에 분류한다. 방문 번호는 배열 인덱스와 다르다.
+Classify each neighbor at the time it is examined. A visit number differs from a storage index.
 
 | Encounter / 확인 | Kind / 종류 | Explore again? / 다시 탐색? | Evidence / 근거 |
 | --- | --- | --- | --- |
 | 3 → 1 | | | |
 | 3 → 2 | | | |
 | 3 → 4 | | | |
-| 3 → 6, after 4 returns / 4의 탐색 후 | | | |
+| 3 → 6, after 4 returns / 4 복귀 후 | | | |
 | 3 → 7 | | | |
 
-부모를 먼저 구별해야 하는 이유는? / Why distinguish the parent before
-comparing visit numbers?
-
-Initial prediction / 첫 예상: ______________________________________
-
-Correction and evidence / 수정과 근거: ______________________________
-
-## 2. 작업은 언제 하는가? / When does each action happen?
-
-한 호출은 preorder 작업, 이웃 반복, postorder 작업 순서로 진행한다.
-preorder에서 방문 번호를 붙인 뒤 이웃 반복을 시작한다.
-새 자식에게 부모를 정해 준 뒤 내려간다.
-자식의 탐색이 끝나면 부모의 멈춰 있던 이웃 확인을 이어간다.
-postorder는 현재 노드의 모든 이웃을 확인한 뒤다.
-Each call performs preorder work, the neighbor loop, then postorder work.
-Assign the visit number at entry before the loop. Set a new child's parent
-before exploring it. After return, resume the parent's paused neighbor scan.
-Postorder occurs after scanning all of the current vertex's neighbors.
-
-| Visit number / 방문 번호 | Parent visit number / 부모 방문 번호 |
-| --- | --- |
-| 1 | |
-| 2 | |
-| 3 | |
-| 4 | |
-| 5 | |
-| 6 | |
-| 7 | |
-
-방문 3에서 4로 내려가기 직전과 돌아온 직후, 기다리는 작업은 무엇인가?
-What work waits at visit 3 immediately before and after exploring visit 4?
+부모를 조상 빽 간선보다 먼저 구별하는 이유를 설명한다. preorder, 자식 복귀 직후, postorder에 각각 어떤 작업을 하는가?
+Explain why the parent case comes before the ancestor-back-edge case. Identify work at preorder, immediately after a child returns, and at postorder.
 
 ____________________________________________________________________
 
-빈 원에 해당 시점의 방문 번호를 적고, 확인한 간선을 강조한다. 그림의 숫자는
-방문 번호이며, 빈 원과 부분 강조는 작업을 진행하는 판서 활동이다.
-Annotate blank circles with the visit numbers reached at that stage and
-highlight handled connections. The diagram's numbers are visit numbers;
-blank circles and partial highlights are a board activity showing progress.
+### 간선을 한 번씩 기록하려면? / How do we record each edge once?
 
-## 3. 간선을 저장하는 세 방법은? / Three ways to store connections
+트리 간선은 자식에 들어가기 전에, 빽 간선은 후손에서 조상으로 읽을 때 기록한다. 기록 순서를 방향을 포함해 적는다. 입력의 연결 자체는 무방향이다.
+Write the recording order with directions: tree edges before child entry, back edges toward ancestors. The input connections remain undirected.
 
-3장에서는 이웃 목록만 배웠다. 여기서는 이웃 목록을 복습하고, 간선 목록과
-인접 행렬을 6장의 새 표현으로 배운다.
-Chapter 3 taught adjacency lists only. Review those lists, then learn
-edge lists and adjacency matrices as new representations in Chapter 6.
+열 개 기록 / Ten records: __________________________________________
 
-세 표현은 같은 그래프를 저장한다. 이웃 목록은 한 노드의 이웃을 모으고,
-간선 목록은 끝점 쌍을 모으며, 인접 행렬은 두 끝점으로 연결을 조회한다.
-The three representations store the same graph: neighbor lists collect
-a vertex's neighbors, an edge list collects endpoint pairs, and an
-adjacency matrix supports lookup by two endpoints.
-
-| Representation / 표현 | Store 3–6 / 3–6 저장 | Add 3–6 / 추가 | Delete 3–6 / 삭제 |
-| --- | --- | --- | --- |
-| Neighbor lists / 이웃 목록 | | | |
-| Edge list / 간선 목록 | | | |
-| Adjacency matrix / 인접 행렬 | | | |
-
-간선 목록의 장점과 행렬의 장점은? 노드를 삭제하면 연결된 간선은 어떻게 처리하는가?
-What is useful about an edge list and a matrix? What happens to incident
-connections when deleting a vertex?
+3–6과 6–3의 조회 결과가 같아야 하는 이유와 기록 없음 표시가 `-1`인 이유는?
+Why must 3–6 and 6–3 find the same record, and why is the missing-record marker `-1`?
 
 ____________________________________________________________________
 
-## 4. 같은 간선을 두 번 모으지 않으려면? / Collect each connection once
+### 빽 번호는 어디까지 되돌아갈 수 있음을 나타낼까? / How far back can a branch reconnect?
 
-자식으로 내려갈 때 트리 간선을 모은다. 부모가 아닌 조상을 볼 때 빽 간선을
-모은다. 부모와 후손 방향은 반대쪽에서 이미 처리했으므로 건너뛴다.
-Collect tree connections before entering a child and back connections
-when encountering a non-parent ancestor. Skip parent and descendant
-directions already processed from the other endpoint.
+자신의 방문 번호로 시작한다. 조상 빽 간선에서는 조상의 방문 번호를, 자식 복귀 후에는 자식의 빽 번호를 비교하여 더 작은 값을 남긴다.
+Start with the vertex's own visit number. Compare ancestor visit numbers along back edges and completed child low-link values after return; keep the smaller value.
 
-모은 순서대로 끝점 방문 번호 쌍을 적는다. 작은 번호를 먼저 쓴다. 예: 3 → 1은 1–3.
-List endpoint visit-number pairs in collection order, smaller number first:
-3 → 1 becomes 1–3.
-
-| Collection order / 모은 순서 | Endpoint visit pair / 끝점 방문 번호 쌍 | Tree or back? / 트리 또는 빽? |
+| Visit / 방문 | Parent visit / 부모 방문 | Low-link / 빽 번호 |
 | --- | --- | --- |
 | 1 | | |
 | 2 | | |
@@ -130,325 +84,193 @@ List endpoint visit-number pairs in collection order, smaller number first:
 | 5 | | |
 | 6 | | |
 | 7 | | |
-| 8 | | |
-| 9 | | |
-| 10 | | |
 
-1 → 3을 나중에 확인할 때 왜 다시 모으지 않는가?
-Why is 1 → 3 not collected again when visit 1 eventually scans it?
+방문 6에서 이웃 3과 4를 처리하면 값이 어떻게 바뀌는가? 그 값이 5와 4로 돌아가는 과정을 설명한다.
+How do neighbors 3 and 4 affect vertex 6's value? Explain how the result returns through 5 and 4.
 
 ____________________________________________________________________
 
-## 5. 방문 6의 빽번호는? / What is visit 6's earliest reconnection number?
+### 어느 간선을 한 블록으로 묶을까? / Which edges form a block?
 
-자신의 방문 번호로 시작한다. 조상으로 가는 빽 간선에서는 조상의 방문 번호를,
-자식이 돌아왔을 때는 자식의 빽번호를 비교해서 더 작은 값을 남긴다.
-빽번호는 트리 간선을 따라 내려가고 빽 간선을 최대 한 번 사용해 도달할 수 있는
-가장 이른 방문 번호이며, 자신의 방문 번호도 후보에 포함한다.
-Begin with the vertex's own visit number. Compare an ancestor's visit
-number along a back connection and a child's earliest number after its
-return. Keep the smaller value: the earliest visit reachable by tree
-descent and at most one back connection, including self.
+세 노드 이상인 블록에서는 어느 두 노드 사이에도 내부 노드를 공유하지 않는 두 경로가 있다. 이런 성질을 가진 최대 그룹을 찾는다. 다리 간선은 하나의 간선 블록이 될 수 있다.
+A block with at least three vertices has two internally vertex-disjoint paths between every pair. Find maximal groups with that property. A bridge can form a single-edge block.
 
-| Visit number / 방문 번호 | Earliest reconnection / 빽번호 |
-| --- | --- |
-| 1 | |
-| 2 | |
-| 3 | |
-| 4 | |
-| 5 | |
-| 6 | |
-| 7 | |
-
-방문 6에서 이웃 3과 4를 확인할 때의 비교를 설명한다. 빽번호 3으로 돌아갈 수
-있는 조상은 어느 방문인가? / Explain visit 6's comparisons at neighbors
-3 and 4. Which earlier visit can it reconnect to with an earliest number of 3?
+두 블록의 간선과 공유하는 노드를 예상한다. 3–6의 두 경로를 예로 들고, 노드 3을 제거하면 무엇이 분리되는지 설명한다.
+Predict both blocks and their shared vertex. Give two paths between 3 and 6, then explain what separates when vertex 3 is removed.
 
 ____________________________________________________________________
 
-## 6. 끈끈한 간선을 찾으면? / Which connections belong together?
+아래의 복귀 행은 부모가 자식의 빽 번호를 비교한 뒤의 상태다. 스택은 바닥부터 맨 위까지, 완성된 블록은 꺼낸 순서대로 적는다.
+Return rows show the state after the parent's comparison. List the stack bottom to top and completed blocks in pop order.
 
-세 노드 이상인 끈끈한 그룹에서는 어느 두 노드 사이에도 내부 노드를 공유하지
-않는 두 경로가 있다. 끝점은 공유해도 된다. 최대 그룹을 찾으며, 서로 다른 그룹은
-경계 노드를 공유할 수 있지만 간선은 공유하지 않는다.
-In a block of at least three vertices, every pair has two paths with no
-shared internal vertex; endpoints may be shared. Find maximal blocks.
-Different blocks may share a boundary vertex but do not share connections.
-
-트리 자식 간선과 조상 빽 간선을 스택에 넣는다. 자식의 탐색이 끝나 돌아오면 부모가
-즉시 자식의 빽번호와 자신의 방문 번호를 비교한다. 자식의 빽번호가 부모의 방문 번호
-이상이면, 부모–자식 간선까지 포함해 꺼내서 한 그룹으로 모은다.
-Push child tree pairs and ancestor back pairs. Immediately after a child
-returns, the parent compares the child's earliest number with its own
-visit number. If the child's value is at least the parent's number, remove
-through the parent–child pair, including it, to make one block.
-
-스택은 바닥부터 맨 위까지, 새 그룹은 꺼낸 순서대로 끝점 방문 번호 쌍을 적는다.
-List complete pending pairs bottom to top and each block in removal order.
-아래의 '종료' 행은 자식의 복귀를 부모가 비교한 뒤의 상태다. 6.1의
-postorder 확인 시점은 그 비교 직전이다.
-The “Finish” rows below include the parent's comparison after return;
-section 6.1 also checks postorder just before that comparison.
-
-| Event / 시점 | Complete pending pairs / 전체 대기 쌍 | New block / 새 그룹 |
+| Event / 시점 | Pending edges / 대기 간선 | New block / 새 블록 |
 | --- | --- | --- |
-| Enter visit 3 / 방문 3 진입 | | |
-| Scan 3 → 1 / 3 → 1 확인 | | |
 | Scan 6 → 4, after 6 → 3 / 6 → 3 다음 | | |
-| Finish visit 6 / 방문 6 종료 | | |
-| Finish visit 5 / 방문 5 종료 | | |
-| Finish visit 4 / 방문 4 종료 | | |
-| Scan 7 → 2 / 7 → 2 확인 | | |
-| Finish visit 7 / 방문 7 종료 | | |
-| Finish visit 3 / 방문 3 종료 | | |
-| Finish visit 2 / 방문 2 종료 | | |
-| Finish visit 1 / 방문 1 종료 | | |
+| Return 6 → 5 / 복귀 | | |
+| Return 5 → 4 / 복귀 | | |
+| Return 4 → 3 / 복귀 | | |
+| Scan 7 → 2 / 확인 | | |
+| Return 7 → 3, then 3 → 2 / 복귀 | | |
+| Return 2 → 1 / 복귀 | | |
 
-방문 4의 빽번호와 부모 방문 3의 번호가 같을 때도 그룹을 꺼내는 이유는?
-Why does equality between visit 4's earliest number and parent visit 3 close a block?
+`low[child] >= visit[parent]`에서 같은 경우도 닫는 이유는? 경계 트리 간선을 포함해야 하는 이유는?
+Why does equality close a block, and why must the pop include the boundary tree edge?
 
 ____________________________________________________________________
 
-두 그룹의 끝점 방문 번호 쌍과 공유하는 방문을 적는다.
-List both blocks' endpoint visit pairs and identify their shared visit.
+## 2. 효율 계산해보기 / Calculating efficiency
+
+### 저장 공간 / Storage
+
+이웃 목록, 간선 목록, 인접 행렬의 저장 공간을 비교한다. 실습이 예약한 `edges[45]`, `edge_index[10][10]`, `bcc[9][45]`, `bcc_size[9]`를 실제 사용한 칸 수와 구별한다.
+Compare neighbor-list, edge-list, and matrix storage. Distinguish the lab's reserved arrays from the entries used in this run.
 
 ____________________________________________________________________
 
-### 6.1. 간선 스택의 불변식 / Edge-stack invariant
+### 탐색 중 저장 공간 / Traversal memory
 
-**불변식**은 정해진 확인 시점마다 계속 참인 설명이다. 새 트리 간선이나 조상
-빽 간선을 처리해 넣은 직후, 또는 한 간선을 꺼내 결과 행에 기록한 직후를 확인한다.
-An **invariant** stays true at each checkpoint: just after pushing a newly
-handled tree/ancestor pair, or after popping and storing one result pair.
-
-**한 번 처리한 각 undirected 간선은 대기 스택 또는 결과 그룹 중 정확히 한 곳에
-한 번만 있다.** 아직 꺼내는 중인 결과 행에 기록한 간선도 결과에 포함한다.
-두 곳은 겹치지 않는다. 스택의 바닥부터 위까지는 아직 배정하지 않은 간선의
-처리 순서이고, 꺼낼 때는 그 역순이다. 부모·후손 방향의 반대 항목은 다시 넣지 않는다.
-**Every handled undirected edge occurs exactly once, either pending on the
-stack or assigned to a block.** Assigned includes pairs already stored in
-the row being formed. These sets are disjoint. Bottom to top preserves the
-recording order of unassigned pairs; removal reverses it. Reverse parent
-and descendant entries never push another copy.
-
-자식이 돌아왔어도 그 아래의 모든 간선이 대기하지는 않는다. 따로 분리되는 안쪽
-그룹은 더 깊은 호출의 자식 복귀 비교에서 이미 꺼냈다.
-부모가 자식의 빽번호를 비교할 때 값이 더 작으면 남겨 두고,
-같거나 크면 **아직 배정하지 않은** 맨 위 구간을 부모–자식 경계 간선까지 포함해
-꺼낸다. 이 조건에서는 남은 가지가 부모보다 먼저 방문한 조상으로 우회할 수 없다.
-따로 분리할 안쪽 그룹도 남아 있지 않으므로 이 구간이 하나의 완성된 그룹이다.
-A returned subtree has already emitted any separately closing inner blocks
-at deeper child-return comparisons. After return,
-the parent leaves the remaining pairs pending if the child's earliest
-number is smaller than the parent's visit number. Otherwise, the next
-block is the **unassigned** suffix through and including that child's
-boundary pair. The remaining branch cannot bypass the parent to an earlier
-ancestor, and no separately closing inner block remains in that suffix.
-These facts make the qualifying suffix one complete block.
-
-**Postorder 확인 시점: 부모에게 돌아가기 직전 / Postorder checkpoint: just
-before returning to the parent.** 루트가 아닌 노드 `v`의 모든 이웃 확인과
-자식별 그룹 처리가 끝나면, `v`에서 뻗은 DFS 가지의 간선은 모두 처리되어
-스택에서 대기하거나 결과 그룹에 배정되어 있다. 부모에서 `v`로 들어온
-간선부터 스택 맨 위까지의 구간은 이 가지에서 아직 배정하지 않은 간선과
-들어온 간선이며, 모두 들어온 간선과 같은 최종 BCC에 속한다. 그 아래의
-오래된 대기 간선까지 같은 BCC일 필요는 없다. 같은 BCC의 다른 간선이
-이미 그 아래에 있거나 나중에 추가될 수 있으므로 이 구간을 완성된 BCC로
-보지는 않는다.
-When a nonroot vertex `v` finishes all neighbors and all decisions for its
-children, every edge in its completed DFS branch has been handled and is
-either pending or assigned. The stack suffix from the incoming parent edge
-through the top consists exactly of that edge and the branch's still-unassigned edges;
-all belong to the same eventual BCC as the incoming edge. The older prefix
-below it may contain another BCC. The suffix need not yet be the full BCC:
-other edges of that BCC may lie below it or be added later.
-
-방문 4의 postorder에서, 부모 3이 비교하기 **전**의 스택을 두 부분으로
-나누어 적는다. 아래 구간 `1–2, 2–3, 1–3`과 위 구간
-`3–4, 4–5, 5–6, 3–6, 4–6`은 서로 다른 BCC다. 방문 4가 돌아오면
-부모 3은 `3 ≥ 3`을 확인해 위 구간을 경계 `3–4`까지 포함해 꺼낸다.
-At visit 4's postorder, **before** parent 3 compares, the older prefix is
-`1–2, 2–3, 1–3` and the suffix is `3–4, 4–5, 5–6, 3–6, 4–6`.
-These belong to different BCCs. After return, parent 3 tests `3 ≥ 3` and
-pops the suffix through boundary `3–4`, including it.
-
-방문 3의 postorder에서 전체 대기는 다섯 간선이지만, 들어온 간선 `2–3`부터의
-구간은 `2–3, 1–3, 3–7, 2–7`이다. 더 아래의 `1–2`도 같은 BCC에 속한다.
-루트에는 들어온 부모 간선이 없으며, 모든 자식의 경계 처리를 마친 postorder에는
-스택이 비어 있다.
-At visit 3's postorder, five edges are pending in the whole stack, but its
-suffix begins at `2–3`: `2–3, 1–3, 3–7, 2–7`. The older `1–2` below it
-belongs to the same BCC. A root has no incoming parent edge; at its
-postorder, all child boundaries have been handled and the stack is empty.
-
-방문 4의 postorder와 부모의 비교 직후는 어떻게 다른가? 방문 3의 위 구간이
-완성된 BCC 전체가 아닌 이유는? / How does visit 4's postorder differ from
-the state after its parent's comparison? Why is visit 3's suffix not the
-entire BCC?
+개념 예제에서 가장 깊은 호출 경로와 가장 많은 대기 간선을 적는다. 재귀 호출의 저장 공간과 간선 스택의 목적을 구별한다. `edges[45]`가 있어도 `stack[10]`에 한계가 있는 이유는?
+Give the deepest call path and peak pending stack. Distinguish saved call work from pending edges. Why does `edges[45]` not enlarge `stack[10]`?
 
 ____________________________________________________________________
 
-| Checkpoint / 확인 시점 | Handled pairs / 처리한 수 | Pending / 대기 수 | Assigned, including forming row / 결과 수 |
+### 항목 추가 / Adding an item
+
+여유 공간이 있을 때 한 간선 기록과 두 조회 셀을 쓰는 비용은? 새 노드의 행렬 행과 열을 초기화하는 비용은?
+With available capacity, what is the cost of writing one record and its two lookup cells? What is the cost of initializing a new vertex's matrix row and column?
+
+____________________________________________________________________
+
+### 탐색 작업 / Traversal work
+
+| Seven-vertex example / 7노드 예제 | Count / 횟수 |
+| --- | --- |
+| Vertex entries per pass / 한 번의 탐색에서 노드 진입 | |
+| Neighbor inspections per pass / 한 번의 이웃 확인 | |
+| Vertex entries across three passes / 세 번의 노드 진입 | |
+| Neighbor inspections across three passes / 세 번의 이웃 확인 | |
+| Lookup cells initialized / 조회표 초기화 칸 | |
+
+탐색은 `O(R + E_R)`인데 전체 과정은 왜 `O(V² + E_R)`인가?
+Why is one traversal `O(R + E_R)` while the full process is `O(V² + E_R)`?
+
+____________________________________________________________________
+
+## 3. 용어 정리 / Glossary
+
+교재의 용어 정의를 자신의 말로 설명한다. 각 쌍이 같은 뜻이 아닌 이유를 예로 든다.
+Explain these terms in your own words, using one example to distinguish each pair.
+
+1. 방문 번호와 배열 인덱스 / Visit number and array index
+2. 트리 간선과 빽 간선 / Tree edge and back edge
+3. 인접 행렬과 간선 조회표 / Adjacency matrix and edge lookup
+4. 연결 요소와 블록 / Connected component and block
+5. 절단점과 다리 간선 / Cut vertex and bridge
+6. 호출 스택과 대기 간선 스택 / Call stack and pending-edge stack
+
+설명 / Explanations: _______________________________________________
+
+## 4. 규칙 / Invariant
+
+### 어떤 규칙이 유지되어야 할까? / What must remain true?
+
+새 간선을 넣은 직후 또는 한 간선을 꺼내 결과에 기록한 직후, 처리한 각 간선은 스택 또는 결과 중 정확히 한 곳에 한 번만 있어야 한다. 작성 중인 결과 행도 포함한다.
+After each push or completed pop-and-store step, every handled edge appears once, either pending or assigned. Assigned includes the row being filled.
+
+| Checkpoint / 확인 시점 | Handled / 처리 | Pending / 대기 | Assigned / 결과 |
 | --- | --- | --- | --- |
-| Start extraction / 추출 시작 | 0 | 0 | 0 |
-| After 4 returns and its block closes / 4 복귀 후 그룹 완성 | 8 | | |
+| Start / 시작 | 0 | 0 | 0 |
+| First pop stored / 첫 pop을 기록한 후 | 8 | | |
+| First block completed / 첫 블록 완성 | 8 | | |
 | After 3 returns to 2 / 3에서 2로 복귀 후 | 10 | | |
-| After 2 returns and its block closes / 2 복귀 후 그룹 완성 | 10 | | |
+| Finished / 종료 | 10 | | |
 
-처음에는 왜 참인가? 새 간선 넣기와 꺼내 결과에 기록하기는 왜 이를 유지하는가?
-도달한 그룹의 탐색이 끝나 스택이 비면 무엇을 결론낼 수 있는가?
-Explain initialization, preservation by push and pop-and-store, and what
-an empty stack proves after the reached connected group is fully scanned.
+### 규칙을 지키면 무엇이 좋을까? / What does the rule guarantee?
 
-____________________________________________________________________
-
-이 불변식과 저장 용량은 별개다. 실습의 `stack[10]`에는 동시에 대기하는 간선이
-10개 이하여야 한다. 간선 기록용 `edges[45]`가 이 조건을 대신하지 않는다.
-Capacity is a separate precondition: the lab's `stack[10]` must fit the peak
-pending count, even though `edges[45]` can record more connections.
-
-## 7. 5분 회상 / Five-minute retrieval pause
-
-자료를 덮고 세 질문에 답한다. 첫 답을 남기고, 비교 후 수정과 근거를 덧붙인다.
-Close the sources. Answer exactly these three targets, retain the first
-response, then add corrections and evidence after comparison.
-
-1. 방문 3의 이웃 네 종류를 예로 설명한다. / Give all four neighbor kinds at visit 3.
-2. 방문 6의 빽번호와 방문 4의 그룹 경계를 설명한다. / Explain visit 6's earliest number and the boundary at visit 4.
-3. 호출이 기억하는 작업과 스택의 대기 간선을 구별한다. / Distinguish call work from pending edge pairs.
-
-First response / 첫 답: ____________________________________________
-
-Correction and evidence / 수정과 근거: ______________________________
-
-## 8. 중간고사 복습 / Midterm review
-
-1. 세 표현에서 노드·간선을 저장하고 추가하고 삭제하는 방법을 설명한다.
-   Explain vertex/edge storage, insertion, and deletion in all three representations.
-2. 끈끈한 그룹의 정의와 방문 번호·빽번호·스택을 이용해 찾는 방법을 설명한다.
-   Define a block and explain how visit numbers, earliest reconnection, and a stack collect it.
-3. [5장 트리 복원 / Chapter 5 reconstruction](../../module_05_tree_dfs/student/textbook.md)의
-   preorder `ABDECFG`, inorder `DBEAFCG`로 트리를 복원한다. 첫 분할과 postorder를 적는다.
-   Reconstruct the tree from those orders; give the first split and resulting postorder.
+방문 4의 postorder에서, 부모 3이 비교하기 전의 스택을 경계 3–4 아래와 위로 나눈다. 어느 구간이 들어온 부모 간선과 같은 최종 블록에 속하는가? 방문 3의 구간은 왜 그 블록 전체가 아닌가?
+At vertex 4's postorder, before parent 3 compares, split the stack at 3–4. Which suffix belongs with the incoming edge? Why is vertex 3's suffix only part of its eventual block?
 
 ____________________________________________________________________
 
-## 9. 코딩 활동: 원래 A–J 그래프 / Coding: original A–J graph
+### 규칙이 깨지면 어떻게 될까? / What if a rule breaks?
 
-여기부터는 [lab.c](lab.c)와 [실습 슬라이드](ppt_lab_material.md)의 C 구현을 읽는다.
-강의 실행 파일은 Chapter 3의 초기화 함수로 A–J를 만든다.
-From here, read the C implementation in the lab and lab slides. This
-lecture driver initializes the original Chapter 3 A–J graph.
+반대 방향을 다시 넣기, 경계 간선을 빼고 꺼내기, 빽 번호 저장 뒤 이웃 순서 바꾸기 중 하나를 선택해 잘못된 결과를 설명한다. 마지막 스택이 비어 있다는 사실만으로 충분한가?
+Choose duplicate pushing, excluding the boundary edge, or changing neighbor order after saving low-links. Explain the failure. Is an empty final stack sufficient evidence?
 
-```text
-A–B, B–C, B–D, B–E, B–F, D–E, D–F, E–F, G–H
-I and J are isolated / I와 J는 고립된 노드
-A:[B] B:[A,C,D,E,F] C:[B] D:[B,E,F] E:[B,D,F] F:[B,D,E]
-G:[H] H:[G] I:[] J:[]
-```
+____________________________________________________________________
 
-먼저 실습 슬라이드의 '간선 탐색 준비하기'를 확인한다. `init_visit()`는
-`visit_time = 0`과 활성 노드마다 `visit_num[i] = 0`, `parent[i] = -1`을 준비한다.
-간선 기록·조회·빽번호·스택·결과를 초기화하는 함수는 아니다.
-Before edge storage, read the lab slides' traversal preparation.
-`init_visit()` resets the time to 0, active discovery cells to 0, and
-active parent cells to -1. It does not clear edge records, lookup cells,
-saved low-link values, the stack, or results.
+### 규칙을 어떻게 지킬까? / How do we preserve the rules?
 
-`_edge_iteration_()`는 방문·부모를 기록하는 틀이다. preorder 번호 기록,
-이웃 반복, postorder 자리의 세 부분을 찾는다. `_init_edges_list()`의 자식
-분기는 `add_edge(node, adj)`, 부모 설정, 재귀 호출 순서다. `add_edge()`는 이미
-존재하는 연결의 기록과 대칭 조회 셀을 만들며, 이웃 목록을 바꾸지 않는다.
-The traversal template records discovery/parents. Locate entry numbering,
-the neighbor loop, and the postorder position in that order. The indexing child
-branch records the edge, sets its parent, then recurses. It does not construct adjacency.
+초기화, 한 번씩 넣기, 꺼낸 즉시 결과에 기록하기, 경계 포함하기, 같은 root와 이웃 순서 사용하기가 각각 어떤 규칙을 지키는지 연결한다.
+Match initialization, once-only pushes, pop-and-store, inclusive boundaries, and unchanged root/order to the rules they preserve.
 
-`init_edges_list(start_node)`를 실습 슬라이드의 네 단계와 맞춘다:
-`init_visit()` 호출, `edges_size`를 0으로 초기화, 활성 `edge_index` 칸을 -1로 초기화,
-`_init_edges_list()` 실행이다.
-간선 인덱스 0도 유효하므로, 기록하지 않은 연결을 0으로 표시할 수 없다.
-Match the wrapper to the lab slide's four steps: call `init_visit()`,
-clear `edges_size` to 0, fill active `edge_index` cells with -1, then call
-`_init_edges_list()`. Edge index 0 is valid, so -1 distinguishes an
-unrecorded connection.
+____________________________________________________________________
 
-`find_bcc(start_node)`는 방문 초기화, 빽번호 저장, 스택 초기화, 방문 재초기화,
-추출의 다섯 작업을 한다. 저장한 `back_num`은 보존한다. 같은 시작점과 같은
-이웃 순서를 사용해야 발견 번호를 재현한다.
-Match these five wrapper actions to the final lab slide. Saved low-link
-values survive the second discovery reset; extraction must reproduce their numbering.
+## 5. 코딩 계획 / Coding plan
 
-두 함수를 차례로 부르면 간선 기록, 빽번호 계산, 그룹 추출의 세 탐색을 한다.
-추출은 자식 호출 직후 `back_num[adj] < visit_num[node]`이면 대기 간선을 남긴다.
-그렇지 않으면 `close_bcc(tree_edge)`가 경계 간선까지 포함해 꺼낸다.
-Calling the two wrappers in order gives three passes: indexing, low-link
-calculation, and extraction. After a child returns, a strict `<` keeps its
-edges pending; otherwise the pop loop includes the boundary tree edge.
+이제 [C 실습](lab.c)의 별도 A–J 예제로 전환한다. 간선은 A–B, B–C, B–D, B–E, B–F, D–E, D–F, E–F, G–H이며 I/J는 고립되어 있다. A에서 시작하면 A–F만 도달한다.
+Switch to the lab's separate A–J graph with these nine edges and isolated I/J. Starting at A reaches only A–F.
 
-[강의 실행 파일 / Lecture driver](../code/lecture/lab_demo.c)는 새 프로세스에서 실행한다.
-From `module_06_graph_dfs/code`, predict before running:
+1. 그래프와 스택 저장 공간을 준비한다. / Prepare graph and stack storage.
+2. 방문과 부모를 초기화하고 도달 간선을 한 번씩 기록한다. / Reset visits/parents and index reached edges once.
+3. 새 탐색에서 빽 번호를 저장한다. / Save low-link values in a fresh DFS.
+4. 스택과 방문 상태를 초기화하되 빽 번호는 보존한다. / Reset pending/visit state while keeping low-links.
+5. 같은 순서로 탐색하고 자식 복귀 후 블록을 닫는다. / Replay the same order and close blocks after child returns.
+6. 결과 행의 간선 인덱스를 끝점으로 바꾸어 읽는다. / Resolve result edge indices into endpoints.
+
+`init_edges_list()`와 `find_bcc()`에 위 단계를 연결한다. 왜 탐색은 세 번인가? `init_visit()`가 보존하는 상태와 재호출 전에 별도로 관리할 결과 상태는?
+Map these steps to the two wrappers. Why are there three passes? Which state survives `init_visit()`, and which result state needs explicit management before reuse?
+
+____________________________________________________________________
+
+## 6. 새로운 C 문법 설명 / New C syntax explained
+
+| Expression / 문장 | Explain the value and effect / 값과 효과 설명 |
+| --- | --- |
+| `edge_index[u][v]` and `bcc[row][pos]` | |
+| `visit_num[node] = ++visit_time` | |
+| `int index = edges_size++` | |
+| `back_num[i] = visit_num[i] = ++visit_time` | |
+| `continue;` after a child's return | |
+| `bcc[cur][pos++] = edge` | |
+| `do { ... } while (edge != boundary_edge);` | |
+| `#include "module_03_graph/student/lab.c"` | |
+
+`edge`를 `do` 바깥에 선언하는 이유는? 교재의 `save_back_num()` 복습 코드를 다시 정의하면 안 되는 이유는?
+Why is `edge` declared outside `do`? Why must the textbook's review copy of `save_back_num()` not be defined again?
+
+____________________________________________________________________
+
+## 7. C 코드 / C code
+
+교재의 코드 순서대로 초기화, 이웃 분류, 간선 저장, 빽 번호, 블록 저장, 그룹 탐색을 읽는다. 각 주석을 해당 조건이나 저장 상태와 연결한다.
+Read initialization, classification, edge storage, low-link review, block storage, and grouping in textbook order. Connect each comment to the condition or state it explains.
+
+새 프로세스에서 예상한 뒤 실행한다. 저장소 루트에서:
+Predict first, then run each driver in a fresh process. From the repository root:
 
 ```sh
-make lecture
+make -C module_06_graph_dfs/code lecture lecture-ppt
 ```
 
-| Coding evidence / 코딩 근거 | Prediction / 예상 | Output or source check / 출력 또는 소스 확인 | Correction / 수정 |
+| A–J coding evidence / A–J 코딩 근거 | Prediction / 예상 | Output or source check / 출력 또는 소스 확인 | Correction / 수정 |
 | --- | --- | --- | --- |
-| Reached vertices and discovery / 도달 노드와 발견 번호 | | | |
-| Indexed edge records / 기록된 간선 수 | | | |
+| Reached vertices and discovery / 도달 노드와 방문 번호 | | | |
+| Edge records / 간선 기록 | | | |
 | Symmetric B–E lookup / B–E 대칭 조회 | | | |
-| Low-link values A–F / A–F 빽번호 | | | |
-| Result rows and sizes / 결과 행과 크기 | | | |
+| Low-link values A–F / A–F 빽 번호 | | | |
+| Result rows and lengths / 결과 행과 길이 | | | |
 | Final stack / 최종 스택 | | | |
 
-조회 셀과 중간 스택은 출력하지 않으므로 소스·손 추적 또는 디버거로 확인한다.
-The driver does not print lookup cells or intermediate stacks; label those
-checks as source, hand trace, or debugger evidence. Resolve result edge indices into endpoint pairs.
+드라이버가 출력하지 않는 조회 셀이나 중간 스택은 소스·손 추적·디버거 근거로 표시한다. 두 번째 드라이버는 내부 인덱스 0–6에 A–G를 저장하고, 개념 그래프의 실제 방문 번호 1–7로 끝점을 출력한다.
+Label lookup or intermediate-stack checks as source, hand-trace, or debugger evidence. The second driver uses internal indices 0–6 with A–G data and prints actual visit-number endpoints for the conceptual graph.
 
-Compiler, command, diagnostics / 컴파일러, 명령, 진단: ________________
+컴파일러, 명령, 진단 / Compiler, command, diagnostics: ________________
 
-16개 이웃 항목을 세 번 확인하고, 조회표 100칸을 준비하는 비용을 설명한다.
-최대 호출 5개와 대기 간선 7개를 실제 예약 용량과 구별한다. 결과 재호출 시
-`current_bcc`가 초기화되지 않는 점을 확인한다.
-Explain three passes over 16 neighbor entries and 100 lookup writes.
-Distinguish peak calls 5/pending connections 7 from reserved capacities.
+자료를 덮고 세 가지를 설명한다: 방문 3의 이웃 분류, 방문 4에서 같은 값으로 블록을 닫는 이유, 호출과 간선 스택이 기억하는 작업. 첫 답을 보존하고 수정 근거를 적는다.
+Close the sources and explain three targets: vertex 3's neighbor cases, equality closing at vertex 4, and the work saved by calls versus the edge stack. Preserve the first response and add evidence for corrections.
 
-현재 배열은 `edges[45]`, `bcc[9][45]`, `bcc_size[9]`이고,
-가져온 스택은 `stack[10]`이다. 노드 10개의 단순 undirected graph에는 최대
-45개 간선이 있지만, 추출 중 동시에 대기할 간선은 스택의 10칸 안에 들어야 한다.
-The current lab reserves 45 edge records and nine result rows of 45 entries,
-while the imported stack still holds ten pending indices. Forty-five is
-the maximum edge count for ten vertices in a simple undirected graph;
-it does not increase the stack's capacity.
+첫 답과 수정 / First response and correction: _______________________
 
-Check the missing result reset before reuse. Valid input and fitting
-capacities are assumed; globals and stack operations are unchecked.
-
-선택 실험: [슬라이드 실행 파일 / Slide driver](../code/lecture/ppt_demo.c)는
-현재 실습 코드에 슬라이드 그래프의 이웃 목록을 따로 제공한다. 저장된 발견·빽번호와
-두 개의 다섯 간선 그룹을 위 개념 표와 비교한다. A–J 실행과는 새 프로세스로 구별한다.
-내부 배열 칸 0–6에는 A–G를 저장하고, 출력되는 간선 끝점은 실제 방문 번호 1–7이다.
-Optional experiment: the slide driver supplies the slide graph to the same
-current lab. Compare its numbers and two five-edge groups with the
-concept tables. Its internal indices 0–6 contain A–G, but printed endpoint
-numbers come from actual visit numbers 1–7. Run it independently from the
-original A–J driver.
-저장소 루트에서 실행한다. / From the repository root:
-
-```sh
-cc -std=c11 -I. module_06_graph_dfs/code/lecture/ppt_demo.c -o /tmp/ppt_demo
-/tmp/ppt_demo
-```
-
-[검사형 행렬 실습 / Checked matrix exercise](lab.md)은 별도의 과제와 계약을 유지한다.
-That exercise retains separate tasks and contracts.
-
-## 10. 미니퀴즈 제출 / Mini-quiz submission
-
-교사가 제공한 미니퀴즈에 답하고 안내된 수업 절차로 제출한다. 제출 전에 방문 3의
-이웃 분류, 방문 6의 빽번호, 두 그룹의 끝점 쌍을 자신의 근거와 대조한다.
-Complete the instructor's mini-quiz and submit using the classroom
-instructions. Before submitting, check your reasoning for visit 3's
-neighbor kinds, visit 6's earliest number, and both blocks' endpoint pairs.
-
-문항과 확인 내용 / Questions and checks: ___________________________
+[검사형 행렬 실습 / Checked matrix exercise](lab.md)은 별도의 과제와 계약을 유지한다. 추가로 지정된 5장 트리 복원이나 미니퀴즈는 교사의 수업 안내에 따라 진행한다.
+The checked matrix exercise retains its separate tasks and contracts. Any assigned Chapter 5 reconstruction review or mini-quiz follows the instructor's classroom instructions.

@@ -1,6 +1,87 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-11-04.
+Updated: 2026-11-06.
+
+## Chapter 5 Korean, lecture guides, and website synchronized — 2026-11-06
+
+Published Sites version **236**, source commit
+`0cce1cbc01a34c681526a72d6cbea2e39868b836`.
+Deployment `appgdep_6aede5c9226c81918fb6d8a2b7080275` succeeded at
+https://data-structures.chaebinkim.chatgpt.site/chapter-5.
+English is at `/en/chapter-5`; `/ko/chapter-5` also serves Korean.
+Public access, runtime bindings, environment revision 2, and Chapter 8 homepage
+routing remain unchanged. Publication incorporates the concurrent Chapter 6
+and Chapter 7 updates before applying Chapter 5 changes.
+
+The Korean manuscript and both website readings now match the revised English
+textbook: seven sections, 50 topics, eight annotated C excerpts, and the
+`F`-rooted alphabet example. Conceptual traversal and reconstruction animations
+use that same tree; expression examples use `12+34-*` and `8-(3-2)`.
+Existing semantic topic links remain, merged topics retain old anchors, and
+the 15-topic Full C Code Explanation appendix is preserved. Downloaded readings
+match the course manuscripts except their publication-specific links.
+
+Updated the four editable instructor guides: `instructor_guide/chapter_05.md`
+and Module 5's `lesson_plan.md`, `technical_notes.md`, and `answer_key.md`.
+They lead from the revised textbook while retaining the existing worksheet
+answers and actual demo output as clearly labeled supplements. The user
+explicitly reaffirmed that all `lab.c`, `ppt_material.md`,
+`ppt_lab_material.md`, `ppt.md`, and `ppt_lab.md` files must remain unchanged.
+All 34 protected course files and 20 protected website files retain their
+baseline hashes in both website checkouts.
+
+Validation: 43 relevant content, traversal, feedback, analytics, tutor, and
+concurrent-chapter tests, TypeScript, production build, links, code equivalence,
+and whitespace checks pass. Browser checks covered both languages, all 50
+topics, 390px mobile layout, F-root preorder, four pending stack records,
+parentheses toggling, reconstruction, language-preserved legacy links, and
+appendix deep-link expansion. Published Korean content was visually confirmed.
+Local analytics storage was unavailable, so feedback was checked through tests
+without sending submissions. The owned preview server was stopped and viewport
+restored.
+
+The main website HEAD matches publication; unrelated working-file contents and
+non-Chapter-5 label values remain preserved. Course-manuscript and instructor
+edits are local and uncommitted. Published screenshot:
+`student-textbook-web/outputs/chapter-five-updated-published.jpg`.
+
+
+## Chapter 7 Korean, teaching, and website editions updated — 2026-11-06
+
+Published Sites version **234**, source commit
+`e786ffde1ec5cc87ddf708f4e0dfc44500e41467`.
+Deployment `appgdep_6aede490703881918bad9dce3bd67c39` succeeded at
+https://data-structures.chaebinkim.chatgpt.site/chapter-7
+and https://data-structures.chaebinkim.chatgpt.site/en/chapter-7.
+
+The Korean textbook now follows the revised English chapter and Chapter 2's
+seven-section style. The user's Korean title and opening paragraph are preserved.
+The workbook, vocabulary, lab guide, lesson plan, answer key, technical notes,
+module README, and instructor guide follow the updated sequence. The 180-minute
+lesson and A30/B25/C25/D20 rubric remain in place.
+
+Both web readings and textbook downloads match their canonical editions. The
+reader supports seven sections, 55 topics, 18 searchable glossary entries, nine
+commented C blocks, a responsive linked-sequence diagram, the existing interactive
+exercises, and aliases for previous topic links. The 27-member student ZIP and
+editable student downloads were refreshed; instructor materials are excluded.
+No lab.c, ppt_material.md, ppt_lab_material.md, ppt.md, or ppt_lab.md was edited.
+Existing protected website files and course references retain their hashes.
+
+Validation: 34 relevant website tests, 3 synchronization tests, TypeScript,
+strict C11 checks for both textbooks, source-equivalence checks, whitespace
+checks, and production build passed. Browser checks covered Korean and English,
+glossary search, queue enqueue/dequeue, empty endpoints, language switching with
+anchor preservation, legacy anchors, nine code blocks, and 390px mobile layouts
+without horizontal document overflow. Canonical/download tests passed again in
+the main checkout. Production visibly renders the revised Korean chapter.
+Local feedback submission and live GPT responses were not exercised.
+
+Publication used an isolated checkout of version 233. The published Chapter 7
+patch was applied to the main website working tree without committing or changing
+its HEAD. All 15 other pre-existing dirty files and all non-Chapter-7 label values
+were preserved. Public access and environment revision 2 are unchanged.
+Proof: `student-textbook-web/outputs/chapter-seven-editions-published.png`.
 
 ## Chapter 8 interactive visuals improved — 2026-11-04
 

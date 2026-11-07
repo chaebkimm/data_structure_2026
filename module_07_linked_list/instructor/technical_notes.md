@@ -1,8 +1,12 @@
-# Instructor Technical Notes — Module 07
+# Instructor Technical Notes — Chapter 7
 
-## Source and slide alignment
+## Textbook, source, and presentation references
 
 [student/lab.c](../student/lab.c) is executable truth. The [question outline](../student/ppt.md), [concept slides](../student/ppt_material.md), and [lab slides](../student/ppt_lab_material.md) teach acyclic chains, predecessor mutation, shared storage/lifecycle, Stack, then Queue. Current delivery is Week 7. Short slide aliases do not replace exact executable names.
+
+The revised textbook separates seven sections: Thinking logically, Calculating efficiency, Glossary, Invariant, Coding plan, New C syntax explained, and C code. It presents the source as nine commented blocks. Display comments and indentation may differ; the C operations remain the same. The workbook follows that sequence and keeps caller experiments in the lab material.
+
+The syntax section makes five details explicit: `enum` names the pool capacity, a local `static` retains the initialization flag, `void` distinguishes arguments from return values, chained assignment sets both endpoints, and a comparison returns 1 or 0. Keep source and presentation files read-only when maintaining these teaching notes.
 
 ## Initialization and allocation
 
@@ -56,4 +60,4 @@ Module 8 uses a self-contained linear array queue of coordinate values for maze 
 
 Tests include actual source. Cover one-time initialization, retained data before caller assignment, allocation/exhaustion unchanged, two-write insertion order, isolated detachment, tail deletion, explicit recycling/reuse, caller first changes, shared-pool ownership, Queue endpoints/FIFO/empty sentinel, and repeated safe reuse. Student tests add three original groups. Keep invalid calls and [autopsy](../student/linked_list_autopsy.md) defects on paper. Sanitizers cannot establish logical ownership when wrong indices remain in bounds. Legacy solution-* tests assess a different optional library.
 
-First initialization visits C nodes (O(C)); repeated calls return immediately (O(1)). Local allocation/recycling/relinking/endpoint work is O(1). Traversal and unknown predecessor search O(n); position i follows i links. Pool memory is O(C), with one extra integer next field per slot plus first/end indices. Recycling never ends the array's C lifetime.
+First initialization visits C nodes (O(C)); repeated calls return immediately (O(1)). Local allocation/recycling/relinking/endpoint work is O(1). Traversal and unknown predecessor search O(n); the third logical node requires two links from the first. Pool memory is O(C), with one extra integer next field per slot plus first/end indices and the initialization flag. An iterative traversal uses O(1) additional state. The pool limits simultaneous allocations across callers, while repeated recycling allows more than C values to be processed over time. Recycling never ends the array's C lifetime.

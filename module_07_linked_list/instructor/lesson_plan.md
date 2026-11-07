@@ -1,61 +1,85 @@
-# Instructor Plan — Module 7: Linked Lists
+# Instructor Plan — Chapter 7: Organizing data with links
 
-One 180-minute lesson, one [lab artifact](../student/lab.md), three original test groups, and the [100-point rubric](../student/rubric.md). Use exact [lab.c](../student/lab.c), bilingual [textbook](../student/textbook.md)/[Korean textbook](../student/textbook_korean.md), [workbook](../student/class_material.md), and all three slide sources: [question outline](../student/ppt.md), [concepts](../student/ppt_material.md), [lab slides](../student/ppt_lab_material.md).
-
-The slide outlines are delivered in Week 7. Lab-slide short aliases map to current source names as shown in the [module README](../README.md). Preserve predictions before revealing vocabulary/answers.
+One 180-minute lesson, one [lab artifact](../student/lab.md), three original test groups, and the existing [100-point rubric](../student/rubric.md). Use the [English textbook](../student/textbook.md), [Korean textbook](../student/textbook_korean.md), and [workbook](../student/class_material.md). Preserve predictions before revealing vocabulary or answers.
 
 ## Before class
 
-Run `make -C code core student-tests` from the module root. Prepare ten slots with distinct data/next columns and separate caller first indices, free_head, qhead/qtail. For pristine independent examples use separate processes; otherwise recycle every owned allocation and follow the actual free-chain order.
+Run `make -C code core student-tests` from the module root. Prepare ten numbered slots, separate `data` and `next` columns, and cards for `first`, `free_head`, `qhead`, and `qtail`. Keep [lab.c](../student/lab.c) and presentation sources as read-only references; callers/tests belong in separate files.
+
+The textbook's nine implementation blocks have the same operations as `lab.c`, with teaching comments and indentation. The [question outline](../student/ppt.md), [concept notes](../student/ppt_material.md), and [lab slides](../student/ppt_lab_material.md) retain their existing aliases. Use the exact source names in executable callers.
 
 ## 180-minute sequence
 
-| Activity | Minutes |
-| --- | ---: |
-| ArrayList comparison, acyclic chains, saved first index | 20 |
-| Safe predecessor insertion/deletion | 30 |
-| Shared pool, one-time initialization, allocation/recycling/stale access | 35 |
-| Caller-linked Stack and LIFO | 25 |
-| Node Queue, FIFO, empty/singleton endpoints | 35 |
-| Original tests, costs, correction, Module 8 transfer | 35 |
-| **Total** | **180** |
+| Textbook section | Classroom work | Minutes |
+| --- | --- | ---: |
+| Thinking logically | Trace logical order, insertion, detachment, shared-pool reuse, stack LIFO, and queue FIFO | 75 |
+| Calculating efficiency | Explain reserved storage, traversal state, first allocation, and searching versus relinking | 15 |
+| Glossary | Name the mechanisms students have already traced | 10 |
+| Invariant | State the rules, their benefit, failure cases, and preservation | 20 |
+| Coding plan | Arrange caller steps before writing code | 15 |
+| New C syntax explained | Trace `enum`, `static`, `void`, chained assignment, and comparison results | 10 |
+| C code | Read nine blocks, execute safe tests, record evidence and a corrected prediction | 35 |
+| **Total** | | **180** |
 
-Begin with changing order without moving values. Ask why a chain needs a saved start and termination rule. Provide allocated isolated fixture nodes for first rewiring; then explain how the free chain supplies them. Name the invariant and precondition after the concrete rules emerge.
+## Thinking logically
 
-## Board fixtures and exact behavior
+### Start from physical slots and logical order
 
-In a pristine process allocate/check three indices 0,1,2 and explicitly write 17,23,31. `simple_link_lnode_to_prev(0,2)` then `(0,1)` forms 0→1→2→-1. Copy the old successor before publishing the new link. Reversed writes create 1.next=1.
+Put 17, 23, and 31 in allocated slots 0, 1, and 2. Begin with `first = 0`, `0.next = 2`, `1.next = -1`, and `2.next = -1`. Students read indices 0, 2 and values 17, 31. Slot 1 is separate despite its physical position. Ask how many links reach the third logical node once the list has three nodes.
 
-`simple_delink_next_lnode_from_prev(0)` returns 1, sets 0.next=2 and 1.next=-1, leaving free head 3. Copy data before `free_lnode(1)`. Allocation reuses 1 with retained data 23 and next=-1; only the caller's assignment changes data to 8.
+The fixture assumes allocated nodes so students can first focus on links. When the pool is introduced, reproduce it in a fresh process by allocating/checking three nodes, assigning their data, and connecting 2 after 0.
 
-`init_lnodes_pool()` initializes links only on its first call. Its function-local `static initialized` flag survives later calls, including calls from `new_lnode()`. First initialization builds 0→1→2→3→4→5→6→7→8→9→-1 and sets `free_head=0`; it does not assign data fields. Global data begins at zero by C static-storage rules, while reused data remains until a caller writes it. Later initialization calls change nothing and cannot reset or recover an exhausted pool. Use a new process for an independent pristine fixture, or recycle every owned node before continuing; an all-free chain need not be in ascending order.
+### Connect and detach
 
-For shared storage, A owns singleton 0(17), B 1(23), free head 2. Detach/recycle A's node; B allocates 0, writes 8, sets next=1, and makes 0 its first. A's former index is stale. Diagnose stale writes, live-node return, duplicate return, and missing return on paper.
+Insert slot 1 after 0: first copy 2 into `1.next`, then write `0.next = 1`. Reverse the writes only on paper; the result is `1.next = 1` and the original successor is lost.
 
-There is no supplied Stack API. To prepend, call `node=new_lnode()` and check success, then write its data, set `lnodes[node].next=first`, and finally set `first=node`. Prepending 17,23,31 in a pristine process gives 2(31)→1(23)→0(17)→-1. Before removal check `first != -1`; save the old index, data, and next, advance `first`, set `lnodes[old].next=-1`, then recycle. The outputs are 31,23,17. Clearing next is required because `free_lnode` accepts only isolated allocations. Never recover data or next through a recycled old index.
+Detach after 0. The result is index 1, `0.next = 2`, and `1.next = -1`. The free head remains 3. Students explain why detachment keeps the slot allocated to the caller.
 
-The supplied queue operates on **node indices**. `enqueue_lnode(node)` appends a valid allocated, unreferenced, isolated node (`next == -1`). Allocate first with `new_lnode()`, check for `-1`, write `lnodes[node].data=value`, then append. `enqueue_lnode(-1)` is a no-op; the void function does not report allocation failure.
+### Obtain and reuse nodes
 
-`dequeue_lnode()` returns the oldest **index**, isolates that node with `next=-1`, and leaves it allocated to the caller. Empty removal returns `-1` without changes. On success, copy `lnodes[node].data`, then call `free_lnode(node)` exactly once. Neither queue operation allocates or recycles automatically. There are no supplied value-based `enqueue(value)` or `dequeue()` wrappers.
+Connect all free slots once. Explain that `new_lnode()` removes the first free node, isolates it, and leaves its data unchanged. Read 23 before returning node 1; its free link becomes 3. Reallocation returns 1 with data still 23 until the caller writes 8.
 
-The endpoints are `qhead` and `qtail`. Both are `-1` when empty; otherwise `qtail` is reachable from `qhead` and `lnodes[qtail].next == -1`. The first append sets both; the final removal clears both. A payload of `-1` is valid: only the returned node index is the empty marker.
+Use the workbook's A/B fixture to show shared storage: A returns singleton 0, then B receives 0 and places value 8 before its existing value 23. A's old index is stale. A second initializer call preserves B's list and the free chain. Use a fresh process for independent pristine indices; an all-free chain need not be sorted.
 
-Use the workbook's FIFO reuse trace. The final free chain is 0→2→1→3→4→5→6→7→8→9→-1; all-free does not mean sorted slots.
+### Use the nodes as a stack and a queue
 
-## Rules and misconceptions
+A stack changes the caller's `first` directly. Adding 17, 23, 31 gives `2(31) → 1(23) → 0(17) → -1`. For removal, guard against empty, save data/successor, advance `first`, isolate the old node, then recycle it. Output is 31, 23, 17. There is no separate stack API.
 
-- Every active list and the free chain are acyclic, end at `-1`, and contain only indices 0–9.
-- Every slot belongs exactly once to the free chain, one active list, or a caller-held isolated allocation. Active lists are disjoint; every standalone list has its own saved first index.
-- A caller-held node ready for insertion, enqueue, or recycling has `next == -1` and no incoming live link.
-- The queue is empty exactly when both endpoints are `-1`; otherwise the tail is reachable and ends at `-1`.
-- Save payload/successor before recycling, then stop using the old owner's index. Index range alone does not establish ownership.
+A queue appends an allocated, isolated node at `qtail` and removes `qhead`. The first append sets both endpoints; the last removal clears both. `dequeue_lnode()` returns an index, leaves the node allocated, and clears its link. The caller reads data and recycles exactly once. A data value of `-1` remains valid.
 
-Diagnose claims that allocation writes data, initialization resets, detachment recycles, dequeue returns a value, append allocates, any in-range slot is recyclable, or old indices retain ownership. Invalid non-sentinel indices are unchecked; do not run them. Test defined -1 no-ops, tail deletion, and empty dequeue instead. Execute mutations outside assert.
+In the workbook's queue trace, remove/read/recycle 17, then append reused slot 0 containing 8. Remaining values are 23, 31, 8. The final free chain is `0 → 2 → 1 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → -1`.
 
-## Costs, evidence, and transfer
+## Calculating efficiency and naming terms
 
-Known-position relinking and endpoint operations take O(1); predecessor search/traversal O(n); reaching position i follows i links. First initialization O(C), later calls O(1); pool storage O(C), with one extra next integer per slot and saved endpoints. Shared storage avoids fixed partitions without increasing ten-slot capacity.
+Use the four textbook headings. Storage reserves ten two-integer nodes plus endpoint indices and the initialization flag. Iterative traversal uses constant extra state. Known-predecessor and endpoint updates take constant time after initialization, while finding a predecessor or traversing n nodes takes O(n). The first initialization, including a first allocation that triggers it, takes O(C); later initializer calls take O(1).
 
-Grade A30/B25/C25/D20 inside one artifact. Require exact expected/observed state, three original groups, restored ownership, compiler output, costs, and corrected prediction. Module 8 transfers FIFO to array queue comparisons and tree levels, then uses a coordinate array queue for maze BFS. DSU/optional pointer libraries remain [Week 14](../../module_14_prim_kruskal/week_14/instructor.md) references.
+The third logical node takes two links from the first. Accessing physical slot 2 directly is different. Ten slots limit simultaneous allocations across all lists, not the total values processed through reuse.
 
-For release QA run the [packager](../release/prepare_student_release.py), extract separately, verify source bytes/local links, and build there. Keep faculty answers outside the archive.
+After students preserve predictions, use the glossary to distinguish predecessor/successor, allocation/recycling, active/detached/free, and index/data. Tie LIFO and FIFO to the observed value order.
+
+## Invariant discussion
+
+Use the textbook's four questions:
+
+1. State the golden rules: valid indices or `-1`, acyclic terminating chains, exactly one ownership state per slot, isolated detached nodes, and consistent queue endpoints.
+2. Explain the benefit: traversal ends, lists share space safely, and endpoint updates preserve FIFO.
+3. Diagnose failures: cycles, returning active or already-free nodes, losing a detached index, stale access, and an incorrect tail.
+4. Explain preservation: check returned indices, save successors before overwriting links, detach before recycling, read needed data first, and use queue helpers for queued nodes.
+
+Check invariants after complete operations. During insertion, the new node receives the old successor before the predecessor links to it. Precondition checks happen before the helper call; the source does not validate all bounds or ownership conditions.
+
+## Coding plan and new C syntax
+
+Ask students to plan node storage, connection/detachment, one-time pool setup, allocation/recycling, stack updates, and queue updates. Each plan must identify who sets data, who updates the first index, and who recycles a removed node.
+
+Use the workbook syntax questions. `CAPACITY` is the integer constant 10. The local `static initialized` retains 1 after the first call. `(void)` means no arguments; a `void` result means no returned value. `qhead = qtail = node` assigns the same index to both ends. `qhead == -1` evaluates to 1 or 0.
+
+## Code, evidence, and transfer
+
+Read the nine textbook blocks in order, then run callers using the supplied source. Cover allocation exhaustion, repeated initialization, deletion after a tail, shared ownership, retained data, stack/queue order, empty endpoints, and explicit recycling. Test the defined `-1` no-ops and empty returns; diagnose invalid non-sentinel indices, double returns, live-node returns, and stale accesses on paper. Execute mutations outside `assert`.
+
+Grade A30/B25/C25/D20 within one artifact. Require exact expected/observed state, three original test groups, restored ownership, compiler output, costs, and a corrected prediction. The [answer key](answer_key.md) includes workbook and syntax responses.
+
+Module 8 transfers FIFO to array queues and tree levels, then uses a coordinate array queue for maze BFS. Optional pointer-list/DSU material remains separate; DSU is taught in [Week 14](../../module_14_prim_kruskal/week_14/instructor.md).
+
+For release QA use the [packager](../release/prepare_student_release.py), extract separately, verify source bytes/local links, and build there. Keep faculty answers outside the student archive.
