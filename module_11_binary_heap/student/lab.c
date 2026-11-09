@@ -4,7 +4,7 @@ int size = 0;
 
 int is_empty_queue(void) { return size == 0; }
 
-int (*comp)(int i, int j);
+int (*comp)(int x, int y);
 
 int comp_q(int i, int j) {
     return comp(queue[i], queue[j]);
