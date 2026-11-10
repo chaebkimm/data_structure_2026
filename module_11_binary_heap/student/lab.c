@@ -63,3 +63,14 @@ void heapify(void) {
         sift_down(i);
     }
 }
+
+int sorted[CAPACITY];
+int pos = 0;
+
+void heap_sort(void) {
+    heapify();
+    pos = 0;
+    while (!is_empty_queue()) {
+        sorted[pos++] = dequeue();
+    }
+}

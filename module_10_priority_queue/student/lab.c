@@ -13,9 +13,7 @@ void init_queue(int compare(int x, int y)) {
 
 void enqueue(int data) {
 	int pos = 0;
-	while (pos < size && !comp(data, queue[pos])) {
-		pos++;
-	}
+	while (pos < size && !comp(data, queue[pos])) { pos++; }
 	for (int i = size; i > pos; i--) {
 		queue[i] = queue[i - 1];
 	}
@@ -66,10 +64,10 @@ int earlier_logoff(int x, int y) { return users[x].logout < users[y].logout; }
 int all_login(void) {
 	init_users();
 
-	int last = 0;
+	int late = 0;
 	for (int id = 1; id < USER_SIZE; id++) {
-		if (users[id].login > users[last].login) {
-			last = id;
+		if (users[id].login > users[late].login) {
+			late = id;
 		}
 	}
 
@@ -77,17 +75,13 @@ int all_login(void) {
 	for (int id = 0; id < USER_SIZE; id++) {
 		enqueue(id);
 	}
-	int go = dequeue();
+	int gone = dequeue();
 
-	while (users[last].login >= users[go].logout) {
-		if (next_epoch(go) == -1) {
-			return -1;
-		}
-		enqueue(go);
-		if (users[go].login > users[last].login) {
-			last = go;
-		}
-		go = dequeue();
+	while (users[late].login >= users[gone].logout) {
+		if (next_epoch(gone) == -1) { return -1; }
+		if (users[gone].login > users[late].login) { late = gone; }
+		enqueue(gone);
+		gone = dequeue();
 	}
-	return users[last].login;
+	return users[late].login;
 }
