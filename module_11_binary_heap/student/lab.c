@@ -4,7 +4,7 @@ int size = 0;
 
 int is_empty_queue(void) { return size == 0; }
 
-int (*comp)(int i, int j);
+int (*comp)(int x, int y);
 
 int comp_q(int i, int j) {
     return comp(queue[i], queue[j]);
@@ -61,5 +61,16 @@ void init_queue(int (*compare)(int, int)) {
 void heapify(void) {
     for (int i = size / 2 - 1; i >= 0; i--) {
         sift_down(i);
+    }
+}
+
+int sorted[CAPACITY];
+int pos = 0;
+
+void heap_sort(void) {
+    heapify();
+    pos = 0;
+    while (!is_empty_queue()) {
+        sorted[pos++] = dequeue();
     }
 }
