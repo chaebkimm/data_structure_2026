@@ -6,7 +6,14 @@
 
 This document defines an operational **14-week curriculum supported by 14 teaching packages**. Priority Queue is part of Module 10, and Hash Table is Module 9. Module 7 covers linked lists with linked stack and queue examples. Module 8 compares array queues, traces tree level order, and uses a coordinate array queue for maze BFS. Teaching packages are numbered consecutively from 1 to 14, matching their teaching weeks. The exact required/extension split is collected in the [14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md). It assumes:
 
+**Modules 12–13 planning update — 2026-11-10:** Module 12 covers Binary
+Search and BSTs; Module 13 covers AVL Rotations and Review. Student lessons,
+worksheets, lab guides, detailed lesson plans, tests, releases, and question
+banks for these weeks await alignment. This update changes curriculum plans
+and descriptions only; existing directory names and source files stay in place.
+
 Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
+Its Week 12–13 resources await alignment with the revised sequence.
 
 - second-semester cybersecurity students;
 - prior experience with C variables, functions, arrays, loops, and conditionals;
@@ -15,7 +22,7 @@ Companion resource: [weekly vocabulary and anticipated student question bank](Da
 - synthetic, instructor-controlled cybersecurity datasets rather than live-system scanning or exploitation;
 - a C11-compatible compiler, strong compiler warnings, a debugger, automated tests, and memory/error sanitizers when the platform supports them.
 
-The resource library is not organized as five consecutive linear modules, followed by five tree modules, followed by five graph modules. It makes five increasingly sophisticated passes, with the associative-index bridge in Module 9 and a searching/sorting/consolidation unit in Module 13:
+The resource library is not organized as five consecutive linear modules, followed by five tree modules, followed by five graph modules. It makes five increasingly sophisticated passes, with the associative-index bridge in Module 9, binary search and BSTs in Module 12, and AVL rotations and course review in Module 13:
 
 > **Linear/supporting ADT → Tree application → Graph generalization**
 
@@ -32,7 +39,7 @@ By the end of the course, students will be able to:
 3. Implement, test, and safely destroy core data structures in C.
 4. State and check the representation invariant that makes each structure correct.
 5. Build and evaluate expression trees recursively, use explicit stacks for tree DFS, and implement iterative graph DFS and graph BFS; trace the alternate graph-DFS form and explain how Stack and Queue frontier control changes graph exploration.
-6. Trace, test, and analyze hash-table operations, linear/binary search, and insertion/merge sorting; implement and analyze BST, AVL-tree, binary-heap, and disjoint-set operations.
+6. Trace, test, and analyze hash-table operations, linear/first-match binary search, and BST search/insertion; trace and test supplied AVL rotations and insertion; implement and analyze the required binary-heap and disjoint-set operations. Explain preparation costs without requiring insertion-sort or merge-sort instruction.
 7. Trace and test supplied Dijkstra; implement DSU find/union and Kruskal; explain a supplied Prim demonstration and compare shortest-path and minimum-spanning objectives.
 8. Analyze worst-case, expected/average-case where assumptions justify it, amortized, and representation-sensitive costs.
 9. Select a structure or algorithm from workload and correctness requirements rather than familiarity.
@@ -50,7 +57,7 @@ By the end of the course, students will be able to:
 | 2 | 4. Stack | 5. Tree DFS | 6. Graph DFS | LIFO-controlled exploration |
 | 3 | 7. Index-linked lists, shared-pool reuse, linked stack/queue examples; 8. Queue comparisons | 8. Tree level order using FIFO | 8. Maze BFS using a coordinate array queue | Explicit links, storage reuse, and FIFO-controlled exploration |
 | 4 | 10. Numeric priority and optional scan reference | 10. Integer min/max and dual ID Heaps | 11. Dijkstra | Priority-controlled exploration |
-| 5 | Union-Find (introduced within Module 14 in Week 14) | 12. BST-to-AVL synthesis | 14. Prim and Kruskal | Maintaining global invariants while optimizing |
+| 5 | 12. Binary search; Union-Find introduced within Module 14 | 12. BSTs → 13. AVL rotations and review | 14. Prim and Kruskal | Maintaining global invariants while optimizing |
 
 This map contains deliberate previews and returns:
 
@@ -353,7 +360,7 @@ Extensions add valid cases for the same four functions, not extra APIs.
 precedence, and recursive evaluation with a digit base case.
 
 **Forward:** graph relationships in Module 3; explicit traversal state in
-Modules 4–6; BFS in Module 8; BST/AVL synthesis in Module 12.
+Modules 4–6; BFS in Module 8; BSTs in Module 12 and AVL repair in Module 13.
 
 ---
 
@@ -855,118 +862,119 @@ distances. Distinguish three pending points from eight total linear writes.
 ## Module 9 — Supporting ADT: Hash Table
 
 Production materials: [Module 9 teaching package](module_09_hash_table/README.md),
-[source of truth](module_09_hash_table/student/lab.c).
+[source of truth](module_09_hash_table/student/lab.c),
+[concept PPT](module_09_hash_table/student/ppt_material.md), and
+[code PPT](module_09_hash_table/student/ppt_lab_material.md).
 
-**14-week role:** required Week 9 trace-and-test lab. The supplied source
-uses ten bucket heads, Module 7's linked-node pool, and separate chaining to
-compare brute-force and hash-assisted two-sum. Students submit one driver
-and evidence record. The older open-addressed map is an optional reference.
+**14-week role:** required Week 9 trace-and-test lab. The self-contained
+source uses fifteen bucket heads and ten `hnode` records with separate
+`key`, `data`, and `next` fields. Students compare brute-force and chained
+hash two-sum, then submit one driver and evidence record. The older
+open-addressed map is optional.
 
 ### Learning objectives
 
 Students will:
 
-- normalize signed remainders into bucket positions 0–9;
-- distinguish bucket positions, node positions, payloads, and `nums` positions;
-- trace collisions as newest-first linked chains;
-- explain why `save_data` prepends and permits duplicate payloads, while `find_data` compares raw payloads;
-- initialize the unused pool once and recycle disjoint active chains between runs;
-- trace `two_sum_bf` with `j < i` and `two_sum_ht` with complement lookup before current-index insertion;
-- explain why two-sum compares `nums[j]`, rather than using `find_data` to compare a needed number with a stored position;
-- test successes, misses, exhausted allocation, repeated calls, and differing valid pair order; and
-- state chain-search costs with the bucket-count and distribution assumptions visible.
+- explain direct addressing, hash bucket selection, and collisions;
+- normalize signed remainders into bucket positions 0–14;
+- distinguish bucket positions, node positions, keys, payloads, and input positions;
+- trace head insertion, full-key lookup, and duplicate-key newest-match behavior;
+- reset all bucket heads and the allocation counter, then reuse node slots;
+- trace descending earlier positions in `two_sum_bf` and lookup before insertion in `two_sum_ht`;
+- explain `find(complement)` followed by `hnodes[node].data` to recover the earlier input index;
+- test hits, misses, exhaustion without mutation, duplicate values, and repeated calls; and
+- state cost claims with bucket count, capacity, and distribution assumptions visible.
 
 ### Macro-Question
 
-> How can we find the earlier number needed by the current number without checking every earlier position, and what happens when several numbers select the same group?
+> How can the current number find the earlier number it needs without checking every earlier position, and what if different keys select the same bucket?
 
 ### Micro-Questions
 
-- Why does `hash_func` add 10 only to a negative remainder?
-- How do 12, 22, and -8 all select bucket 2?
-- Why does `hashtable[2]` contain a node position rather than the number 2?
-- Which record becomes the head when `save_data` succeeds?
-- What does `find_data` compare, and what does it return?
-- Why does `init_hashtable` not replace the first `init_lnodes_pool` call?
-- How does `free_lnode_chunk` join an active chain to the free chain?
-- Why must two-sum look up its complement before storing `i`?
-- When can both functions return valid but different position pairs?
+- Why does `hash_func` add 15 only to a negative remainder?
+- How do 12, 27, and -3 all select bucket 12?
+- Why does `hashtable[12]` store a node index rather than a key or payload?
+- How do `new_hnode` and `insert` differ in their successful return values?
+- What does `find` compare, and what does it return?
+- Why must a manual experiment call `initialize()` before searching or inserting?
+- Which fields does reset change, and which fields remain?
+- Why must two sum search before inserting the current position?
+- Why do both supplied methods choose the newest matching earlier position?
 
 ### Learning sequence
 
-Meeting A begins with the pair-sum problem and the supplied
-`nums = {-16,-8,-4,-2,-1,1,2,4,8,16}`. Students enumerate earlier pairs,
-then calculate the one complement needed by each current number. They
-normalize negative remainders, initialize the free pool, and trace saves
-of 12, 22, and -8 into bucket 2. Those saves allocate nodes 0, 1, and 2,
-leaving the active route `2 → 1 → 0 → -1`. A repeated payload is another
-node rather than an update. Students distinguish payload equality from
-bucket equality and predict successful and unsuccessful chain searches.
+Meeting A follows the PPTs from direct addressing to hashed groups and
+separate chaining. Use the lab's signed values and capacities, rather than
+the code PPT's smaller positive example. After `initialize()`, insert
+`(12,120)`, `(27,270)`, and `(-3,-30)`. Bucket 12 becomes
+`2 → 1 → 0 → -1`; `hnodes_unused` is 3. Full keys decide equality.
+`find(27)` returns node 1, whose payload is 270. A repeated key creates a
+new record rather than updating the older one. Contrast separate chains
+with the PPT's open-addressing and Robin Hood concepts without assigning
+a second implementation.
 
-Meeting B follows the two-sum source. The hash version stores earlier array
-positions as payloads and compares `nums[j]` with `target - nums[i]`.
-Target 0 yields `{5,4}` in both versions. Students inspect the five nodes
-left active by the successful early return, recycle the chains, and run
-again. A complete target-100 miss stores ten positions and leaves no free
-node until reset. A duplicate-input fixture exposes the different
-oldest-first and newest-first candidate order without changing correctness.
+Meeting B follows two sum. Store `nums[i]` as key and `i` as data.
+For target 0, both implementations return `{4,5}`: earlier index first.
+The hash version leaves five records and bucket 14 has `4 → 0 → -1`.
+A target-100 miss stores all ten inputs. The next call resets the counter
+and heads, reusing slots from 0. No shared pool or free-chain recycling is
+involved. For `{1,1,5,0,0,0,0,0,0,0}`, target 6 gives `{1,2}` in both
+methods: brute force decrements `j`, and chains search newest matches first.
 
 ### C lab and cybersecurity context
 
-The operations in `student/lab.c` are supplied. Students write and run a
-driver with three original test groups:
+The supplied operations remain unchanged. Students write a separate driver
+with three original assertion groups:
 
-1. signed hashes, collisions, prepend order, payload lookup, and duplicates;
-2. pool initialization, allocation exhaustion, unchanged failed insertion,
-   whole-chain recycling, and safe reuse; and
-3. successful and unsuccessful two-sum results, distinct positions,
-   repeated calls, and multiple-solution behavior.
+1. signed hashing, keys versus data, collision chains, lookup, and duplicate keys;
+2. all ten allocations, unchanged failed insertion, full reset, retained old
+   fields, and slot reuse; and
+3. two-sum results, bounds, distinct positions, duplicate values, and repeated calls.
 
-The driver includes the actual lab once and compiles with the repository
-root on the include path. It does not link the lab or the imported Module 7
-source a second time. Calls supply bucket positions 0–9 and valid, acyclic,
-disjoint active/free chains. All evaluated additions and subtractions must
-fit in `int`. The functions do not validate those caller preconditions.
+Include `lab.c` once and compile only the driver. There is no Module 7
+source dependency or repository-root include-path requirement. Use valid
+node links and keep all evaluated sums and complement subtractions within
+`int`; the source does not check overflow.
 
-The shared ten-node pool must be initialized before the first run and
-available exclusively to the table for a complete ten-number scan.
-`init_hashtable` returns existing chains to that pool. `two_sum_ht` stops
-if allocation fails and writes `{-1,-1}`, the same result as a completed
-unsuccessful search. The result does not distinguish those cases.
+`insert` returns 0 on success or -1 on exhaustion. `find` returns a node
+index or -1. `initialize` resets the counter and all fifteen heads without
+clearing node fields, `nums`, or `answer`. A failed insertion preserves all
+state. The normal ten-input hash scan resets at entry and has enough space
+for all ten insertions; its failure branch is defensive and reports
+`{-1,-1}`, the same answer as a miss.
 
-With `n` stored candidates and `b` buckets, adequately distributed inputs
-give expected lookup work `O(1+n/b)`. A chain with `k` candidates can require
-`O(k)` comparisons. A generalized two-sum design has expected `O(n)` work
-only when bucket count and distribution keep chain lengths bounded;
-colliding candidates can require `O(n^2)` total work. The supplied source
-fixes both arrays at ten and performs no dynamic growth. Brute force checks
-45 pairs in a complete miss. Clearing costs `O(b+s)` for `s` active nodes.
+A complete brute-force miss tests 45 pairs; target 0 tests 11. The target-0
+hash trace compares one key. Generalized lookup costs expected `O(1+n/b)`
+with adequate distribution of `n` records across `b` buckets. Expected
+linear hash two-sum also needs bounded load, `b=Θ(n)`, and enough nodes;
+collision-heavy searches can require quadratic total work. Reset costs
+`Θ(b)`, without traversing old nodes. The actual source fixes ten nodes
+and fifteen buckets and performs no dynamic growth.
 
-Collision-heavy input demonstrates how a representation can increase
-work. The remainder hash is transparent and supplies no cryptographic or
-authenticity guarantee. Individual deletion, tombstones, resizing,
-transactional rebuilding, and the older deletion autopsy are optional
-open-addressed-reference topics.
+Collision-heavy input can increase work. The remainder hash supplies no
+cryptographic or authenticity guarantee. Individual deletion, tombstones,
+resizing, and the older deletion autopsy are optional reference topics.
 
 ### Evidence of learning
 
-- normalized signed-hash and bucket/node traces;
-- raw-payload versus stored-position explanations;
-- active/free-chain lifecycle and failed-insertion preservation evidence;
-- a driver containing three original test groups and warning-enabled output;
-- brute-force and hash-assisted pair traces, including repeat-call reuse;
+- signed-hash calculations and bucket/key/node/payload traces;
+- head-insertion and full-key lookup explanations;
+- counter/head reset and failed-insertion preservation evidence;
+- three original test groups and warning-enabled compiler output;
+- exact `{j,i}` two-sum traces, duplicate values, and repeated calls;
 - corrected Cognitive Pause, investigation, and evidence records; and
-- comparison counts and qualified generalized expected/worst-case claims.
+- concrete counts and qualified expected/worst-case claims.
 
 ### Bridge links
 
-**Revisits:** Module 1's array bounds and state preservation, Module 7's
-indexed linked records, free-chain lifecycle and remainder calculation,
-and Module 8's distinction between stored numbers and array positions.
+**Revisits:** Module 1's bounds and state preservation, Module 7's indexed
+links and prepend order, and Module 8's meanings of array indices. This lab
+owns its own hash-node array rather than sharing Module 7's pool.
 
-**Forward:** Module 10 develops integer Heap ordering and dual indexed Heaps. Module 12 compares ordered lookup with bucket-based exact lookup.
-A capstone may adapt a supplied hash index for external labels; that adapter
-is not an additional Week 9 implementation requirement.
+**Forward:** Module 10 develops integer Heap ordering and dual indexed Heaps.
+Module 12 compares ordered lookup with bucket-based exact lookup. A capstone
+may adapt a supplied hash index for external labels; that adapter is optional.
 
 ---
 
@@ -1054,8 +1062,8 @@ contracts are separate from the required lab.
 trees, height, and FIFO contrast.
 
 **Forwards:** minimum-Heap selection in Dijkstra and Prim; Module 12 compares
-Heap partial order with BST/AVL search order. Their supplied support defines
-its own record, storage, and tie policies.
+Heap partial order with BST search order; Module 13 adds AVL balance. Their
+supplied support defines its own record, storage, and tie policies.
 
 ---
 
@@ -1178,128 +1186,125 @@ material. They do not create another required implementation or submission.
 
 ---
 
-## Module 12 — Tree: BST-to-AVL synthesis
+<a id="module-12--tree-bst-to-avl-synthesis"></a>
 
-Production materials: [Module 12 teaching package](module_12_bst_avl/README.md)
+## Module 12 — Binary Search and BSTs
 
-**14-week role:** required Week 12 AVL unit and the formal home for height, balance factors, and rotations deferred from the BFS bridge. AVL insertion and validation are core, AVL deletion is extension, and the week produces one submission within the 180-minute budget.
+Planning references: [Module 12 overview](module_12_bst_avl/README.md) and
+[Chapter 12 summary](instructor_guide/chapter_12.md). Existing teaching
+materials linked from the overview await alignment with this sequence.
 
-### Learning objectives
-
-Students will:
-
-- state BST ordering and AVL balance invariants;
-- trace and test the instructor-provided BST search/insertion baseline introduced in this unit;
-- show how hostile insertion order creates height `n - 1`;
-- compute heights and balance factors;
-- recognize LL, RR, LR, and RL cases;
-- trace the supplied indexed rotations and AVL insertion, and write original assertion tests;
-- validate ordering, stored heights, and balance after every mutation.
-
-### Macro-Question
-
-> If an attacker controls insertion order, can an apparently efficient search tree be forced into linear-time behavior?
-
-### Micro-Questions
-
-- Why does inorder traversal produce sorted keys?
-- Which inputs create a skewed BST?
-- How does height control search cost?
-- How can a rotation change shape without changing key order?
-- Which single or double rotation repairs each imbalance?
-- Which pointer reassignment errors can lose an entire subtree?
-
-### C lab and cybersecurity context
-
-The indexed lab uses edge height consistently: `get_height(-1) = -1` and
-`height[leaf_id] = 0`. Therefore an `n`-node chain has height `n - 1`.
-
-Build an adversarial asset or indicator index:
-
-1. use the driver baseline to insert `ABCDEFG`, `GFEDCBA`, and `DBFACEG` into a BST;
-2. measure height and comparison counts;
-3. check ordering and exact reachable IDs with the independent driver validator;
-4. trace the supplied `student/lab.c` rotations and recursive AVL insertion;
-5. test all four canonical rotation cases;
-6. check exact stored heights, balance, duplicate labels, and transferred subtrees;
-7. reset and rebuild the fixed arrays, then preserve assertion and sanitizer output.
-
-The required lab reuses Module 2's `nodes[10]`, with `char data` and integer
-child links, and adds `height[10]`. Equal labels in fresh IDs descend left
-on insertion; rotations preserve nondecreasing inorder and may place
-equals on either side. Callers retain the returned root and supply valid
-detached IDs. There is no allocation or cleanup operation in this source.
-The retained 64-node pointer API and full AVL deletion are optional references.
-
-The security connection is algorithmic-complexity denial of service. Students distinguish degraded complexity from memory corruption and from general resource exhaustion.
-
-### Evidence of learning
-
-- four rotation traces;
-- BST-versus-AVL measurement table;
-- invariant-checking tests;
-- caller-precondition and valid-boundary evidence;
-- concise threat analysis.
-
-### Spiral links
-
-**Revisits:** Module 5 inorder DFS, tree-height reasoning, Heap-order contrast, and Module 9's bucket-based exact-number lookup.
-**Forward:** compare AVL's ordered worst-case guarantee with hash lookup's expected exact-match cost, then compare local and global invariants.
-
----
-
-## Module 13 — Searching, sorting, and consolidation
-
-Production materials: [Module 13 teaching package](module_13_search_sort_consolidation/README.md),
-[English textbook](module_13_search_sort_consolidation/student/textbook.md), and
-[Korean textbook](module_13_search_sort_consolidation/student/textbook_korean.md).
-
-**14-week role:** one bounded Week 13 search/sort and consolidation artifact.
-Students trace and test complete supplied functions, then select structures
-for stated workloads using evidence from earlier modules. DSU and MST remain
-new learning in Module 14.
+**14-week role:** introduce ordered interval elimination and BST search and
+insertion. One search/BST evidence artifact fits the 180-minute budget.
+AVL balance, rotations, and insertion move to Module 13.
 
 ### Learning objectives
 
-- compare linear search with first-match binary search on sorted input;
-- distinguish an array position before sorting from a position after sorting;
-- preserve a sorted prefix during insertion sort and combine sorted runs during merge sort;
-- explain stable equal-key order with tagged paper records;
-- test duplicates, missing keys, empty/singleton inputs, bounds, and signed integer extremes;
-- compare local shifts, merge passes, scratch storage, and preprocessing for repeated lookup;
-- consolidate ArrayList/list, hash/BST/AVL, Heap, and DFS/BFS/Dijkstra choices.
+- explain why binary search needs a sorted array and narrow a half-open interval;
+- trace first-match binary search, including duplicates, missing keys, and empty input;
+- state BST ordering and trace supplied ordinary search and insertion;
+- connect inorder traversal with nondecreasing key order;
+- measure height and visited-node comparisons for different insertion orders;
+- explain why ordering alone does not guarantee logarithmic BST search.
 
 ### Macro-Question
 
-> When is it worth rearranging data before searching, and which earlier
-> structure best fits the workload we actually have?
+> What ordering rule lets us discard candidates, and why can an ordered tree
+> still force us to inspect every node?
 
 ### Learning sequence and evidence
 
-Keep `[31,23,17,8,17,42]` as the common input. Linear search first finds 17
-at index 2. Sorting gives `[8,17,17,23,31,42]`; first-match binary search
-then returns index 1. Both searches return `-1` for a missing key. Binary
-search requires sorted input and continues left after a match to find the
-first duplicate. The lab contract permits up to 64 integers.
+Recap linear search on `[31,23,17,8,17,42]`, which finds 17 at index 2.
+Supply `[8,17,17,23,31,42]` already sorted and trace first-match binary
+search returning 1. Positions belong to the array being searched. Sorting
+implementation is not part of this lesson.
 
-Insertion sort shifts larger prefix values and keeps equal values in order.
-Merge sort combines sorted halves using a caller-owned disjoint scratch
-buffer. Explain why strict insertion comparison and left-first merge ties
-preserve stability. Integer-only output cannot prove original equal-record
-order; use tagged records in the paper trace. Count work before naming
-linear/quadratic or logarithmic growth.
+Transfer the smaller/larger choice to Module 2's character nodes and integer
+child links. Use the existing plain-BST baseline for `ABCDEFG`, `GFEDCBA`,
+and `DBFACEG`. Check ordering and reachability; count one logical comparison
+per visited node. With empty height `-1` and leaf height `0`, the first two
+orders give height 6, while the mixed order gives height 2. Search costs
+`O(h + 1)`; an `n`-node chain can require `O(n)` work.
 
-One submission contains original search/sort checks, traces, saved build
-output, costs, a corrected prediction, and a workload-selection memo. Reuse
-earlier artifacts rather than reimplement every structure. Compare exact
-lookup, ordered lookup, priority removal, complete sorted output, traversal,
-minimum-hop paths, and weighted routes. The sorting ideas prepare Module 14's
-supplied edge comparator; students do not add a second sorting implementation
-to the MST scaffold.
+One submission combines binary-search intervals, BST search/insertion and
+inorder traces, original checks, height/comparison evidence, and a corrected
+prediction. End with the ascending-order chain as Module 13's repair problem.
+BST deletion is outside required scope. Distinguish shape-based performance
+degradation from invalid memory access or general resource exhaustion.
 
-Allocate 35 minutes to retrieval/search, 55 to sorting, 25 to tests, 45 to
-consolidation, and 20 to correction/submission: 180 minutes total. Extra
-sorting algorithms, generic-record code, and broad benchmarks are extensions.
+| Required contact activity | Minutes |
+|---|---:|
+| Linear-search recap and first-match binary search on supplied sorted arrays | 45 |
+| BST ordering, search, insertion, and inorder reasoning | 60 |
+| Height, insertion-order effects, and search costs; finish with a skewed tree | 35 |
+| Traces, checks, and one combined evidence artifact | 40 |
+| **Total** | **180** |
+
+### Spiral links
+
+**Revisits:** ArrayList access/search, Module 2 indexed trees, Module 5 inorder,
+Heap-order contrast, and Module 9 exact lookup.
+**Forward:** Module 13 repairs long BST paths while preserving key order.
+
+---
+
+<a id="module-13--searching-sorting-and-consolidation"></a>
+
+## Module 13 — AVL Rotations and Review
+
+Planning references: [Module 13 overview](module_13_search_sort_consolidation/README.md)
+and [Chapter 13 summary](instructor_guide/chapter_13.md). Existing AVL
+references remain in Module 12; existing Module 13 search/sort materials
+await alignment and are not the revised weekly assignment.
+
+**14-week role:** establish AVL balance, trace local repair and supplied
+insertion, then protect the final hour for course review. One artifact
+combines AVL evidence and a review memo. DSU/MST remain new in Module 14.
+
+### Learning objectives
+
+- compute edge heights and left-minus-right balance factors;
+- recognize LL/RR before LR/RL and preserve inorder and middle subtrees;
+- retain returned subtree roots and update heights from lower nodes upward;
+- check reachability, ordering, exact heights, and balance after insertion;
+- compare ordinary BST and AVL paths on the same keys;
+- justify structure choices using query, update, order, space, and route requirements.
+
+### Macro-Question
+
+> How can we shorten an ordered tree without losing its ordering rule, and
+> when does that structure fit the workload?
+
+### Learning sequence and evidence
+
+Retrieve Module 12's chain, then introduce balance and local reconnection.
+Use `C B A`, `A B C`, `C A B`, and `A C B` for LL, RR, LR, and RL. Include
+a nonempty transferred middle subtree. Trace the supplied indexed AVL code
+still stored in Module 12: rotations change links; `_add` refreshes heights
+and returns a possibly new root. Fresh IDs may share labels; insertion uses
+`<=` on the left, while rotations preserve nondecreasing inorder and can
+place equal labels on either side. Respect the ten-slot caller contract.
+
+One submission includes four rotation traces, insertion/link/height/balance
+checks, a BST/AVL comparison, a workload-selection review memo, and a corrected
+prediction. No from-scratch AVL implementation, deletion, or new implementation
+of an earlier structure is required.
+
+The final 60 minutes review arrays/lists, hash versus BST/AVL lookup, Heap
+priority, DFS/BFS frontier control, and minimum-hop versus weighted routes.
+Briefly discuss the cost of preparing and updating an ordered snapshot.
+Insertion-sort and merge-sort instruction and implementation are optional;
+they do not gate core work. Module 14 explains its supplied sorted edges and
+comparator without assuming a sorting lesson.
+
+| Required contact activity | Minutes |
+|---|---:|
+| Retrieve the skewed-tree problem; establish height and balance | 20 |
+| LL/RR followed by LR/RL rotations, preserving ordering and middle subtrees | 55 |
+| Guided AVL insertion: returned roots and bottom-up height updates | 30 |
+| Rotation and insertion checks | 15 |
+| Course review, workload selection, corrections, and submission | 60 |
+| **Total** | **180** |
 
 ---
 
@@ -1346,7 +1351,7 @@ Students use supplied graph construction, edge sorting, and checked totals. They
 - result validation;
 - total-weight comparison.
 
-Prim uses lazy duplicate Heap entries with stale-key and `in_tree` checks; it restarts from each unvisited vertex for a disconnected input. Kruskal uses the supplied edge-list builder, `qsort`, a relational comparator, and DSU. A short comparator retrieval explains why returning `left_weight - right_weight` can overflow.
+Prim uses lazy duplicate Heap entries with stale-key and `in_tree` checks; it restarts from each unvisited vertex for a disconnected input. Kruskal uses the supplied edge-list builder, `qsort`, a relational comparator, and DSU. A short comparator explanation introduces increasing weight order and ties and explains why returning `left_weight - right_weight` can overflow. No prior insertion-sort or merge-sort lesson is assumed.
 
 Students implement the bounded DSU core here; parser, Heap, make-set, and sorting are supplied. Tests include a singleton graph, normal connected graph, disconnected graph, equal-weight alternatives, parallel edges, self-loops, negative weights, invalid endpoints, and a total weight requiring `int64_t`.
 
@@ -1511,10 +1516,10 @@ The capstone is built incrementally so Week 14 is integration rather than a new 
 | Week 6 / Module 6 | Stack-backed DFS and reachability |
 | Week 7 / Module 7 | Acyclic links, safe insertion/detachment, shared-pool reuse, stale-access rules, and linked LIFO/FIFO applications |
 | Week 8 / Module 8 | Array queue comparisons; tree level order, maze BFS distances, and conceptual unweighted path recovery |
-| Week 9 / Module 9 | Separate-chained complement lookup and pool-reuse evidence; external-label index adaptation belongs to later integration |
+| Week 9 / Module 9 | Separate-chained key lookup, allocation-counter reset, and two-sum evidence; external-label index adaptation belongs to later integration |
 | Week 11 / Module 11 | Heap-backed Dijkstra |
-| Week 12 / Module 12 | AVL-backed ordered asset/indicator index and backend-selection comparison |
-| Week 13 / Module 13 | Searching/sorting evidence and workload-based consolidation of previous structures |
+| Week 12 / Module 12 | Binary-search and ordinary-BST evidence, insertion-order effects, and a skewed-index example |
+| Week 13 / Module 13 | AVL repair/insertion evidence, ordered-index comparison, and a workload-selection review memo |
 | Week 14 / Module 14 | DSU and Kruskal integration; supplied Prim comparison and cumulative report |
 
 Each milestone contributes evidence inside that week’s lab or practical; it is not a second weekly submission. The Week 14 lab grade covers the bounded MST implementation and comparison, while the capstone grade covers cross-module integration, the cumulative report, and the defense. The same code is not scored twice for the same criterion.
@@ -1644,7 +1649,8 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Depth-first search idea | Module 2 recursive examples | Module 5 traversal orders and Module 6 graph DFS |
 | Named traversal orders and explicit traversal stacks | Module 5 textbook core: nonrecursive preorder, inorder, and postorder | Tree and graph algorithms |
 | Queue | Module 7 linked FIFO example; Module 8 compares linear/circular arrays | Apply FIFO to tree levels and direct-coordinate array-queue maze BFS in Week 8 |
-| Height and balance | Module 12 | AVL validation and rotation |
+| Edge height | Module 2, retrieved for BST path costs in Module 12 | AVL height updates in Module 13 |
+| Balance factors and AVL rules | Module 13 | AVL validation and rotation |
 | Adjacency list | Module 3 graph representation | Later graph-algorithm reference APIs |
 | Shortest predecessor concept | Module 8 concept slides in Week 8; the lab records distances only | Optional path recovery and later shortest-path comparisons |
 | Hash Table, signed hashing, separate chaining, and complement lookup | Module 9 supplied lab.c | Exact-lookup comparison with AVL; later external-label index adaptation |
@@ -1652,8 +1658,9 @@ For Kruskal, comparator code must compare relationally rather than subtracting w
 | Binary Heap | Module 10 main lab in Week 10 | Dijkstra and Prim |
 | Weighted relaxation | Module 11 | Dijkstra; comparison with Prim |
 | Union-Find with compression and union by size | Module 14 scaffold in Week 14 | Kruskal in the same week |
-| BST operations and AVL rotations | BST operations, height, balance, and rotations introduced together in Module 12 | Ordered-index capstone; comparison with hashing |
-| First-match binary search and stable insertion/merge sorting | Module 13, using array access, shifts, and recursion from earlier modules | Workload-selection consolidation and supplied Kruskal edge ordering in Module 14 |
+| BST operations and AVL rotations | BST search/insertion in Module 12; AVL balance, rotations, and guided insertion in Module 13 | Ordered-index capstone; comparison with hashing |
+| First-match binary search | Module 12 on supplied sorted arrays | Module 13 workload review and later snapshot lookup |
+| Insertion-sort and merge-sort instruction | Optional reference material; not a required prerequisite | Optional sorting comparisons |
 | Edge-list construction and safe sorting/comparator | Supplied Week 14 scaffold | Kruskal |
 
 Scope controls:
@@ -1667,11 +1674,11 @@ Scope controls:
 - Module 7 applies linked lists to a stack and a queue. Module 8 compares array queues, traces tree levels, and uses an array queue for maze BFS in one Week 8 submission. Queue positions, graph discovery, distances, resets, and conceptual path recovery share one lesson; Week 6 DFS provides the frontier-control comparison.
 - Module 10 combines fixed integer min/max Heaps and ten-device interval search in one Week 10 driver/evidence submission. Its alert-record Heap and unsorted baseline remain optional.
 - Module 9 traces and tests the supplied separate-chained two-sum program in one driver/evidence submission. It reuses Week 7's fixed pool; open-addressed rebuilding is optional. Week 14 combines bounded DSU work and Kruskal. Complete reference-package menus are optional resources.
-- AVL insertion is core; AVL deletion is an extension.
+- Module 12 requires binary search and ordinary BST search/insertion; BST deletion is outside required scope. Module 13 requires guided supplied AVL insertion and rotation evidence; AVL deletion is outside required scope. Its final 60 minutes are reserved for review, corrections, and submission.
 - Week 14 supplies graph/Heap support and introduces DSU before its use in Kruskal.
 - Students implement DSU and Kruskal together; Prim is a brief supplied demonstration, with no required student TODOs.
 - Module 9 demonstrates bucket-based exact-number lookup through two-sum. A supplied or adapted hash index can support sparse external keys in later synthesis. Boolean/indexed visited arrays remain the simpler representation when vertex IDs are already dense.
-- The required hash-table representation uses separate chaining in a fixed node pool. The older open-addressed map, linear probing, tombstones, resizing, and cryptographic hash design are extensions. Module 13 requires first-match linear/binary search and stable insertion/merge sorting; additional sorting algorithms remain extensions.
+- The required hash-table representation uses separate chaining in a fixed node pool. The older open-addressed map, linear probing, tombstones, resizing, and cryptographic hash design are extensions. Module 12 requires first-match binary search on supplied sorted arrays. Insertion-sort and merge-sort instruction and implementation are optional; Module 14 supplies and explains its edge ordering without assuming either sorting lesson.
 - Algorithms operate only on synthetic, authorized datasets.
 
 ---
@@ -1691,8 +1698,8 @@ Scope controls:
 | 9 | Hash Table and two-sum | Module 9 supplied lab.c; signed hashing, separate chains, pool reuse, and one driver/evidence submission |
 | 10 | Integer Heaps and shared on-time | Current Module 10 lab.c, driver, repairs, dual ID Heaps, maps, and interval reasoning; one submission |
 | 11 | Dijkstra | Module 11; Spiral 4 synthesis and Practical 2 replace the ordinary lab |
-| 12 | BST-to-AVL | Module 12; height/balance, adversarial-input, and index-selection experiment |
-| 13 | Searching, sorting, and consolidation | Module 13; first-match linear/binary search, stable insertion/merge sorting, original tests, and a workload-selection memo in one artifact |
+| 12 | Binary Search and BSTs | Module 12; first-match binary search, BST search/insertion, inorder, height, and skew evidence in one artifact |
+| 13 | AVL Rotations and Review | Module 13; balance, four rotation cases, guided supplied insertion, checks, and a review memo in one artifact; final 60 minutes for review |
 | 14 | Union-Find and Kruskal | Module 14; one DSU/MST, embedded Spiral 5 check, and integration artifact; Prim demonstration |
 
 The capstone begins with the Week 3 skeleton and receives the milestones listed above; it is not introduced in Week 14. The Module 14 individual check and integration checkpoint are embedded in the week’s single artifact, while the capstone defense uses the scheduled final-assessment period. If that period is unavailable, move the defense to an institutionally approved assessment slot rather than adding it to Week 14’s 180-minute plan.

@@ -2,7 +2,6 @@
 param([switch]$StudentTests, [switch]$CompileOnly, [switch]$Sanitize)
 $ErrorActionPreference = "Stop"
 $codeRoot = $PSScriptRoot
-$repositoryRoot = Split-Path -Parent (Split-Path -Parent $codeRoot)
 $buildDirectory = Join-Path $codeRoot "build"
 New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
 $compiler = Get-Command "clang", "gcc", "cl" -ErrorAction SilentlyContinue |
@@ -12,13 +11,13 @@ if ($StudentTests) { $name = "test_lab_student" } else { $name = "test_lab_core"
 $source = Join-Path $codeRoot "tests/$name.c"
 $output = Join-Path $buildDirectory "$name.exe"
 if ($compiler.Name -eq "cl.exe" -or $compiler.Name -eq "cl") {
-    $arguments = @("/nologo", "/std:c11", "/W4", "/I$repositoryRoot",
+    $arguments = @("/nologo", "/std:c11", "/W4",
         "/Fo:$buildDirectory\", "/Fe:$output")
     if ($Sanitize) { $arguments += "/fsanitize=address" }
     $arguments += $source
 } else {
     $arguments = @("-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Wconversion",
-        "-Wshadow", "-g", "-I$repositoryRoot")
+        "-Wshadow", "-g")
     if ($Sanitize) {
         $arguments += @("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
     }

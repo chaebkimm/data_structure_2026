@@ -1,10 +1,12 @@
 # Chapter 14. Connecting All Vertices at the Lowest Cost
 
-> Use the [Week 14 combined DSU/Kruskal plan](../module_14_prim_kruskal/week_14/instructor.md). Introduce DSU in the same week. Prim is a brief supplied demonstration, with no student implementation checkpoints.
+> Use the [Week 14 combined DSU/Kruskal plan — opening prerequisite reference pending alignment](../module_14_prim_kruskal/week_14/instructor.md). Introduce DSU in the same week. Prim is a brief supplied demonstration, with no student implementation checkpoints.
 
-Retrieve the searching/sorting comparison from [Chapter 13](chapter_13.md).
-The edge list is supplied in sorted order. Ask why choosing every next cheap
-edge still needs a separate check for joining different components.
+Retrieve the workload and preparation-cost review from [Chapter 13](chapter_13.md).
+Explain increasing edge-weight order and the supplied tie rule here; do not
+assume prior insertion-sort or merge-sort instruction. The edge sorter and
+comparator are supplied. Ask why choosing every next cheap edge still needs
+a separate check for joining different components.
 
 ## Starting Question
 

@@ -1,7 +1,8 @@
 # Module 09 staged release manifest
 
-The required release follows `student/lab.c`: ten buckets, index-linked
-collision chains, the Module 07 node pool, and brute-force/hash-based two sum.
+The required release follows `student/lab.c`: ten `{key,data,next}` nodes,
+fifteen bucket heads, index-linked collision chains, and brute-force/hash-based
+two sum. The source is self-contained and has no Module 07 dependency.
 It contains supplied functions for tracing and testing, with no implementation
 TODOs. The older open-addressed library stays an optional repository reference.
 
@@ -25,36 +26,37 @@ that attempt. SHA-256 hashes are printed.
 | `module_09_stage_a_initial_inquiry.zip` | 3 | Before Meeting A |
 | `module_09_stage_b_representation_pause.zip` | 4 | Initial predictions are preserved |
 | `module_09_stage_c_investigation.zip` | 3 | Three-target pause and comparison |
-| `module_09_stage_d_textbook_models.zip` | 3 | Investigation core is preserved |
-| `module_09_stage_e_lab.zip` | 12 | Retrieval and textbook calibration |
+| `module_09_stage_d_textbook_models.zip` | 4 | Investigation core is preserved |
+| `module_09_stage_e_lab.zip` | 11 | Retrieval and textbook calibration |
 
 Each archive has its stage README at the root. Material retains the
 `module_09_hash_table/student/` and `diagrams/` paths. Extract successive
 stages into a common parent directory; the stage README may be replaced.
 Standard and linear prompts use identical fixtures and tasks. The packager
-checks Stage A for early implementation names and executable code fences. Plain text diagrams are allowed.
+checks Stage A for early implementation names and executable code fences.
+Plain text diagrams are allowed.
 
 Stage E contains five student files (`lab.c`, `lab.md`, evidence, rubric,
 and source-based autopsy), two test drivers, three student build/guide
-files, its README, and the exact
-`module_07_linked_list/student/lab.c` dependency. Its two module directories
-must stay siblings. The compiler uses the extracted root as an include path.
+files, and its README. Compile only a driver that includes `lab.c` once;
+no additional module or repository-root include path is required.
 
-Instructor notes, completed answers, the old public map header,
-starter/solution library, map tests, deletion demo, and generated binaries
-are excluded. There is no fixed total source-file inventory: releases use
-an explicit allowlist in `prepare_student_release.py`.
+Instructor notes, completed answers, PPT source files, the old public map
+header, starter/solution library, map tests, deletion demo, and generated
+binaries are excluded. Releases use an explicit allowlist in
+`prepare_student_release.py`. The packaged `lab.c` is copied byte for byte.
 
 ## Verify before release
 
 Run `make -C module_09_hash_table/code lab-compile core student-tests`.
-Check normalized negative hashes, prepended collision chains, raw payload
-lookup, pool exhaustion and unchanged failure state, disjoint active/free
-chains, reset and reuse, and two-sum success/miss/repeated runs. Include a
-single-occurrence self-pair trap and a duplicate-value pair. Compare valid
-pair existence rather than requiring the two algorithms to choose the same
-second index. Use sanitizers where supported. Record inherited compiler
-warnings separately from failed assertions.
+Check normalized negative hashes, prepended collision chains, key-based
+lookup with a separate payload, duplicate keys, capacity exhaustion and
+unchanged failure state, reset and reuse, and two-sum success/miss/repeated
+runs. Include a single-occurrence self-pair trap and a duplicate-value pair.
+Both current algorithms select the earliest successful outer index and
+newest matching earlier index, returning `{earlier,later}`. The core tests
+check this exact order as well as pair validity and existence. Use sanitizers
+where supported and record compiler diagnostics.
 
 Package to a temporary output directory, compare entries against the
 allowlist and source bytes, extract Stage E, and build it independently.

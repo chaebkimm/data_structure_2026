@@ -1,77 +1,91 @@
-# Hash Table Autopsy — A Position Is Not a Number
+# Hash Table Autopsy — A Key Is Not Its Payload
 
-A bucket selects candidates. The stored payload determines how to check each
-candidate. Investigate a wrong-answer change to the supplied two-sum search.
-Use a hand trace or a separate driver copy; keep [lab.c](lab.c) unchanged.
-The old `code/autopsy/faulty_delete_empty.c` is an optional demonstration for
-the separate open-addressed library. It is outside this lab's assessment.
+A bucket selects candidates; key equality decides a match. Use a hand trace
+or separate driver copy for these wrong-answer changes. Keep [lab.c](lab.c)
+unchanged. The older `code/autopsy/faulty_delete_empty.c` demonstrates a
+separate open-addressing problem and is outside the required assessment.
 
 ## 1. Predict the meaning of each integer
 
-The current search contains these steps:
+The current table search compares keys:
 
 ```c
-int j = lnodes[j_node].data;
-if (nums[j] == j_num) {
-    answer[0] = i;
-    answer[1] = j;
+if (hnodes[node].key == k) {
+    return node;
+}
+```
+
+The two-sum caller then recovers the earlier input position:
+
+```c
+int complement = target - nums[i];
+int node = find(complement);
+if (node != -1) {
+    int j = hnodes[node].data;
+    answer[0] = j;
+    answer[1] = i;
     return;
 }
 ```
 
-Begin with empty buckets and a freshly initialized pool. For target 0 at
-current position 5, fill in `i`, `nums[i]`, `j_num`,
-searched bucket, `j_node`, `lnodes[j_node].data`, and `nums[j]`.
-Which values are positions? Which values are numbers?
+Use original `nums` and target 0. At current position 5, list `i`,
+`nums[i]`, complement, search bucket, returned node, node key, node data,
+and `nums[j]`. Which are positions, which are values, and which select
+node or bucket arrays?
 
 Prediction: ________________________________________________________
 
 ## 2. Locate the first wrong comparison
 
-Suppose a copied search changes only the condition to:
+Suppose a separate copied `find` changes only its equality check to:
 
 ```c
-if (j == j_num) {
+if (hnodes[node].data == k) {
 ```
 
-Trace the same iteration with the original array. Which valid pair does the
-changed condition reject? State the expected comparison and the changed
-comparison using exact integers. Complete the copied search by hand or run
-only the separate copy with a bounded fixture.
+At target 0 and `i = 5`, the requested key is -1, bucket is 14, and its
+head is node 4 with key -1 and data 4. State the correct comparison and
+changed comparison using exact integers. Which valid answer is rejected
+at this iteration? Trace any remaining nodes reached by the changed search.
+
+Also distinguish the lookup contract using initialized calls
+`insert(12,120)`, `insert(27,270)`, and `insert(-3,-30)`. What should
+`find(27)` return, and why would comparing payloads fail?
 
 Observation: _______________________________________________________
 
 First divergence: __________________________________________________
 
-Explain why choosing the same bucket does not mean that either a node index
-or its stored position equals the requested number.
+The same bucket proves neither matching keys nor equality between an input
+position and its value. Explain this in your own words.
 
 ____________________________________________________________________
 
-## 3. Test the order of search and insertion
+## 3. Test the order of lookup and insertion
 
-Use target 2. At current position 5, the number is 1. The supplied source
-searches before saving position 5. Predict why position 5 cannot match itself.
-Now imagine saving position 5 first. Which invalid pair could appear?
+For target 2 and `i = 5`, the current value is 1 and the complement is 1.
+The supplied code searches before inserting. Explain why no stored entry
+can represent position 5 then. Imagine inserting `(1,5)` first; which
+invalid answer could `find(1)` now allow?
 
-Prediction: ________________________________________________________
+For the supplied source assert bounds, distinct positions, target sum, and
+its actual first target-2 answer `{3,7}`. A separate fixture with a lone 5
+and target 10 should miss; adding a second 5 should permit a valid pair.
+Keep all arithmetic representable as `int` and restore custom input changes.
 
-A regression should assert the supplied answer's bounds, different positions,
-and target sum. For this fixed array and target, also assert the actual first
-answer returned by the supplied source. Record that answer and explain it.
-
-Regression and result: ______________________________________________
+Regression or complete hand trace: __________________________________
 
 ## 4. Repair and classify
 
-Restore the comparison through `nums[j]`. Keep the search before the save.
-Write a short explanation connecting each repair to the fact that the table
-contains only earlier positions.
+Restore key comparison in the copied `find`, read its returned node's data
+for the answer position, and keep lookup before insertion. Explain each
+step using the invariant that all table entries represent earlier positions.
 
 ____________________________________________________________________
 
-The fixtures demonstrate a wrong-answer defect. They do not establish an
-out-of-bounds access or memory corruption. State the valid-index and
-representable-arithmetic assumptions under which the comparison is evaluated.
+These fixtures demonstrate wrong answers. They do not establish an
+out-of-bounds access or memory corruption. State the initialized-table,
+valid-chain, valid-position, and representable-arithmetic assumptions used
+by the trace. Never copy the experimental defect into `lab.c`.
 
 ____________________________________________________________________

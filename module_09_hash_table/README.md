@@ -1,65 +1,75 @@
-# Module 09 — Hash Tables and Two Sum
+# Module 09 — Storing and Finding Data with a Hash Table
 
-Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+The required Chapter 9 lesson follows [student/lab.c](student/lab.c).
+The source is self-contained: ten hash nodes, fifteen bucket heads, and two
+ways to find different input positions whose values sum to a target. Teach
+array search and direct addressing first, then hash functions, collision
+chains, and table operations. Introduce two sum after students can insert
+and find keys. Students trace the supplied functions and write an assertion driver. There
+are no required implementation TODOs.
 
+## PPT references and current source
 
-The required Week 9 lesson follows [student/lab.c](student/lab.c). It uses
-ten bucket heads and the ten-node pool included from
-[Module 07](../module_07_linked_list/student/lab.c). Collisions form linked
-chains. Students trace the supplied functions and write a test driver;
-there are no required implementation TODOs in the supplied lab.
+Use [the concept material](student/ppt_material.md) for the sequence from
+array search and direct addressing to hashing, collisions, and two sum.
+Use [the code material](student/ppt_lab_material.md) for key/data/next nodes,
+head insertion, key lookup, and lookup before insertion. The accompanying
+[prompt slides](student/ppt.md) and [code prompts](student/ppt_lab.md) support
+retrieval during class. All PPT files remain user-maintained references.
 
-The hash table uses the node-pool interface directly: `struct Linked_Node`,
-`init_lnodes_pool()`, and `new_lnode()` followed by caller data/next assignments.
-Hash chains retain and recycle their own nodes. Module 8's maze uses a separate
-coordinate array queue and does not supply adapters for these pool operations.
+The PPT code illustrates five nodes, seven buckets, a positive-only array,
+and names such as `size`, `htable`, `arr`, and `ans`. The current lab uses
+`NODES_CAPACITY=10`, `TABLE_CAPACITY=15`, `hnodes_unused`, `hashtable`,
+`nums`, and `answer`. Its brute-force inner loop visits earlier indices in
+**descending** order, and its hash version checks insertion failure. Use
+current lab parameters and control flow for all required traces and tests.
+Direct addressing, open addressing, and Robin Hood hashing are conceptual
+comparisons; this implementation uses separate chaining.
 
 ## Teach the current source
 
 | Material | Purpose |
 | --- | --- |
-| [Textbook](student/textbook.md) | Move from checking every pair to looking for a complement |
-| [Representation reveal](student/representation_reveal.md) · [Vocabulary](student/vocabulary.md) | Explain buckets, chains, node indices, and stored data |
+| [Textbook](student/textbook.md) · [Korean](student/textbook_korean.md) | Move from array search and direct addressing to hashing; apply it to two sum |
+| [Representation reveal](student/representation_reveal.md) · [Vocabulary](student/vocabulary.md) | Distinguish keys, data, buckets, and node indices |
 | [Investigation](student/investigation_worksheet.md) · [Linear version](student/investigation_worksheet_linear.md) | Preserve predictions and exact traces |
 | [Lab](student/lab.md) | Build a driver around the actual source |
-| [Evidence record](student/evidence_template.md) · [Rubric](student/rubric.md) | One Week 9 submission |
-| [Models](diagrams/hash_table_models.md) | Bucket, node-pool, and two-sum diagrams with text equivalents |
+| [Evidence record](student/evidence_template.md) · [Rubric](student/rubric.md) | One Chapter 9 submission |
+| [Models](diagrams/hash_table_models.md) | Text diagrams of chains, reset, and two sum |
 | [Lesson plan](instructor/lesson_plan.md) · [Chapter guide](../instructor_guide/chapter_09.md) | Deliver the lesson in 180 minutes |
-| [Release manifest](release/release_manifest.md) | Package the lesson with its Module 07 dependency |
+| [Release manifest](release/release_manifest.md) | Package the self-contained lesson |
 
 ## Source contract
 
-- `hashtable[10]` contains node indices, initially `-1`. A bucket head is
-  not a stored number. `-1` ends a chain.
-- Call `init_lnodes_pool()` before the first allocation. The pool and hash table
-  must have exclusive, consistent ownership of their nodes during a lab run.
-- `hash_func(value)` normalizes `value % 10` to 0–9, including negative
-  values. For example, 12, 22, and -8 all select bucket 2.
-- `save_data(hash, data)` prepends a node and returns its pool index. It
-  returns `-1` without changing the bucket when the pool is exhausted.
-  Callers provide a bucket in 0–9. Duplicate data is allowed.
-- `find_data(hash, data)` follows that bucket's chain and compares stored
-  `data`. It returns the first matching node index, or `-1`.
-- `free_lnode_chunk(head)` joins an entire valid chain to the free chain.
-  `init_hashtable()` applies it to each nonempty bucket and clears the heads.
-  These functions recycle pool slots; they do not call C `free()`.
-- `two_sum_bf(target)` checks pairs in increasing `i`, then increasing
-  `j < i`. It writes indices to `answer`, or `{-1,-1}` on a miss.
-- `two_sum_ht(target)` resets the table, searches for `target - nums[i]`
-  among earlier indices, then stores `i` under `hash_func(nums[i])`.
-  The search compares `nums[j]`, because node data is an index in this use.
-  Lookup before insertion prevents using the current index twice.
-- Both algorithms use exactly ten numbers. Signed sums and differences
-  must be representable as `int`. The supplied fixture satisfies this
-  condition for the targets used in the lesson.
-- A successful early return leaves chains allocated. The next
-  `init_hashtable()` recycles them. Repeated `init_lnodes_pool()` calls do not reset live
-  bucket chains or mix another user of the shared pool into the experiment.
+- Call `initialize()` before manual table operations. Static bucket heads
+  start at zero; that is not the empty marker. Initialization writes `-1`
+  to all fifteen heads and resets `hnodes_unused` to zero.
+- `struct hnode` contains `key`, `data`, and `next`. `hnodes[10]` stores the
+  nodes. `hnodes_unused` is the next unused index, also the allocated count.
+- `new_hnode(key,data,next)` returns a node index or `-1` when all ten slots
+  have been allocated. It does not publish a bucket head.
+- `hash_func(key)` normalizes `key % TABLE_CAPACITY` into 0–14. Keys 12,
+  27, and -3 all select bucket 12.
+- `insert(k,d)` prepends a node to the selected chain and returns **0** on
+  success, **-1** on exhaustion. A failed insertion leaves state unchanged.
+  Duplicate keys allocate another node; they do not update an old node.
+- `find(k)` compares `hnodes[node].key` and returns the newest matching
+  node index, or `-1`. Retrieve its associated data only after checking the
+  returned index.
+- `initialize()` discards all active chains by resetting heads and the
+  allocation counter. It does not traverse chains, clear node fields, or
+  change `nums` or `answer`. The next allocation uses node 0 again.
+- `two_sum_bf(target)` visits increasing `i`, then `j=i-1` down to zero.
+  It stores `{j,i}` in `answer`, or `{-1,-1}` on a miss.
+- `two_sum_ht(target)` initializes at entry, looks up the complement key,
+  reads the earlier input index from the returned node's `data`, and stores
+  `{j,i}`. Only after a lookup miss does it insert `(nums[i],i)`.
 
-For `nums = {-16,-8,-4,-2,-1,1,2,4,8,16}`, target 0 returns `[5,4]`.
-Target 32 returns `[-1,-1]` after the hash version stores all ten indices.
-With duplicate input values, the two implementations may return different
-valid earlier indices; compare pair validity and existence, not exact pairs.
+With the supplied array, targets 0, 2, and 3 return `{4,5}`, `{3,7}`, and
+`{5,6}` in both methods. Target 100 returns `{-1,-1}`. Both methods choose
+the most recent matching earlier position, including on duplicate input
+values. Keep all tested sums and complement subtractions representable as
+C `int`; the supplied functions do not check signed overflow.
 
 ## Build and evidence
 
@@ -69,30 +79,27 @@ From the repository root:
 make -C module_09_hash_table/code lab-compile core student-tests
 ```
 
-The core tests include the actual `student/lab.c`. The student test file is
-`code/tests/test_lab_student.c`; its initial smoke test is a starting point.
-Write three original test groups: hashing and chains; pool exhaustion and
-recycling; and two sum, including misses, repeated runs, and distinct indices.
-Submit the driver, compiler/run output, traces, and corrected reasoning as
-one artifact. See [the lab](student/lab.md) for direct compiler commands.
-
-The include in `lab.c` is relative to the repository root. A driver needs
-that root on its include path (`-I.` when compiling from the root). Compile
-only the driver when it includes `lab.c`; do not separately compile either
-included lab source.
+The core tests include the actual source. Students extend
+`code/tests/test_lab_student.c` with three original groups: hashing and
+chains; capacity and reset; and two sum with misses, duplicates, repeated
+calls, and distinct indices. See [the lab](student/lab.md) for a standalone
+driver command. Compile a driver that includes `lab.c` once; do not also
+compile `lab.c` as another translation unit. No Module 07 include or shared
+node pool is needed.
 
 ## Costs and scope
 
-Prepending is constant work once the bucket is known. A lookup traverses
-one chain. With `n` stored items and `b` buckets, adequate distribution gives
-expected `O(1 + n/b)` lookup; one chain can still contain all `n` items.
-For a scalable version with controlled load, hash-based two sum has expected
-`O(n)` work and worst `O(n²)` work. Brute force has worst `O(n²)` work.
-The actual teaching arrays fix both bucket count and pool capacity at ten.
-Resetting visits `b` heads and `r` live nodes, costing `Θ(b + r)`.
+Initialization visits fifteen heads: generalized cost `Θ(b)` for `b`
+buckets. Allocation and head insertion take constant work. Lookup visits
+one chain; under adequate distribution its expected cost is `O(1+n/b)`
+for `n` entries. With `b=Θ(n)` and enough node capacity, complete hash-based
+two sum has expected `O(n)` work including initialization, and worst
+`O(n²)` work when chains grow. A brute-force miss checks 45 pairs here;
+target 0 succeeds after 11 pair comparisons. The hash target-0 trace makes
+one stored-key comparison. These are observations for the supplied input.
+The actual arrays reserve ten nodes and fifteen heads and never grow.
 
 The older open-addressed map in `code/include`, `starter`, and `solution`
-is an optional reference. Its probing, tombstones, dynamic allocations,
-growth, validator, and deletion autopsy do not describe this lab and are
-not Week 9 requirements. Its named build targets remain available in
-[code/README.md](code/README.md).
+is an optional comparison. Its probing, tombstones, dynamic allocations,
+growth, validator, and deletion autopsy are not required lab operations.
+See [code/README.md](code/README.md) for its named build targets.

@@ -1,198 +1,215 @@
-# Module 09 Diagram and Linear-Text Models
+# Hash Table Models — Current Lab Source
 
-These models follow [student/lab.c](../student/lab.c). Each visual includes
-a linear equivalent with the same positions, values, and routes.
+These text diagrams describe [student/lab.c](../student/lab.c). They use
+its ten node slots and fifteen bucket heads. Text labels provide the same
+information as the spatial arrangement; color is unnecessary.
 
-## Model 1 — Signed numbers select ten buckets
-
-We need a valid array position for every signed number. The hash calculation
-normalizes a negative remainder before selecting a bucket.
+## Model 1 — Signed keys select fifteen buckets
 
 ```text
-value       -16  -8  -4  -2  -1   1   2   4   8  16
-value % 10   -6  -8  -4  -2  -1   1   2   4   8   6
-hash_func     4   2   6   8   9   1   2   4   8   6
+key             -16  -8  -4  -2  -1   1   2   4   8  16
+C key % 15       -1  -8  -4  -2  -1   1   2   4   8   1
+hash_func        14   7  11  13  14   1   2   4   8   1
 ```
 
-Linear equivalent: the ten numbers select buckets 4, 2, 6, 8, 9, 1, 2, 4,
-8, and 6. A negative remainder receives 10. Every result is between 0 and 9.
-For example, -16 and 4 collide at bucket 4. Numbers -4 and 16 collide at
-bucket 6.
+A negative remainder receives 15. Buckets are numbered 0–14; node slots
+are numbered 0–9. Different keys can share a bucket: -16 and -1 select
+14, while 1 and 16 select 1. Equality must still compare full keys.
 
-## Model 2 — Bucket heads and pool nodes are different positions
+The concept PPT begins with direct addressing, where a suitable key is
+itself an index. Hashing maps signed or large keys into a small table.
+The PPT's open-addressing and Robin Hood alternatives choose other table
+positions after collisions. This lab instead keeps a linked chain at the
+selected bucket.
 
-A bucket selects the first linked node. It does not store the candidate
-number itself.
+## Model 2 — Empty table after initialization
 
 ```text
-hashtable bucket:   0   1   2   3   4   5   6   7   8   9
-head:             -1  -1   2  -1  -1  -1  -1  -1  -1  -1
-                          |
-                          v
-node position 2       node position 1       node position 0
-{data:-8,next:1}  -->  {data:22,next:0}  -->  {data:12,next:-1}
+initialize()
 
-free_head = 3 --> 4 --> 5 --> 6 --> 7 --> 8 --> 9 --> -1
+hashtable[0..14] = {-1, -1, ... , -1}
+hnodes_unused   = 0
+next allocation = node 0
 ```
 
-Linear equivalent: initialize an otherwise unused pool, then call
-`save_data(2, 12)`, `save_data(2, 22)`, and `save_data(2, -8)`. The calls
-return nodes 0, 1, and 2. Bucket 2's head is 2. Its node route is 2, 1, 0.
-The payload route is -8, 22, 12. All other bucket heads are -1. Nodes 3–9
-remain available.
+Call initialization before manual lookup or insertion. Static zeroed heads
+are not empty markers. The function does not clear `hnodes`, `nums`, or
+`answer`. There is no free-node chain or imported pool.
 
-## Model 3 — Search compares payloads
+## Model 3 — Keys, data, and head insertion
 
-A shared bucket can contain unequal payloads. Search must compare the
-complete payload at each node.
+Starting after initialization, insert `(12,120)`, `(27,270)`, and `(-3,-30)`.
+All three keys select bucket 12.
 
 ```text
-find_data(2, 22): 2(data -8) --> 1(data 22 FOUND)        returns 1
-find_data(2, 32): 2(data -8) --> 1(data 22) --> 0(data 12) --> -1
-                                                           returns -1
+hashtable[12] = 2
+                 key   data   next
+node 2           -3    -30      1
+node 1           27    270      0
+node 0           12    120     -1
+
+chain: 2 --> 1 --> 0 --> -1
+hnodes_unused = 3
+all other bucket heads = -1
 ```
 
-Linear equivalent: the successful search compares two nodes and returns
-node position 1. The unsuccessful search compares all three nodes and
-stops at the ending link. An empty bucket requires no node comparison.
+Each insertion allocates the next node, writes its key and data, sets next
+to the old head, then publishes the new head. Each `insert` returns 0;
+that status is distinct from the allocated indices 0, 1, and 2.
+The counter is the next unused index and allocated count, not the number
+of remaining slots. Seven node slots remain.
 
-## Model 4 — Duplicate payloads remain separate nodes
-
-The storage helper adds one node whenever allocation succeeds. It does
-not implement update-on-duplicate behavior.
+## Model 4 — Lookup compares keys
 
 ```text
-before save_data(2, 22): head 2 --> 1 --> 0 --> -1; free_head 3
+find(27): bucket 12 --> node2 key -3 --> node1 key 27 MATCH
+                                                   return 1
+                                                   data = 270
 
-after:
-head 3(data22) --> 2(data-8) --> 1(data22) --> 0(data12) --> -1
-free_head 4 --> 5 --> 6 --> 7 --> 8 --> 9 --> -1
+find(42): bucket 12 --> node2(-3) --> node1(27) --> node0(12) --> -1
+                                                                  MISS
+
+find(120): bucket 0 --> -1  MISS
 ```
 
-Linear equivalent: a second payload 22 is stored in new node 3. The old
-payload 22 remains in node 1. `find_data(2, 22)` now returns 3 because it
-searches newest-first. Allocation failure instead returns -1 and leaves
-the old state unchanged.
+An absent key may collide with stored keys. `find` returns a node index or
+-1, not the associated data. Check the return value before reading data.
+The stored data 120 does not make `find(120)` match key 12.
 
-## Model 5 — Two-sum stores array positions
+## Model 5 — A duplicate key consumes another node
 
-The application needs the earlier position as its answer. It hashes the
-number but stores its position in the node.
+After the three-node fixture, `insert(27,271)` returns 0:
 
 ```text
-nums position:  0    1   2   3   4  5  6  7  8   9
-nums number:  -16  -8  -4  -2  -1  1  2  4  8  16
+hashtable[12] = 3
+node 3: key 27, data 271, next 2
+node 2: key -3, data -30, next 1
+node 1: key 27, data 270, next 0
+node 0: key 12, data 120, next -1
 
-save_data(hash_func(nums[0]), 0)
-             bucket 4        payload 0
-                                  |
-                                  v
-                           nums[0] is -16
+find(27) --> node 3 --> data 271
+hnodes_unused = 4
 ```
 
-Linear equivalent: bucket 4 stores a node whose payload is position 0.
-The candidate number is obtained by reading `nums[0]`. `find_data(4, -16)`
-would compare -16 against payload 0 and report no match. The application's
-chain walk compares `nums[j]` against the complement instead.
+The older key-27 entry is still linked. Insertion does not implement a
+unique-key update. Newest matching keys occur first.
 
-## Model 6 — Target 0 succeeds before inserting position 5
+## Model 6 — Capacity failure and reset
 
-Earlier positions must be available without allowing the current position
-to match itself. The application searches before inserting.
+Initialize, then insert keys `0,15,...,135`, with data `0,...,9`:
 
 ```text
-fresh pool; after processing i = 0,1,2,3,4:
+bucket 0 --> node9 --> node8 --> ... --> node0 --> -1
+all other fourteen heads = -1
+hnodes_unused = 10
 
-bucket 2 --> node1(data1) --> -1       nums[1] = -8
-bucket 4 --> node0(data0) --> -1       nums[0] = -16
-bucket 6 --> node2(data2) --> -1       nums[2] = -4
-bucket 8 --> node3(data3) --> -1       nums[3] = -2
-bucket 9 --> node4(data4) --> -1       nums[4] = -1
-free_head 5 --> 6 --> 7 --> 8 --> 9 --> -1
+insert(150,10) --> -1
+heads, counter, and all node fields stay unchanged
 
-i = 5; nums[5] = 1; complement = -1; hash_func(-1) = 9
-bucket 9 --> node4 --> j=4 --> nums[4]=-1 --> answer={5,4}; return
+initialize()
+all fifteen heads = -1
+hnodes_unused = 0
+old node fields remain, but no bucket points to them
+
+insert(7,70) --> 0
+bucket 7 --> node0 {key:7, data:70, next:-1}
+hnodes_unused = 1
 ```
 
-Linear equivalent: bucket heads are 2→1, 4→0, 6→2, 8→3, and 9→4.
-All other buckets are empty. Each active node's next is -1. Iteration 5
-finds the complement in bucket 9 and does not allocate a node for position
-5. Five nodes remain active after the return.
+Reset visits the fifteen heads, without following active chains. It does
+not reset `answer` or erase old records. Capacity can be exhausted while
+most buckets are empty. There is no individual-node recycling operation.
 
-## Model 7 — Reset returns chains to the shared pool
+## Model 7 — Two-sum keys and associated input indices
 
-A completed call can leave active candidates. The next call must recycle
-them before allocating more nodes.
+For the first input position, `nums[0]` is -16:
 
 ```text
-Model 6 before reset:
-free chain 5 --> 6 --> 7 --> 8 --> 9 --> -1
+insert(nums[0], 0)
+       key     data
+        |        |
+       -16       0
 
-init_hashtable visits buckets in order:
-bucket 2 returns node1
-bucket 4 returns node0
-bucket 6 returns node2
-bucket 8 returns node3
-bucket 9 returns node4
-
-after reset:
-all ten bucket heads = -1
-free_head 4 --> 3 --> 2 --> 0 --> 1 --> 5 --> 6 --> 7 --> 8 --> 9 --> -1
+hash_func(-16) = 14
+hashtable[14] --> node0 {key:-16, data:0, next:-1}
 ```
 
-Linear equivalent: each returned singleton becomes the front of the
-current free chain. All ten nodes become available. Their payloads remain
-unchanged until reused. Node reuse order differs from the original
-0-through-9 order. `init_hashtable` preserves the available pool; it does
-not call `init_lnodes_pool`.
+The key is an input value. Its associated data is an input position.
+The bucket index 14, node index 0, stored data 0, and key -16 have distinct
+roles even when some integer values happen to coincide.
 
-For a longer active chain, `free_lnode_chunk` finds its final node, links
-that node to the old `free_head`, and moves `free_head` to the supplied
-head. The caller clears the old bucket head. Active and free chains must
-never share a node.
+## Model 8 — Target 0 before and at the match
 
-## Model 8 — A complete miss uses all ten nodes
-
-When no pair exists, every current position is saved after its failed
-complement search. Use a fresh pool for the node identities below.
+After processing input positions 0–4:
 
 ```text
-two_sum_ht(100):
-bucket 1 --> node5(data5) --> -1
-bucket 2 --> node6(data6) --> node1(data1) --> -1
-bucket 4 --> node7(data7) --> node0(data0) --> -1
-bucket 6 --> node9(data9) --> node2(data2) --> -1
-bucket 8 --> node8(data8) --> node3(data3) --> -1
-bucket 9 --> node4(data4) --> -1
-free_head = -1; answer = {-1, -1}
+bucket 7  --> node1 {key:-8, data:1, next:-1}
+bucket 11 --> node2 {key:-4, data:2, next:-1}
+bucket 13 --> node3 {key:-2, data:3, next:-1}
+bucket 14 --> node4 {key:-1, data:4, next:0}
+               --> node0 {key:-16, data:0, next:-1}
+other heads = -1
+hnodes_unused = 5
+
+i=5, nums[i]=1, complement=0-1=-1
+find(-1): bucket14 --> node4 key -1 MATCH
+j = hnodes[4].data = 4
+answer = {4,5}
+return before inserting current input position 5
 ```
 
-Linear equivalent: bucket 1 contains position 5; bucket 2 contains 6 then
-1; bucket 4 contains 7 then 0; bucket 6 contains 9 then 2; bucket 8 contains
-8 then 3; bucket 9 contains 4. Buckets 0, 3, 5, and 7 are empty. There are
-ten active nodes and no free node. A later reset can recycle all ten.
+Only one stored-key comparison occurs in this target-0 hash trace. The
+preceding complement buckets are empty. Brute force reaches the same pair
+after 11 comparisons, trying `j=4` first at `i=5`.
 
-## Model 9 — Work follows candidate counts
+## Model 9 — A complete miss and another call
 
-The two algorithms differ in which earlier positions they inspect. Their
-cost claims must keep the input assumptions visible.
+After `two_sum_ht(100)`:
 
 ```text
-target 0, brute force: 0+1+2+3+4+5 = 15 pair comparisons
-complete brute-force miss: 0+1+2+3+4+5+6+7+8+9 = 45
-
-target 0, hash chains: compare nums[0], nums[1], nums[4] = 3 comparisons
-hash preparation and clearing are separate work
-
-generalized n records, b buckets:
-  expected lookup: O(1+n/b), with suitable distribution
-  one chain of k records: O(k)
-  clear all chains: O(b+s), s active nodes
+bucket 1  --> node9(key16,data9) --> node5(key1,data5) --> -1
+bucket 2  --> node6(key2,data6) --> -1
+bucket 4  --> node7(key4,data7) --> -1
+bucket 7  --> node1(key-8,data1) --> -1
+bucket 8  --> node8(key8,data8) --> -1
+bucket 11 --> node2(key-4,data2) --> -1
+bucket 13 --> node3(key-2,data3) --> -1
+bucket 14 --> node4(key-1,data4) --> node0(key-16,data0) --> -1
+all other heads = -1
+hnodes_unused = 10
+answer = {-1,-1}
 ```
 
-Linear equivalent: target 0 succeeds at outer position 5. Brute force
-checks fifteen pairs; the hash version checks three candidate numbers.
-Those counts describe this input. A generalized design can achieve expected
-linear total two-sum work when it keeps chain lengths bounded. All-colliding
-candidates can require quadratic total work. The supplied arrays stay at
-ten buckets and ten nodes.
+A subsequent `two_sum_ht(0)` calls `initialize()` before lookup and starts
+allocation at node 0 again. No caller reset or free-chain reconstruction
+is needed. All hash calls reserve the whole node array for their own run.
+
+## Model 10 — Duplicate values choose the same earlier position
+
+```text
+nums = {1,1,5,0,0,0,0,0,0,0}, target = 6
+
+at i=2:
+brute force tries j=1 first: nums[1]+nums[2] = 1+5 = 6
+hash lookup finds newest key 1: node1 has data 1
+both answers = {1,2}
+```
+
+Brute force descends through `j`; prepended chains visit newer entries
+first. Both stop at the same first `i` and greatest matching earlier `j`.
+Search before insertion ensures `j<i` and prevents a self-pair.
+
+## Model 11 — Count before generalizing
+
+```text
+brute-force miss: 0+1+...+9 = 45 pair comparisons
+brute-force target 0: 0+1+2+3+4+1 = 11 pair comparisons
+hash target 0: 1 stored-key comparison, plus constant work at empty buckets
+reset: fifteen head assignments and one counter assignment; no node walk
+```
+
+A generalized chain can contain all entries. Expected short chains require
+adequate key distribution and controlled entries per bucket. Expected
+linear complete hash two sum also requires a bucket count proportional to
+input size and sufficient node capacity. Worst-case total chain search can
+be quadratic. The actual source fixes ten nodes and fifteen buckets.

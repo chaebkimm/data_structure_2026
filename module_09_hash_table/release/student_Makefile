@@ -1,7 +1,7 @@
 # Run from module_09_hash_table/code inside the extracted release.
 CC := gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g
-CPPFLAGS ?= -I../..
+CPPFLAGS ?=
 BUILD_DIR ?= build
 
 .PHONY: all lab-compile core student-tests clean

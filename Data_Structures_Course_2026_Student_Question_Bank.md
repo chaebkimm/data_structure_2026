@@ -5,6 +5,15 @@ questions and 648 weekly question prompts (899 total).
 Repeated terms count as vocabulary placements, not globally unique words.
 Optional clusters remain optional and do not enlarge weekly assignments.
 
+**Weeks 12–13 — pending alignment.** The revised course plan assigns Binary
+Search and BSTs to Week 12 and AVL Rotations and Review to Week 13. Existing
+weekly pages, consolidated prompts, and course-wide questions still follow
+the previous sequence and await alignment for these topics. Counts below
+describe the existing resource inventory, not revised required vocabulary
+or assessment quotas. Select applicable prompts using the
+[14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md);
+insertion-sort and merge-sort instruction are optional.
+
 - [Course-wide questions](student_question_bank/00_coursewide_questions.md): 251.
 - [Consolidated Weeks 1–7](student_question_bank/01_weeks_01_07_questions.md): 325.
 - [Consolidated Weeks 8–14](student_question_bank/02_weeks_08_14_questions.md): 323.
@@ -19,13 +28,13 @@ Optional clusters remain optional and do not enlarge weekly assignments.
 | 6 | Graph DFS and Practical 1 | 41 | 5 | 40 | [Week 6](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Linked lists, shared pool, and linked Stack/Queue | 36 | 0 | 42 | [Week 7](student_question_bank/week_07_linked_list.md) |
 | 8 | Processing data in stored order: array queues and BFS | 33 | 2 | 48 | [Week 8](student_question_bank/week_08_bfs.md) |
-| 9 | Chained Hashing and Two Sum | 28 | 0 | 44 | [Week 9](student_question_bank/week_09_hash_table.md) |
+| 9 | Chained Hashing and Two Sum | 30 | 0 | 44 | [Week 9](student_question_bank/week_09_hash_table.md) |
 | 10 | Integer Heaps and Shared On-Time | 40 | 5 | 47 | [Week 10](student_question_bank/week_10_priority_queue_heap.md) |
 | 11 | Indexed-Heap Dijkstra and Practical 2 | 33 | 9 | 53 | [Week 11](student_question_bank/week_11_dijkstra.md) |
-| 12 | BST-to-AVL | 45 | 3 | 47 | [Week 12](student_question_bank/week_12_avl.md) |
-| 13 | Searching, sorting, and consolidation | 24 | 0 | 40 | [Week 13](student_question_bank/week_13_search_sort_consolidation.md) |
+| 12 | Binary Search and BSTs — bank pending alignment | 45 | 3 | 47 | [Existing Week 12 page — pending alignment](student_question_bank/week_12_avl.md) |
+| 13 | AVL Rotations and Review — bank pending alignment | 24 | 0 | 40 | [Existing Week 13 page — pending alignment](student_question_bank/week_13_search_sort_consolidation.md) |
 | 14 | Union-Find, Kruskal, and integration | 37 | 0 | 44 | [Week 14](student_question_bank/week_14_dsu_mst_capstone.md) |
-| **Total** | | **475** | **24** | **648** | |
+| **Total** | | **477** | **24** | **648** | |
 
 The separate final-assessment period uses the Week 14 and course-wide pages
 for capstone defense. It does not add another teaching week.

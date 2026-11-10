@@ -1,5 +1,86 @@
 # Korean Textbook Validation Record
 
+## Chapter 7 slot-reference visual published — 2026-11-06
+
+Published Sites version **241**, source `40afc243e0f171ec72c07ae9697759a1d5a27d03`,
+deployment `appgdep_6aee825059dc81919077df7ae34d8c83`.
+Added the bilingual numbered-slot visual beneath `list-positions`. Fixed physical
+slots 0, 1, 2 store next values 2, -1, 1 while their data compartments stay generic.
+Selecting a Next field marks the source and destination and shows one arrow;
+selecting -1 removes the destination and arrow and explains the absence marker.
+Horizontal compartments remain intact in both desktop and stacked mobile layouts.
+Native buttons expose source/value labels and pressed state, with one polite status.
+
+TypeScript, 14 existing Chapter 7 tests, build, and whitespace checks passed.
+Browser checks covered all selections in both languages, Enter/Space/Tab, forward
+and backward arrow routes, and 390px/768px layouts with no horizontal overflow.
+Prior visuals remain unchanged, as do all 171 captured manuscript, protected-file,
+and download hashes. Only two website components changed; the main checkout has
+the same focused patch while retaining other drafts. Production Korean verified.
+Proof: `student-textbook-web/outputs/chapter-seven-slot-reference-published.png`.
+
+## Chapter 7 slot-number explanation synchronized — 2026-11-06
+
+Published Sites version **240**, source `efbf5e8232ba729f5ef86adf791748e071dddc5f`,
+deployment `appgdep_6aee7fa9802481919d38b14f1a89e6e3`.
+Translated the user's replacement second subsection into English: store the next
+item's location as a slot number; numbering from zero leaves negative values
+available, so -1 indicates no next item. Both website readings, heading labels,
+textbook downloads, and the student ZIP match the canonical manuscripts. Preserved
+the existing list-positions anchor. The replaced subsection's old numbered example
+and diagram no longer render; the first subsection's interactive walkthrough stays.
+Updated the existing content test's diagram expectation. Five content tests, build,
+whitespace, bilingual preview, and published English verification passed. All 146
+captured protected/untargeted files, including the Korean manuscript and visual
+components, retained their hashes. Only two textbook members changed in the ZIP.
+Proof: `student-textbook-web/outputs/chapter-seven-slot-location-published.png`.
+
+## Chapter 7 first-subsection walkthrough published — 2026-11-06
+
+Published Sites version **239**, source `4474f6fa935e130eb1616713cbbce3decd27ef9e`,
+deployment `appgdep_6aee777503888191ab793b130c557e37`.
+Added the bilingual Follow next walkthrough beneath `thinking-1`: three cards with
+horizontal data/next compartments, visible first/current/last labels, two advances,
+terminal stopping, and restart. No sample values or middle dots. Cards are arranged
+horizontally from 768px and vertically below it, with connectors from each next
+compartment to the following data compartment. Native 44px controls and one polite
+status region support keyboard and screen-reader use.
+
+TypeScript, all 14 existing Chapter 7 tests, build, and whitespace checks passed.
+Browser checks covered Korean Enter/Space progression, Tab to Restart, English
+click progression, terminal disabled state, restart, and layouts at 390/640/768px.
+All 171 captured manuscript, protected-file, and download hashes stayed unchanged.
+Only two website components changed; the main checkout received the same focused
+patch while preserving other drafts. Production Korean rendering verified.
+Proof: `student-textbook-web/outputs/chapter-seven-walkthrough-published.png`.
+
+## Chapter 7 revised opening synchronized — 2026-11-06
+
+Published Sites version **238**, source `81d6f3b021f35c03436beac8ca777847d1c9c0c2`,
+deployment `appgdep_6aee7490355c8191945e7b82986b518b`.
+Preserved the user's revised Korean title, overview, and first explanation;
+translated them into English and defined a node at the start of the array-position
+subsection in both languages. Synchronized website readings, navigation and page
+titles, the first topic's bilingual labels, both textbook downloads, and sources.zip.
+Only the two textbook members changed inside the ZIP. Five Chapter 7 content tests,
+production build, whitespace checks, bilingual browser previews, and published
+English verification passed. All 45 protected lab/presentation files in the chapter
+and two website checkouts retained their hashes. Existing Chapter 7 layout remains.
+Proof: `student-textbook-web/outputs/chapter-seven-opening-published.png`.
+
+## Chapter 7 introduction layout aligned with Chapter 2 — 2026-11-06
+
+Published Sites version **237**, source `08b8c8099ff7d57c98deaba7665b939deb3440a6`,
+deployment `appgdep_6aee6c49350481918f5bf83fcbdbb03d`.
+Removed Chapter 7's experiment, glossary, and invariant shortcut buttons in both
+languages. The overview now precedes the short red rule with Chapter 2's spacing
+(24px after the title, 32px before the 64px rule). Other shared-layout chapters
+retain their existing default. TypeScript, production build, whitespace checks,
+and bilingual browser layout checks passed. Only two website components changed;
+no textbook, lab, presentation, or download files changed. Main website working
+files received the same patch without committing unrelated drafts.
+Proof: `student-textbook-web/outputs/chapter-seven-intro-layout-published.png`.
+
 ## Chapter 7 Korean, teaching, and website editions updated — 2026-11-06
 
 Published Sites version **234**, source commit

@@ -168,11 +168,11 @@ A의 자식은 B,C이고, B의 자식은 D,E, C의 왼쪽 자식은 F예요. 왼
 
 ### 확인 1
 
-hash_func(-16), hash_func(-8), hash_func(4)는 각각 어느 bucket을 고르는가? -16과 4가 같은 bucket을 골라도 같은 값이라고 할 수 없는 이유는 무엇인가?
+hash_func(-16), hash_func(-8), hash_func(-1)은 각각 어느 bucket을 고르는가? 현재 bucket 수와 노드 수를 쓰고, -16과 -1이 같은 bucket을 골라도 같은 키가 아닌 이유를 설명하라.
 
 ### 확인 2
 
-새 실행에서 별도 초기화 없이 save_data(2,12), save_data(2,22), save_data(2,-8)을 순서대로 호출했다. bucket 2의 노드 순서와 free_head는 무엇인가? 이어서 init_lnodes_pool()을 호출하면 무엇이 바뀌는가?
+initialize() 뒤 insert(12,120), insert(27,270), insert(-3,-30)을 순서대로 호출했다. bucket 12의 노드 순서, 각 key/data, hnodes_unused는 무엇인가? find(27)의 반환값과 그 노드의 data를 구별하고, find(120)이 왜 실패하는지도 설명하라.
 
 ### 확인 3
 
@@ -180,7 +180,7 @@ nums={-16,-8,-4,-2,-1,1,2,4,8,16}, target=0일 때 two_sum_ht는 어떤 answer�
 
 ### 확인 4
 
-init_hashtable()은 사용한 노드를 어떻게 재사용 가능하게 만드는가? pool이 소진된 save_data와 그 실패를 만난 two_sum_ht는 어떤 결과를 남기는가?
+initialize()는 어떤 상태를 바꾸고 어떤 상태를 남기는가? 열 노드를 모두 사용한 뒤 insert가 반환하는 값과 기존 상태를 설명하라. two_sum_ht가 삽입 실패를 만나면 무엇을 남기며, 정상적인 열 원소 실행에서는 왜 용량이 충분한가?
 
 ## 10장. 정수 Heap과 장치들의 공통 켜짐 시각
 

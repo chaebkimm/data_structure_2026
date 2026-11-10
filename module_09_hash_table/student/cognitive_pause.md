@@ -1,45 +1,43 @@
 # Stage B — Cognitive Pause
 
-Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
+Keep Stage A. Answer exactly these three targets before the investigation.
+Use a drawing or numbered prose. Label later corrections and retain the
+initial prediction.
 
+## Target 1 — Follow keys through a selected chain
 
-Keep the Stage A artifact. Answer exactly these three targets before opening
-the investigation worksheet. Use a drawing or numbered prose. Label later
-corrections without erasing the first prediction.
+There are 15 bucket heads and 10 nodes with `key`, `data`, and `next`.
+Call `initialize()`, then `insert(12,120)`, `insert(27,270)`, and
+`insert(-3,-30)`.
 
-## Target 1 — Follow the selected chain
-
-The table has ten starting indices. An empty starting index is `-1`.
-Each linked node has `data` and `next`. Starting with an initialized free
-pool, save 12, then 22, then -8 in their selected bucket.
-
-Predict `hash_func` for all three values. Record the node indices, data,
-next links, bucket head, and `free_head`. Trace both a successful search for
-22 and a missing search for 32. Explain why the bucket alone cannot prove
-that the requested value exists.
+Predict buckets, insertion status, node indices, all node fields, bucket
+heads, and `hnodes_unused`. Trace `find(27)` and missing `find(42)`.
+Distinguish the returned node from its payload. Why does matching a bucket
+alone fail to establish equality?
 
 Initial prediction: ________________________________________________
 
 Correction and evidence: ____________________________________________
 
-## Target 2 — Return records before reusing the pool
+## Target 2 — Reset heads and the allocation counter
 
-After the three insertions, predict `init_hashtable()`. Which links become
-part of the free chain? What happens to the bucket heads? Explain why
-`init_lnodes_pool()` must run before first allocation and why calling it while
-bucket chains are active would invalidate ownership.
+After those insertions, predict `initialize()`: bucket heads, counter,
+old node fields, and `answer`. Why does resetting both heads and counter
+permit safe reuse without walking any chain? Why would clearing only heads
+leave allocated capacity unavailable? State why initialization is required
+before the first insertion or lookup.
 
 Initial prediction: ________________________________________________
 
 Correction and evidence: ____________________________________________
 
-## Target 3 — Search earlier positions before saving the current one
+## Target 3 — Search before inserting the current position
 
-Begin an independent experiment with empty buckets and a freshly initialized
-pool. For target 0, trace the first successful iteration of `two_sum_ht`.
-Distinguish the current position, current number, complement, bucket,
-node index, stored earlier position, and earlier number. Explain why the
-comparison reads `nums[j]` and why saving `i` occurs after the search.
+Use the original `nums` and target 0. Trace the first successful
+`two_sum_ht` iteration. Distinguish current position, value, complement,
+bucket, returned node, node key, and payload holding the earlier position.
+Explain `find(complement)`, `hnodes[node].data`, answer order `{j,i}`, and
+why insertion follows a failed lookup.
 
 Initial prediction: ________________________________________________
 

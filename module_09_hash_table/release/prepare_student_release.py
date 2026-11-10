@@ -1,4 +1,4 @@
-"""Create the five Module 09 lab-based student archives, including Module 07."""
+"""Create the five self-contained Module 09 lab-based student archives."""
 import argparse
 import hashlib
 import io
@@ -7,7 +7,6 @@ import re
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 MODULE = Path(__file__).resolve().parent.parent
-REPOSITORY = MODULE.parent
 PREFIX = MODULE.name
 
 
@@ -28,7 +27,8 @@ def release_maps():
             "student/investigation_worksheet.md",
             "student/investigation_worksheet_linear.md"]),
         "module_09_stage_d_textbook_models.zip": stage("stage_d_README.md", [
-            "student/textbook.md", "diagrams/hash_table_models.md"]),
+            "student/textbook.md", "student/textbook_korean.md",
+            "diagrams/hash_table_models.md"]),
         "module_09_stage_e_lab.zip": stage("stage_e_README.md", [
             "student/lab.c", "student/lab.md", "student/evidence_template.md",
             "student/rubric.md", "student/hash_table_autopsy.md",
@@ -38,8 +38,6 @@ def release_maps():
         f"{PREFIX}/code/README.md": MODULE / "release/student_code_README.md",
         f"{PREFIX}/code/Makefile": MODULE / "release/student_Makefile",
         f"{PREFIX}/code/build.ps1": MODULE / "release/student_build.ps1",
-        "module_07_linked_list/student/lab.c":
-            REPOSITORY / "module_07_linked_list/student/lab.c",
     })
     return stages
 

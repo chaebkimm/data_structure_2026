@@ -1,30 +1,62 @@
-# Module 12 — AVL Insertion with Indexed Nodes
+# Module 12 — Binary Search and BSTs
 
-The required Week 12 lesson follows [`student/lab.c`](student/lab.c).
-It reuses Module 2's ten character nodes and integer child links, then adds
-stored heights, four rotations, and recursive AVL insertion. The complete
-source is supplied. Students predict states, trace the code, and extend
-assertion tests. There are no required implementation TODOs.
+**Course-plan update — 2026-11-10.** Week 12 now develops binary search
+and ordinary BST search/insertion. AVL balance, rotations, and guided
+insertion belong to [Module 13](../module_13_search_sort_consolidation/README.md).
+Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+and [Chapter 12 planning summary](../instructor_guide/chapter_12.md).
 
-The inquiry, traces, BST comparison, and tests form **one submission within
-180 minutes**. Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-Full AVL deletion is outside the required lab.
+This pass changes planning and descriptions only. Existing textbooks,
+worksheets, lab guides, detailed lesson plans, tests, and releases await
+alignment. The directory name and supplied AVL source remain in place;
+that source is a reference for the revised Week 13, not a required Week 12
+AVL assignment. No revised student release is supplied here.
 
-## Teaching materials
+## Required learning and assessment outline
 
-| Material | Purpose |
+Start with a linear-search recap, then trace first-match binary search on
+supplied sorted arrays. Explain why order allows interval elimination and
+why the returned index belongs to the array being searched. Transfer the
+smaller/larger decision to BST ordering, search, insertion, and inorder.
+
+Use ascending, descending, and mixed insertions to connect edge height to
+visited-node comparisons. A BST can preserve ordering and still become a
+chain. Finish with that skewed tree as Week 13's repair problem.
+
+One submission combines interval and BST traces, original search/insertion
+checks, inorder/height/comparison evidence, and a corrected explanation.
+BST deletion is outside required scope. Sorting implementations are optional;
+provide sorted inputs directly. AVL checks are assessed in Week 13.
+
+| Required contact activity | Minutes |
+|---|---:|
+| Linear-search recap and first-match binary search on supplied sorted arrays | 45 |
+| BST ordering, search, insertion, and inorder reasoning | 60 |
+| Height, insertion-order effects, and search costs; finish with a skewed tree | 35 |
+| Traces, checks, and one combined evidence artifact | 40 |
+| **Total** | **180** |
+
+## Existing teaching resources — pending alignment
+
+These resources retain the previous combined BST/AVL lesson. Their weekly
+labels and complete submission requirements await alignment. Select only
+search/BST references for Week 12; use AVL references in Week 13.
+
+| Existing material | Reference use |
 | --- | --- |
-| [Textbook](student/textbook.md) · [Vocabulary](student/vocabulary.md) | Develop ordering, edge height, balance, and local repair |
-| [Initial inquiry](student/inquiry_prompt.md) · [Linear version](student/inquiry_prompt_linear.md) | Preserve an initial model before introducing names and formulas |
-| [Representation reveal](student/representation_reveal.md) · [Cognitive Pause](student/cognitive_pause.md) | Connect the model to indexed nodes and retrieve the key ideas |
-| [Investigation](student/investigation_worksheet.md) · [Linear version](student/investigation_worksheet_linear.md) | Trace links, cached heights, and returned roots |
-| [Lab](student/lab.md) · [Lab slides](student/ppt_lab_material.md) | Run and explain the supplied source |
-| [Evidence](student/evidence_template.md) · [Rubric](student/rubric.md) | Assemble the single Week 12 submission |
-| [Autopsy](student/tree_rotation_autopsy.md) · [Models](diagrams/bst_avl_models.md) | Diagnose lost links and stale heights |
-| [Lesson plan](instructor/lesson_plan.md) · [Chapter guide](../instructor_guide/chapter_12.md) | Deliver the unit in 180 minutes |
-| [Code guide](code/README.md) · [Release manifest](release/release_manifest.md) | Build and distribute the current lab |
+| [Textbook](student/textbook.md) · [Vocabulary](student/vocabulary.md) | Ordering and tree-height background; AVL content belongs to Week 13 |
+| [Initial inquiry](student/inquiry_prompt.md) · [Linear version](student/inquiry_prompt_linear.md) | Existing tree-repair inquiry |
+| [Representation reveal](student/representation_reveal.md) · [Cognitive Pause](student/cognitive_pause.md) | Indexed nodes and retrieval references |
+| [Investigation](student/investigation_worksheet.md) · [Linear version](student/investigation_worksheet_linear.md) | Existing AVL link/height/root traces |
+| [Lab](student/lab.md) · [Lab slides](student/ppt_lab_material.md) | Existing supplied AVL source walkthrough |
+| [Evidence](student/evidence_template.md) · [Rubric](student/rubric.md) | Previous submission outline, not the revised Week 12 assignment |
+| [Autopsy](student/tree_rotation_autopsy.md) · [Models](diagrams/bst_avl_models.md) | AVL repair references for Week 13 |
+| [Detailed lesson plan](instructor/lesson_plan.md) | Previous combined lesson; use the revised budget above |
+| [Code guide](code/README.md) · [Release manifest](release/release_manifest.md) | Existing builds and releases, not revised weekly packaging |
+| [Search/sort textbook](../module_13_search_sort_consolidation/student/textbook.md) · [Korean](../module_13_search_sort_consolidation/student/textbook_korean.md) | Binary-search reference still stored in Module 13; pending alignment |
+| [Week 12 questions](../student_question_bank/week_12_avl.md) | Existing question bank, pending alignment |
 
-## Actual source contract
+## Existing AVL source contract — Week 13 reference
 
 The include `module_02_binary_tree/student/lab.c` supplies:
 
@@ -115,7 +147,7 @@ All three AVL builds finish at ID 3, label D. These examples fit the actual
 ten-slot buffer. Search and comparison counts are driver evidence, not
 functions or counters exported by `lab.c`.
 
-## Build and evidence
+## Existing AVL reference build and checks
 
 From the repository root:
 
@@ -127,11 +159,13 @@ Each driver includes the actual lab exactly once. The build adds include
 paths for `student/` and the repository root so the Module 2 include resolves.
 Do not link another compiled copy of either included source.
 
-Extend `code/tests/test_lab_student.c` with original rotation/subtree,
+The existing `code/tests/test_lab_student.c` contains rotation/subtree,
 measurement, and duplicate/boundary evidence. The supplied core also checks
 all 5,040 insertion orders of seven distinct keys. See the
-[lab](student/lab.md) for the submission and the [code guide](code/README.md)
-for PowerShell, sanitizers, and the inherited Module 2 warnings.
+[existing lab](student/lab.md) (submission outline pending alignment) and the
+[code guide](code/README.md) (weekly role pending alignment) for PowerShell,
+sanitizers, and the inherited Module 2 warnings. These checks remain reference
+material; this planning pass changes no test or build target.
 
 ## Cost and optional reference
 

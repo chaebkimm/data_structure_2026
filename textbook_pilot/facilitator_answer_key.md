@@ -339,33 +339,33 @@ A의 자식은 B,C이고, B의 자식은 D,E, C의 왼쪽 자식은 F예요. 왼
 
 ### 확인 1
 
-hash_func(-16), hash_func(-8), hash_func(4)는 각각 어느 bucket을 고르는가? -16과 4가 같은 bucket을 골라도 같은 값이라고 할 수 없는 이유는 무엇인가?
+hash_func(-16), hash_func(-8), hash_func(-1)은 각각 어느 bucket을 고르는가? 현재 bucket 수와 노드 수를 쓰고, -16과 -1이 같은 bucket을 골라도 같은 키가 아닌 이유를 설명하라.
 
-- 기준: 각각 4, 2, 4다. 음수 나머지에 10을 더한다. 서로 다른 값이 같은 bucket을 고르는 collision이므로 chain 안에서 실제 값을 비교해야 한다.
+- 기준: 각각 14, 7, 14다. TABLE_CAPACITY=15, NODES_CAPACITY=10이며 음수 나머지에 15를 더한다. 서로 다른 키가 같은 bucket을 고르는 collision이므로 find가 chain 안에서 key를 다시 비교한다.
 
 ### 확인 2
 
-새 실행에서 별도 초기화 없이 save_data(2,12), save_data(2,22), save_data(2,-8)을 순서대로 호출했다. bucket 2의 노드 순서와 free_head는 무엇인가? 이어서 init_lnodes_pool()을 호출하면 무엇이 바뀌는가?
+initialize() 뒤 insert(12,120), insert(27,270), insert(-3,-30)을 순서대로 호출했다. bucket 12의 노드 순서, 각 key/data, hnodes_unused는 무엇인가? find(27)의 반환값과 그 노드의 data를 구별하고, find(120)이 왜 실패하는지도 설명하라.
 
-- 기준: 첫 new_lnode가 pool을 자동 초기화한다. bucket 2는 노드 2(-8) → 1(22) → 0(12) → -1이고 free_head는 3이다. 이후 init_lnodes_pool 호출은 아무 상태도 바꾸지 않는다.
+- 기준: bucket 12는 노드 2(key=-3,data=-30) → 1(key=27,data=270) → 0(key=12,data=120) → -1이고 hnodes_unused=3이다. find(27)은 노드 인덱스 1을 반환하며 hnodes[1].data는 270이다. find(120)은 data가 아닌 key를 찾으므로 -1이다.
 
 ### 확인 3
 
 nums={-16,-8,-4,-2,-1,1,2,4,8,16}, target=0일 때 two_sum_ht는 어떤 answer를 남기는가? 현재 위치를 저장하기 전에 complement를 찾는 이유와 성공 후 table에 남는 노드 수도 설명하라.
 
-- 기준: answer={5,4}다. 앞선 위치만 저장되어 있으므로 같은 위치를 두 번 사용하지 않는다. 위치 5는 저장하지 않고 반환하므로 위치 0~4를 담은 노드 다섯 개가 남는다.
+- 기준: answer={4,5}다. 앞선 위치만 저장되어 있으므로 같은 위치를 두 번 사용하지 않는다. find(-1)이 반환한 노드 4의 data는 이전 입력 위치 4다. 현재 위치 5는 저장하지 않고 반환하므로 위치 0~4를 담은 노드 다섯 개가 남는다.
 
 ### 확인 4
 
-init_hashtable()은 사용한 노드를 어떻게 재사용 가능하게 만드는가? pool이 소진된 save_data와 그 실패를 만난 two_sum_ht는 어떤 결과를 남기는가?
+initialize()는 어떤 상태를 바꾸고 어떤 상태를 남기는가? 열 노드를 모두 사용한 뒤 insert가 반환하는 값과 기존 상태를 설명하라. two_sum_ht가 삽입 실패를 만나면 무엇을 남기며, 정상적인 열 원소 실행에서는 왜 용량이 충분한가?
 
-- 기준: 각 bucket의 전체 chain을 free chain에 연결하고 bucket head를 -1로 바꾼다. 소진되면 save_data는 -1을 반환하며 기존 bucket head를 보존한다. two_sum_ht는 중단하고 {-1,-1}을 남겨, 소진과 끝까지 찾지 못한 경우를 결과만으로 구별할 수 없다.
+- 기준: initialize는 hnodes_unused=0과 열다섯 bucket head=-1을 설정한다. chain을 순회하거나 옛 노드 필드, nums, answer를 지우지 않는다. 꽉 찬 뒤 insert는 -1이며 counter, 노드 필드, bucket head를 모두 보존한다. two_sum_ht는 실패 시 중단하고 {-1,-1}을 남긴다. 매 호출 initialize로 열 칸을 다시 쓸 수 있고 원소도 열 개이므로 정상 실행은 최대 열 번의 삽입만 필요하다.
 
 ### 바꾼 예
 
-독립 실행마다 table이 비어 있고 열 노드가 모두 사용 가능하다고 하자. nums={2,2,7,0,0,0,0,0,0,0}, target=9다. two_sum_bf는 앞선 j를 작은 순서로 검사하고, two_sum_ht는 현재 위치를 저장하기 전에 찾으며 새 후보를 chain 앞에 붙인다. 각 함수가 처음 반환하는 두 위치를 쓰고 결과가 달라도 옳은 이유를 설명하라.
+별도 드라이버에서 nums={2,2,7,0,0,0,0,0,0,0}, target=9로 실험한다고 하자. 원본 lab.c는 바꾸지 않는다. 현재 two_sum_bf는 앞선 j를 큰 순서로 검사하고, two_sum_ht는 현재 위치를 저장하기 전에 찾으며 새 후보를 chain 앞에 붙인다. 각 함수가 처음 반환하는 두 위치와 그 순서를 쓰고, 두 함수가 같은 중복 값의 위치를 고르는 이유를 설명하라.
 
-- 기준: 두 함수 모두 i=2에서 처음 성공한다. brute force는 {2,0}, hash table은 최근 후보가 앞에 있어 {2,1}이다. 두 결과 모두 서로 다른 위치의 7과 2를 고르며 합이 9다. 동일한 위치 쌍 자체가 정답 조건은 아니다.
+- 기준: 두 함수 모두 i=2에서 처음 성공하여 {1,2}를 반환한다. brute force는 j=1부터 역순으로 검사하고 hash table의 find(2)는 가장 최근에 넣은 위치 1의 노드를 먼저 찾는다. answer는 {이전 위치 j,현재 위치 i}이며 서로 다른 두 위치의 2와 7을 고른다. 가장 먼저 성공하는 i와 가장 큰 일치 j가 두 구현에서 같다.
 
 ## 10장. 정수 Heap과 장치들의 공통 켜짐 시각
 

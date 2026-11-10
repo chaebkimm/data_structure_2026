@@ -1,30 +1,28 @@
 # Stage E — C Lab: Chaining and Two Sum
 
-Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
-
-
-The required lesson follows [lab.c](lab.c). Its operations are supplied.
-Trace them and write an assertion driver that exercises the actual source.
+The required lesson follows the self-contained [lab.c](lab.c). Its
+operations are supplied. Trace them and write an assertion driver that
+exercises the actual source. Keep the supplied `lab.c` unchanged.
 There are no required implementation TODOs. The older open-addressed library
 under `code/include`, `code/starter`, and `code/solution` is optional.
 
-The supplied driver scaffold is `code/tests/test_lab_student.c`. Add your
-three original test groups there, or create the separate driver shown below.
-From the repository root, run the current-source checks with:
+Use the current lab's ten nodes, fifteen buckets, signed input,
+descending brute-force inner loop, and failure checks for executable
+assertions.
+
+The supplied scaffold is `code/tests/test_lab_student.c`. Add three original
+test groups there, or create the separate driver below. From the repository
+root, run:
 
 ```sh
-make -C module_09_hash_table/code lab-compile
-make -C module_09_hash_table/code core
-make -C module_09_hash_table/code student-tests
+make -C module_09_hash_table/code lab-compile core student-tests
 ```
 
 The supplied student driver initially contains only a smoke test. Passing
-that smoke test does not complete the three required test groups.
+it does not complete the three required test groups.
 
 ## Build a driver that includes the supplied source
 
-The hash-table source includes `module_07_linked_list/student/lab.c`. Keep the
-repository folder layout and pass the repository root as an include path.
 Create `module_09_hash_table/student/lab_driver.c` containing:
 
 ```c
@@ -32,10 +30,12 @@ Create `module_09_hash_table/student/lab_driver.c` containing:
 #include "lab.c"
 
 int main(void) {
-    init_lnodes_pool();
-    two_sum_ht(0);
-    assert(answer[0] == 5 && answer[1] == 4);
-    init_hashtable();
+    two_sum_ht(0); /* initializes its own table */
+    assert(answer[0] == 4 && answer[1] == 5);
+    assert(hnodes_unused == 5);
+    initialize();
+    assert(hnodes_unused == 0);
+    assert(answer[0] == 4 && answer[1] == 5); /* reset retains the answer */
     return 0;
 }
 ```
@@ -43,127 +43,126 @@ int main(void) {
 From the repository root, compile and run the driver alone:
 
 ```sh
-cc -std=c11 -Wall -Wextra -Wpedantic -I. module_09_hash_table/student/lab_driver.c -o /tmp/module09_lab_driver
+cc -std=c11 -Wall -Wextra -Wpedantic module_09_hash_table/student/lab_driver.c -o /tmp/module09_lab_driver
 /tmp/module09_lab_driver
 ```
 
-Do not separately compile either included `lab.c`. Both files define globals
-and functions. Record your compiler command, warnings, assertions, and result.
-Use a course-provided compiler if the local compiler is unavailable.
+The source has no external module dependency. Do not also compile `lab.c`
+as a second translation unit: including it already defines its globals and
+functions. Record the command, warnings, assertions, and result. Use a
+course-provided compiler if the local compiler is unavailable.
 
-## Prepare and protect the shared pool
+## 1. Trace signed hashing, keys, and collision chains
 
-The table has ten bucket heads in `hashtable[10]`. Each head is `-1` or a
-node index. The included Module 07 source provides `lnodes[10]`,
-`free_head`, `init_lnodes_pool()`, and `new_lnode()` followed by explicit caller data/next assignment.
+Read `NODES_CAPACITY = 10` and
+`TABLE_CAPACITY = NODES_CAPACITY * 3 / 2`, which evaluates to 15.
+`hash_func` takes `% TABLE_CAPACITY` and adds the capacity if the remainder
+is negative. Check negative, zero, positive, and negative-multiple keys.
+All returned buckets must be in 0–14.
 
-Call `init_lnodes_pool()` before the first allocation while all buckets are empty.
-The initial free chain is `0→1→2→3→4→5→6→7→8→9→-1`.
-`init_hashtable()` returns active bucket chains to the free chain and sets
-each bucket head to `-1`. It does not initialize the pool for first use.
-Never reset the pool while buckets or another linked structure still own
-nodes. For this lab, reserve the shared pool for the hash table.
+Call `initialize()` before a standalone table experiment. It sets all
+bucket heads to -1 and `hnodes_unused` to 0. Static zero initialization is
+not a valid empty-bucket setup.
 
-Every chain must contain valid indices, end at `-1`, and remain acyclic.
-A node belongs to exactly one bucket chain or the free chain. The source does
-not diagnose broken chains, double recycling, or invalid bucket arguments.
-Use buckets 0 through 9 and values whose sums and complements fit in `int`.
+Insert `(12,120)`, `(27,270)`, and `(-3,-30)` in that order. Each call
+returns 0 and all keys select bucket 12. Predict each new node's index,
+`key`, `data`, and `next`, the bucket head, and `hnodes_unused`.
+The final chain is `2 → 1 → 0 → -1`.
 
-## 1. Trace signed hashing and collision chains
+Trace `find(27)` through nodes 2 and 1; its return is node index 1 and the
+associated data is 270. Trace missing key 42 through all three nodes.
+Assert that payload 120 is not found as a key.
+Insert `(27,999)` and prove that a new node is allocated rather than an
+existing node updated: `find(27)` returns node 3, and node 1 still holds
+`key=27,data=270`. Every collision search compares full keys.
 
-The source calculates `value % 10` and adds 10 if that remainder is negative.
-Check negative, zero, and positive values. All returned buckets are 0–9.
+## 2. Check exhaustion and whole-table reset
 
-Save 12, 22, and -8 using `save_data(hash_func(value), value)`.
-Predict returned node indices, `data`, `next`, bucket head, and `free_head`
-after every save. New records go at the head. Search for present 22 and
-missing 32 with `find_data` and list every visited node.
+After a reset, insert keys `0,15,30,45,60,75,90,105,120,135` with distinct
+payloads. All ten nodes occupy bucket 0, so fourteen buckets remain empty.
+Snapshot the counter, all heads, and each node field before an eleventh
+insertion. Assert that `insert(150,10)` returns -1 and preserves the entire
+snapshot. Also test failed insertion into a previously empty bucket.
 
-Save another 22. Assert that another record was allocated and that searching
-returns the newest matching payload. `save_data` does not update or reject
-an existing payload. `find_data(hash, data)` checks only the selected chain
-and compares `lnodes[node].data == data`.
+Call `initialize()`. All fifteen heads must be -1 and `hnodes_unused` must
+be 0; node fields, `nums`, and `answer` are unchanged. Old node indices no
+longer represent active records. No chain traversal or free list is used.
+A new `insert` succeeds in node 0 and overwrites its key, data, and next.
+A second reset on an empty table is safe. Resetting only the counter would
+leave stale heads pointing into reused slots; always use `initialize()`.
 
-## 2. Recycle chains and check exhaustion
-
-Call `init_hashtable()` after the chain experiment. Trace
-`free_lnode_chunk`: find the chunk tail, link it to the existing free head,
-then make the chunk head the new free head. Buckets clear in index order.
-Clearing does not promise zeroed node data.
-
-In an independent experiment, save `0,10,20,30,40,50,60,70,80,90`.
-Snapshot bucket heads, node fields, and `free_head` before saving 100.
-Assert that the eleventh save returns `-1` and that the snapshot remains
-unchanged. Clear and prove that another allocation succeeds. Check that an
-empty-table clear leaves the free chain unchanged.
-
-Use `init_hashtable()` to clear table-owned nodes. Calling
-`free_lnode_chunk` manually while a bucket still points to the same chunk
-would leave an active reference to recycled nodes.
+`new_hnode(key,data,next)` returns the allocated index or -1. Unlike that
+helper, `insert(key,data)` returns 0 or -1. Do not interpret a successful
+`insert` return value as its node index.
 
 ## 3. Compare the two pair searches
 
-`two_sum_bf` visits `i` in ascending order and checks earlier `j` values from
-0 through `i-1`. It returns positions in `answer[0]` and `answer[1]`.
-A complete miss writes `{-1,-1}`.
+`two_sum_bf` visits `i` in ascending order and earlier `j` from `i-1` down
+to 0. Both implementations write `{j,i}` with `j<i`, or `{-1,-1}` on a miss.
+Brute force does not change the table.
 
-`two_sum_ht` clears old bucket chains at entry. At each `i`, it searches for
-`target - nums[i]` among earlier positions. Node data stores an earlier
-position `j`, so the comparison is `nums[j] == j_num`. Only after a miss
-does it save `i` in `hash_func(nums[i])`. This order prevents using one
-position twice. A successful return leaves earlier records in the table.
-The next call recycles them automatically.
+`two_sum_ht` calls `initialize()` at entry. At each `i`, it calls
+`find(target - nums[i])`. A successful node holds the complement in `key`
+and the earlier input position in `data`. Only after a miss does it call
+`insert(nums[i],i)`. Lookup before insertion prevents self-pairing.
+A successful return leaves the earlier nodes available for inspection.
 
-With the unchanged source array, check these exact position answers:
+With the unchanged input array, check these exact answers:
 
 | Target | `two_sum_bf` | `two_sum_ht` |
 | ---: | --- | --- |
-| 0 | `{5,4}` | `{5,4}` |
-| 2 | `{7,3}` | `{7,3}` |
-| 3 | `{6,5}` | `{6,5}` |
+| 0 | `{4,5}` | `{4,5}` |
+| 2 | `{3,7}` | `{3,7}` |
+| 3 | `{5,6}` | `{5,6}` |
 | 100 | `{-1,-1}` | `{-1,-1}` |
 
-Run 100 followed by 0 without manually resetting the pool between calls.
-Then temporarily use `{1,1,5,0,0,0,0,0,0,0}` and target 6.
-Predict why brute force returns `{2,0}` while the table returns `{2,1}`.
-For general duplicate fixtures compare answer existence, valid distinct
-positions, and target sum. Do not require identical pair positions when
-multiple answers are valid. Restore the original array after custom tests.
+Target 0 leaves five nodes; target 100 leaves ten. Run 100 followed by 0
+without manually resetting between calls. The second call resets all heads
+and starts allocation again at node 0.
 
-A failed `save_data` causes `two_sum_ht` to stop and report `{-1,-1}`.
-That result does not distinguish allocation failure from an ordinary miss.
-With an initialized pool reserved for this ten-number search, capacity is
-sufficient; the normal search needs at most ten records.
+Temporarily use `{1,1,5,0,0,0,0,0,0,0}` and target 6. Both algorithms
+return `{1,2}`: descending brute force and newest-first matching-key lookup
+choose the latest matching earlier position. Also assert valid bounds,
+distinct positions, and the target sum. Check a fixture with only one 5
+and target 10 to rule out self-pairing; then add another 5 and check success.
+Restore the original array after custom tests.
+
+If `insert` fails, the hash-based search loop breaks and writes `{-1,-1}`.
+That answer alone does not distinguish exhaustion from an ordinary miss.
+For the supplied fixed-size scan, initialization and capacity for all ten
+inputs ensure no insertion failure is reached during normal use.
 
 ## Write three original assertion groups
 
 State each claim before its assertions. Test:
 
-1. Signed hashing, head insertion, collisions, present/missing lookup, and
-   duplicate payloads.
-2. Recycling, empty clear, all ten allocations, unchanged state after an
-   eleventh failed save, and successful reuse.
-3. Both two-sum methods, valid indices and sums, no self-pair, missing
-   answers, duplicate values, and repeated calls after early success and
-   after a full miss.
+1. Signed hashing, key/payload distinction, head insertion, collisions,
+   present/missing lookup, and duplicate-key behavior.
+2. All ten allocations, unchanged failed insertion, full reset, retained
+   old fields and answer, repeated reset, and successful slot reuse.
+3. Both pair searches, exact supplied results, valid distinct indices,
+   misses, duplicate values, and repeated calls after hits and full misses.
 
-Assertions must inspect results and state. Merely printing a chain or
-finishing a process is insufficient. Keep the supplied `lab.c` unchanged.
-Complete the [source-based autopsy](hash_table_autopsy.md) in your driver or
-by hand before and after tracing the relevant conditions.
+Assertions must inspect results and state; printing a chain is insufficient.
+Complete the [source-based autopsy](hash_table_autopsy.md) in a separate
+driver or by hand. Do not introduce defects into the supplied lab.
 
 ## Explain the work and submit one record
 
-Count before using cost symbols. A complete brute-force miss makes
-`0+1+...+9 = 45` pair comparisons. A chain search inspects at most its chain
-length. Head insertion takes constant work when a free node exists.
-Clearing scans ten bucket heads and walks each returned chain once.
-Expected short chains require distributed values and a controlled number of
-records per bucket. Long collision chains can make complete hash-based
-two-sum work quadratic in a generalized input size. This fixed source has
-ten numbers, ten buckets, and ten nodes; it never grows the table or pool.
+A complete brute-force miss makes 45 comparisons; target 0 makes 11.
+The target-0 hash search makes one key comparison. Head insertion is
+constant work when capacity remains. Reset scans fifteen bucket heads and
+does not walk old chains, so its generalized cost is `Θ(b)`.
 
-Submit your driver with three test groups, warning-enabled output,
+Expected short chains require adequately distributed keys and controlled
+load `n/b`. Under those conditions, generalized lookup is `O(1+n/b)` and
+hash two sum can be expected `O(n)` when `b=Θ(n)` and node capacity suffices.
+Collision-heavy searches can take `O(n^2)` total work. This fixed source
+has ten numbers, ten nodes, and fifteen buckets; it never grows its arrays.
+All evaluated sums and complement subtractions in your tests must fit in
+`int`; the source does not check overflow.
+
+Submit the driver with three groups, warning-enabled output,
 [evidence record](evidence_template.md), completed investigation worksheet,
 corrected [Cognitive Pause](cognitive_pause.md), and autopsy explanation.
 Use [rubric.md](rubric.md) to check the submission. Dynamic allocation,

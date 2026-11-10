@@ -93,126 +93,124 @@ These questions match the current weekly pages. Optional clusters remain optiona
 
 ### Find two different positions
 
-1. For target 0, trace the order of `i` and `j` in `two_sum_bf`. Which pair
-   is returned? Give both the indices and values.
-2. Why does `j<i` prevent using the same input position twice? How many
-   additions does a complete miss require for ten values?
-3. For target 100, why is even the largest possible pair insufficient? What is written
-   into both elements of `answer` on a miss?
-4. Does `two_sum_bf` alter bucket heads or the node pool? Design an
-   assertion that distinguishes its answer from its storage side effects.
+1. Trace `two_sum_bf(0)` in its exact `i` and `j` order. Give the returned
+   positions, their values, and the number of pair comparisons.
+2. Why does `j<i` prevent reusing one position? How many pair comparisons
+   does a complete miss make for ten values?
+3. Why can no pair in the supplied input reach 100? What does each method
+   write to both elements of `answer` after that miss?
+4. Does brute force change bucket heads, node records, or the allocation
+   counter? Design assertions separating answer changes from table state.
 
 ### Select a bucket
 
-5. Calculate `hash_func` for -16, -8, -1, 0, 2, 10, and 16. Show the C
-   remainder and the returned index separately.
-6. Why is the negative-remainder adjustment necessary before indexing
-   `hashtable`? Why does a value divisible by 10 need no adjustment?
-7. -8 and 2 select the same bucket. Does that make them equal? Which
-   later comparison decides equality?
-8. Why can a small bucket array represent values outside the range 0–9?
-   Explain which numbers are array indices and which are stored values.
-9. A caller passes `hash=10` to `save_data`. Does that function correct
-   or reject the index? State the caller precondition without running an
-   invalid access.
+5. Calculate `hash_func` for -16, -8, -1, 0, 2, -15, and 16. Show the C
+   remainder modulo `TABLE_CAPACITY` and final bucket separately.
+6. Why adjust a negative remainder before indexing `hashtable`? Why does
+   a key divisible by 15 need no adjustment?
+7. -16 and -1 select bucket 14. Does that make them equal? Identify the
+   exact comparison that decides a match in `find`.
+8. Compare direct addressing with hashing for negative or very large
+   keys. Which stored numbers are indices and which are keys?
+9. Does the caller pass a bucket to `insert` or `find`? Explain how both
+   operations select the same bucket for equal keys.
 
 ### Follow collision chains
 
-For questions 10–15, begin with empty bucket heads and a fresh
-`init_lnodes_pool()`. Save payloads 12, 22, and -8 into bucket 2 in that order.
+For questions 10–15, call `initialize()`, then execute `insert(12,120)`,
+`insert(27,270)`, and `insert(-3,-30)` in that order. All keys select bucket 12.
 
-10. Record each returned node index, each node's `data` and `next`, bucket
-    2's head, and `free_head` after every save.
-11. Why does the final data order differ from insertion order? Does any
-    collision move an entry into bucket 1?
-12. List the visited node indices for `find_data(2,12)`,
-    `find_data(2,22)`, and `find_data(2,32)`. Give each return value.
-13. What does `-1` mean as a bucket head, a `next`, an allocation result,
-    and a lookup result? Why must it never be used as an array index?
-14. Save another payload 22 into bucket 2. Is the existing node updated?
-    Which node does the next `find_data(2,22)` return?
-15. Does `find_data(1,12)` search every bucket? Explain why its caller must
-    select the bucket that was used for storage.
+10. Record each insertion's status, the allocated node index, all three
+    fields, head 12, and `hnodes_unused` after each operation.
+11. Why is chain order the reverse of insertion order? Does a collision
+    move an entry into a neighboring bucket?
+12. List visited nodes and return values for `find(12)`, `find(27)`, and
+    missing `find(42)`. How do you retrieve associated data after a match?
+13. Distinguish the `0/-1` return status of `insert` from the node-index/-1
+    result of `find` and `new_hnode`. When must -1 be checked before indexing?
+14. Insert `(27,271)`. Is the old key-27 node updated? Which node and data
+    does the next `find(27)` return? How many slots are now allocated?
+15. Does `find(120)` find key 12 because its data is 120? Explain the
+    difference between searching a key and retrieving associated data.
 
-### Reuse the fixed pool
+### Reuse fixed node storage
 
-16. What is the initial value of `free_head` before `init_lnodes_pool()` runs?
-    Why is an all--1 bucket array insufficient for the first insertion?
-17. After ten successful saves, try an eleventh valid save. State its
-    return value and which bucket, node, and free-chain fields must remain
-    unchanged. Can the pool be exhausted with nine buckets still empty?
-18. Starting from the three-node collision fixture, trace
-    `init_hashtable()`. Give the complete new free chain. Are node data
-    fields cleared?
-19. What does a second reset do? Does reset clear `nums` or `answer`?
-20. Why is `free_lnode_chunk` slower for a longer chain even though it
-    changes only two links? Why must its input chain be acyclic?
-21. Explain how calling `init_lnodes_pool()` while bucket heads still point
-    into the pool can give one node two owners. Predict on paper; do not
-    execute corrupted-state experiments.
-22. If the Module 07 linked queue reused in Module 08 shares this pool, which ownership condition must
-    hold before hash-table reset or allocation is valid?
+16. Why must manual table experiments start with `initialize()` even
+    though globals are statically initialized? What are the correct empty heads?
+17. Initialize and insert keys `0,15,...,135`, with data `0,...,9`.
+    Predict an eleventh insertion's return value and every field that must
+    stay unchanged. Can nodes be exhausted with fourteen empty buckets?
+18. After the three-node collision fixture, trace `initialize()`. Which
+    heads and counter change, and which old node fields remain?
+19. What does a second reset do? Does either reset clear `nums` or `answer`?
+20. Does initialization follow old chains? Count the heads visited and
+    explain why its work is independent of active-chain length.
+21. Why should a saved node index no longer be treated as an active entry
+    after reset? Which index does the next successful allocation overwrite?
+22. Does this lab import Module 07 or use a free list? Explain how its
+    allocation counter differs from a linked free-node chain.
 
-### Store indices and compare values
+### Store keys and retrieve indices
 
-23. In `save_data(hash_func(nums[i]),i)`, what selects the bucket and what
-    becomes the node payload? Give all three numbers for input index 1.
-24. At `i=5` for target 0, calculate `j_num`, the bucket, the candidate node,
-    the stored `j`, and `nums[j]`. What becomes `answer`?
-25. Why is `lnodes[j_node].data == j_num` incorrect in two sum? Give a
-    bounded example where an index and a value differ.
-26. Why is `find_data(hash_func(j_num),j_num)` not a substitute for the
-    supplied complement-search loop?
-27. State the table's meaning at the beginning of outer iteration `i`.
-    Use that statement to prove a returned pair has different positions.
-28. Predict the defect if the current index is saved before searching.
-    Explain the target-2 self-pair risk at `i=5` without changing the supplied code.
-29. After a fresh successful target-0 call, which input indices remain
-    stored? Has the current index 5 been saved? What is `free_head`?
-30. After a fresh target-100 miss, list the nonempty buckets and their node
-    chains. Which payload and physical-node numbers happen to coincide?
-31. Run target 0 again after the target-100 run. Why can the returned input
-    indices remain the same even when physical-node indices change?
-32. Explain why `two_sum_ht` uses `break` after an allocation failure.
-    Does `answer={-1,-1}` distinguish exhaustion from a genuine miss?
+23. In `insert(nums[i],i)`, what becomes the key and what becomes data?
+    Give the bucket, key, and data for input index 1.
+24. At `i=5` for target 0, calculate complement, bucket, matching node,
+    stored data `j`, and ordered `answer`. Which equality was tested by `find`?
+25. Why is comparing a node's data directly with the complement wrong?
+    Give a bounded example where the associated index differs from its key.
+26. Why does `find(complement)` work here without a separate traversal
+    comparing `nums[j]`? Identify the fields stored by insertion.
+27. State the table's meaning at the beginning of iteration `i`. Use it
+    to prove that every returned pair uses different input positions.
+28. Predict the defect if insertion occurs before lookup. Explain the
+    target-2 self-pair risk at index 5 without modifying the supplied code.
+29. After a fresh target-0 success, list nonempty bucket heads, the chain
+    in bucket 14, and the counter. Was current position 5 inserted?
+30. After a target-100 miss, list all nonempty bucket chains. Which node
+    indices happen to equal their stored input indices, and why?
+31. Call target 0 after target 100 without a manual reset between calls.
+    What resets the table, and why does allocation begin at node 0 again?
+32. Why does the hash method break after insertion failure? Does the
+    failure answer distinguish exhaustion from a fully searched miss?
 
-### Compare valid results and work
+### Compare results and work
 
-33. Use a separate bounded input fixture containing duplicate values. Must
-    both algorithms return the identical earlier `j`? Compare ascending
-    brute-force search with newest-first chain traversal.
-34. What assertions establish pair validity without requiring the same
-    `j`? How should a test decide whether both algorithms agree that no
-    pair exists?
-35. Explain why all tested sums and complement subtractions must fit in
-    `int`. Does the supplied source check signed overflow?
-36. Count the work for `save_data`, `find_data`, `free_lnode_chunk`, and
-    `init_hashtable`. Separate node visits from link changes.
-37. Let `n` be stored items and `b` bucket heads. Explain average chain
-    length `n/b`. Which distribution condition gives expected
-    `O(1+n/b)` lookup?
-38. Which bucket-count and pool-capacity conditions justify expected
-    `O(n)` hash two sum? Why does fixing `b=10` while increasing `n` not
-    preserve that claim?
-39. If every stored value selects one bucket, how many previous candidates
-    might a complete sequence inspect? Compare with brute force.
-40. Does the current source allocate heap memory or resize its arrays?
-    Distinguish recycling pool nodes from calling C `free`.
+33. For `{1,1,5,0,0,0,0,0,0,0}` and target 6, predict both ordered answers.
+    Compare descending brute-force `j` with newest-first key lookup.
+34. Give assertions for exact answer agreement, valid `0<=j<i<NUMS_SIZE`,
+    correct sum, and a miss. Why do these implementations choose the same
+    earlier duplicate when several answers are possible?
+35. Why must every evaluated sum and complement subtraction fit in `int`?
+    Does the source guard signed overflow?
+36. Count work for `new_hnode`, `insert`, `find`, and `initialize`.
+    Distinguish head assignments from key comparisons and node visits.
+37. For `n` entries and `b` buckets, explain `n/b` average chain length.
+    What distribution assumption supports expected `O(1+n/b)` lookup?
+38. Which bucket-count and node-capacity conditions justify expected
+    `O(n)` complete hash two sum, including initialization? Why does fixing
+    fifteen buckets while increasing input size not preserve that claim?
+39. If all keys collide, how many previous candidates could successive
+    lookups inspect? Compare with brute force's worst-case growth.
+40. Does this source allocate heap memory, grow, or delete individual
+    entries? Contrast its chains with the PPT's open-addressing and Robin
+    Hood alternatives without implementing those alternatives.
 
 ### Build evidence
 
-41. A driver beside `lab.c` includes it and defines `main`. Why must a
-    repository-root compile use `-I.`? Why must the included `.c` files not
-    also be compiled separately?
-42. Propose exactly three original test groups: hashing/chains, pool
-    lifecycle, and two sum. For each, state a claim, a smallest fixture,
-    exact assertions, and a reset strategy.
-43. Which failed-operation assertions would detect a bucket head changing
-    after exhausted insertion? Which repeated-call test would detect lost
-    pool nodes?
-44. Explain one correction to your initial model using a specific returned
-    value or before/after state. Keep the original prediction visible.
+41. A driver beside `lab.c` includes it and defines `main`. Why compile
+    only the driver? Does this self-contained source require a Module 07
+    include path or another `lab.c` translation unit?
+42. Propose three original assertion groups: hashing/chains, capacity/reset,
+    and two sum. For each, give a claim, small fixture, exact assertions,
+    and reset strategy.
+43. Which snapshot assertions detect changes after exhausted insertion?
+    Which repeated-call tests expose failure to reset heads or the counter?
+44. Correct one initial prediction using a returned value or exact state
+    change, keeping the original prediction visible.
 
+The legacy open-addressing library and delete-to-empty autopsy use a
+different representation. Tombstones, growth, and unique-key updates are
+optional comparisons rather than required answers for the current lab.
 
 ## Week 10 — Integer Heaps and Shared On-Time
 

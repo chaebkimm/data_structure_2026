@@ -54,7 +54,6 @@ if ($Target -eq "autopsy" -and ($Extensions -or $StudentTests)) {
 if ($Target -eq "lab" -and $Extensions) {
     throw "The current lab has core and student tests; extensions belong to the optional map."
 }
-$repositoryRoot = Split-Path -Parent (Split-Path -Parent $codeRoot)
 $testingBuild = $Target -eq "starter" -or $Target -eq "solution"
 if ($Target -eq "lab") {
     if ($StudentTests) {
@@ -94,7 +93,6 @@ if ($compilerKind -eq "msvc") {
         "/W4",
         "/Zi",
         "/I$includeDirectory",
-        "/I$repositoryRoot",
         "/Fo:$buildDirectory\",
         "/Fd:$buildDirectory\$outputName.compiler.pdb"
     )
@@ -119,8 +117,7 @@ if ($compilerKind -eq "msvc") {
         "-Wpedantic",
         "-Wconversion",
         "-Wshadow",
-        "-g",
-        "-I$repositoryRoot"
+        "-g"
     )
     if ($testingBuild) {
         $arguments += "-DHASH_TABLE_TESTING"

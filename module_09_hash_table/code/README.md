@@ -1,17 +1,26 @@
 # Module 09 code: current lab and optional reference
 
-The required lesson uses [../student/lab.c](../student/lab.c), which includes
-[Module 07’s pool](../../module_07_linked_list/student/lab.c). Build from this
-directory with `make lab-compile core student-tests`, or use
+The required lesson uses the self-contained [../student/lab.c](../student/lab.c).
+It stores ten `{key,data,next}` nodes and fifteen bucket heads, with no
+Module 07 source dependency. Build from this directory with
+`make lab-compile core student-tests`, or use
 `powershell -NoProfile -ExecutionPolicy Bypass -File ./build.ps1 -Target lab`.
 Add `-StudentTests` for your driver and `-Sanitize` for supported sanitizers.
 The default build runs the current lab core tests.
 
 `tests/test_lab_core.c` includes the actual source. It checks normalized
-hashing, chain order, pool ownership/exhaustion/recycling, and two-sum results.
+signed hashing, key/data distinction, collision chains, duplicate keys,
+capacity exhaustion with unchanged state, reset and reuse, and exact
+`{earlier,later}` two-sum results against an exhaustive oracle.
 `tests/test_lab_student.c` starts with one smoke test; add the three original
-groups specified in [the lab](../student/lab.md). Compile a driver only once.
-The repository root is on its include path because of the Module 07 include.
+groups specified in [the lab](../student/lab.md). Compile only the driver
+when it includes `lab.c`; no repository-root include path is needed.
+
+Call `initialize()` before using `insert` or `find` directly. The globals'
+initial zero bucket heads do not represent an empty table. `two_sum_ht`
+initializes the table at each call. Reset sets the allocation counter to
+zero and every bucket head to -1; it does not traverse chains, clear old
+node fields, or reset `answer`.
 
 ## Optional open-addressed reference
 

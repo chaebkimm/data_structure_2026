@@ -1,96 +1,90 @@
 # Stage C — Investigation, Linear Version
 
-Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
-
-
 Name: ____________________  Date: ____________________
 
 This version covers the same Sections A–F as `investigation_worksheet.md`.
-Use numbered sentences instead of tables. Preserve hand predictions before
-opening Stage D. Use Stage B's representation descriptions and Stage A's
-input array; treat the call sequences below as hand traces. Inspect the
-supplied `lab.c` and its Module 07 dependency when Stage E opens. Execute
-the same experiments then and add observations and corrections.
+Use numbered sentences instead of tables. Preserve predictions before Stage
+D. Use Stage B's representation and Stage A's inputs; treat call sequences
+as hand traces. Inspect and run `lab.c` in Stage E, then add observations
+and corrections. There is no Module 07 source dependency.
 
-## A. Choose a bucket for a signed number
+## A. Choose a bucket for a signed key
 
-1. For -16, -8, -1, 0, 12, and 22, state `value % 10` in C and the
-   returned `hash_func` bucket separately.
-2. State the range of returned bucket indices.
+1. For -16, -8, -1, 0, 12, 27, and -3, give the C remainder `% 15` and
+   normalized bucket separately.
+2. State the range of 15 bucket indices and the range of 10 node indices.
 3. Explain the negative-remainder correction.
-4. Distinguish stored data -1 from the link sentinel -1.
+4. Distinguish a key of -1 from a next-link sentinel of -1.
 
 Prediction: ________________________________________________________
 
-## B. Save and search a collision chain
+## B. Insert and search a collision chain
 
-1. Begin with empty buckets. Call `init_lnodes_pool()` before first allocation.
-2. Save 12, 22, and -8 using `save_data(hash_func(value), value)`.
-3. After each call, list returned node index, node data, next index,
-   bucket head, and `free_head`.
-4. Trace present 22 and missing 32 with `find_data`. List inspected nodes
-   and final return values.
-5. Save another 22. Predict which matching node is returned first.
-   Explain why saving a duplicate does not update an existing node.
-
-Prediction: ________________________________________________________
-
-## C. Recycle and exhaust the shared pool
-
-1. Predict every bucket head and the free-chain order after
-   `init_hashtable()` clears B. Explain the chunk-tail link change.
-2. In an independent experiment with empty buckets and a reset free pool,
-   save `0,10,20,30,40,50,60,70,80,90`.
-3. Snapshot all bucket heads, all node fields, and `free_head`.
-4. Predict an eleventh save of 100. Identify the unchanged state.
-5. Clear the table and prove that another allocation can reuse a record.
-6. Explain why resetting the pool while bucket chains are live can create
-   shared ownership. Explain the same concern for a concurrent linked queue.
+1. Call `initialize()`, then `insert(12,120)`, `insert(27,270)`, and
+   `insert(-3,-30)`.
+2. After each call, list status, new node index, key, data, next, bucket
+   head, and `hnodes_unused`. Distinguish success status 0 from a node index.
+3. Trace `find(27)` and missing `find(42)`: list nodes, compared keys,
+   return values, and found payloads.
+4. Insert `(27,271)` and predict which duplicate is found first.
+5. Explain why the old node is retained and why lookup compares keys rather
+   than payloads.
 
 Prediction: ________________________________________________________
 
-## D. Compare complete pair search with earlier-number search
+## C. Reset and exhaust the node array
 
-1. Begin with empty buckets and a freshly initialized pool. Use the
-   unchanged `nums` and target 0. List brute-force comparisons
-   through the first match in their actual order.
-2. Trace `two_sum_ht` from position 0 through the first match. For each
-   position, state `i`, `nums[i]`, `j_num`, searched bucket, visited node
-   indices, stored earlier positions, and either the match or saved node.
-3. Explain why node data contains an earlier position.
-4. Explain why the equality reads `nums[j] == j_num`.
-5. Explain why the successful current position has not been saved.
+1. Snapshot B's state and call `initialize()`. State the new 15 heads and
+   counter, and whether old node fields and `answer` change.
+2. Explain why clearing only the heads would not restore node capacity.
+3. In a separate initialized experiment, insert keys
+   `0,15,30,45,60,75,90,105,120,135` with chosen payloads.
+4. Snapshot heads, all node fields, and counter. Predict the status of
+   `insert(150,1500)` and identify unchanged state.
+5. Reset and show that a new insertion uses node 0. Explain why reset
+   traverses no old chain.
+
+Prediction: ________________________________________________________
+
+## D. Compare complete pair search with complement lookup
+
+1. Use unchanged `nums` and target 0. Trace ascending `i` and descending
+   `j = i-1` through the first brute-force match.
+2. Trace `two_sum_ht` through its first match. For each position give `i`,
+   value, complement, search bucket, visited nodes and keys, and either the
+   answer or inserted key/payload.
+3. Explain the roles of the stored key and payload in two-sum.
+4. Explain `find(complement)` followed by `hnodes[node].data`.
+5. Explain the answer order `{j,i}` and why successful `i` stays unsaved.
 
 Prediction: ________________________________________________________
 
 ## E. Test boundaries and repeated calls
 
-1. Predict both position answers for targets 2, 3, and 100.
-2. Run target 100 and then target 0 without a manual pool reset between
-   calls. Explain the clearing performed by `two_sum_ht` itself.
-3. Temporarily use `{1,1,5,0,0,0,0,0,0,0}` and target 6. Record each
-   method's positions. Explain their different earlier-position order.
-   Restore the original array afterward.
-4. Require `0 <= j < i < 10` and a correct target sum for every returned
-   pair. Compare answer existence with brute force. Explain why duplicate
-   values can allow different valid positions.
-5. State the precondition that sums and complements fit in C `int`.
+1. Predict both answers for targets 2, 3, and 100.
+2. Run hash target 100 followed by 0 without a manual reset. Explain the
+   reset at entry and state after success.
+3. Temporarily use `{1,1,5,0,0,0,0,0,0,0}` and target 6. Explain why both
+   descending brute force and newest-first chains choose the same duplicate.
+   Restore `nums`.
+4. For successes require `0 <= answer[0] < answer[1] < NUMS_SIZE` and the
+   target sum. Test a lone 5 with target 10, then two 5s, to distinguish
+   self-pairing from valid equal values at different positions.
+5. State the precondition that additions and complements fit in C `int`.
 
 Prediction: ________________________________________________________
 
 ## F. Explain work and revise the model
 
-1. Count the maximum brute-force comparisons on ten numbers.
-2. Count allocations and node comparisons in a no-answer table search.
-3. Explain how one long collision chain changes search work.
-4. Give separate costs for hashing, prepending, searching `k` nodes,
-   clearing ten buckets with `n` live nodes, and complete two-sum search.
-5. State assumptions for expected short chains. The ten-bucket table and
-   ten-record pool do not grow automatically.
-6. Plan three original assertion groups: signed hashing/chains;
-   recycling/exhaustion/failure preservation; and two-sum validity,
-   no-self behavior, and repeated calls. Preserve predictions now; add
-   observations and corrections when source inspection and execution open in Stage E.
+1. Count maximum brute-force comparisons and those until target 0 succeeds.
+2. Count the hash version's key comparisons through its first target-0 match.
+3. Explain hashing, slot allocation, head insertion, searching `k` nodes,
+   resetting 15 heads, and complete two-sum work separately.
+4. State the assumptions behind expected short chains. Explain a worst-case
+   long chain and fixed limits of 10 nodes and 15 buckets without growth.
+5. Choose three assertion claims: hashing/keys/payloads/chains; reset,
+   exhaustion and unchanged failure state; two-sum validity, no self-pair,
+   duplicates and repeated calls. Add observations/corrections in Stage E.
 
 Revised explanation: ________________________________________________
 

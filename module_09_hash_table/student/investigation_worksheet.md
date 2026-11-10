@@ -1,82 +1,72 @@
 # Stage C — Investigate Chaining and Two Sum
 
-Current pool contract: `new_lnode()` takes no arguments, returns an isolated index with retained data, and initializes the pool only on first use. `save_data` checks the index, writes data/next, then publishes the bucket head. Later `init_lnodes_pool()` calls are no-ops; `init_hashtable()` recycles owned bucket chains.
-
-
 Name: ____________________  Date: ____________________
 
-Preserve hand predictions in Sections A–F before opening the Stage D
-explanation. Use the Stage B representation descriptions and Stage A input
-array for these predictions. Treat the call sequences below as hand traces.
-When Stage E opens, inspect [lab.c](lab.c) and its Module 07 dependency,
-then execute the same experiments and record observations and corrections.
-The supplied operations are complete; no implementation TODOs are required.
+Preserve predictions in A–F before opening Stage D. Use the Stage B
+representation and Stage A input. Treat these call sequences as hand traces.
+When Stage E opens, inspect [lab.c](lab.c), run the same experiments in a
+separate driver, and label observations and corrections. Operations are
+supplied; there are no implementation TODOs.
 
-## A. Choose a bucket for a signed number
+## A. Choose a bucket for a signed key
 
-A negative number must still select a valid array position. Complete the
-calculation used by `hash_func`.
+The current source has 10 node slots and 15 bucket heads.
 
-| Value | `value % 10` in C | Returned bucket |
+| Key | `key % 15` in C | `hash_func` bucket |
 | ---: | ---: | ---: |
 | -16 | | |
 | -8 | | |
 | -1 | | |
 | 0 | | |
 | 12 | | |
-| 22 | | |
+| 27 | | |
+| -3 | | |
 
-What range can the returned bucket occupy? Why does a negative remainder
-need correction? Is `-1` forbidden as stored data, or only used as a link
-sentinel?
-
-Prediction: ________________________________________________________
-
-## B. Save and search a collision chain
-
-Begin with empty buckets and call `init_lnodes_pool()` before first use.
-Save each value with `save_data(hash_func(value), value)` in order
-12, 22, -8. Record every node and the bucket head after each call.
-
-| Saved value | Returned node | Node data | Node next | Bucket head | `free_head` |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 12 | | | | | |
-| 22 | | | | | |
-| -8 | | | | | |
-
-Trace `find_data(hash_func(22), 22)` and
-`find_data(hash_func(32), 32)`. Record inspected node indices and the result.
-Then save 22 once more. Which copy does `find_data` return? Does `save_data`
-replace an earlier record or allocate another node?
+What range can a bucket occupy? Why correct negative remainders? Explain
+why the number -1 can be a legal key while a next link of -1 ends a chain.
 
 Prediction: ________________________________________________________
 
-## C. Recycle and exhaust the shared pool
+## B. Insert and search a collision chain
 
-Predict the free chain after `init_hashtable()` clears the experiment in B.
-Bucket heads are visited in increasing bucket order. Nodes within a returned
-chunk retain their chain order. Trace how the chunk tail joins the previous
-free head.
+Call `initialize()`, then `insert(12,120)`, `insert(27,270)`, and
+`insert(-3,-30)`. Record each insertion's status separately from its node
+index. Keep key and payload distinct.
 
-In an independent experiment with empty buckets and a reset free pool,
-save ten colliding values `0,10,20,30,40,50,60,70,80,90`.
-Snapshot buckets, nodes, and `free_head`. Predict an eleventh save of 100.
-Which state must remain unchanged? Clear the table and allocate again.
+| Call | Status | New node | Key | Data | Next | Bucket/head | `hnodes_unused` |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| `insert(12,120)` | | | | | | | |
+| `insert(27,270)` | | | | | | | |
+| `insert(-3,-30)` | | | | | | | |
 
-Explain why resetting `lnodes` while active buckets still reference it can
-make one node belong to two chains. Explain why a linked queue cannot use
-the same pool concurrently unless ownership is kept disjoint.
+Trace `find(27)` and missing `find(42)`. List visited node indices, key
+comparisons, returned node, and payload if found. Then call `insert(27,271)`.
+Which duplicate does `find(27)` return? Does the old record change?
+Why would comparing `data` instead of `key` give the wrong lookup?
 
 Prediction: ________________________________________________________
 
-## D. Compare complete pair search with earlier-number search
+## C. Reset and exhaust the node array
 
-Begin an independent experiment with empty buckets and a freshly initialized
-pool. Use the unchanged `nums` array. For target 0, trace the complete-search
-comparison order until the first match. For the hash-table method, complete
-one row for each current position through the first match.
+Snapshot the state from B, then call `initialize()`. Predict all 15 heads,
+`hnodes_unused`, old node fields, and `answer`. Which fields change, and
+which remain? Explain why resetting only the heads would not restore capacity.
 
-| `i` | `nums[i]` | `j_num` | Searched bucket | Visited nodes / stored `j` | Result or saved node |
+In a separate experiment, call `initialize()` and insert ten colliding keys
+`0,15,30,45,60,75,90,105,120,135`, each with a chosen payload. Snapshot all
+heads, node fields, and the counter. Predict `insert(150,1500)` and identify
+the state that must remain unchanged. Reset and prove another insertion
+reuses node 0. Does reset need to traverse any old chain?
+
+Prediction: ________________________________________________________
+
+## D. Compare complete pair search with complement lookup
+
+Use unchanged `nums` and target 0. Trace `two_sum_bf`: `i` increases, and
+`j` descends from `i-1` to 0. Record the comparisons through the first match.
+Then trace `two_sum_ht`, which resets at entry:
+
+| `i` | `nums[i]` | Complement | Search bucket | Visited nodes / keys | Result or insertion |
 | ---: | ---: | ---: | ---: | --- | --- |
 | 0 | | | | | |
 | 1 | | | | | |
@@ -85,46 +75,44 @@ one row for each current position through the first match.
 | 4 | | | | | |
 | 5 | | | | | |
 
-Why does a node store `i` rather than `nums[i]`? Why does the comparison use
-`nums[j] == j_num` instead of `j == j_num`? Why does the successful current
-position remain unsaved?
+What is stored as the key? What is stored as `data`? How does `find` use the
+key, and how does the caller recover earlier position `j`? Why is the answer
+ordered `{j,i}`? Why is successful position `i` not inserted?
 
 Prediction: ________________________________________________________
 
 ## E. Test boundaries and repeated calls
 
-Predict answers for targets 2, 3, and 100. Each answer contains positions,
-not numbers. Run 100 followed by 0 without manually resetting the pool in
-between. Explain what `two_sum_ht` clears at its start.
+Predict both methods' position answers for targets 2, 3, and 100. Run
+`two_sum_ht(100)` followed by `two_sum_ht(0)` without a manual reset.
+Explain what the function resets at entry and what remains after success.
 
-Temporarily use `{1,1,5,0,0,0,0,0,0,0}` with target 6 in your driver.
-Record the answer from each method. Explain the effect of ascending earlier
-positions versus newest-first chain traversal. Restore `nums` afterward.
+In a driver, temporarily use `{1,1,5,0,0,0,0,0,0,0}` with target 6.
+Record each method's answer and explain why descending `j` and newest-first
+chains choose the same earlier duplicate. Restore `nums` afterward.
 
-For each successful answer require `0 <= j < i < 10` and
-`nums[i] + nums[j] == target`. Compare existence with brute force; require
-identical positions only when the fixture fixes the same first match.
-Use values whose sums and `target - nums[i]` fit in C `int`.
+For every success require `0 <= answer[0] < answer[1] < NUMS_SIZE` and the
+requested sum. Include one lone 5 with target 10 to expose self-pairing,
+then two 5s to test equal values at different positions. All sums and
+complement subtractions must fit in C `int`.
 
 Prediction: ________________________________________________________
 
 ## F. Explain work and revise the model
 
-Count the maximum pair comparisons made by `two_sum_bf` on ten numbers.
-Count the allocations and bucket-node comparisons in a no-answer run of
-`two_sum_ht`. What happens when many numbers select one bucket?
+Count the maximum pair comparisons for ten inputs and the comparisons until
+target 0 succeeds. Count the hash version's key comparisons through its
+first target-0 match. How can many colliding keys change total search work?
 
-Describe these costs separately: choosing a bucket; prepending a node;
-searching a chain of length `k`; clearing ten buckets with `n` live nodes;
-and the complete two-sum search. State the assumptions behind an expected
-short-chain claim. The source has ten buckets and ten pool records; it does
-not grow automatically.
+Explain hashing, slot allocation, head insertion, chain search of length
+`k`, resetting 15 heads, and complete two-sum costs separately. State the
+key-distribution and load assumptions needed for expected short chains.
+The actual arrays have 10 nodes and 15 buckets and never grow.
 
-Choose three claims to test: (1) signed hashing and chains; (2) recycling,
-exhaustion, and unchanged state on a failed save; (3) valid two-sum answers,
-no self-pair, and repeated calls. Write assertions that could detect an
-incorrect result. Preserve predictions now; add observations and corrections
-after inspecting and running the actual source in Stage E.
+Choose three test claims: (1) signed hashing, keys/payloads, and chains;
+(2) reset, exhaustion, unchanged failed insertion, and reuse;
+(3) valid two-sum answers, no self-pair, duplicates, and repeated calls.
+Keep initial predictions and add observed corrections in Stage E.
 
 Revised explanation: ________________________________________________
 

@@ -1,6 +1,105 @@
 # Course materials and textbook website handoff
 
-Updated: 2026-11-06.
+Updated: 2026-11-10.
+
+## Modules 12–13 course plan revised — 2026-11-10
+
+Module 12 is **Binary Search and BSTs**; Module 13 is **AVL Rotations and
+Review**. The delivery guide, spiral curriculum, module descriptions,
+instructor chapter summaries, course indexes, vocabulary order, and capstone
+milestones now reflect this sequence. Each week remains 180 minutes with one
+submission. Module 13 reserves its final 60 minutes for review, corrections,
+and submission. Sorting instruction is optional; Week 14 supplies and explains
+edge ordering without assuming insertion-sort or merge-sort instruction.
+
+This update changes planning documents only. Module 12–13 textbooks,
+worksheets, lab guides, detailed lesson plans, tests, releases, website pages,
+and question content await alignment. Their links are labeled accordingly in
+the revised planning documents. Keep existing directory names and source
+locations: the AVL source is still in Module 12, and search/sort source is
+still in Module 13. No protected lab or presentation file was changed.
+BST deletion and AVL deletion remain outside required scope.
+
+## Chapter 7 slot-reference visual published — 2026-11-06
+
+Published Sites version **241**, source `40afc243e0f171ec72c07ae9697759a1d5a27d03`,
+deployment `appgdep_6aee825059dc81919077df7ae34d8c83`.
+Added the bilingual numbered-slot visual beneath `list-positions`. Fixed physical
+slots 0, 1, 2 store next values 2, -1, 1 while their data compartments stay generic.
+Selecting a Next field marks the source and destination and shows one arrow;
+selecting -1 removes the destination and arrow and explains the absence marker.
+Horizontal compartments remain intact in both desktop and stacked mobile layouts.
+Native buttons expose source/value labels and pressed state, with one polite status.
+
+TypeScript, 14 existing Chapter 7 tests, build, and whitespace checks passed.
+Browser checks covered all selections in both languages, Enter/Space/Tab, forward
+and backward arrow routes, and 390px/768px layouts with no horizontal overflow.
+Prior visuals remain unchanged, as do all 171 captured manuscript, protected-file,
+and download hashes. Only two website components changed; the main checkout has
+the same focused patch while retaining other drafts. Production Korean verified.
+Proof: `student-textbook-web/outputs/chapter-seven-slot-reference-published.png`.
+
+## Chapter 7 slot-number explanation synchronized — 2026-11-06
+
+Published Sites version **240**, source `efbf5e8232ba729f5ef86adf791748e071dddc5f`,
+deployment `appgdep_6aee7fa9802481919d38b14f1a89e6e3`.
+Translated the user's replacement second subsection into English: store the next
+item's location as a slot number; numbering from zero leaves negative values
+available, so -1 indicates no next item. Both website readings, heading labels,
+textbook downloads, and the student ZIP match the canonical manuscripts. Preserved
+the existing list-positions anchor. The replaced subsection's old numbered example
+and diagram no longer render; the first subsection's interactive walkthrough stays.
+Updated the existing content test's diagram expectation. Five content tests, build,
+whitespace, bilingual preview, and published English verification passed. All 146
+captured protected/untargeted files, including the Korean manuscript and visual
+components, retained their hashes. Only two textbook members changed in the ZIP.
+Proof: `student-textbook-web/outputs/chapter-seven-slot-location-published.png`.
+
+## Chapter 7 first-subsection walkthrough published — 2026-11-06
+
+Published Sites version **239**, source `4474f6fa935e130eb1616713cbbce3decd27ef9e`,
+deployment `appgdep_6aee777503888191ab793b130c557e37`.
+Added the bilingual Follow next walkthrough beneath `thinking-1`: three cards with
+horizontal data/next compartments, visible first/current/last labels, two advances,
+terminal stopping, and restart. No sample values or middle dots. Cards are arranged
+horizontally from 768px and vertically below it, with connectors from each next
+compartment to the following data compartment. Native 44px controls and one polite
+status region support keyboard and screen-reader use.
+
+TypeScript, all 14 existing Chapter 7 tests, build, and whitespace checks passed.
+Browser checks covered Korean Enter/Space progression, Tab to Restart, English
+click progression, terminal disabled state, restart, and layouts at 390/640/768px.
+All 171 captured manuscript, protected-file, and download hashes stayed unchanged.
+Only two website components changed; the main checkout received the same focused
+patch while preserving other drafts. Production Korean rendering verified.
+Proof: `student-textbook-web/outputs/chapter-seven-walkthrough-published.png`.
+
+## Chapter 7 revised opening synchronized — 2026-11-06
+
+Published Sites version **238**, source `81d6f3b021f35c03436beac8ca777847d1c9c0c2`,
+deployment `appgdep_6aee7490355c8191945e7b82986b518b`.
+Preserved the user's revised Korean title, overview, and first explanation;
+translated them into English and defined a node at the start of the array-position
+subsection in both languages. Synchronized website readings, navigation and page
+titles, the first topic's bilingual labels, both textbook downloads, and sources.zip.
+Only the two textbook members changed inside the ZIP. Five Chapter 7 content tests,
+production build, whitespace checks, bilingual browser previews, and published
+English verification passed. All 45 protected lab/presentation files in the chapter
+and two website checkouts retained their hashes. Existing Chapter 7 layout remains.
+Proof: `student-textbook-web/outputs/chapter-seven-opening-published.png`.
+
+## Chapter 7 introduction layout aligned with Chapter 2 — 2026-11-06
+
+Published Sites version **237**, source `08b8c8099ff7d57c98deaba7665b939deb3440a6`,
+deployment `appgdep_6aee6c49350481918f5bf83fcbdbb03d`.
+Removed Chapter 7's experiment, glossary, and invariant shortcut buttons in both
+languages. The overview now precedes the short red rule with Chapter 2's spacing
+(24px after the title, 32px before the 64px rule). Other shared-layout chapters
+retain their existing default. TypeScript, production build, whitespace checks,
+and bilingual browser layout checks passed. Only two website components changed;
+no textbook, lab, presentation, or download files changed. Main website working
+files received the same patch without committing unrelated drafts.
+Proof: `student-textbook-web/outputs/chapter-seven-intro-layout-published.png`.
 
 ## Chapter 5 Korean, lecture guides, and website synchronized — 2026-11-06
 
@@ -2042,3 +2141,59 @@ reset after verifying there were no staged changes. SHA checks confirmed all
 the same five pre-existing unpublished files (Chapter 0, glossary, translations,
 and both Chapter 2 manuscripts). The approved local key remains ignored. Course
 repository changes, including this handoff, remain local and uncommitted.
+
+
+## 2026-11-08 — Chapter 9 bilingual website publication
+
+Published Sites version 273 at https://data-structures.chaebinkim.chatgpt.site
+(source commit `eb6a7c3b7abf2ac9ef7ac76f705540264cd2b5ba`). Chapter 9 is now the
+Korean/English homepage; explicit Chapter 8 and Chapter 9 language aliases work.
+Seven sections, 47 bilingual topics, signed-hash/chain/capacity/two-sum visuals,
+and complete downloads follow current Module 9 lab.c. Lab/PPT bytes remain
+unchanged, including published downloads. Legacy open-addressing is conceptual
+or optional; the lab has ten key/data nodes and fifteen buckets, no Module 7
+pool dependency. Both pair searches return {j,i}; target0 gives {4,5}, BF11/HT1.
+
+Publication used an isolated checkout under
+`student-textbook-web/outputs/chapter-nine-publication-20261108/.sites-checkout`
+based on live version272 commit `6c81315ac963e0dfcd9cd0811e34e2b25dc97137`.
+Only Chapter9 integrations plus a behavior-preserving existing TypeScript
+traversal-end predicate fix were published. The feature patch was also applied
+to the primary website checkout; unrelated dirty edits and existing label
+values were preserved. The primary checkout HEAD was not reset or committed.
+All179 website tests pass in both checkouts, TypeScript and production build
+pass, and the ZIP's C tests pass. Browser QA covered EN/KO at390px/1280px,
+integer bounds, misses, duplicates, exhaustion/reset, playback, stable heights,
+and anchor-preserving language switches. Published route/download checks pass.
+Verification JSON and live screenshot are in the publication output folder.
+
+
+## 2026-11-08 — Chapter 9 concept-first teaching sequence
+
+Published Sites version 274, commit `045db24d743d5372d40067f4c7445ec3992c5bd8`.
+Chapter 9 is now titled Storing and Finding Data with a Hash Table /
+해시테이블로 데이터 저장하고 찾기. It teaches array lookup → direct addressing
+→ hash functions/tables → signed normalization → collision chains before
+introducing two sum as an application. Existing anchors remain valid; two
+new concept topics bring each language to 49 topics. Capacity visualization
+uses ordinary stored records and does not assume a two-sum result.
+
+Updated both web manuscripts/downloads, the Korean course copy, extended
+English course textbook, indexes, teacher plans/answer key, and Stage A
+standard/linear inquiries. ZIP includes updated handouts. All 179 website
+tests, TypeScript, production build, and content/ZIP C checks passed. Local
+primary website checkout received the published patch without resetting its
+HEAD or unrelated edits. Lab and PPT files remain byte-identical. Proof and
+verification are in the existing chapter-nine publication output folder.
+
+
+## 2026-11-08 — Chapter 9 standalone explanations
+
+Published Sites version 275, commit `c94caaa207b31e39c65f751cab4d15e8c0a866b3`.
+Removed presentation-source attributions and smaller-example comparisons
+from both Chapter 9 web manuscripts, course textbook copies, student handouts,
+and the downloadable package. Generic slide download links and original files
+remain available. Existing topic anchors are preserved; alternatives now uses
+a standalone heading. All 180 tests, TypeScript, production build, and live
+EN/KO wording checks pass. Protected source hashes are unchanged. The same
+publication patch is applied to the primary website checkout.

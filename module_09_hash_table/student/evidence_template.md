@@ -3,37 +3,39 @@
 Name: ____________________  Date: ____________________
 
 Preserve predictions and add corrections after observing the supplied source.
-One Week 9 submission includes the driver, output, this record, investigation,
+One Chapter 9 submission includes driver, output, this record, investigation,
 and corrected Cognitive Pause.
 
 ## 1. Build the actual source
 
-Record compiler, version, working directory, exact command, warnings, and
-exit result. The driver includes `lab.c`; do not also compile `lab.c` as a
-separate source. Preserve the repository-root include path for Module 07.
+Record compiler/version, working directory, exact command, warnings, and
+exit result. Include `lab.c` once in a separate driver and compile that
+driver alone. There is no Module 07 include dependency.
 
 Command and result: _________________________________________________
 
 ## 2. Explain signed bucket selection
 
-| Value | C remainder | `hash_func` return |
+| Key | C remainder `% 15` | `hash_func` bucket |
 | ---: | ---: | ---: |
 | -16 | | |
 | -8 | | |
 | -1 | | |
 | 0 | | |
 | 12 | | |
-| 22 | | |
+| 27 | | |
+| -3 | | |
 
-Why is the returned bucket safe to use as an array index?
+Explain the bucket range and the distinct node-index range:
 
 ____________________________________________________________________
 
-## 3. Record chains and payloads
+## 3. Record chains, keys, and payloads
 
-Save 12, 22, and -8 in that order. List bucket heads, allocated node fields,
-and the free chain. Record present 22 and missing 32 searches. Then save
-another 22 and identify the first returned matching node.
+Call `initialize()` and insert `(12,120)`, `(27,270)`, and `(-3,-30)`.
+List status returns, allocated node indices, key/data/next fields, heads,
+and `hnodes_unused`. Trace present `find(27)` and missing `find(42)`.
+Insert `(27,271)` and identify the first matching node and its payload.
 
 Prediction: ________________________________________________________
 
@@ -41,22 +43,21 @@ Observed nodes and returns: _________________________________________
 
 Correction: ________________________________________________________
 
-Explain why `save_data` permits duplicate payloads and why `find_data`
-compares payloads rather than interpreting them as `nums` positions:
+Explain why duplicate keys allocate new records, why `find` compares keys,
+and why its return value differs from an insertion status and a payload:
 
 ____________________________________________________________________
 
-## 4. Record ownership, clearing, and exhaustion
+## 4. Record reset, exhaustion, and reuse
 
-Show bucket/free-chain state before and after `init_hashtable()`. Explain
-how `free_lnode_chunk` joins a returned chunk to the free chain. Show that
-each pool index belongs to exactly one live bucket chain or the free chain.
-Do not reset `lnodes` while any active chain owns a record.
+Show heads, counter, old node fields, and `answer` before/after
+`initialize()`. Explain how resetting heads and counter makes slots
+reusable without clearing node fields or traversing chains.
 
-Record ten allocations, the eleventh failed save, and the unchanged bucket
-heads, node fields, and `free_head`. Show a successful allocation after
-clearing. State the assumptions about valid acyclic chains and exclusive
-pool ownership.
+Record ten successful insertions with colliding keys `0,15,...,135`, then
+failed `insert(150,1500)`. Verify unchanged heads, node fields, and counter
+on failure. Reset and show a new insertion reuses node 0. Check repeated
+reset and valid, disjoint, terminating bucket chains.
 
 Evidence: __________________________________________________________
 
@@ -68,42 +69,44 @@ Evidence: __________________________________________________________
 | 2, original array | | | |
 | 3, original array | | | |
 | 100, original array | | | |
-| 100 then 0, no manual reset between | | | |
+| Hash 100 then 0, no manual reset | | | |
 | 6, `{1,1,5,0,0,0,0,0,0,0}` | | | |
+| 10, a lone 5 then two 5s | | | |
 
-Record the first successful target-0 iteration: current position, number,
-complement, bucket, node, stored earlier position, and earlier number.
-Explain search-before-save and `nums[j] == j_num`.
+For the first target-0 match, record `i`, current value, complement, bucket,
+node index, key, and stored earlier position. Explain lookup-before-insert
+and answer order `{j,i}`. Why do both methods choose the same earlier
+duplicate for the target-6 fixture?
 
 ____________________________________________________________________
 
-Describe what remains in the table after success and what the next call
-recycles. Restore the original `nums` after custom fixtures. State that all
-sums and complements in the driver are representable as C `int`.
+Describe state after success and the reset at the next call. Restore `nums`
+after custom fixtures. Confirm `0 <= answer[0] < answer[1] < NUMS_SIZE`
+for every hit, a correct sum, and representable `int` sums/complements.
 
 ____________________________________________________________________
 
 ## 6. State three original test claims
 
-1. Signed hashing and collision chains, including duplicate payloads:
+1. Signed hashing, chains, key/payload distinction, and duplicate keys:
    _________________________________________________________________
-2. Pool recycling, exhaustion, failure preservation, and reuse:
+2. Reset, capacity exhaustion, unchanged failure state, and slot reuse:
    _________________________________________________________________
-3. Two-sum validity, no-self behavior, duplicates, misses, and repeat calls:
+3. Two-sum validity, no self-pair, duplicates, misses, and repeated calls:
    _________________________________________________________________
 
-For each claim, preserve assertions, output, and one explanation of an
-incorrect implementation the assertions would detect.
+Preserve assertions, output, and one incorrect implementation each claim
+would detect. Use the actual supplied source without editing it.
 
 ## 7. Diagnose the source-based autopsy
 
 Prediction: ________________________________________________________
 
-First divergence between node index, stored position, and number:
+First divergence between key comparison and payload comparison:
 
 ____________________________________________________________________
 
-Smallest corrected assertion and result: ______________________________
+Distinguishing assertion or complete hand trace: ______________________
 
 Why the demonstrated failure is a wrong-answer defect:
 
@@ -111,11 +114,12 @@ ____________________________________________________________________
 
 ## 8. Explain costs and revise the model
 
-Give separate concrete counts and costs for hashing, saving one record,
-searching a chain of length `k`, clearing `n` live records across ten
-buckets, and both complete pair searches. Include the maximum 45
-brute-force comparisons. Distinguish expected short chains from a worst-case
-long chain. The supplied table reserves ten buckets and ten pool records.
+Give separate counts/costs for hashing, allocation, head insertion,
+searching `k` nodes, resetting 15 heads, and both pair searches. Include
+45 comparisons for a complete brute-force miss and the actual comparisons
+for a target-0 hit. State distribution/load assumptions behind expected
+short chains and the worst-case collision cost. This source fixes 10 node
+slots, 15 buckets, and 10 input values without automatic growth.
 
 ____________________________________________________________________
 

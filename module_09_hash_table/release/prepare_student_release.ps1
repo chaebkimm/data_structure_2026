@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $python = Get-Command "python3", "python" -ErrorAction SilentlyContinue |
     Select-Object -First 1
 if (-not $python) {
-    throw "Python 3 is required to package the Module 09 lab and its Module 07 dependency."
+    throw "Python 3 is required to package the self-contained Module 09 lab."
 }
 $arguments = @((Join-Path $PSScriptRoot "prepare_student_release.py"))
 if ($OutputDirectory) {

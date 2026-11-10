@@ -1,20 +1,67 @@
-# Module 13 — Searching, Sorting, and Consolidation
+# Module 13 — AVL Rotations and Review
 
-After maintaining search trees in Module 12, compare the whole workload: finding a key, arranging a snapshot, maintaining order, and selecting the next item. Module 13 traces and tests a supplied implementation of linear search, first-match binary search, insertion sort, and merge sort. Consolidation connects those choices to the earlier arrays, lists, hash tables, AVL trees, heaps, and graph frontiers. Module 14 connects ordering to Kruskal’s sorted-edge scan and Prim’s minimum-Heap frontier.
+**Course-plan update — 2026-11-10.** Week 13 now continues
+[Module 12's Binary Search and BSTs](../module_12_bst_avl/README.md) with AVL
+repair and course review. Follow the
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
+and [Chapter 13 planning summary](../instructor_guide/chapter_13.md).
 
-## Read and teach the current lesson
+This pass changes planning and descriptions only. Existing textbooks,
+worksheets, lab guides, detailed lesson plans, tests, and releases await
+alignment. The directory name and search/sort source remain in place;
+search references support Week 12, and full sorting instruction is optional.
+The supplied indexed AVL source remains in Module 12. No revised student
+release is supplied here.
 
-| Material | Purpose |
+## Required learning and assessment outline
+
+Retrieve Week 12's skewed BST, compute height and balance, and study LL/RR
+before LR/RL repair. Keep every middle subtree reachable and preserve inorder.
+Trace supplied AVL insertion, retain returned subtree roots, and refresh
+stored heights from the lower nodes upward. AVL deletion is outside required
+scope; no from-scratch AVL implementation is required.
+
+Protect the final 60 minutes for course review, workload selection,
+corrections, and submission. Compare arrays/lists, hash versus BST/AVL
+lookup, Heap priority, DFS/BFS frontier control, and minimum-hop versus
+weighted routes. Briefly discuss the cost of preparing and updating an
+ordered snapshot. Insertion-sort and merge-sort instruction and implementation
+are optional; Module 14 supplies and explains edge ordering and its comparator
+without assuming those lessons.
+
+One submission contains four rotation traces, insertion/link/height/balance
+checks, comparison evidence, a workload-selection review memo, and a corrected
+prediction. Reuse earlier evidence rather than implement earlier structures again.
+
+| Required contact activity | Minutes |
+|---|---:|
+| Retrieve the skewed-tree problem; establish height and balance | 20 |
+| LL/RR followed by LR/RL rotations, preserving ordering and middle subtrees | 55 |
+| Guided AVL insertion: returned roots and bottom-up height updates | 30 |
+| Rotation and insertion checks | 15 |
+| Course review, workload selection, corrections, and submission | 60 |
+| **Total** | **180** |
+
+## Existing teaching resources — pending alignment
+
+The search/sort materials below retain the previous lesson. Their weekly
+labels and complete assignments await alignment; they are not the revised
+Week 13 lab. The AVL materials also await alignment to their new weekly role.
+
+| Existing material | Reference use |
 | --- | --- |
-| [English textbook](student/textbook.md) · [Korean textbook](student/textbook_korean.md) | One flow from finding a value through sorting and workload selection |
-| [Class workbook](student/class_material.md) | Predictions, traces, tagged ties, and corrections |
-| [Concept slides](student/ppt_material.md) · [Lab slides](student/ppt_lab_material.md) | Board scenes and source walkthrough |
-| [lab.c](student/lab.c) · [lab_driver.c](student/lab_driver.c) | Complete implementation and runnable six-value example |
-| [Lab](student/lab.md) · [Evidence](student/evidence_template.md) · [Rubric](student/rubric.md) | One combined Week 13 artifact |
-| [Vocabulary](student/vocabulary.md) · [Models](diagrams/search_sort_models.md) | Names and equivalent range/merge diagrams |
-| [Instructor plan](instructor/lesson_plan.md) · [Chapter guide](../instructor_guide/chapter_13.md) | One 180-minute lesson |
+| [Module 12 AVL textbook](../module_12_bst_avl/student/textbook.md) · [AVL lab](../module_12_bst_avl/student/lab.md) | Supplied AVL explanation and checks, still stored in Module 12 |
+| [Module 12 AVL source](../module_12_bst_avl/student/lab.c) · [Code guide](../module_12_bst_avl/code/README.md) | Read-only source and unchanged builds for rotation/insertion evidence |
+| [English search/sort textbook](student/textbook.md) · [Korean](student/textbook_korean.md) | Search reference for Week 12; sorting instruction optional |
+| [Class workbook](student/class_material.md) | Previous search/sort traces and workload prompts |
+| [Concept slides](student/ppt_material.md) · [Lab slides](student/ppt_lab_material.md) | User-owned references for the previous lesson |
+| [Search/sort source](student/lab.c) · [Driver](student/lab_driver.c) | Unchanged complete search/sort example |
+| [Lab](student/lab.md) · [Evidence](student/evidence_template.md) · [Rubric](student/rubric.md) | Previous submission outline, not the revised Week 13 assignment |
+| [Vocabulary](student/vocabulary.md) · [Models](diagrams/search_sort_models.md) | Previous search/sort reference materials |
+| [Detailed lesson plan](instructor/lesson_plan.md) | Previous lesson; use the revised budget above |
+| [Week 13 questions](../student_question_bank/week_13_search_sort_consolidation.md) | Existing question bank, pending alignment |
 
-## Source and caller contract
+## Existing search/sort source contract — reference only
 
 Use `0<=n<=SEARCH_SORT_CAPACITY` (64). Positive-size arrays contain at least `n` accessible integers. `linear_search(values,n,key)` accepts any order; `binary_search_first(sorted,n,key)` requires nondecreasing order. Both return the smallest matching index in the array being searched, or `-1`, without modifying it. Sorting can change that index.
 
@@ -22,10 +69,14 @@ Use `0<=n<=SEARCH_SORT_CAPACITY` (64). Positive-size arrays contain at least `n`
 
 The common input is `[31,23,17,8,17,42]`. Original linear search for 17 returns 2. Both sorts produce `[8,17,17,23,31,42]`; first-match binary search returns 1. Missing keys return `-1`. Insertion shifts only strictly greater keys; merge takes the left key on equality. Explain stability using the original 17A/17B identities on paper. Integer output alone cannot show their order.
 
-## Build, evidence, and delivery
+## Existing search/sort build and release — pending alignment
 
-From this module root run `make -C code`. Core tests compare sorting with an independent `qsort` oracle, search with a first-match scan, signed extremes, every size 0..64, duplicates, canaries, and repeated calls. Compile the driver/test file only; it includes `lab.c`.
+From this module root, `make -C code` still runs the original search/sort
+core checks, student checks, and demo. These targets do not implement the
+revised Week 13 assessment. Existing tests cover sorting against `qsort`,
+first-match scans, signed extremes, sizes 0..64, duplicates, canaries, and
+repeated calls. Compile only the driver/test file when it includes `lab.c`.
 
-One submission contains original search/sorting/boundary tests, preserved traces, tagged stability reasoning, a workload-selection table, compiler output, and a corrected prediction. The plan uses 35 minutes for retrieval/search, 55 for sorting, 25 for tests, 45 for consolidation, and 20 for correction/submission. There is no additional DSU, MST, or from-scratch data-structure assignment.
-
-The [release manifest](release/release_manifest.md) describes a self-contained archive with exact student sources and tests. Generate it with `python release/prepare_student_release.py`. Instructor answers and plans are excluded.
+The [existing release manifest](release/release_manifest.md) describes the
+previous search/sort archive and awaits alignment. Its release script still
+packages that lesson; this planning pass does not regenerate or relabel it.

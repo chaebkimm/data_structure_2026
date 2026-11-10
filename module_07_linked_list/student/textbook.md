@@ -1,118 +1,66 @@
-# Chapter 7. Organizing data with links
+# Chapter 7. Linking to the next item
 
-We will connect items with links to the next item. Then we will use the same nodes to build a stack and a queue.
+We will build a list by storing the next item's location with each item. We will manage unused memory slots by linking them together. Then we will build a queue that removes items in the order they were stored.
 
 ## Thinking logically
 
-### What does linked data look like?
+### What does linking each item to the next look like?
 
-We use nodes, which have data and a link to the next node. An array stores nodes side by side; links give them a sequence. We call this structure a singly linked list: each node records which node follows it, and the last node has no successor.
+Suppose each item records the location of the next item. Following this connection takes us to the next item, then the one after it. An item with no next item is the last. With suitable rules, we can form a sequence with a first item, a last item, and other items in between.
 
-In Chapter 1, inserting into the middle of an array list shifts the following values. Here we change links to change the order. The values stay in their array slots.
+### How do we store the next item's location?
 
-### How do array positions become a list?
+We store items in memory slots and use slot numbers to record the next item's location. If we number the slots starting at `0`, negative numbers are unused, so we can use `-1` to mean there is no next item.
 
-Each node stores two integers: `data` holds a value, and `next` holds the next node's array index. A value of `-1` in `next` means no successor. We keep the first node's index separately in `first`; an empty list has `first = -1`.
+### How do we visit all the linked items?
 
-Suppose slots 0, 1, and 2 have been assigned for use. They contain 17, 23, and 31. Connect slot 0 to slot 2, and leave slot 1 separate.
+Start with the first item and follow each link to the next item. Stop when you reach the last item, whose next slot number is `-1`. Store the slot number of the first item separately.
 
-```mermaid
-graph LR
-    F["first = 0"] --> A["Index 0: data 17"]
-    A -->|next = 2| C["Index 2: data 31"]
-    C -->|next = -1| E["End"]
-    B["Index 1: data 23, next = -1 (separate)"]
-```
+### How do we insert an item between two linked items?
 
-The list contains 17 followed by 31. Slot 1 is physically between their slots, but the links do not include it. An index identifies a slot; the data stored there can change when the slot is reused.
+Suppose one item points to another. To insert a new item between them, first copy the second item's slot number into the new item's link. Then change the first item's link to point to the new item. If we reverse these steps, we overwrite the first item's link and can lose the second item's slot number.
 
-### How do we access the whole list?
+### How do we unlink an item from the middle of a list?
 
-Starting at `first`, read the current node and follow its `next` link. Repeat until the index is `-1`, checking before accessing the array. Our lists have no cycles, so this walk eventually ends.
+Suppose three items are linked in order. To unlink the middle item, make the first item point directly to the third. Then set the middle item's next slot number to `-1`.
 
-To reach the third node, follow two links from the first. Accessing `lnodes[2]` instead selects physical slot 2, which need not be the third node in the list.
+### Can several lists share the same memory space?
 
-### How do we connect a node to this data structure?
+Suppose we store items from several lists in the same memory space. Link the items within each list, and keep a separate record of the slot number of each list's first item.
 
-Let's insert 23 between 17 and 31.
+### How do we keep track of unused memory slots?
 
-1. Save the old successor in the new node. Set slot 1's `next` to slot 0's `next`, which is 2.
-2. Connect the predecessor to the new node. Set slot 0's `next` to 1.
+Link the unused slots together to form a list. To store a new item, take a slot from this list. After you unlink an item and finish using its slot, link the slot back into the list of unused slots.
 
-The list is now `0(17) → 1(23) → 2(31) → -1`. This is what `simple_link_lnode_to_prev(0, 1)` does. If we reverse the assignments, we lose the old successor and make slot 1 point to itself.
+### How do we take an unused slot?
 
-The caller supplies two valid, distinct indices. The predecessor is already in an ordinary list, and the new node is allocated for use, outside every chain, with `next = -1`. This function connects nodes; it does not find or allocate them.
+We take a slot from the list of unused slots. Any slot in the list will do, so we take the first one because it is easiest to reach. We then record its next slot number as the new start of the list.
 
-### How do we remove a node?
+### How do we return a slot when we are done with it?
 
-Make its predecessor point to its successor. In our example, `simple_delink_next_lnode_from_prev(0)` saves index 1, connects slot 0 directly to slot 2, sets slot 1's `next` to `-1`, and returns 1.
+We link the slot back into the list of unused slots. It can go anywhere in the list, and the front is the easiest place to add it. First, we make the slot we are returning point to the current first slot. Then we record the returned slot's number as the new start of the list.
 
-The list is again `0(17) → 2(31) → -1`. The returned node is detached: it is separate from the list, but still assigned to the caller. If the predecessor has no successor, the function returns `-1` without changing anything.
+### How do we remove items in the order they were stored?
 
-The first node has no predecessor. To remove it, the caller saves its index and advances `first` to its successor, then sets the removed node's `next` to `-1`. The predecessor helpers do not update queue endpoints, so queued nodes use the queue operations described below.
-
-### Can several lists use one array?
-
-Each list keeps its own first index, so several lists can use different slots in the same array. They can share the available space without reserving a fixed portion for each list. Their nodes must remain separate.
-
-We reserve ten reusable nodes in a node pool. To find an available slot without scanning the array, we connect all unused slots into another list, called the free list. Its first index is `free_head`.
-
-```text
-free_head = 0
-0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → -1
-```
-
-`init_lnodes_pool()` builds this chain on its first call. Later calls preserve the current links; initialization does not reset a pool that is already in use.
-
-### How do we obtain and reuse a node?
-
-`new_lnode()` initializes the pool if necessary, removes the first free node, and sets that node's `next` to `-1`. It returns the node's index, or `-1` if no slot is available. The caller checks the index before writing `data`; allocation does not set the value.
-
-In a fresh pool, three allocations return indices 0, 1, and 2. Store 17, 23, and 31 in them. Connect slot 2 after slot 0, then insert slot 1 after slot 0 to build our example. The free list now begins at 3.
-
-Removing slot 1 from the active list does not return it to the pool. After reading any needed data, call `free_lnode(1)` to put it at the front of the free list: `1 → 3 → 4 → … → 9 → -1`. The next allocation returns slot 1 again with `next = -1`. Its data is still 23 until the new caller assigns another value, such as 8.
-
-Return only an allocated node that is outside every chain and has `next = -1`. Return it once, then stop using it as the old record. These functions reuse array slots; they do not call C's `malloc` or `free`.
-
-### How can the last value added come out first?
-
-A stack adds and removes at the same end. Keep its top in `first`. To add a value, allocate a node, check success, write its data, link it to the old first node, and make it the new first. If allocation fails, leave the stack unchanged.
-
-Adding 17, 23, and 31 gives `31 → 23 → 17`. To remove a value, check that `first` is not `-1`, save the first node's index and data, advance `first` to its successor, and isolate the old node before returning it to the pool.
-
-The values come out as 31, 23, and 17: last in, first out, or LIFO. Removing the last node leaves `first = -1`. These updates belong to the caller; the node functions do not provide a separate stack interface.
-
-### How can a linked list preserve arrival order?
-
-A queue adds at the last node and removes the first. We remember both ends in `qhead` and `qtail`, so neither operation needs a search. Adding 17, 23, and 31 gives `17 → 23 → 31`, and removal returns the values in that same order: first in, first out, or FIFO.
-
-To add a value, allocate a node, check its index, write its data, and pass the index to `enqueue_lnode()`. The node must be outside every chain with `next = -1`. In a nonempty queue, the old tail links to the new node and `qtail` moves to it. In an empty queue, both endpoints become the new node. Enqueuing does not allocate or set data; `enqueue_lnode(-1)` does nothing.
-
-`dequeue_lnode()` advances `qhead`, isolates the old head, and returns its index. Removing the only node also sets `qtail = -1`. An empty queue returns `-1`. Check the returned index, read its data, and return the node to the pool when finished.
-
-The returned index is not the stored value. A data value of `-1` is valid; only an index of `-1` means no node. A reused slot can join the tail regardless of its array position, so reuse preserves arrival order.
+Link each new item after the last one and remove the first item each time. It works like a line of people who join at the back and leave from the front. Keeping track of the slot numbers of the first and last items makes it easy to add or remove an item.
 
 ## Calculating efficiency
 
 ### Memory efficiency for storing
 
-A node stores two `int` members: one value and one link. The array reserves all ten slots even when only some are in use. The pool and queue keep their endpoint indices, and each additional list needs its own first index.
+Each item needs extra space to store the next item's slot number. To reach the linked items, we store the first item's slot number. In a queue, we also store the last item's slot number so we can add each new item directly at the back and keep the items in arrival order. The list of unused slots needs space for its own first slot number.
 
-The ten slots limit simultaneous allocations across all users of the pool. Reusing returned slots lets us process more than ten values over time.
+### Efficiency of following linked items in order
 
-### Memory efficiency for iterating over items
+Start at the first item and follow each link to the next. We visit each item once, so the work is proportional to the number of items in the list. At each step, we replace the current slot number with the next one. The extra memory needed for traversal stays constant as the list grows.
 
-An iterative traversal keeps the current index and a fixed amount of temporary state. Its additional memory does not grow with the list's length.
+### Efficiency of storing and linking an item
 
-### Efficiency of creating or adding one item
+Before we use any slots, we link them all into a list of unused slots. We do this once per run, and the work is proportional to the total number of slots. After that, we can take the first unused slot, store an item there, and link it after a known slot by updating just a few slot numbers. This takes the same amount of work no matter how many items the list holds.
 
-The first initialization connects every pool slot, so its work is proportional to the pool's capacity. The first allocation includes that work if the pool has not yet been initialized.
+### Efficiency of unlinking an item and returning its slot
 
-After initialization, allocating, recycling, inserting after a known predecessor, and removing its successor each take constant time. Stack updates at the first node and queue updates at the saved endpoints also take constant time. Searching for a predecessor is separate work and may visit the whole list.
-
-### Efficiency of iterating over items
-
-Traversal takes time proportional to the number of nodes in the list, assuming a valid chain. Reaching a node by its logical position requires following links, while accessing a known physical array index takes constant time. Nodes in other lists are not visited.
+When we know the preceding item's slot number, we can unlink the item and return its slot to the front of the list of unused slots by updating just a few slot numbers. This takes the same amount of work no matter how many items the list holds.
 
 ## Glossary
 

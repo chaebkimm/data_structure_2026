@@ -13,7 +13,15 @@ A package README describes the complete deep-dive
 version of that topic. When this guide narrows or combines a package, this
 guide controls what is required in the 14-week offering.
 
+**Modules 12–13 planning update — 2026-11-10:** Week 12 is Binary Search
+and BSTs; Week 13 is AVL Rotations and Review. The sequence, goals, and
+assessment outlines below are approved planning guidance. Existing textbooks,
+worksheets, lab guides, detailed lesson plans, tests, releases, and question
+banks for these two weeks await alignment. Their old week labels do not
+override this guide. No revised student release is supplied by this update.
+
 Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
+Its Week 12–13 pages await alignment; select questions by the revised scope.
 
 Each teaching week has a hard cap of **180 contact minutes**. The cap includes
 retrieval, explanation, tracing, guided implementation, testing, and evidence
@@ -53,11 +61,11 @@ issued as a second weekly programming submission.
 | 6 | Graph DFS — [Module 6](module_06_graph_dfs/README.md), with iterative DFS using Stack as the implementation core | **Practical 1 only**; no ordinary Module 6 lab | Recursive graph DFS | [Week 6 page](student_question_bank/week_06_graph_dfs.md) |
 | 7 | Linked lists with linked stack and queue examples — [textbook](module_07_linked_list/student/textbook.md) and [Module 7 materials](module_07_linked_list/README.md) | Ordinary lab 6: shared-pool reuse, predecessor insertion/detachment, LIFO first-node operations, FIFO endpoints, and traces/tests in one artifact | Allocated-list API, doubly linked lists, and DSU before Week 14 | [Week 7 page](student_question_bank/week_07_linked_list.md) |
 | 8 | Processing data in stored order: queues → tree BFS → graph BFS — [Module 8](module_08_graph_bfs/README.md): array queue comparisons, tree level order, maze discovery/distances, and conceptual path recovery | **Lab 7: one submission** with queue checks, tree and maze traces, driver, and explanation | Checked matrix/list API, predecessor implementation, and larger-maze generalization | [Week 8 page](student_question_bank/week_08_bfs.md) |
-| 9 | Hash Table — [Module 9](module_09_hash_table/README.md): ten buckets, separate chaining, pool reuse, and two-sum in the supplied lab.c | Ordinary lab 8: one driver and evidence submission | Older open-addressed map, resizing, and adversarial extensions | [Week 9 page](student_question_bank/week_09_hash_table.md) |
+| 9 | Hash Table — [Module 9](module_09_hash_table/README.md): fifteen buckets, ten key/data nodes, whole-table reset, and two sum in the supplied lab.c | Ordinary lab 8: one driver and evidence submission | Older open-addressed map, resizing, and adversarial extensions | [Week 9 page](student_question_bank/week_09_hash_table.md) |
 | 10 | Integer min/max Heaps and shared on-time — [Module 10](module_10_binary_heap/README.md) follows current lab.c | **Lab 9: one submission** of driver, tests, traces, maps, and interval reasoning | Alert-record Heap, dynamic allocation, and unsorted-baseline implementation | [Week 10 page](student_question_bank/week_10_priority_queue_heap.md) |
 | 11 | Dijkstra — [Module 11](module_11_graph_dijkstra/README.md): trace and test the supplied indexed-Heap `student/lab.c` | **Practical 2 only**, including same-graph comparison | Lazy-duplicate parser/path API | [Week 11 page](student_question_bank/week_11_dijkstra.md) |
-| 12 | BST-to-AVL — [Module 12](module_12_bst_avl/README.md): height/balance, rotations, AVL insertion, and validation | Ordinary lab 10 | AVL deletion and package extensions | [Week 12 page](student_question_bank/week_12_avl.md) |
-| 13 | Searching, sorting, and consolidation — [Module 13](module_13_search_sort_consolidation/README.md): first-match linear/binary search, stable insertion/merge sorting, and structure selection | Lab artifact 11: one driver, traces, tests, and consolidation memo | Additional sorting algorithms, generic records, and benchmarking | [Week 13 page](student_question_bank/week_13_search_sort_consolidation.md) |
+| 12 | Binary Search and BSTs — [Module 12](module_12_bst_avl/README.md): first-match binary search, BST search/insertion, inorder, height, and skew | Ordinary lab 10: one search/BST evidence artifact | BST deletion, sorting implementations, and package extensions | [Existing Week 12 page — pending alignment](student_question_bank/week_12_avl.md) |
+| 13 | AVL Rotations and Review — [Module 13](module_13_search_sort_consolidation/README.md): balance, four rotation cases, guided insertion, and course review | Lab artifact 11: AVL evidence and a review memo in one submission | AVL deletion, insertion/merge-sort instruction, and package extensions | [Existing Week 13 page — pending alignment](student_question_bank/week_13_search_sort_consolidation.md) |
 | 14 | Union-Find and Kruskal — [Week 14 materials](module_14_prim_kruskal/week_14/README.md); Prim demonstration only | Lab artifact 12: DSU, Kruskal, embedded synthesis, and capstone integration | Prim implementation, list repair, extended comparisons | [Week 14 page](student_question_bank/week_14_dsu_mst_capstone.md) |
 
 ## Required scope decisions
@@ -233,29 +241,36 @@ The checked matrix/list API and larger-maze generalization remain optional.
 
 ### Week 9 — Hash Table within 180 minutes
 
-Required work follows [Module 9's supplied lab.c](module_09_hash_table/student/lab.c).
-Students trace ten bucket heads and separate chains using Module 7's shared
-`lnodes[10]` pool. They explain signed-remainder normalization, prepend order,
-payload lookup, and whole-chain recycling. They then compare `two_sum_bf`
-with `two_sum_ht`, which stores earlier `nums` positions and searches for a
-complement before inserting the current position. The lab implementation is
-supplied; students write a driver rather than complete map-operation TODOs.
+Required work follows the self-contained [Module 9 lab.c](module_09_hash_table/student/lab.c),
+with the PPTs as conceptual references. Students trace fifteen bucket heads
+and ten `hnode` records containing `key`, `data`, and `next`. They explain
+signed normalization, head insertion, full-key comparison, duplicate-key
+newest matches, and resetting the counter and bucket heads. No Module 7
+source is imported. The PPT's five-node/seven-bucket example illustrates
+the same representation with different constants and input.
+
+Compare `two_sum_bf` with `two_sum_ht`. Both return `{j,i}`, with `j<i`.
+Brute force decrements `j`; the hash version finds the complement among
+stored keys and reads the earlier position from node data before inserting
+the current `(nums[i],i)`. Both choose the latest matching earlier position.
+The implementation is supplied; students write a separate assertion driver.
 Follow the [Week 9 lesson plan](module_09_hash_table/instructor/lesson_plan.md).
 
-One submission contains three original test groups: hash calculation and
-collision chains; pool lifecycle, exhaustion, and reuse; and two-sum results,
-misses, repeated calls, distinct-position checks, and duplicate-input behavior.
-Preserve predicted bucket/node/free-chain states and warning-enabled output.
-Initialize the unused pool with `init_lnodes_pool()` before the first run;
-`init_hashtable()` recycles active chains but does not create the free pool.
+One submission has three original groups: signed hashing and collision
+chains; exhaustion, unchanged failure, reset and reuse; and two-sum hits,
+misses, repeated calls, distinct positions, and duplicate values. Preserve
+predictions and warning-enabled output. Call `initialize()` before manual
+experiments; `two_sum_ht` calls it automatically at every entry. Reset
+retains node fields and `answer` while making old chains unreachable.
 
-Compare the 45 candidate pairs in a complete ten-number brute-force miss
-with the selected-chain work. State expected lookup `O(1+n/b)` under suitable
-distribution for `n` records and `b` buckets, and quadratic generalized
-two-sum worst cases when candidates collide. The actual source fixes both
-buckets and nodes at ten. Linear probing, tombstones, dynamic allocation,
-growth, compaction, and the older deletion autopsy are optional reference
-work, not additional requirements.
+A complete brute-force miss makes 45 comparisons and target 0 makes 11.
+The target-0 hash trace compares one key. Generalized lookup has expected
+`O(1+n/b)` cost under adequate distribution. Expected linear hash two-sum
+requires bounded load, `b=Θ(n)`, and sufficient nodes; collision-heavy
+searches can take quadratic work. Reset costs `Θ(b)`, with no node traversal.
+The actual arrays fix ten nodes and fifteen buckets. Direct addressing,
+open addressing, and Robin Hood hashing supply PPT context; implementing
+probing, deletion, resizing, or the older library is optional.
 
 ### Week 10 — Integer Heaps and Shared On-Time
 
@@ -294,56 +309,82 @@ output, overflow guard, or lazy duplicate snapshots. The older C API is an
 optional reference, not extra implementation work. Follow the package's
 [Week 11 plan](module_11_graph_dijkstra/instructor/lesson_plan.md).
 
-### Week 12 — BST to AVL within 180 minutes
+<a id="week-12--bst-to-avl-within-180-minutes"></a>
 
-[Module 12](module_12_bst_avl/README.md) supplies the combined tree unit.
-Follow the complete indexed `student/lab.c`: ten character records,
-integer links, separate edge heights, and four link-only rotation helpers.
-Use the driver BST baseline to compare the seven-label ascending,
-descending, and mixed orders. Students trace the supplied insertion,
-validate its links/heights/balance, and extend three assertion-test groups
-in one submission. Equal labels on distinct IDs are allowed; no allocation
-or duplicate-rejection TODO is required. The pointer library and deletion
-remain optional. Follow the
-[70 + 110 minute plan](module_12_bst_avl/instructor/lesson_plan.md).
+### Week 12 — Binary Search and BSTs within 180 minutes
 
-### Week 13 — Searching, sorting, and consolidation within 180 minutes
+Use the revised [Module 12 overview](module_12_bst_avl/README.md) and
+[Chapter 12 planning summary](instructor_guide/chapter_12.md). Begin with
+linear search, then trace first-match binary search on supplied sorted
+arrays. Binary search requires nondecreasing input and returns the smallest
+matching index or `-1`. Use supplied unsorted and sorted copies to distinguish
+their positions; students do not implement a sorting algorithm.
 
-Use [Module 13](module_13_search_sort_consolidation/README.md) and its
-[current lab](module_13_search_sort_consolidation/student/lab.md).
-Students trace and test supplied linear search, first-match binary search,
-stable insertion sort, and stable merge sort. Both searches return the first
-matching index or `-1`; binary search requires sorted input. Use
-`[31,23,17,8,17,42]` throughout. Linear search finds 17 at index 2 before
-sorting; sorting produces `[8,17,17,23,31,42]`, where first-match binary
-search returns index 1. Sorting changes positions, so an index always refers
-to the current array order.
+Transfer the elimination rule to BST ordering, search, insertion, and inorder
+reasoning. Use Module 2's indexed-node representation and the existing plain
+BST baseline as references. Compare ascending, descending, and mixed arrival
+orders. Count one logical key comparison per visited node, and distinguish
+edge height from node count. Search follows a path in `O(h + 1)` work; an
+`n`-node chain has height `n - 1` and can require `O(n)` search work.
 
-Keep the implementation bounded to 64 integers. Merge sort uses a supplied,
-writable, disjoint scratch buffer with room for the active values. Compare
-insertion sort's local shifts with merge sort's combining passes. Use tagged
-equal-key records in the paper trace to explain stability; an integer-only
-output does not establish the order of equal records.
+One artifact combines interval and BST traces, original search/insertion
+checks, height/comparison evidence, and a corrected explanation. Finish with
+ascending insertions producing a skewed tree: Week 13 will repair its shape.
+AVL balance, rotations, and insertion are Week 13 learning. BST deletion is
+outside required scope.
 
-Consolidate earlier representations through a workload-selection memo:
-ArrayList and linked-list access/mutation; hash versus BST/AVL lookup;
-Heap priority versus complete sorting; DFS/BFS frontier order; and the
-minimum-hop versus weighted-route objectives. Reuse earlier tested code.
-Do not require a new implementation of every earlier structure. Sorted
-edge order prepares the supplied Kruskal comparator in Module 14; DSU is
-introduced there.
-
-One artifact contains search/sort traces, a driver with original checks,
-compiler output, cost reasoning, the consolidation memo, and a corrected
-prediction. It is one submission and one rubric.
+The existing [search/sort lab guide](module_13_search_sort_consolidation/student/lab.md),
+[BST/AVL lab guide](module_12_bst_avl/student/lab.md), and
+[detailed Week 12 lesson plan](module_12_bst_avl/instructor/lesson_plan.md)
+await alignment. Use only relevant search/BST references; their complete
+assignments are not the revised Week 12 submission.
 
 | Required contact activity | Minutes |
 |---|---:|
-| Retrieval, linear search, and first-match binary search | 35 |
-| Stable insertion sort and merge sort | 55 |
-| Tests and observed results | 25 |
-| Structure-selection consolidation | 45 |
-| Corrections and submission | 20 |
+| Linear-search recap and first-match binary search on supplied sorted arrays | 45 |
+| BST ordering, search, insertion, and inorder reasoning | 60 |
+| Height, insertion-order effects, and search costs; finish with a skewed tree | 35 |
+| Traces, checks, and one combined evidence artifact | 40 |
+| **Total** | **180** |
+
+<a id="week-13--searching-sorting-and-consolidation-within-180-minutes"></a>
+
+### Week 13 — AVL Rotations and Review within 180 minutes
+
+Use the revised [Module 13 overview](module_13_search_sort_consolidation/README.md)
+and [Chapter 13 planning summary](instructor_guide/chapter_13.md). Retrieve
+Week 12's skewed BST, establish edge height and balance, and introduce LL/RR
+before LR/RL repairs. Preserve inorder, reachability, and transferred middle
+subtrees. Trace guided AVL insertion, retain returned roots, and update
+stored heights from the lower nodes upward. Full AVL deletion is outside
+required scope.
+
+The supplied indexed AVL source remains in Module 12. Its
+[lab guide](module_12_bst_avl/student/lab.md) and Module 13's
+[detailed lesson plan](module_13_search_sort_consolidation/instructor/lesson_plan.md)
+await alignment; neither is the revised complete Week 13 assignment. Reuse
+the existing source and checks selectively without requiring a new AVL
+implementation or another earlier structure implementation.
+
+Protect the final 60 minutes for review, corrections, and submission. Compare
+ArrayList/list access and mutation, hash versus BST/AVL lookup, Heap priority,
+DFS/BFS frontier control, and minimum-hop versus weighted-route objectives.
+Keep a brief preparation-cost discussion: ordered snapshots support binary
+search, but preparing and updating them costs work. Insertion-sort and
+merge-sort instruction and implementation are optional. Module 14 supplies
+edge sorting and its comparator; no sorting lesson is a prerequisite.
+
+One submission combines four rotation traces, insertion/link/height/balance
+checks, comparison evidence, a workload-selection review memo, and a corrected
+prediction. The memo uses earlier evidence rather than new implementations.
+
+| Required contact activity | Minutes |
+|---|---:|
+| Retrieve the skewed-tree problem; establish height and balance | 20 |
+| LL/RR followed by LR/RL rotations, preserving ordering and middle subtrees | 55 |
+| Guided AVL insertion: returned roots and bottom-up height updates | 30 |
+| Rotation and insertion checks | 15 |
+| Course review, workload selection, corrections, and submission | 60 |
 | **Total** | **180** |
 
 ### Week 14 — Union-Find and Kruskal within 180 minutes
@@ -353,6 +394,11 @@ DSU is introduced here, not assumed from an earlier week. Students complete
 iterative two-pass find with path compression, union by component size, and
 the Kruskal selection loop. Make-set, graph construction/loading, edge-list
 building, sorting with a safe comparator, and checked totals are supplied.
+Explain increasing edge-weight order and the supplied tie rule here without
+assuming students completed insertion-sort or merge-sort instruction.
+The existing Week 14 lab and detailed plan still refer to the former Module
+13 sorting lesson; those prerequisite references await alignment and do not
+add required sorting instruction to Week 13.
 
 Prim is a short instructor demonstration connecting heaps and Dijkstra to MST;
 there are no student Prim TODOs. DSU tests, Kruskal tests, an individual
@@ -388,18 +434,21 @@ integration/report/defense rather than scoring the lab's algorithm criteria twic
    graph/maze BFS, with their tests, traces, and frontier-control synthesis
    in one submission. Include its queue source, tree bridge, maze source,
    and required Module 2 tree and Module 7 pool dependencies.
-5. In Week 9, release the current Module 9 `student/lab.c`, its Module 7
-   node-pool dependency, and the driver/evidence materials. Preserve the
-   repository-relative layout required by the source include. The older
-   open-addressed map is optional and supplies no required implementation TODOs.
+5. In Week 9, release the self-contained Module 9 `student/lab.c` and its
+   driver/evidence materials. No Module 7 dependency is needed. Compile only
+   the driver when it includes the lab. The older open-addressed map is
+   optional and supplies no required implementation TODOs.
 6. In Week 10, release the current Module 10 `student/lab.c` and its driver,
    trace, and evidence materials. Teach integer min/max repair and construction,
    then the ten-ID dual-Heap interval search. The alert-record library and
    unsorted baseline are optional references with separate contracts.
 7. In Week 11, release only the preparation and support for Practical 2.
-   Week 12 uses the bounded BST-to-AVL package, with deletion optional.
-   Week 13 uses the bounded searching/sorting source, its tests and traces,
-   and a consolidation memo reusing previous artifacts.
+   Week 12 selects binary-search and ordinary-BST references for one evidence
+   artifact. Week 13 selects indexed AVL references and earlier artifacts for
+   rotation/insertion evidence and a review memo. Their existing lessons,
+   question banks, and archives await alignment; this planning update does
+   not issue revised releases. Do not assign either old full weekly lab.
+   BST/AVL deletion and insertion/merge-sort instruction remain optional.
 8. In Week 14, release the combined DSU/Kruskal scaffold, not the complete
    combined List/DSU reference and complete Module 14 lab. Supply make-set, graph-loading, sorting,
    totals, validation, and Prim. Use one checklist for DSU, Kruskal,

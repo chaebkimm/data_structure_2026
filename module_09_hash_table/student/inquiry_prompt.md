@@ -1,86 +1,86 @@
-# Stage A — Can Earlier Numbers Help Find a Pair?
+# Stage A — Initial Inquiry: Find Stored Values
 
 Name: ____________________  Date: ____________________
 
-A program receives ten numbers and a target total. It must return the positions
-of two different numbers whose sum equals the target. Preserve your first
-answers. Add labeled corrections later.
+Begin by finding one value in an array. Build an alternative way to remember
+its input position before considering an application with two positions.
+Preserve first answers and add labeled corrections later.
 
-## A. Compare every earlier number
-
-Begin with these numbers in positions 0 through 9:
+## A. Find a value, then remember its position
 
 ```text
-position   0    1   2   3   4  5  6  7  8   9
-number   -16   -8  -4  -2  -1  1  2  4  8  16
+input position   0  1  2
+value            2  5  6
 ```
 
-1. The target is 0. Read positions from left to right. At each position,
-   compare its number with each earlier number, starting at position 0.
-   Which pair appears first? Return positions, then state their numbers.
-2. If no pair exists, how many comparisons does this method make? Count
-   the comparisons at positions 0, 1, 2, and 9 before finding the total.
-3. At position 5 the number is 1. What earlier number would complete a sum
-   of 0? Could a record of earlier numbers avoid comparing all of them?
+1. Read the array in order to find 5, then look for absent 3. Which values
+   are compared, and what result should each search report?
+2. Reserve seven places numbered 0–6. At the place equal to a stored value,
+   write its input position; write -1 at all unused places. Fill the row.
 
-Predictions and reasoning:
+| Place | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Input position | | | | | | | |
 
-____________________________________________________________________
+3. How does the row answer a lookup for 5 or 3? What problem arises if a
+   stored value is negative, or if a few stored values are extremely large?
 
-____________________________________________________________________
+Prediction: ________________________________________________________
 
-## B. Group numbers into ten places
+## B. Group keys into fifteen places
 
-Reserve ten places numbered 0 through 9. Use the remainder after division by
-10 to choose a place. When the remainder is negative, add 10.
+Reserve places 0–14. Use the C remainder after division by 15, adding 15 if
+it is negative.
 
-| Number | C remainder after division by 10 | Selected place |
-| ---: | ---: | ---: |
+| Key | C remainder `% 15` | Selected place |
+| --- | --- | --- |
 | 12 | | |
-| 22 | | |
-| -8 | | |
+| 27 | | |
+| -3 | | |
 | -16 | | |
 | 0 | | |
 
-1. What happens when different numbers choose the same place?
-2. Module 07 let one record lead to another using an integer index. Draw a
-   small chain for the numbers that share a place. Each new record goes first.
-3. When searching for 22, why must the program compare the complete number
-   after choosing a place? What would prove that 32 is absent?
+1. Calculate each remainder and selected place. Which keys share a place?
+2. Draw or describe a chain for 12, 27, and -3, putting each new record first.
+3. Why must a search compare the complete key after selecting a place?
+   How could it prove that 42 is absent? A separate data field can remember
+   information associated with the key without taking part in the comparison.
 
-Drawing or numbered description:
+Prediction: ________________________________________________________
 
-____________________________________________________________________
+## C. Reuse ten records
 
-____________________________________________________________________
+There are 15 starting references but only 10 record slots. An allocation
+counter identifies the next unused slot.
 
-## C. Keep positions and numbers distinct
+1. What should an eleventh allocation return? Could unused starting places
+   remain even when all record slots have been taken?
+2. Why would clearing only the starting references leave the counter unable
+   to reuse records? Must old record contents be erased to make them reusable?
+3. Which references and counter must reset together before another experiment?
 
-To return a pair, the program must remember where an earlier number came from.
-Suppose a stored record contains position 4 rather than the number -1.
+Prediction: ________________________________________________________
 
-1. Where should the program read to recover the earlier number?
-2. The target is 2 and the current number is 1. Why would storing the current
-   position before searching allow an invalid answer?
-3. If two earlier positions contain the same number, must both methods return
-   exactly the same positions? What conditions make an answer valid?
+## D. Apply lookup to two positions
 
-____________________________________________________________________
+Only after the storage questions, consider these ten numbers:
 
-____________________________________________________________________
+```text
+input position   0    1   2   3   4  5  6  7  8   9
+value          -16   -8  -4  -2  -1  1  2  4  8  16
+```
 
-## D. Reuse the ten records
+1. For target 0, read current positions left to right. At each position,
+   try earlier positions from the most recent down to 0. Which pair is first?
+   Give the earlier position first and its values separately. Count the
+   comparisons for a complete miss.
+2. At position 5, which earlier value is needed? If records keep earlier
+   values as keys and input positions as data, which field should be searched
+   and which field supplies the answer position?
+3. For target 2 and current value 1, why could storing before searching use
+   the same position twice? If earlier values repeat, which matching position
+   is visited first by a newest-first chain and by descending earlier positions?
 
-Only ten linked records are available. A successful search may stop before
-all ten positions are read.
+Prediction: ________________________________________________________
 
-1. What must happen to records left from the previous search before the next
-   search starts?
-2. Why is clearing only the ten starting references insufficient?
-3. Predict what an attempt to take an eleventh record should return.
-
-____________________________________________________________________
-
-One question your current explanation leaves open:
-
-____________________________________________________________________
+One unresolved question: ____________________________________________

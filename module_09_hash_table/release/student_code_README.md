@@ -1,9 +1,8 @@
 # Module 09 lab driver
 
-Read `../student/lab.md`. The supplied implementation is
-`../student/lab.c`. Its include of `module_07_linked_list/student/lab.c`
-resolves through the extracted release root. Keep the sibling Module 07
-and Module 09 directories together.
+Read `../student/lab.md`. The supplied implementation is the self-contained
+`../student/lab.c`. It has ten `{key,data,next}` nodes and fifteen buckets.
+No other module is needed.
 
 From the release root:
 
@@ -20,10 +19,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -StudentTests
 
 Add `-Sanitize` if the compiler supports sanitizers. For Make, pass
 `CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined -fno-omit-frame-pointer'`.
-Record compiler diagnostics as well as assertion output. Supplied sources
-may produce warnings about old-style empty parameter lists or shadowed names.
+Record compiler diagnostics as well as assertion output.
 
 `tests/test_lab_core.c` checks the actual lab. Extend
 `tests/test_lab_student.c` with three original groups: hashing/chains,
-pool lifecycle, and two sum. The initial smoke test alone is incomplete.
-Compile only the driver when it includes the lab sources.
+capacity/reset/reuse, and two sum. The initial smoke test alone is incomplete.
+Compile only the driver when it includes `lab.c`. Call `initialize()` before
+direct table operations; `two_sum_ht` initializes itself on every call.

@@ -1,46 +1,81 @@
-# Chapter 13. Finding Values, Ordering Records, and Choosing a Method
+# Chapter 13. AVL Rotations and Review
 
-Follow the [Module 13 180-minute plan](../module_13_search_sort_consolidation/instructor/lesson_plan.md). Use the [English textbook](../module_13_search_sort_consolidation/student/textbook.md) or [Korean textbook](../module_13_search_sort_consolidation/student/textbook_korean.md), [workbook](../module_13_search_sort_consolidation/student/class_material.md), and complete [lab.c](../module_13_search_sort_consolidation/student/lab.c). One artifact combines search/sort tests and workload consolidation. DSU/Prim/Kruskal belong to Module 14.
+**Planning summary — 2026-11-10.** Use the
+[Module 13 overview](../module_13_search_sort_consolidation/README.md) and
+[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
+The existing [AVL textbook](../module_12_bst_avl/student/textbook.md),
+[AVL lab guide](../module_12_bst_avl/student/lab.md), and
+[AVL investigation](../module_12_bst_avl/student/investigation_worksheet.md)
+remain in Module 12 and await alignment to Week 13. The existing
+[Module 13 textbook](../module_13_search_sort_consolidation/student/textbook.md),
+[Korean edition](../module_13_search_sort_consolidation/student/textbook_korean.md),
+[workbook](../module_13_search_sort_consolidation/student/class_material.md),
+[lab guide](../module_13_search_sort_consolidation/student/lab.md),
+[detailed lesson plan](../module_13_search_sort_consolidation/instructor/lesson_plan.md),
+and [Week 13 questions](../student_question_bank/week_13_search_sort_consolidation.md)
+also await alignment. Neither old complete weekly assignment is required.
+Student materials and sources are unchanged.
 
-## Starting Question
+## Starting question and goals
 
-> “Where is the first 17 in 31,23,17,8,17,42, and what rule would let one comparison exclude several positions?”
+> How can we shorten last week's skewed tree without losing its ordering
+> rule, and when is that structure the right choice?
 
-Expected response: a scan finds original position 2; eliminating an interval needs a known order. Preserve the initial answer before sorting the cards.
+Students compute height and balance, recognize four repair cases, preserve
+inorder and transferred subtrees, trace supplied AVL insertion, and justify
+structure choices using evidence from the course.
 
-## Why We Need This
+## Teaching outline
 
-A middle value in unordered data cannot tell us which side contains the key. Ordering enables interval elimination but costs preparation work. Repeated queries can share that preparation; one query may not justify it. Insertions and merges also have different movement and space costs. Choose from the complete workload rather than one asymptotic query label.
+1. Retrieve the Week 12 chain. Establish empty height `-1`, leaf height `0`,
+   left-minus-right balance, and the AVL range `[-1,1]`.
+2. Trace LL with C,B,A and RR with A,B,C, then LR with C,A,B and RL with A,C,B.
+   Preserve nondecreasing inorder and every reachable node. Include a repair
+   with a nonempty middle subtree rather than only three-node cases.
+3. Trace the supplied indexed AVL source still stored in Module 12. Its
+   rotation helpers rewire links; `_add` refreshes lower heights before the
+   new root and returns a possibly changed subtree root. Retain that return.
+   LR/RL helpers perform direct rewiring in this source, rather than calling
+   two single-rotation helpers.
+4. Check links, independent heights, balance, and BST/AVL comparison evidence.
+   Respect valid detached IDs and the ten-slot capacity. Equal labels on
+   fresh IDs descend left at insertion; rotation can place equals on either
+   side while preserving nondecreasing inorder.
+5. Stop new AVL instruction at minute 120. Use the final 60 minutes for course
+   review, the workload-selection memo, corrections, and submission.
 
-## Board Walkthrough
+## Time and assessment outline
 
-1. Compare 31,23,17 and return original index 2. A miss examines six values.
-2. Order the same records as 8,17A,17B,23,31,42. Trace `[0,6) → [0,3) → [0,1) → [1,1)`. Check index 1 before reading, then confirm equality.
-3. Trace insertion shift counts 1,2,3,2,0. Strict `>` preserves 17A before 17B.
-4. Merge ordered halves `[17A,23,31]` and `[8,17B,42]` through separate scratch. Left-on-equality chooses A first.
-5. Compare preparation/query/update/order/space for a scan, sorted array, linked list, hash table, AVL tree, heap, and graph frontier. Do not implement those earlier structures again.
+| Required contact activity | Minutes |
+|---|---:|
+| Retrieve the skewed-tree problem; establish height and balance | 20 |
+| LL/RR followed by LR/RL rotations, preserving ordering and middle subtrees | 55 |
+| Guided AVL insertion: returned roots and bottom-up height updates | 30 |
+| Rotation and insertion checks | 15 |
+| Course review, workload selection, corrections, and submission | 60 |
+| **Total** | **180** |
 
-The labels expose record identity on paper. Integer-only output checks cannot establish stable tie order. Search returns a position in the current array, not the original identity after sorting.
+One submission contains four rotation traces, insertion/link/height/balance
+checks, comparison evidence, a review memo, and a corrected prediction.
+No from-scratch AVL implementation or AVL deletion is required.
 
-## Common First Thoughts
+## Review and Module 14 bridge
 
-- “Return immediately when binary search sees any equal key.”
-- “A sorted index is the original record position.”
-- “Identical sorted integer output proves stability.”
-- “A sorted linked list has constant-time access to its middle.”
-- “A heap is a sorted array and finds any key quickly.”
-- “Sorting first is always cheaper than scanning.”
+Use earlier artifacts to compare arrays/lists, hash versus BST/AVL lookup,
+Heap priority, DFS/BFS frontier control, and minimum-hop versus weighted routes.
+Do not require new implementations of those structures. The memo states
+query/update frequency, ordering needs, preparation work, and relevant costs.
 
-## Neutral Questions
+Briefly explain the cost of preparing and updating a sorted snapshot.
+Insertion-sort and merge-sort instruction and implementation are optional.
+Module 14 supplies edge sorting and its comparator and explains increasing
+weight order and ties there, without assuming a sorting lesson. DSU and MST
+selection remain new learning in Week 14.
 
-Ask which earlier candidate could still equal the key, which source value a write would overwrite, how A/B identities remain ordered, what work happens before a query, and which update changes the chosen representation. Require assumptions with hash expected costs and AVL balance claims.
+## Final check
 
-## Vocabulary Rules
+> Which ordering and balance rules make AVL lookup predictable, and when
+> would an array, linked list, hash table, Heap, or graph traversal fit better?
 
-Retrieve arrays, links, hash collisions, balanced-tree paths, heap priority, FIFO/LIFO, BFS, DFS, and Dijkstra. Introduce half-open intervals, first-match binary search, insertion/merge sorting, stability, scratch buffers, preparation cost, and workload selection. DSU and MST selection are not prerequisites.
-
-## Final Check
-
-> “For one lookup and for many lookups on an unchanged snapshot, which method do you choose, what preparation does it require, and what changes when the records are updated?”
-
-Minimum answer separates preparation from queries, states the ordering/storage conditions, handles duplicate first-match semantics, and justifies a competing method. Carry ordered edge candidates into Module 14 without assigning a new graph algorithm here.
+Require a stated workload and evidence for the choice. Distinguish local
+rotation correctness from broader input validation and system guarantees.

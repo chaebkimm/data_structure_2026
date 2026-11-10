@@ -17,8 +17,8 @@ all: core
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# The actual lab includes Module 07 using a repository-relative path.
-LAB_CPPFLAGS := $(CPPFLAGS) -I../..
+# The current lab is self-contained; each driver includes it once.
+LAB_CPPFLAGS := $(CPPFLAGS)
 
 lab-compile: | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(LAB_CPPFLAGS) -c ../student/lab.c -o $(BUILD_DIR)/lab.o

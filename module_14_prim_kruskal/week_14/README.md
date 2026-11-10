@@ -1,19 +1,24 @@
 # Week 14 — Union-Find and Kruskal
 
-This unit follows searching, sorting, and consolidation in
+This unit follows AVL rotations and course review in
 [Module 13](../../module_13_search_sort_consolidation/README.md) in the
 [14-week course](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 DSU is new learning here. Linked nodes were introduced through the
 [Week 7 linked-list unit](../../module_07_linked_list/README.md);
-BST and AVL were combined in Week 12.
+binary search and BSTs are taught in Week 12, followed by AVL repair in Week 13.
 
-The edge-ordering step connects to Module 13's sorting lesson. The safe
-comparator and sorting code are supplied here so the implementation work
-stays on component merging and edge selection.
+Connect edge ordering to Module 13's brief preparation-cost review. Explain
+increasing weight order and the tie rule here without assuming insertion-sort
+or merge-sort instruction. The safe comparator and sorting code are supplied
+so implementation work stays on component merging and edge selection.
 
-Students read the [lesson](textbook.md), complete the [one lab](lab.md), and
+The existing lab and detailed plan still reference the former Module 13
+sorting lesson. Those opening prerequisite references await alignment; the
+revised scope above controls and requires no prior sorting implementation.
+
+Students read the [lesson](textbook.md), complete the [one lab — prerequisite reference pending alignment](lab.md), and
 submit DSU/Kruskal code, tests, and the folded synthesis/integration evidence.
-Faculty use the [180-minute plan](instructor.md).
+Faculty use the [180-minute plan — prerequisite reference pending alignment](instructor.md).
 
 ## Scaffold and release manifest
 
