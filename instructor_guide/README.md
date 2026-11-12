@@ -39,8 +39,9 @@ The 14 teaching packages and chapters are numbered consecutively from 1 to 14, m
 
 The Chapter 12–13 summaries reflect the 2026-11-10 course-plan revision.
 Their existing student textbooks, worksheets, lab guides, detailed lesson
-plans, tests, releases, and question banks await alignment. Directory names
-and source locations are unchanged. Insertion-sort and merge-sort instruction
+plans, tests, releases, and question banks await alignment. The module folders
+are now `module_12_binary_search_bst` and `module_13_avl_review`; sources retain
+their existing module grouping. Insertion-sort and merge-sort instruction
 are optional; Module 14 supplies and explains its edge ordering without a
 sorting-lesson prerequisite. BST and AVL deletion are outside required scope.
 

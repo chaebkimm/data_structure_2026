@@ -437,7 +437,7 @@ A=0,B=1,C=2,D=3인 directed graph를 새로 준비했다. 간선은 A→B8,C2; C
 
 ## 12장. 문자 키의 BST 순서를 보존하는 AVL 회전
 
-기준 교재: [본문](../module_12_bst_avl/student/textbook.md)
+기준 교재: [본문](../module_12_binary_search_bst/student/textbook.md)
 
 ### 확인 1
 
@@ -471,7 +471,7 @@ rotate_ll(i,l,lr)에서 l의 오른쪽 부분 lr를 왜 i의 왼쪽으로 옮기
 
 ## 13장. 탐색 위치와 정렬의 준비 비용
 
-기준 교재: [본문](../module_13_search_sort_consolidation/student/textbook.md) · [한국어판](../module_13_search_sort_consolidation/student/textbook_korean.md)
+기준 교재: [본문](../module_13_avl_review/student/textbook.md) · [한국어판](../module_13_avl_review/student/textbook_korean.md)
 
 ### 확인 1
 

@@ -47,14 +47,14 @@ nondecreasing inorder sequence and preserve all inserted IDs.
 From the repository root:
 
 ```sh
-make -C module_12_bst_avl/code lab-compile core student-tests comparison
+make -C module_12_binary_search_bst/code lab-compile core student-tests comparison
 ```
 
 In the extracted standalone student release, run
 `make -C code lab-compile core student-tests comparison` from its root.
 The archive bundles the same Module 2 source under its original include path.
 
-From `module_12_bst_avl/code` in PowerShell:
+From `module_12_binary_search_bst/code` in PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1

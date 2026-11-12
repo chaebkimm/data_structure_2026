@@ -1,17 +1,20 @@
 # Module 13 — AVL Rotations and Review
 
 **Course-plan update — 2026-11-10.** Week 13 now continues
-[Module 12's Binary Search and BSTs](../module_12_bst_avl/README.md) with AVL
+[Module 12's Binary Search and BSTs](../module_12_binary_search_bst/README.md) with AVL
 repair and course review. Follow the
 [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
 and [Chapter 13 planning summary](../instructor_guide/chapter_13.md).
 
-This pass changes planning and descriptions only. Existing textbooks,
+Teaching-content alignment remains pending. Existing textbooks,
 worksheets, lab guides, detailed lesson plans, tests, and releases await
-alignment. The directory name and search/sort source remain in place;
+alignment. The directory is now named `module_13_avl_review`, while the
+search/sort source remains grouped in Module 13;
 search references support Week 12, and full sorting instruction is optional.
 The supplied indexed AVL source remains in Module 12. No revised student
 release is supplied here.
+Existing ZIP filenames and release-script defaults retain their original
+names; archives have not been regenerated.
 
 ## Required learning and assessment outline
 
@@ -50,8 +53,8 @@ Week 13 lab. The AVL materials also await alignment to their new weekly role.
 
 | Existing material | Reference use |
 | --- | --- |
-| [Module 12 AVL textbook](../module_12_bst_avl/student/textbook.md) · [AVL lab](../module_12_bst_avl/student/lab.md) | Supplied AVL explanation and checks, still stored in Module 12 |
-| [Module 12 AVL source](../module_12_bst_avl/student/lab.c) · [Code guide](../module_12_bst_avl/code/README.md) | Read-only source and unchanged builds for rotation/insertion evidence |
+| [Module 12 AVL textbook](../module_12_binary_search_bst/student/textbook.md) · [AVL lab](../module_12_binary_search_bst/student/lab.md) | Supplied AVL explanation and checks, still stored in Module 12 |
+| [Module 12 AVL source](../module_12_binary_search_bst/student/lab.c) · [Code guide](../module_12_binary_search_bst/code/README.md) | Read-only source and unchanged builds for rotation/insertion evidence |
 | [English search/sort textbook](student/textbook.md) · [Korean](student/textbook_korean.md) | Search reference for Week 12; sorting instruction optional |
 | [Class workbook](student/class_material.md) | Previous search/sort traces and workload prompts |
 | [Concept slides](student/ppt_material.md) · [Lab slides](student/ppt_lab_material.md) | User-owned references for the previous lesson |

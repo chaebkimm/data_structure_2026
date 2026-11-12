@@ -2,15 +2,18 @@
 
 **Course-plan update — 2026-11-10.** Week 12 now develops binary search
 and ordinary BST search/insertion. AVL balance, rotations, and guided
-insertion belong to [Module 13](../module_13_search_sort_consolidation/README.md).
+insertion belong to [Module 13](../module_13_avl_review/README.md).
 Follow the [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
 and [Chapter 12 planning summary](../instructor_guide/chapter_12.md).
 
-This pass changes planning and descriptions only. Existing textbooks,
+Teaching-content alignment remains pending. Existing textbooks,
 worksheets, lab guides, detailed lesson plans, tests, and releases await
-alignment. The directory name and supplied AVL source remain in place;
+alignment. The directory is now named `module_12_binary_search_bst`, while
+the supplied AVL source remains grouped in Module 12;
 that source is a reference for the revised Week 13, not a required Week 12
 AVL assignment. No revised student release is supplied here.
+Existing ZIP filenames and release-script defaults retain their original
+names; archives have not been regenerated.
 
 ## Required learning and assessment outline
 
@@ -53,7 +56,7 @@ search/BST references for Week 12; use AVL references in Week 13.
 | [Autopsy](student/tree_rotation_autopsy.md) · [Models](diagrams/bst_avl_models.md) | AVL repair references for Week 13 |
 | [Detailed lesson plan](instructor/lesson_plan.md) | Previous combined lesson; use the revised budget above |
 | [Code guide](code/README.md) · [Release manifest](release/release_manifest.md) | Existing builds and releases, not revised weekly packaging |
-| [Search/sort textbook](../module_13_search_sort_consolidation/student/textbook.md) · [Korean](../module_13_search_sort_consolidation/student/textbook_korean.md) | Binary-search reference still stored in Module 13; pending alignment |
+| [Search/sort textbook](../module_13_avl_review/student/textbook.md) · [Korean](../module_13_avl_review/student/textbook_korean.md) | Binary-search reference still stored in Module 13; pending alignment |
 | [Week 12 questions](../student_question_bank/week_12_avl.md) | Existing question bank, pending alignment |
 
 ## Existing AVL source contract — Week 13 reference
@@ -149,10 +152,13 @@ functions or counters exported by `lab.c`.
 
 ## Existing AVL reference build and checks
 
+The protected lab slides retain the previous folder name in their build
+command. Use the replacement command below; the slides remain unchanged.
+
 From the repository root:
 
 ```sh
-make -C module_12_bst_avl/code lab-compile core student-tests comparison
+make -C module_12_binary_search_bst/code lab-compile core student-tests comparison
 ```
 
 Each driver includes the actual lab exactly once. The build adds include

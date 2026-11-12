@@ -1,4 +1,4 @@
-# Chapter 9. Storing and Finding Data with a Hash Table
+# Chapter 9. Storing and Finding Data by Key
 
 ## Starting Question
 

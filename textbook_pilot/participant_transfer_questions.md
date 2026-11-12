@@ -127,13 +127,13 @@ A=0,B=1,C=2,D=3인 directed graph를 새로 준비했다. 간선은 A→B8,C2; C
 
 ## 12장. 문자 키의 BST 순서를 보존하는 AVL 회전
 
-기준 교재: [본문](../module_12_bst_avl/student/textbook.md)
+기준 교재: [본문](../module_12_binary_search_bst/student/textbook.md)
 
 문자 A~G의 배열 ID는 0~6이다. 회전 직전 링크는 F의 왼쪽 D·오른쪽 G, D의 왼쪽 B·오른쪽 E, B의 왼쪽 A·오른쪽 C이며 A,C,E,G는 leaf다. 저장 높이는 실제 높이와 같다. F와 D의 균형 인수를 구하라. 이어서 링크 변경 연습으로 rotate_ll(5,3,4)를 호출한다. 바뀌는 두 링크와 새 root를 쓰라. 회전 함수가 높이를 바꾸지 않으므로 호출자가 갱신할 높이의 순서·값도 쓰고 E가 계속 도달 가능한지 설명하라.
 
 ## 13장. 탐색 위치와 정렬의 준비 비용
 
-기준 교재: [본문](../module_13_search_sort_consolidation/student/textbook.md) · [한국어판](../module_13_search_sort_consolidation/student/textbook_korean.md)
+기준 교재: [본문](../module_13_avl_review/student/textbook.md) · [한국어판](../module_13_avl_review/student/textbook_korean.md)
 
 입력 레코드는 (2,A),(1,B),(2,C),(1,D) 순서로 도착했다. 괄호의 첫 값은 비교 키이고 문자는 원래 레코드를 구별하는 종이 표시다. 안정 정렬 뒤 레코드 순서를 쓰라. 키만 든 정수 배열을 현재 lab으로 정렬하고 2를 검색하면 원래 linear_search 위치와 정렬 뒤 binary_search_first 위치는 각각 얼마인가? scratch 크기도 말하라.
 

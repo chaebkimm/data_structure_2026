@@ -4,7 +4,7 @@
 
 ## Required scope for the 14-week course
 
-The supplied [Module 12 lab](../module_12_bst_avl/student/lab.c) is complete.
+The supplied [Module 12 lab](../module_12_binary_search_bst/student/lab.c) is complete.
 Students predict and trace its states, write assertion tests, and compare
 plain BST and AVL behavior in one Week 12 artifact within 180 minutes.
 There are no required implementation TODOs or AVL deletion assignment.
@@ -158,7 +158,7 @@ insertion, lookup, measurement, and validation. The retained allocated
 
 - [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
 - [Master spiral curriculum](../Data_Structures_Course_2026_Spiral_Curriculum.md)
-- [Module 12 current source](../module_12_bst_avl/student/lab.c)
-- [Module 12 vocabulary reference](../module_12_bst_avl/student/vocabulary.md)
-- [Module 12 lab and submission](../module_12_bst_avl/student/lab.md)
-- [Models with linear equivalents](../module_12_bst_avl/diagrams/bst_avl_models.md)
+- [Module 12 current source](../module_12_binary_search_bst/student/lab.c)
+- [Module 12 vocabulary reference](../module_12_binary_search_bst/student/vocabulary.md)
+- [Module 12 lab and submission](../module_12_binary_search_bst/student/lab.md)
+- [Models with linear equivalents](../module_12_binary_search_bst/diagrams/bst_avl_models.md)

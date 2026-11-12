@@ -4,7 +4,7 @@
 
 ## Required scope for the 14-week course
 
-Use [Module 13](../module_13_search_sort_consolidation/README.md) to compare
+Use [Module 13](../module_13_avl_review/README.md) to compare
 linear search with first-match binary search, then trace stable insertion
 sort and stable merge sort. Consolidate the structure and algorithm choices
 from Modules 1–12. Sorting prepares the ordered-edge idea used by
@@ -111,6 +111,6 @@ justified structure/algorithm choice.
 
 ## Sources
 
-- [Module 13 lesson and lab](../module_13_search_sort_consolidation/README.md)
-- [Lab source](../module_13_search_sort_consolidation/student/lab.c)
+- [Module 13 lesson and lab](../module_13_avl_review/README.md)
+- [Lab source](../module_13_avl_review/student/lab.c)
 - [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)

@@ -1,17 +1,17 @@
 # Chapter 13. AVL Rotations and Review
 
 **Planning summary — 2026-11-10.** Use the
-[Module 13 overview](../module_13_search_sort_consolidation/README.md) and
+[Module 13 overview](../module_13_avl_review/README.md) and
 [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-The existing [AVL textbook](../module_12_bst_avl/student/textbook.md),
-[AVL lab guide](../module_12_bst_avl/student/lab.md), and
-[AVL investigation](../module_12_bst_avl/student/investigation_worksheet.md)
+The existing [AVL textbook](../module_12_binary_search_bst/student/textbook.md),
+[AVL lab guide](../module_12_binary_search_bst/student/lab.md), and
+[AVL investigation](../module_12_binary_search_bst/student/investigation_worksheet.md)
 remain in Module 12 and await alignment to Week 13. The existing
-[Module 13 textbook](../module_13_search_sort_consolidation/student/textbook.md),
-[Korean edition](../module_13_search_sort_consolidation/student/textbook_korean.md),
-[workbook](../module_13_search_sort_consolidation/student/class_material.md),
-[lab guide](../module_13_search_sort_consolidation/student/lab.md),
-[detailed lesson plan](../module_13_search_sort_consolidation/instructor/lesson_plan.md),
+[Module 13 textbook](../module_13_avl_review/student/textbook.md),
+[Korean edition](../module_13_avl_review/student/textbook_korean.md),
+[workbook](../module_13_avl_review/student/class_material.md),
+[lab guide](../module_13_avl_review/student/lab.md),
+[detailed lesson plan](../module_13_avl_review/instructor/lesson_plan.md),
 and [Week 13 questions](../student_question_bank/week_13_search_sort_consolidation.md)
 also await alignment. Neither old complete weekly assignment is required.
 Student materials and sources are unchanged.

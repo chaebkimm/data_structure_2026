@@ -18,12 +18,12 @@ links have height `-1`; leaves have height `0`.
 From the repository root with GCC or Clang:
 
 ```sh
-make -C module_12_bst_avl/code lab-compile core student-tests comparison
+make -C module_12_binary_search_bst/code lab-compile core student-tests comparison
 ```
 
 The standalone archive uses `make -C code` from its extraction root.
 
-`make -C module_12_bst_avl/code` defaults to current-lab core and student
+`make -C module_12_binary_search_bst/code` defaults to current-lab core and student
 tests. The targets mean:
 
 | Target | Work |
@@ -39,7 +39,7 @@ The default `LAB_DIR=../student` and `TREE_ROOT=../..` are relative to
 `TREE_ROOT=..` because the dependency is bundled at its extraction root.
 `BUILD_DIR` and `CC` may also be overridden.
 
-A direct build from `module_12_bst_avl/code` is:
+A direct build from `module_12_binary_search_bst/code` is:
 
 ```sh
 cc -std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g \
@@ -53,7 +53,7 @@ both are already included.
 
 ## How do we run PowerShell builds?
 
-From `module_12_bst_avl/code`:
+From `module_12_binary_search_bst/code`:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
@@ -71,7 +71,7 @@ Sanitized executables use `build-sanitize/` separately from `build/`.
 For Make sanitizer builds, choose a separate output directory:
 
 ```sh
-make -C module_12_bst_avl/code core student-tests comparison \
+make -C module_12_binary_search_bst/code core student-tests comparison \
   CC=clang BUILD_DIR=build-sanitize \
   CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -g -fsanitize=address,undefined -fno-omit-frame-pointer'
 ```
@@ -118,10 +118,10 @@ contracts do not describe the required indexed lab.
 Existing named builds are preserved:
 
 ```sh
-make -C module_12_bst_avl/code solution-core solution-extension
-make -C module_12_bst_avl/code starter-compile
-make -C module_12_bst_avl/code autopsy
-make -C module_12_bst_avl/code autopsy-unsafe
+make -C module_12_binary_search_bst/code solution-core solution-extension
+make -C module_12_binary_search_bst/code starter-compile
+make -C module_12_binary_search_bst/code autopsy
+make -C module_12_binary_search_bst/code autopsy-unsafe
 ```
 
 `starter-*` tests intentionally fail until the optional TODOs are complete.

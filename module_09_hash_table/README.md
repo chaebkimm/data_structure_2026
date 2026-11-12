@@ -1,4 +1,4 @@
-# Module 09 — Storing and Finding Data with a Hash Table
+# Module 09 — Storing and Finding Data by Key
 
 The required Chapter 9 lesson follows [student/lab.c](student/lab.c).
 The source is self-contained: ten hash nodes, fifteen bucket heads, and two

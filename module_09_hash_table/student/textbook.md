@@ -1,273 +1,114 @@
-# Chapter 9. Storing and Finding Data with a Hash Table
+# Chapter 9. Storing and Finding Data by Key
 
-Begin with array search and direct addressing, then build a hash table that
-stores and finds keys despite collisions. Use two sum as an application
-after the table operations are understood. The required lesson follows
-[lab.c](lab.c): read the supplied functions, predict their state changes,
-and test them with a separate driver. The source is self-contained: it owns ten hash nodes and fifteen bucket heads. It does
-not import Module 07's linked-list pool.
+Each item in an array has an assigned number, so we can find data by that number. Giving those numbers meaning and using them as keys lets us easily find the data we want by its meaning.
 
-This chapter uses the supplied lab's constants, names, signed input,
-failure checks, and loop order throughout its examples and assertions.
+## Thinking logically
 
-## Thinking Logically
+### How do we find a value in memory?
 
-### How can we find a value in an array?
+A simple method is to read all the data one item at a time from the beginning and check whether each item is the value we want. If the value is present, we can find where it is; if it is absent, we can determine that it is not there.
 
-Start with an array containing `{2,5,6}` and ask where the value 5 occurs.
-Read the entries in order and compare each complete value with 5. The match
-at input position 1 supplies the answer. If we search for a value absent
-from the array, every entry must be checked before reporting a miss.
+### How can we find it more easily?
 
-This direct scan is a simple starting point. Repeated searches repeat the
-comparisons. Could a small table remember where each value was found?
+Create a table with a slot for every possible value and record where each stored value is located. Then use the value as the table’s index and check only the slot for the value you want. If the value is present, we can find where it is; if it is absent, we can determine that it is not there.
 
-### What is a direct-address table?
+### What if the range of values is wide?
 
-When stored values can serve as array indices, put each value's original
-input position at the table index equal to that value. For `{2,5,6}`, use
-seven table positions numbered 0 through 6:
+If the range of values exceeds the table’s capacity, we can perform an appropriate calculation on the value to obtain an index that fits the table. Since the index and the value are now different, we must also record the value in the table to tell whether the information belongs to the value we want.
 
-| Table index | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Stored input position | -1 | -1 | 0 | -1 | -1 | 1 | 2 |
+### What if different values have the same index?
 
-Now looking for 5 reads `table[5] == 1`. Looking for 3 reads -1, the marker
-for an absent value. The table stores input positions, while its indices
-represent the values being searched. This is **direct addressing**.
+Store values with the same index in a list in that table entry. A linked list is suitable because the list’s size is difficult to know in advance. To find a value, we only need to check the list at its index.
 
-### Why use a hash function instead of direct addressing?
+### What other solutions are there?
 
-A negative value cannot directly index the table. A very large value would
-also require a large table even if only a few values were stored. The table
-size would depend on the key range rather than the number of stored items.
+When storing a value, if the slot at its index is occupied, we can follow a predetermined rule to move to another empty slot. To find a value, start at the slot for its index and follow the same rule. If a slot is empty, we know the value is absent.
 
-A **hash function** maps each key into a fixed table-index range. Equal keys
-always select the same position. We call a selected position a **bucket**.
-Different keys can select the same bucket, so the bucket alone cannot prove
-that a requested key is present. That event is a **collision**. We will keep
-all candidates assigned to the bucket and compare their complete keys.
+### How can we find two numbers whose sum equals the target?
 
-A **hash table** combines this bucket calculation with a representation for
-storing keys and their associated data, plus operations to insert and find
-them. The calculation selects candidates; complete-key comparison decides
-whether the requested key is present.
+Let us find two numbers stored in memory whose sum equals a target value. The simplest approach is brute force: check every possibility. Adding each number to every other number checks all possible pairs. Since addition gives the same result regardless of order, we only need to add each number to those we have already seen.
 
-### How do negative keys select a valid bucket?
+### Which number should we look for at each step?
 
-`NODES_CAPACITY` is 10. `TABLE_CAPACITY = NODES_CAPACITY * 3 / 2` is 15.
-The fifteen buckets are numbered 0 through 14. C can produce a negative
-remainder for a negative dividend. `hash_func` adds `TABLE_CAPACITY` only
-when the remainder is negative.
+To reach the target when added to the current number, the number we need is the target minus the current number. Instead of adding the current number to each number we have already seen, we only need to check whether this needed value is among them.
 
-| Key | C remainder `% 15` | Bucket |
-| --- | ---: | ---: |
-| -16 | -1 | 14 |
-| -8 | -8 | 7 |
-| -4 | -4 | 11 |
-| -2 | -2 | 13 |
-| -1 | -1 | 14 |
-| 1 | 1 | 1 |
-| 2 | 2 | 2 |
-| 4 | 4 | 4 |
-| 8 | 8 | 8 |
-| 16 | 1 | 1 |
+### How can we use a table to find the number?
 
--16 and -1 collide in bucket 14; 1 and 16 collide in bucket 1. Equality of
-buckets does not imply equality of keys. A negative multiple of 15 already
-has remainder 0 and needs no adjustment.
-
-### Where do colliding keys go?
-
-Each `struct hnode` stores `key`, `data`, and `next`. A bucket head in
-`hashtable` selects a node in `hnodes`; `next` selects another node or ends
-at -1. This collision rule is **separate chaining**. The nodes live in an
-array but form linked chains through integer indices.
-
-The bucket array and node array have different capacities and roles.
-`hashtable[14]` is valid; `hnodes[14]` is not. A bucket stores a node index,
-not the key or payload itself.
-
-`initialize()` sets `hnodes_unused` to 0 and every bucket head to -1.
-Call it before a standalone insertion or lookup experiment. Global bucket
-heads initially contain zero by C static-storage rules, which is not the
-empty marker.
-`new_hnode(key,data,next)` takes the next unused slot, writes all three
-fields, and returns its index. `hnodes_unused` is the number of allocated
-slots and the next slot index while capacity remains. There is no free
-list or individual deletion. `insert(k,d)` hashes the key, allocates a
-node linked to the old head, and publishes the new head only on success.
-It returns 0 on success and -1 on exhaustion; it does not return a node index.
-
-After initialization, call `insert(12,120)`, `insert(27,270)`, and
-`insert(-3,-30)`. All three keys select bucket 12:
-
-```text
-hashtable[12] = 2
-node 2: key -3, data -30, next 1
-node 1: key 27, data 270, next 0
-node 0: key 12, data 120, next -1
-hnodes_unused = 3
-```
-
-New nodes go at the front. `find(27)` visits node 2, then node 1, compares
-`key`, and returns 1. The payload is `hnodes[1].data == 270`.
-`find(42)` visits nodes 2, 1, and 0, then returns -1. Although 42 also hashes
-to 12, no stored key is 42. `find(120)` must not match the payload 120.
-
-Inserting `(27,999)` adds node 3 rather than updating node 1. Both nodes
-remain in the chain; `find(27)` returns the newest match, node 3.
-
-### What other collision rules can we use?
-
-Open addressing stores entries in the table array itself and follows a
-probing rule when a position is occupied. Robin Hood hashing can move an
-entry aside for one that has traveled farther from its home bucket, reducing
-variation in probe distances. These are alternative collision strategies.
-The required source uses separate chains; it has no probing, Robin Hood
-moves, deletion, or resizing. The older open-addressed library under `code/`
-is optional enrichment with its own API and tests.
-
-### Which two positions reach the target?
-
-Now apply the table to a new task: find a pair of input positions. The table
-operations are already familiar; two sum gives them a useful application.
-
-Suppose we have ten numbers and want two different positions whose numbers
-add to a target. Positions matter: equal values at different positions are
-different choices. The supplied array is:
-
-```c
-int nums[NUMS_SIZE] = {-16, -8, -4, -2, -1, 1, 2, 4, 8, 16};
-int answer[2] = {-1, -1};
-```
-
-For target 0, positions 4 and 5 contain -1 and 1. Both supplied functions
-return `answer = {4, 5}`: earlier position `j` first, current position `i`
-second. `{-1, -1}` means no pair was reported.
-
-### How does checking every earlier position work?
-
-`two_sum_bf` uses brute force: enumerate candidate pairs directly. Its outer
-loop visits `i` from 0 through `NUMS_SIZE - 1`. Its inner loop visits `j`
-from `i - 1` down to 0. At `i = 0` there are no earlier positions.
-The condition `j < i` prevents reusing one position and avoids checking both
-orders of the same pair.
-
-For target 0, iterations 0 through 4 make `0+1+2+3+4 = 10` comparisons
-without success. At `i = 5`, the first comparison uses `j = 4`:
-`nums[5] + nums[4] == 0`. The function writes `{4,5}` and returns.
-A complete miss writes -1 to both result positions after the loops.
-
-### How do keys and payloads help two sum?
-
-At input position `i`, the needed earlier number is `target - nums[i]`.
-This is the **complement**. Store `nums[i]` as the node's key and `i` as
-its data. Then `find(complement)` compares the needed number with stored
-keys. On success, its returned node index selects `hnodes[node].data`,
-the earlier input position `j`.
-
-For example, the first inserted record has key -16, data 0, node index 0,
-and bucket 14. These four numbers have different meanings. A search for
--16 returns the node index 0; the payload then identifies `nums[0]`.
-
-### Why search before inserting the current position?
-
-At the beginning of iteration `i`, all table records represent positions
-less than `i`. Search for the complement before inserting the current key
-and index. A match therefore satisfies `j < i`, so the current position
-cannot pair with itself.
-
-For target 0, `two_sum_ht` follows this sequence after its automatic reset:
-
-| `i` | `nums[i]` | Complement | Search bucket | Result before insertion |
-| ---: | ---: | ---: | ---: | --- |
-| 0 | -16 | 16 | 1 | Empty; insert `(-16,0)` in bucket 14 |
-| 1 | -8 | 8 | 8 | Empty; insert `(-8,1)` in bucket 7 |
-| 2 | -4 | 4 | 4 | Empty; insert `(-4,2)` in bucket 11 |
-| 3 | -2 | 2 | 2 | Empty; insert `(-2,3)` in bucket 13 |
-| 4 | -1 | 1 | 1 | Empty; insert `(-1,4)` at the head of bucket 14 |
-| 5 | 1 | -1 | 14 | Node 4 has key -1 and data 4; return `{4,5}` |
-
-Position 5 is not inserted. Five allocated nodes remain available for
-inspection and `hnodes_unused == 5`. Bucket 14 has chain `4 → 0 → -1`.
-
-Both supplied algorithms visit outer positions in ascending order and
-prefer the most recent matching earlier position. Brute force decrements
-`j`; chain insertion prepends, so `find` encounters the newest matching
-key first. With safe arithmetic and sufficient capacity, they return the
-same first pair, even with duplicate values. Temporarily using
-`{1,1,5,0,0,0,0,0,0,0}` and target 6 gives `{1,2}` in both methods.
-Restore the original array after a custom test.
-
-### How does reset make storage available again?
-
-`initialize()` resets the allocation counter and all fifteen bucket heads.
-It does not traverse old chains or clear node fields, `nums`, or `answer`.
-Old node indices cease to identify active entries; later allocations
-reuse slots from 0 and overwrite all three fields.
-
-After ten successful insertions, `hnodes_unused == NODES_CAPACITY`.
-The next `new_hnode` returns -1 without changing state. `insert` propagates
--1 and keeps the old bucket head. A table can exhaust its ten nodes while
-many of its fifteen buckets are still empty. Reset the whole table before
-reusing the slots; resetting only the counter would leave stale heads.
-
-`two_sum_ht` begins every call with `initialize()`. A target-100 miss stores
-all ten inputs and returns `{-1,-1}`. A following target-0 call starts again
-at slot 0 and returns `{4,5}` without a manual reset. Its insertion-failure
-branch also reports `{-1,-1}`, but the normal fixed ten-input run cannot
-exhaust capacity before processing the input: it inserts at most ten nodes.
+Store the numbers we have already seen in a table. Read the numbers one at a time, look up the target minus the current number in the table, and add the current number to the table if no match is found. Checking only the corresponding table entry for each number makes the search faster.
 
 ## Calculating Efficiency
 
-### How many pairs does brute force inspect?
+### How much time does searching one item at a time take?
 
-A complete miss checks `0+1+...+9 = 45` pairs. Target 0 checks 11 pairs:
-10 before `i=5`, then one successful comparison with `j=4`.
-For generalized input length `n`, the complete pair count is
-`n(n-1)/2`, so worst-case time is `O(n^2)`. Extra space is `O(1)`.
+When the value we want is stored, we find it after reading about half of all the data on average. When it is absent, we always have to check every item. Therefore, the time needed to search grows in proportion to the number of items.
 
-### How much work does a selected chain require?
+### What does searching with a table cost?
 
-Hash calculation and head insertion each take constant work when a slot
-is available. Searching a chain of `k` nodes can require `k` key comparisons;
-including empty-chain overhead its cost is `O(1+k)`.
-The target-0 hash trace compares just one key, at iteration 5. The other
-five searches encounter empty buckets. This is an observed count for this
-input, not a guarantee for all inputs.
+A table with a slot for every possible value lets us check just the slot for that value, so lookup takes a fixed amount of time regardless of the number of stored items. However, the wider the range of values, the more memory is needed, regardless of how many items are actually stored.
 
-For `n` entries and `b` buckets, adequate distribution gives expected lookup
-cost `O(1+n/b)`. A generalized two-sum design has expected `O(n)` total work
-when `b=Θ(n)`, distribution keeps expected chain lengths bounded, and node
-capacity is sufficient. Long collision chains can produce `O(n^2)` total
-search work. Holding fifteen buckets fixed while increasing input length
-does not preserve an unconditional expected linear bound.
+### What happens when many values have the same index?
 
-### What does initialization cost?
+Calculating an index from each value allows a table with smaller capacity, but different values can receive the same index. If the table has enough capacity and indices are distributed evenly, few values share an index, so lookup still takes nearly a fixed amount of time regardless of the number of stored items. As more values share an index, more data must be checked. In the worst case, when all values receive the same index, the time cost is the same as reading the data one item at a time.
 
-`initialize()` visits all bucket heads, but no node chains: `Θ(b)` time
-for `b` buckets, regardless of the number of old nodes. Every hash two-sum
-call includes this reset. The fixed source reserves fifteen bucket integers
-and ten records with three integer fields. A generalized representation
-uses `O(b+n)` table space and no dynamic allocation in this design.
+### What does finding two numbers whose sum equals the target cost?
+
+Brute force adds each number to all numbers already seen, so the time grows in proportion to the square of the number of inputs. It needs almost no additional memory. With a table, if indices are distributed evenly, we check only the table entry for each number’s partner, so the time grows in proportion to the number of inputs. This requires memory for a table with capacity proportional to the number of inputs.
 
 ## Glossary
 
-| Term | Meaning in this lesson |
-| --- | --- |
-| Direct addressing | Use the value itself as a table index when its range permits |
-| Key | Stored number used for hashing and equality |
-| Payload | Associated `data`; an input position in two sum |
-| Complement | Needed key `target - nums[i]` |
-| Bucket | One chain-head position, numbered 0–14 |
-| Node index | Position 0–9 in `hnodes` |
-| Collision | Different keys select the same bucket |
-| Separate chaining | Keep colliding records in a linked chain |
-| Allocation counter | `hnodes_unused`; counts allocated slots |
-| Exhaustion | All ten node slots have been allocated since reset |
-| Expected cost | Work under stated distribution and load assumptions |
-| Worst-case cost | Greatest work among the allowed inputs |
+### Key
+
+A value used to find data.
+
+### Direct-address table
+
+A table with a slot for every possible value, using each value itself as its index.
+
+### Hashing
+
+Applying a calculation to any given data to obtain a result within a fixed range.
+
+### Hash function
+
+A function that calculates a result within a fixed range from data.
+
+### Hash value
+
+The result of applying a hash function to data.
+
+### Hash table
+
+A table that uses hash values as indices to store and find data.
+
+### Bucket
+
+A cell in a hash table, also called a slot.
+
+### Collision
+
+Different values receiving the same index.
+
+### Chaining
+
+A way to resolve collisions by keeping the values in a linked list stored in the table.
+
+### Open addressing
+
+A way to resolve collisions by following a predetermined rule to move to another empty slot. Checking slots along the way is called probing.
+
+### Brute force
+
+Checking every possible case.
+
+## Invariant
+
+### What rules must a hash function used in a hash table follow?
+
+A hash function used in a hash table returns an index that fits that table. It also always returns the same result for the same data.
+
+### What do these rules guarantee?
+
+A hash value is an index that fits the table, so its corresponding slot always exists. The same data always has the same hash value, so stored data can be found again using that hash value.
 
 ## Coding Plan
 

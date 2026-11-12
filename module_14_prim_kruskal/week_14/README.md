@@ -1,7 +1,7 @@
 # Week 14 — Union-Find and Kruskal
 
 This unit follows AVL rotations and course review in
-[Module 13](../../module_13_search_sort_consolidation/README.md) in the
+[Module 13](../../module_13_avl_review/README.md) in the
 [14-week course](../../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 DSU is new learning here. Linked nodes were introduced through the
 [Week 7 linked-list unit](../../module_07_linked_list/README.md);

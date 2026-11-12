@@ -21,11 +21,11 @@ goals; the student editions have not yet been rewritten.
 | 6 | [Graph DFS, Edge Lists, and Biconnected Components](module_06_graph_dfs/student/textbook.md) · [Korean](module_06_graph_dfs/student/textbook_korean.md) |
 | 7 | [Linked Lists — Week 7](module_07_linked_list/student/textbook.md) · [Korean](module_07_linked_list/student/textbook_korean.md) · [Class workbook](module_07_linked_list/student/class_material.md) |
 | 8 | [Processing data in stored order — Week 8](module_08_graph_bfs/student/textbook.md) · [Korean](module_08_graph_bfs/student/textbook_korean.md) · [Class workbook](module_08_graph_bfs/student/class_material.md) |
-| 9 | [Storing and Finding Data with a Hash Table](module_09_hash_table/student/textbook.md) · [Korean](module_09_hash_table/student/textbook_korean.md) |
+| 9 | [Storing and Finding Data by Key](module_09_hash_table/student/textbook.md) · [Korean](module_09_hash_table/student/textbook_korean.md) |
 | 10 | [Integer Heaps and Shared On-Time](module_10_binary_heap/student/textbook.md) |
 | 11 | [Minimum-Cost Routes with an Indexed Heap](module_11_graph_dijkstra/student/textbook.md) |
-| 12 | Binary Search and BSTs — [existing BST/AVL textbook, pending alignment](module_12_bst_avl/student/textbook.md) |
-| 13 | AVL Rotations and Review — [existing search/sort textbook, pending alignment](module_13_search_sort_consolidation/student/textbook.md) · [Korean, pending alignment](module_13_search_sort_consolidation/student/textbook_korean.md) |
+| 12 | Binary Search and BSTs — [existing BST/AVL textbook, pending alignment](module_12_binary_search_bst/student/textbook.md) |
+| 13 | AVL Rotations and Review — [existing search/sort textbook, pending alignment](module_13_avl_review/student/textbook.md) · [Korean, pending alignment](module_13_avl_review/student/textbook_korean.md) |
 | 14 | [Union-Find, Prim, and Kruskal — Week 14](module_14_prim_kruskal/week_14/README.md) |
 
 Teaching chapters and packages are numbered consecutively from 1 to 14, with introductory Chapter 0 before them.

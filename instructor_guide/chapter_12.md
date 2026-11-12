@@ -1,14 +1,14 @@
 # Chapter 12. Binary Search and BSTs
 
 **Planning summary — 2026-11-10.** Use the
-[Module 12 overview](../module_12_bst_avl/README.md) and
+[Module 12 overview](../module_12_binary_search_bst/README.md) and
 [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-The existing [BST/AVL textbook](../module_12_bst_avl/student/textbook.md),
-[lab guide](../module_12_bst_avl/student/lab.md),
-[detailed lesson plan](../module_12_bst_avl/instructor/lesson_plan.md), and
+The existing [BST/AVL textbook](../module_12_binary_search_bst/student/textbook.md),
+[lab guide](../module_12_binary_search_bst/student/lab.md),
+[detailed lesson plan](../module_12_binary_search_bst/instructor/lesson_plan.md), and
 [Week 12 questions](../student_question_bank/week_12_avl.md) await alignment.
-The existing [search textbook](../module_13_search_sort_consolidation/student/textbook.md)
-and [Korean edition](../module_13_search_sort_consolidation/student/textbook_korean.md)
+The existing [search textbook](../module_13_avl_review/student/textbook.md)
+and [Korean edition](../module_13_avl_review/student/textbook_korean.md)
 also await alignment to their Week 12 role. Their complete old assignments
 are not required by this summary. Student materials and sources are unchanged.
 

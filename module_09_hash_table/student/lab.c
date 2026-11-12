@@ -7,13 +7,13 @@ struct hnode {
 	int next;
 };
 struct hnode hnodes[NODES_CAPACITY];
-int hnodes_unused = 0;
+int size = 0;
 
 int new_hnode(int _key, int _data, int _next) {
-	if (hnodes_unused >= NODES_CAPACITY) {
+	if (size >= NODES_CAPACITY) {
 		return -1;
 	}
-	int i = hnodes_unused++;
+	int i = size++;
 	hnodes[i].key = _key;
 	hnodes[i].data = _data;
 	hnodes[i].next = _next;
@@ -31,7 +31,7 @@ int hash_func(int key) {
 int hashtable[TABLE_CAPACITY];
 
 void initialize(void) {
-	hnodes_unused = 0;
+	size = 0;
 	for (int i = 0; i < TABLE_CAPACITY; i++) {
 		hashtable[i] = -1;
 	}
@@ -60,7 +60,7 @@ int find(int k) {
 	return -1;
 }
 
-enum { NUMS_SIZE = NODES_CAPACITY };
+enum { NUMS_SIZE = 10 };
 
 int nums[NUMS_SIZE] = {-16, -8, -4, -2, -1, 1, 2, 4, 8, 16};
 int answer[2] = {-1, -1};

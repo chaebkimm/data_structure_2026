@@ -40,7 +40,7 @@ before revealing the names and source.
 Build the required targets before class:
 
 ```sh
-make -C module_12_bst_avl/code lab-compile core student-tests comparison
+make -C module_12_binary_search_bst/code lab-compile core student-tests comparison
 ```
 
 Use the [code guide](../code/README.md) for compiler and PowerShell options.

@@ -9,8 +9,9 @@ This document defines an operational **14-week curriculum supported by 14 teachi
 **Modules 12–13 planning update — 2026-11-10:** Module 12 covers Binary
 Search and BSTs; Module 13 covers AVL Rotations and Review. Student lessons,
 worksheets, lab guides, detailed lesson plans, tests, releases, and question
-banks for these weeks await alignment. This update changes curriculum plans
-and descriptions only; existing directory names and source files stay in place.
+banks for these weeks await alignment. The module directories are now
+`module_12_binary_search_bst` and `module_13_avl_review`; source files keep
+their existing module grouping. This rename does not rewrite the lessons.
 
 Companion resource: [weekly vocabulary and anticipated student question bank](Data_Structures_Course_2026_Student_Question_Bank.md).
 Its Week 12–13 resources await alignment with the revised sequence.
@@ -1190,7 +1191,7 @@ material. They do not create another required implementation or submission.
 
 ## Module 12 — Binary Search and BSTs
 
-Planning references: [Module 12 overview](module_12_bst_avl/README.md) and
+Planning references: [Module 12 overview](module_12_binary_search_bst/README.md) and
 [Chapter 12 summary](instructor_guide/chapter_12.md). Existing teaching
 materials linked from the overview await alignment with this sequence.
 
@@ -1252,7 +1253,7 @@ Heap-order contrast, and Module 9 exact lookup.
 
 ## Module 13 — AVL Rotations and Review
 
-Planning references: [Module 13 overview](module_13_search_sort_consolidation/README.md)
+Planning references: [Module 13 overview](module_13_avl_review/README.md)
 and [Chapter 13 summary](instructor_guide/chapter_13.md). Existing AVL
 references remain in Module 12; existing Module 13 search/sort materials
 await alignment and are not the revised weekly assignment.

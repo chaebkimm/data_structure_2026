@@ -392,7 +392,7 @@ l = nodes[i].left = _add(l, new_node);
 
 ```c
 #include <assert.h>
-#include "module_12_bst_avl/student/lab.c"
+#include "module_12_binary_search_bst/student/lab.c"
 
 int main(void) {
     alphabet_init();

@@ -129,7 +129,7 @@ Actual test source path: ____________________________________________
 From the repository root, preserve commands and their complete results:
 
 ```sh
-make -C module_12_bst_avl/code lab-compile core student-tests comparison
+make -C module_12_binary_search_bst/code lab-compile core student-tests comparison
 ```
 
 Compiler and version: _______________________________________________

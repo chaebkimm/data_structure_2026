@@ -2,6 +2,21 @@
 
 Updated: 2026-11-10.
 
+## Module 12–13 folders renamed — 2026-11-10
+
+The current folders are `module_12_binary_search_bst/` and
+`module_13_avl_review/`. Both complete directories were moved, and active
+documentation links, displayed include paths, and build commands now use
+these names. Historical entries below retain their original paths.
+
+Source files keep their previous module grouping: AVL source remains in
+Module 12, and search/sort source remains in Module 13. Teaching-content
+alignment is still pending. The approved time budgets and assessment scope
+are unchanged. Protected labs and presentations moved byte-for-byte; the
+Module 12 README supplies the replacement build command for the protected
+lab slides. Existing ZIP filenames, archive contents, release-script defaults,
+and website files remain unchanged.
+
 ## Modules 12–13 course plan revised — 2026-11-10
 
 Module 12 is **Binary Search and BSTs**; Module 13 is **AVL Rotations and
@@ -2197,3 +2212,410 @@ remain available. Existing topic anchors are preserved; alternatives now uses
 a standalone heading. All 180 tests, TypeScript, production build, and live
 EN/KO wording checks pass. Protected source hashes are unchanged. The same
 publication patch is applied to the primary website checkout.
+
+
+## 2026-11-10 — User-authored Chapter 9 opening
+
+Published Sites version 276, source `1815a10972cd2f96e90a8fb2b9e59c65262d759d`.
+Applied the user's exact Korean title 키로 데이터 저장하고 찾기 and opening
+paragraph to the website, metadata, navigation and textbook download. English
+is Storing and Finding Data by Key with matching introductory meaning. Current
+course index/title references were synchronized; the extended English course
+introduction was updated without changing its body. The user's entire Korean
+course file was preserved, including the separately edited first topic heading
+메모리 공간에서 원하는 값을 어떻게 찾을까?; that unrequested heading change
+was not copied into the web schema. All 9 targeted content/integration tests,
+TypeScript, production build and live title/intro checks passed. Lab and slide
+sources were unchanged. Publication patch also applied to primary checkout.
+
+
+## 2026-11-10 — Chapter 9 first subsection wording
+
+Published version 277, source `703df824840579fb72d76303392f55bafb6dcbb8`.
+Applied the user's exact first heading 메모리 공간에서 원하는 값을 어떻게 찾을까?
+and paragraph beginning 단순한 방법은 모든 데이터를 처음부터 하나씩 읽으면서
+in Korean, with corresponding English How do we find a value in memory?.
+Title/intro and all later topics remain unchanged. Updated root course files,
+web manuscripts/schema label, individual downloads and ZIP. Existing array-search
+anchor remains stable. Nine targeted tests, TypeScript, production build and
+live bilingual text checks passed; primary website checkout is synchronized.
+
+
+## 2026-11-10 — Chapter 9 lookup-table motivation
+
+Published version 278, source `eee2bfecd2fd10b691a1fd411517e50c568483bc`.
+Added the user's exact 더 쉽게 찾는 방법은 무엇일까? heading and paragraph
+between memory lookup and direct addressing, with matching English How can
+we find it more easily?. All earlier/later text is preserved. New stable ID
+lookup-table brings both manuscripts to 50 topics. Updated course copies,
+web schema/labels, downloads and ZIP. Nine targeted tests, TypeScript,
+production build and live bilingual text/order checks passed. Publication
+patch applied to the primary website checkout; protected sources unchanged.
+
+
+## 2026-11-10 — Chapter 9 wider value ranges
+
+Published version 279, source `8005bd543033a1d2514151ed7f471e3730f7cf55`.
+Replaced the lookup-table motivation with the user's exact possible-values
+wording and inserted 값의 범위가 넓을 때는 어떻게 할까? / What if the range
+of values is wide? immediately afterward. Existing material follows intact.
+New ID wide-key-range gives 51 matching bilingual topics. Course copies,
+web manuscripts/schema/labels, downloads and ZIP are updated. Nine targeted
+tests, TypeScript, production build and live text/order checks passed. Same
+patch applied to primary website checkout; protected sources unchanged.
+
+
+## 2026-11-10 — Chapter 9 same-index values and author-edited structure
+
+Published version 280, source `838b8e98bc64ac85e6514e516f4e6a9238a3ae3e`.
+Applied the user's exact 서로 다른 값의 번호가 같을 때는 어떻게 할까? and
+list/linked-list explanation. During work the author updated the Korean course
+file directly, deleting four superseded formal introduction topics. Preserved
+that entire file byte-for-byte and used its current structure for the web copy
+(trailing spaces normalized only on web); mirrored the removals in English.
+There are now 48 topics, 11 in Thinking logically. Existing direct-addressing,
+hashing, signed-hashing and collision-chains anchors remain one-hop aliases.
+Hash visual is attached to wide-key-range; chain visual to same-index-values;
+capacity/two-sum remain intact. Downloads/ZIP and primary checkout synchronized.
+All 181 tests, TypeScript, production build, live bilingual order/text, all four
+visuals and all four alias presence checks passed. Lab/slide sources unchanged.
+
+
+## 2026-11-10 — Chapter 9 introductory linear-search visual
+
+Published Sites version 281, source `95dbe65b5606e76eb3d59330859f764fa3ca3fc1`, through the existing public project. Deployment `appgdep_6af3d71e108081918c67111c8f167ab0` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+- Added the Korean/English “값을 하나씩 확인하며 찾기” / “Search one value at a time” visual under `thinking-logically-array-search`, using the current lab array without source changes.
+- Pure linear-search frames start at zero checks and complete one equality comparison per step; successful/final unsuccessful comparisons directly produce the terminal result. First match wins; empty input and signed 32-bit boundaries are supported by the model.
+- Added custom integer targets and −16/4/3 presets, previous/next/play/pause/restart and slider controls, visible index/value/current/visited/found distinctions, comparison counts, explicit comparison expressions and final results. Invalid input keeps the accepted trace.
+- Reserved all wrapped status/result/expression/player sizes from the first frame with inert, accessibility-hidden alternatives. Browser checks confirmed constant panel height and unchanged document position of the following topic across ready/search/completion/error/restart and integer boundaries: English 893px desktop / 1359px mobile; Korean 869px desktop / 1293px mobile at the tested 1280px and 375px viewports. No internal scrolling; ten desktop columns and five mobile columns. Live Korean search confirmed index 7 after eight comparisons with height and following content position unchanged.
+- Native keyboard Enter and range End, Previous, same-target restart, validation messages, playback completion and both language layouts verified. Browser console had no errors. Existing reduced-motion player handling is reused (media-change stops playback; manual reduced-motion playback uses the existing slower cadence); the browser reported the normal-motion preference during checks.
+- All 184 Node tests passed, including the C oracle; TypeScript and production build passed. All 967 recorded protected source files retained their exact hashes. Synced only the five verified changed files into the dirty website checkout, preserving unrelated work. No manuscript/download changes were needed for this web-only interaction.
+- Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-linear-search-live.png`. Publication archive: `chapter-nine-linear-search-site.tar` in the same output directory.
+
+
+## 2026-11-10 — Simplified Chapter 9 memory-search visual
+
+Published Sites version 282 from source `1b7d7f30d5e4cd93127a8006c8b246bbeb980868`. Public deployment `appgdep_6af3dd1938448191a17f2fcab5c13110` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Replaced the introductory numeric demonstration with six anonymous boxes, native Present/Absent scenario radios, one short localized status, and Check next/Restart controls. There are no visible values, indices, statistics, expressions, text inputs, slider, or playback. Present stops at the fourth box; Absent checks all six. Checked misses use × and a match uses ✓, with the latest checked box outlined. Scenario changes and Restart clear all marks. The pure memorySearchFrames model contains only phase and checked index; the obsolete numeric introductory model/tests were replaced. Other Chapter 9 visuals/models and manuscripts/downloads remain unchanged.
+
+All 184 Node tests, TypeScript checks, production build, and diff whitespace checks passed. Browser-verified English and Korean, native keyboard Enter/Space/radio Arrow keys, both scenarios, completion disabling, restart and scenario resets. Six desktop columns / three mobile columns are correct. Panel height and following-topic document position stayed identical through every state at 1280px and 375px widths: desktop 401px in both languages, mobile English 501px / Korean 477px. Hidden sizing alternatives are inert and aria-hidden; no internal scrolling, numeric text or numeric inputs remain in this visual. Browser console had no errors. Live Korean search reached the fourth box with the following content position unchanged. All 967 recorded protected source hashes were preserved.
+
+Only three verified changed files were synced back into the dirty website checkout; unrelated work was preserved. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-simple-search-live.png`. Matching archive: `chapter-nine-simple-search-site.tar` in that output directory.
+
+
+## 2026-11-10 — Chapter 9 symbolic direct-address visual
+
+Published Sites version 283 from source `e82cd47abc05c65655944a5366dda98c04c31746`. Existing public deployment `appgdep_6af3e731bb6c819194ad0d6db55b64f7` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “표에 기록된 위치로 바로 찾기” / “Find the recorded location” under the existing `thinking-logically-lookup-table` topic, preserving its anchors and feedback/tutor scope. Four permanent symbolic key slots (○ △ □ ☆) act as accessible pressed-state buttons. The ready-built model maps circle to memory0, triangle3, square5, and star to null. The six-cell memory fixture has visibly unused slots; there are no visible numeric indices, values, counts, inputs or extra controls. Selecting a stored key highlights its table slot and memory destination with one decorative connector. The star retains its table slot and shows exactly “No stored location” / “저장된 위치가 없다”, with no connector or memory highlight. A caption identifies the complete example key universe.
+
+Added the pure directAddressLookup model with frozen readonly key/memory fixtures. All 187 Node tests (including 14 model tests and the C oracle), TypeScript, production build and diff whitespace checks passed. Browser checked all four states in Korean and English at 1280px, 375px and 320px widths; native Enter/Space selection, state announcements and labels, correct four/six unwrapped columns and no internal scrolling/input fields. Connector horizontal endpoint error stayed below0.84px, with a1px source gap and2px destination gap; connector band remains48px even for star. Panel height and following-topic document position stayed identical across all selections at each width/language: both desktop489px; English mobile513px at375/561px at320; Korean mobile513px at375/537px at320. Sizing status variants are inert and aria-hidden. Browser console had no errors. Live Korean present/absent switching also preserved height and following content.
+
+All 967 recorded protected source files retained their exact hashes. Only the five verified changed files were synced into the dirty website checkout; unrelated work, manuscripts and downloads were preserved. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-direct-address-live.png`. Matching publication archive: `chapter-nine-direct-address-site.tar` in that directory.
+
+
+## 2026-11-10 — Chapter 9 symbolic hashing and relocated signed hashing
+
+Published Sites version 284 from source `d4a59e7e62378851bad54d6a6c339d238aec0ed9`. Existing public deployment `appgdep_6af40267a2888191b7f437ffbf6b1aeb` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+The `wide-key-range` introductory hash visual now uses four familiar symbols and three illustrative slots: circle/star→0, triangle→1, square→2. The fixed table retains circle/triangle/square. Selection updates the calculation block, one connector, selected slot and localized match/mismatch status only. Star shows exactly “Same slot, different stored value” / “같은 칸이지만 저장된 값은 다르다”; it never overwrites circle or claims absence. There is no input, stepping, playback, extra memory diagram or collision-resolution mechanism in this conceptual lesson. Added frozen fixtures and a separate pure symbolicHashLookup model.
+
+The existing numeric SignedHashLesson moved intact to `new-c-syntax-explained-signed-remainder` with visual mode `signed-hash`. Source parity was verified against the previous commit after normalizing only the visual data-marker. Historical anchor `thinking-logically-signed-hashing` now resolves within that C syntax topic in both languages; general hashing anchors still resolve to `wide-key-range`. Historical labels/analytics and all other models remain unchanged.
+
+All 190 Node tests, including 17 model tests and the fifteen-bucket C oracle, TypeScript, production build and diff whitespace checks passed. Browser-verified all symbolic mappings, fixed stored values and exact mismatch text in both languages at 1280/375/320px, native Enter/Space selection, one connector, no inputs/internal scrolling, and fixed following-topic document positions. Symbolic panel heights remained constant across all four states: desktop543px both languages, mobile375px567px both, mobile320px English627px/Korean567px. Connector horizontal error stayed below0.67px; its band remains48px, with0px source gap and2px destination gap.
+
+The relocated numeric demo was browser-checked at desktop/mobile widths in both languages: fifteen positions; negative keys, zero, positive collisions, signed boundaries and negative multiples; rejected blank/fractional/out-of-range input preserved the accepted calculation. Its height and following content remained fixed, including errors (English320px969px/desktop649px; Korean320px917px/desktop649px). Historical anchors landed at approximately96px below the viewport top in both languages. Browser console had no errors. Live Korean numeric placement and symbolic star/circle mismatch were verified.
+
+All 967 recorded protected source hashes were preserved. Only six verified changed files were synced into the dirty website checkout; unrelated work, manuscripts and downloads remain intact. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-symbolic-hash-live.png`. Matching archive: `chapter-nine-symbolic-hash-site.tar` in that output directory.
+
+
+## 2026-11-10 — Chapter 9 symbolic separate chaining
+
+Published Sites version 285 from source `ce9f7a5e975d4bd61ae30273d3ad8c4c566f381b`. Existing public deployment `appgdep_6af4097aba208191a3376378cad7c316` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Replaced the numeric insertion/find UI under `thinking-logically-same-index-values` with “연결된 리스트에서 값 찾기” / “Search the linked list.” The three permanent chains are0→star→circle→End,1→triangle→End,2→square→End. Caption explains star is now stored too and circle is retained. Four shape buttons choose a search, resetting even when the same key is selected. Only Check next/Restart advance/reset progress. Every click checks one node; circle checks star× then circle✓, other keys stop at their first node. Stored glyphs stay visible, visited/found badges occupy reserved space, other chains remain untouched, and Next disables on a match. No missing-value fixture, numeric inputs, payloads or allocation controls appear in this introductory visual.
+
+Added deeply frozen SYMBOLIC_CHAINS and pure symbolicChainFrames with a ready frame then one comparison per frame. Removed the numeric insertion/find branch completely, retaining its underlying models/C tests. Refactored the surviving capacity branch to CapacityLesson while preserving its initial five records, exact fillCapacity trace, initialize/reuse controls, board/readout helpers and all signed hashing/two-sum functions.
+
+All 193 Node tests, including20 model tests and the C oracle, TypeScript, production build and diff whitespace checks passed. Browser-verified all four targets in Korean/English at1280/375/320px, same-key reset, restart, native Enter/Space, completion disabling, permanent glyphs, no numeric input, no internal scrolling or row overflow. Each width/language kept exactly one node-layout signature through every state; panel heights stayed651px desktop and699px at both mobile widths, with following-topic positions unchanged. Hidden status-sizing alternatives are inert and aria-hidden. Browser console had no errors. Live Korean ready→star mismatch→circle match preserved all glyphs and layout.
+
+Capacity regression verified in English desktop and Korean320px: initial unused5/head0=4; filling ten yields unused10/head0=9 and eleventh insertion returns−1 with heads/counter/node fields identical to its preceding capacity-check state. initialize leaves old node fields unchanged while clearing all heads/counter. insert(7,70) reuses node0, sets bucket7=0 and unused1. Heights/following content were unchanged across these operations (English desktop1228px; Korean mobile1750px).
+
+All 967 protected source hashes were preserved. Only three verified changed files were synced into the dirty website checkout; unrelated work, manuscripts/downloads, anchors and analytics labels remain intact. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-symbolic-chain-live.png`. Matching archive: `chapter-nine-symbolic-chain-site.tar` in that output directory.
+
+
+## 2026-11-10 — Chapter 9 alternative-solutions opening text
+
+Published Sites version286 from source `0a4cb29bd7be17a9259997dc1f9b98485b90ce6d`. Existing public deployment `appgdep_6af40c1e32f48191ac226c1a77dedd8f` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied the user's exact Korean “다른 해결책은 무엇이 있을까?” heading and three-sentence probing explanation immediately after same-index-values. Replaced the superseded alternatives discussion, retained semanticID/anchor `thinking-logically-alternatives`, and updated the matching English heading “What other solutions are there?” and translation. Alternatives is now the fifth thinking topic, before key-and-data and allocation-and-reset. Updated the bilingual schema, existing heading label, web manuscript downloads and deterministic24-fileZIP. No duplicate old alternatives subsection remains.
+
+The course agent changed only the corresponding target block and position in the two root course manuscripts, preserving all other bytes, Korean user trailing spaces, all C blocks and the entire later top-level-section tail. The website still has48 matching bilingual topics and all7 existing interactive visuals. Renderer/model code is unchanged. Historical subsection keys/labels and analytics records were retained; only the current alternatives heading wording changed.
+
+All193 Node tests (including ZIP extraction/C build and annotated executable-token parity), TypeScript, production build and isolated diff whitespace checks passed. Independent review confirmed exact Korean wording, matching English probing explanation, correct order/schema/labels, download/ZIP copies and unchanged executable C tokens. Browser verified both published languages and updated tutor/feedback heading labels. Live HTTP checks confirmed48 topics/7 visuals and byte-identical downloadable EN/KO manuscripts andZIP.
+
+All967 recorded protected source hashes were preserved. Only8 verified publication files were synced into the dirty website checkout; all unrelated labels/work were preserved. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-alternative-solutions-live.png`. Matching archive: `chapter-nine-alternative-solutions-site.tar` in that output directory.
+
+
+## 2026-11-11 — Guided open-addressing visual
+
+Published Sites version 287 from source `ec55f60d01c2e890483b3dd95546dea17e3568bf`. Existing public deployment `appgdep_6af434b8c1788191a8f787de5c7cce68` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “표 안에서 저장하고 찾기” / “Store and search in the table” under the existing alternatives topic. The fixed four-slot story searches for absent star, stores star in the first empty slot, then searches again from slot 0. It has exactly 15 deeply frozen model frames: three ready states and twelve slot checks. Frames 4→5 and 9→10 use explicit Start storing/Search again actions that enter a ready state without checking a slot. Frame 9 alone changes slot 3 from empty to star; circle/triangle/square remain unchanged. Final lookup reaches star at slot 3 and disables Check next. Restart removes star and resets the full story. There are only two visible controls, with no selectors, inputs, counters, playback, wraparound, deletion or resizing.
+
+All 196 Node tests, including 23 model tests and the existing C oracle, passed. Final TypeScript, production build and diff whitespace checks passed. Independent review confirmed transition semantics, immutable snapshots, per-probe announcements and sizing coverage; all pre-existing UI function bodies remain byte-identical. A narrow English button-sizing issue was corrected so visible controls fill the maximum reserved region while hidden alternatives retain intrinsic sizing.
+
+Browser-verified every frame in Korean and English at 1280/375/320px, exact probe order, stored-table retention, fresh marks/indices on stage transitions, changing per-slot polite announcements, native Enter/Space, final disabling and complete restart. Each width/language retained one slot-layout signature, one final button-layout signature, and an unchanged following-topic document position across all frames. Heights: desktop 455px in both languages; English 375px 503px / 320px 517px; Korean 375px and 320px 503px. Hidden sizing variants are inert and aria-hidden. There are no inputs/internal scrollbars. Browser console had no errors. The entire published Korean story was replayed and verified through final match, including the two explicit ready-state transitions.
+
+All 967 recorded protected source hashes were preserved. Existing lab models, source files, manuscripts, downloads, anchors and labels are unchanged. The website retains 48 bilingual topics and now has eight distinct visual attachments. Only five verified files were synced into the dirty website checkout; unrelated work was preserved. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-open-addressing-live.png`. Matching archive: `chapter-nine-open-addressing-site.tar` in that directory.
+
+
+## 2026-11-11 — Chapter 9 two-sum introduction and authored outline
+
+Published Sites version 288 from source `b54f02389104d120170275cd098bcf5a852f173d`. Existing public deployment `appgdep_6af43fdc8bf48191808e73673e64a287` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied the user's exact Korean heading “합계가 목표값인 두 숫자를 어떻게 찾을까?” and four-sentence brute-force introduction directly after alternatives, retaining semantic ID `two-positions`. Updated its English translation and current bilingual heading label. Followed the author-owned Korean outline, which had already removed the two technical introductory key/data and allocation/reset topics. Both web editions now have 46 matching topics, including nine Thinking topics. Kept all eight visual modes by moving capacity/reset to `c-code-table-initialization`. Retired key/data and allocation anchors now resolve to node-storage and table-initialization; historical labels remain. Web manuscript downloads and deterministic 24-file ZIP match the rendered text.
+
+All 196 Node tests, TypeScript, production build and diff whitespace checks passed. Independent review confirmed bilingual ordering, author-text parity (apart from trailing-whitespace normalization in web copies), aliases, all eight literal C blocks and actual-lab token parity, downloads and ZIP. Browser verified published EN/KO wording, mobile width without page overflow, capacity placement and historical anchor landing. All three live manuscript/ZIP downloads matched local build bytes. Current public audience retained.
+
+All 967 recorded lab/presentation source hashes were preserved. Root Korean manuscript was never written by this task. During publication the author independently revised the following complement subsection to “각 숫자마다 어떤 숫자를 찾으면 될까?”; that new local edit remains intact and is not part of version 288. Its observed hash was `33937dd2166b22ba17fe38e8e8e6a1492b5454a39236a8aaf8e30e92d3211804`. The root English manuscript received only the requested introduction translation. Nine website publication files were synced using a checked binary patch; unrelated dirty work and all other primary analytics-label values were preserved.
+
+Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-pair-introduction.png`. Matching archive: `chapter-nine-pair-introduction-site.tar` in that directory.
+
+
+## 2026-11-11 — Chapter 9 complement and table application prose
+
+Published Sites version 289 from source `1c633099948804e762454f7695bd2324a7bea2c6`. Existing public deployment `appgdep_6af444a80d408191ad87f30dcec8d2ee` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Replaced the complement heading/body with the author's “각 숫자마다 어떤 숫자를 찾으면 될까?” wording and added “숫자를 찾을 때 표를 어떻게 적용할까?” immediately afterward. The complement semantic ID remains unchanged; the new topic is `thinking-logically-table-application`. Added matching English translations and bilingual analytics/feedback labels, preserving every unrelated historical label and all existing anchors. Both web editions now have 47 topics / ten Thinking topics. All eight visual attachments and renderer/model files are unchanged. Updated public manuscripts and deterministic 24-file ZIP. Root English has the two requested translated conceptual introductions while retaining its existing technical paragraphs and examples; root Korean was already authored and was never written by this task.
+
+All 196 Node tests, TypeScript, production build and diff whitespace checks passed. Independent review confirmed exact Korean parity (web copies trim trailing whitespace), bilingual order/schema/labels, all eight displayed C blocks' executable-token parity, unchanged aliases/visuals and all ZIP entries. Browser verified both published languages and matching tutor/feedback context for both topics, with 47 headings/eight visuals. Live manuscript/ZIP downloads match local publication bytes. Existing public audience retained.
+
+All 967 recorded lab/presentation source hashes and the author Korean hash `50e4f04ca329eb59747fa5619efcf2ce2995cf76c53659dd74323f353607070e` remained unchanged. Eight verified website files were synced to the dirty primary checkout via a checked binary patch; unrelated work and other labels were preserved. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-table-application.png`. Matching archive: `chapter-nine-table-application-site.tar` in that directory.
+
+
+## 2026-11-11 — Simple brute-force pair visual
+
+Published Sites version 290 from source `0316bb67a149c3341993760758c36f92330d397d`. Existing public deployment `appgdep_6af44c07824c8191ba800c2f2c6cced3` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “숫자 쌍을 하나씩 확인하기” / “Try one pair at a time” under the existing two-positions topic. The explicitly small teaching fixture is [1,2,3,4], target6. Frozen model constants, readonly BruteForcePairFrame and pure bruteForcePairFrames generate exactly six deeply frozen frames: ready →2+1=3 →3+2=5 →3+1=4 →4+3=7 →4+2=6 found. One Check next pair click performs one comparison. Current/earlier numbers retain their values and receive localized role labels with solid/dashed outlines; no accumulated miss marks, numeric indices, counters, input, connectors or playback appear. Only Next pair/Restart controls are present; completion disables Next, and Restart restores the empty ready state. Each role label and every feedback variant reserves its actual wrapped height with inert, aria-hidden sizing copies. A dedicated matching Card header avoids adding an empty second live region.
+
+All 199 Node tests, including26 model tests and the existing real-C oracle, TypeScript, production build and diff whitespace checks passed. Independent AST review confirmed all20 pre-existing model functions and30 visual/helper bodies byte-identical; only dispatcher gained its required branch. All eight old visual attachments remain; total now nine, with47 bilingual topics. No manuscript, download, label, anchor or protected source changed.
+
+Browser-verified all six states in both languages at1280/375/320px viewport widths: exact pair order, first match stop, disabled completion button, restart, Enter/Space and visible focus, exactly two controls/one polite region/no inputs, four permanent cells in one row, no page overflow, inert sizing copies and fixed cell geometry. Every state retained the same panel height and following-topic position at its width/language. Heights: KO489px/EN513px desktop;553px both at375px; KO601px/EN615px at320px. Live Korean publication replay confirmed all five equations and completion with489px height retained.
+
+All561 recorded protected source/manuscript/download reference hashes were preserved. Only five verified files were synced into the dirty primary website checkout using a checked binary patch; unrelated work and the existing public audience remain intact. Isolated source is clean; owned preview server stopped and viewport override reset. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-brute-force-pairs-live.png`. Matching archive: `chapter-nine-brute-force-pairs-site.tar` in that directory.
+
+
+## 2026-11-11 — Simple complement calculation visual
+
+Published Sites version 291 from source `4b8182b1f3fbea465b91ab5cba2c261a38c63a35`. Existing public deployment `appgdep_6af44f03e028819190f641d9c20d3c0c` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “어떤 숫자가 필요할까?” / “Which number is needed?” under the existing complement topic. It reuses frozen [1,2,3,4] and target6, defaulting to4 selected and6−4=2. Four native number buttons immediately calculate needed5/4/3/2, with one pressed/outlined current number and localized fixed-space Current number labels. The needed result is neutral bold text under Number to look for; one polite region announces the subtraction and instruction to look among numbers already seen. There is no matching-cell highlight, found/absent claim, checkmark, input, index, counter, stepping, restart, table, connector or playback. Current-label and all four feedback sizing variants are inert and aria-hidden. Added derived ComplementExampleNumber and pure complementFor, without changing the fixture or prior algorithms.
+
+All201 Node tests (including28 model tests and the real-C oracle), TypeScript, production build and diff whitespace checks passed. Independent AST review confirmed all21 existing model function bodies and34 existing visual/helper bodies byte-identical; only dispatcher gained its necessary branch. Existing nine visual attachments remain, total now ten; all47 topics, anchors, labels and downloadable files remain unchanged.
+
+Browser-verified all four choices plus repeated3 selection in Korean/English at1280/375/320px: default4, exact arithmetic, Enter/Space and visible focus, single pressed selector, neutral self-complement display, one live region, four controls/no other inputs, one-row geometry, inert sizing variants, no page overflow, and stable panel/following-content positions. Heights:457px desktop in both languages; Korean457px at375px and481px at320px; English521px at both mobile widths. Published EN/KO defaults and all four live Korean calculations were verified, retaining457px height.
+
+All560 recorded protected source/web-manuscript/download reference hashes remained unchanged. Root Korean was never written by this task: the author independently removed two later Thinking topics and started revising efficiency prose during publication; those local edits remain intact and are intentionally not included in this UI-only version. Observed author hash: `092d615137f9e295a335e0385defb68889d00034bc3659dbd41a4d7611cc7014`. Only five verified website files were synced via a checked binary patch; unrelated work/public audience preserved, isolated source clean, preview stopped, viewport reset. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-complement-live.png`; matching archive `chapter-nine-complement-site.tar` in that directory.
+
+
+## 2026-11-11 — Guided two-sum table visual
+
+Published Sites version292 from source `c0adfd20e997ac873924172a2197feecbea438be`. Existing public deployment `appgdep_6af453c7a6748191928ce29e09ed6adc` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “먼저 찾고 없으면 저장하기” / “Look up first, then store” under the existing table-application topic. Uses the existing four-number teaching fixture [1,2,3,4], target6, and a clearly labeled four-slot example with value%4 mapping. Pure twoSumTableFrames returns eight deeply frozen frames and separate immutable slot snapshots: ready1 →lookup5 miss →store1/advance2 →lookup4 miss →store2/advance3 →lookup3 miss →store3/advance4 →lookup2 found. Lookups compare stored keys with the complement; current3 is searched before storage and cannot match itself. Final table is[empty,1,2,3];4 is never inserted. Only dynamic Look for N/Store N and Restart controls are visible. Input/current and lookup labels, all feedback and all action labels reserve their actual wrapped space via inert, aria-hidden sizing variants. Store steps clear the lookup outline while advancing the input/calculation; final lookup retains slot2 and disables the primary control. One polite region announces each current/complement/action result. No indices on inputs, counters, editing, playback, connectors or separate modulo calculation appear.
+
+All204 Node tests (31 model tests including the actual-C oracle), TypeScript, production build and diff whitespace checks passed. Independent review confirmed all22 existing model functions and36 prior non-dispatcher visual/helper bodies byte-identical; only dispatcher gained its necessary branch. All ten old visual attachments,47 topics, anchors, labels, manuscripts/downloads and fifteen-bucket lab models remain unchanged. Total visual attachments now eleven.
+
+Browser-verified all eight frames in Korean/English at1280/375/320px: exact seven operations, retained table contents, key self-pair safeguard, no store4, one active lookup slot, clearing highlights on store, native Enter/Space with visible focus, final disabled action, completed/mid-story restart, two visible controls/one live region, inert variants, no other inputs, no page overflow, and fixed cells/buttons/following-topic positions. All eight announcements are distinct. Heights:657px desktop in both languages; Korean657px at375px /697px at320px; English697px at375px /713px at320px. Published EN/KO defaults and full Korean replay were verified through2+4=6, retaining657px height and final slot2 highlight.
+
+All560 recorded protected source/web-manuscript/download reference hashes remained unchanged. Root Korean was never written by this task; independent author efficiency revisions remain intact (observed hash `abcdd1aacd434ed99d51c94fb8bd4423036a46d4d210bc0efec8b5432ac120df`) and were not imported into this UI-only version. Five verified files were synced into the dirty primary website checkout using a checked binary patch; unrelated work/public audience preserved. Isolated source clean, owned preview stopped, viewport reset. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-two-sum-table-live.png`; matching archive `chapter-nine-two-sum-table-site.tar` in that directory.
+
+
+## 2026-11-11 — Revised Chapter 9 opening and efficiency prose
+
+Published Sites version293 from source `c580d7aad047f727049ebca4619b216a72e2ff99`. Existing public deployment `appgdep_6af460e6d45c8191abdae18190928dbc` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied the user's supplied Korean first two sections and matching English translations. Thinking now has eight topics, ending at table-application; Efficiency has four plain-language topics for linear search, direct addressing time/space, collision-chain degradation and brute-force/hash two-sum time/space. Bilingual schema now has45 topics with counts[8,4,12,4,4,5,8]. New semantic IDs are linear-search-cost and direct-address-cost; retained chain-work and pair-comparisons meanings/headings are updated. Preserved every historical analytics label key, adding the new two labels. Retired search-before-insert anchor redirects to table-application; pair-searches and expected-and-worst redirect to efficiency/pair-comparisons; reset-and-space redirects to C table initialization. All prior aliases remain, ten total.
+
+Preserved all eleven visuals, moving only the detailed two-sum attachment to calculating-efficiency-pair-comparisons. Visual UI/model files and every existing function body remain byte-identical. Both web Glossary-and-later tails and all eight annotated C blocks are unchanged; C executable tokens match actual lab. Root English first two sections now match the translations, with its original Glossary-through-EOF preserved byte-for-byte. Root Korean was never written. Updated public EN/KO manuscripts and deterministic24-entry ZIP.
+
+All204 Node tests (including31 model tests, C oracle, ZIP extraction/build, bilingual labels/structure and aliases), TypeScript, production build and diff whitespace checks passed. Independent review confirmed exact supplied Korean wording, bilingual order/labels, preserved historical keys/tails/models/UI, eleven attachments and every ZIP entry. Browser verified published EN/KO topic structure,45 topics/eleven visuals, desktop/mobile text without page overflow, all ten alias parent targets and the four newly retired anchor landings (~96px below viewport top). Relocated detailed demo completed via End on its slider: exact ordered answers{4,5} in both panels,11 brute-force comparisons versus1 hash-key comparison. Viewport override reset and live Korean efficiency page retained as deliverable.
+
+All509 recorded protected source/model/UI reference hashes stayed unchanged. The author independently refined root Korean wording during the task (including 크기→용량 after the message was supplied); those local revisions were preserved rather than overwritten or published beyond the explicit request. Last observed author SHA `6da0d2700c9984b19b67f2372a25096a75560a6dc36c4aa20177803136c1ffdb`. All nine website publication files were synced via a checked binary patch into the dirty primary checkout; unrelated label values/work and public audience preserved. Three live downloads exactly match publication bytes; isolated source clean. No preview server was started for this prose/attachment update. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-efficiency-prose-live.png`; matching archive `chapter-nine-efficiency-prose-site.tar` in that directory.
+
+
+## 2026-11-11 — Linear-search efficiency comparison
+
+Published Sites version294 from source `fada5e233b260bd0ea438344582d206b576954cc`. Existing public deployment `appgdep_6af4734c12008191ae666a324f59eb12` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “데이터가 많아지면 확인도 늘어난다” / “More items, more checks” under calculating-efficiency/linear-search-cost. The fixed scenario explicitly states that the wanted value is absent from both four-item and eight-item groups. Anonymous cells carry only × marks; sizes and per-group check counts are the only visible numbers. One Check next click advances each unfinished group; the short group freezes after four checks, including its last-checked outline and Not found label, while the long group continues through eight. The final conditional caption says twice as many items means twice as many checks when the value is absent. Completion disables Next; Restart clears counts/marks/outlines/completion/final feedback. No selector, input, timer, playback, slider or additional scenario appears.
+
+Added frozen sizes[4,8], readonly LinearSearchEfficiencyFrame and pure linearSearchEfficiencyFrames, producing nine deeply frozen snapshots. Check counts are[0,0]→[1,1]→[2,2]→[3,3]→[4,4]→[4,5]→[4,6]→[4,7]→[4,8]. Each group records size/count/last checked position/completion. Both per-row completion labels and all nine feedback variants reserve their actual wrapped height with inert, aria-hidden sizing copies. One polite status announces both groups' counts/states and the current instruction. Outlines are described as last checked, including after completion. Shared eight-column desktop / four-column mobile grids keep cells equal-sized, with the larger group wrapping to two rows on mobile.
+
+All207 Node tests (34 model tests including unchanged actual-C oracle), TypeScript, production build and diff whitespace checks passed. Independent function-hash review confirmed all23 prior model functions and41 prior non-dispatcher visual/helper bodies unchanged; only dispatcher gained its necessary branch. Existing eleven visual attachments remain, twelve total;45 topics, historical anchors/labels, manuscripts, downloads and protected sources are unchanged.
+
+Browser-verified all nine frames in KO/EN at1280/375/320px: exact per-row counts/marks/last outlines/completion, frozen completed short row, native Enter/Space with visible focus, final disabled action, completed and mid-search restart, equal cell widths, responsive row counts[1,1]desktop/[1,2]mobile, two controls/one polite region, nine distinct announcements, inert sizing copies/no other inputs/page overflow, and identical cell/button geometry/panel/following-topic positions across all states. Heights:589px desktop both languages; Korean685px at375/320px; English709px at375px and733px at320px. Published EN/KO ready states and full Korean eight-click replay verified final4/8 counts and589px retained height.
+
+All561 recorded protected source/manuscript/download reference hashes stayed unchanged. Only five verified files were synced into the dirty primary website checkout via a checked binary patch; unrelated work and public audience preserved. Isolated source clean, owned preview stopped and viewport reset. Live screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-linear-efficiency-live.png`; matching archive `chapter-nine-linear-efficiency-site.tar` in that directory.
+
+
+## 2026-11-11 — Chapter 9 glossary and hash-function rules
+
+Published Sites version295 from source `efaf6a3a0a61b77a14bc669b45d630cb8a17f733`. Existing public deployment `appgdep_6af4765b12b08191b4e3f4eb74deb7a4` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied the supplied eleven-term Korean glossary with English terms in parentheses and matching English definitions: key, direct-address table, hashing, hash function, hash value, hash table, bucket/slot, collision, chaining, open addressing/probing and brute force. Retained existing semantic IDs key/bucket/collision/separate-chaining; added seven new glossary IDs. Updated invariant/rules heading and first two rule/benefit paragraphs to hash-function range validity and deterministic results. Remaining two invariant topics and all later web content are byte-identical. Also synchronized the requested table-capacity wording in the collision-cost paragraph. The bilingual schema now has44 topics, counts[8,4,11,4,4,5,8].
+
+Preserved all historical label keys; updated only current glossary/rule heading values and added seven labels. Added eight retired glossary anchor aliases: payload/node-index→C node-storage; complement→Thinking complement; allocation-counter→C node-allocation; prepend/duplicate-key→C head-insertion; sentinel→C key-lookup; status-and-index→post-increment syntax. All ten previous aliases remain,18 total. All twelve visuals/attachments and all model/UI functions remain unchanged. Public manuscripts and deterministic24-entry ZIP match the web editions.
+
+Root Korean already contained the new glossary; only its first two invariant blocks were updated, preserving the entire prefix/trailing spaces and broken-rules-through-EOF. Root English glossary table was replaced with the eleven translated H3 definitions and a two-topic Invariant section inserted before its existing Coding Plan; only the two requested capacity wording substitutions were made elsewhere. Root EN Coding Plan-through-EOF and every C block were preserved byte-for-byte. Agent used concurrent reread checks before bounded writes.
+
+All207 Node tests (including34 model tests/real-C oracle, bilingual schema/labels, aliases and ZIP C build), TypeScript, production build and whitespace checks passed. Independent review confirmed exact supplied Korean, English translations,44-topic parity, historical labels,18 active alias targets, all twelve visuals, preserved tails/functions, eight displayed C blocks' executable-token parity, all24 ZIP entries and protected download bytes. Browser verified live EN/KO glossary and rules,44 topics/twelve visuals, desktop/mobile wrapping without page overflow, all eight new glossary alias parent targets and representative native landings (~96px below viewport top). Final screenshot captures the new rules and guarantees. Viewport reset and Korean Invariant page marked deliverable.
+
+All509 recorded protected source/model/UI hashes remained unchanged. Eight verified website files were synced via a checked binary patch into the dirty primary checkout; unrelated labels/work and public audience preserved. Three live downloads exactly match publication bytes; isolated source clean. No preview server was started for this prose-only update. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-glossary-rules-live.png`; matching archive `chapter-nine-glossary-rules-site.tar` in that directory.
+
+
+## 2026-11-11 — Direct-address-table efficiency comparison
+
+Published Sites version296 from source `5af1ac532c34d29e338850ed39c7b06916482ccc`. Public deployment `appgdep_6af47cf1aae48191ac4b2dc2b66927f7` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “어느 표든 한 칸만 확인하기” / “One check in either table” only under calculating-efficiency/direct-address-cost. Two prepared tables cover allowed keys0–3 and0–7, with recorded locations only for keys1/3. One lookup of missing key2 highlights only entry2, labels it Checked, reports one check and Not found in both tables, and disables Lookup. Restart clears lookup marks/counts/results/final feedback while retaining occupancy. The final caption explains equal one-slot lookup work and doubled table capacity for the wider key range. Four/eight-column responsive grids preserve equal cell sizes; eight-slot table wraps into two rows on mobile. No scanning, insertion, selectors, inputs or playback.
+
+Added independent frozen numeric fixtures and readonly DirectAddressEfficiencyFrame/directAddressEfficiencyFrames, returning exactly two deeply immutable states. Preserved the symbolic direct-address model and all24 prior model functions,44 prior non-dispatcher UI/helper bodies, and twelve existing visual attachments (thirteen total). Topic/anchor/feedback/tutor contexts,44-topic content, labels and historical aliases are unchanged. Independent snapshot review confirmed36 protected lab/PPT files and29 manuscript/download artifacts remain byte-identical.
+
+All210 tests (37 model tests including the existing actual-C oracle), TypeScript, production build and diff whitespace checks passed. Browser-tested KO/EN at1280/375/320px: prepared occupancy, exactly one checked entry/count, Not found, completion disabling, native Enter/Space and restart, visible focus, one polite region/two controls/no inputs, inert aria-hidden sizing, no page overflow, equal cell widths and responsive row counts[1,1]desktop/[1,2]mobile. Panel height, cell geometry and following-topic offset were identical before/after lookup/restart. Panel heights:592px desktop both languages; KO756/780px and EN780/804px at375/320px. Verified live EN lookup/restart and KO completed lookup. Viewport reset and Korean page marked deliverable.
+
+Only five verified source/test files were synced via checked binary patch into the dirty primary website checkout; unrelated work and public audience preserved. Isolated source clean; owned preview server stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-direct-address-efficiency-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-direct-address-efficiency-live.png`.
+
+
+## 2026-11-11 — Simplified direct-address efficiency to one table
+
+Published Sites version297 from source `001652bb3392fd4ac9b56c211b17f445e847a96e`. Public deployment `appgdep_6af47fb3c464819180ebd1464a3b5b50` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied user feedback that the comparison was hard to comprehend and one table is enough. Replaced the two-table visual with “한 칸만 확인하기” / “Check just one slot”: one four-slot table0–3, occupied keys1/3, a single lookup of missing key2, and Restart. Removed the second table, all comparison/range-doubling copy, and the oversized shared eight-column grid. Four cells remain in one row at every width. Ready text explains checking slot2 directly; completion explains that the missing recorded location establishes absence in one check. The result retains only slot2's outline/Checked label, count1, and Not found. Restart restores the ready state and retains occupancy.
+
+Simplified DirectAddressEfficiencyFrame to singular frame.table and replaced the sizes fixture with deeply frozen numeric slots. Exactly two independent deeply frozen frames remain. Updated the same three dedicated tests. Only three functions changed: directAddressEfficiencyFrames, DirectAddressEfficiencyFeedback, and DirectAddressEfficiencyLesson; all other model/UI/helper functions and all13 attachments are byte-identical. Independent review verified36 protected lab/PPT files and29 manuscript/download artifacts unchanged.
+
+All210 tests, TypeScript, production build and diff whitespace checks passed. KO/EN browser QA at1280/375/320px verified one table/one row, one checked key/count, retained occupancy, completion disabling, native Enter/Space/visible focus, restart, one polite region/two buttons/no inputs, inert aria-hidden sizing and no overflow. Panel/cell/following-topic geometry stayed fixed across ready/complete/restart. Panel heights:400px desktop both languages (previous592px); KO424px at375/320px, EN448/472px at375/320px. Live Korean lookup/restart and final completed state verified. Viewport reset; Korean page marked deliverable.
+
+Only three verified files were synced via checked binary patch into the dirty primary checkout. Unrelated work/public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-single-table-efficiency-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-single-table-efficiency-live.png`.
+
+
+## 2026-11-11 — Simplified linear-search efficiency to one row
+
+Published Sites version298 from source `4946a58b2e4fd623d219b86f0234fcc5e97ed6d5`. Public deployment `appgdep_6af481cbf5108191b77eaf0e904a95b5` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Applied user feedback that the linear-search efficiency visual also needs only one table/group. Replaced the four-versus-eight comparison with “모든 칸 확인하기” / “Check every box”: one row of four anonymous memory boxes at every width. Each Check next checks exactly one next box, leaves × marks on previous misses, retains a last-checked outline, and increments the single counter0→4. Only the fourth check reports Not found and disables Next. Restart clears the row, counter, completion and feedback. The caption states the wanted value is absent; final feedback explains that every box had to be checked. Removed all two-group/doubling language and the second row/group.
+
+Flattened LinearSearchEfficiencyFrame to readonly size4/checkedCount/lastCheckedIndex/complete and replaced the paired sizes fixture with SIZE4. The pure model returns exactly five independently frozen frames. Updated only its three dedicated tests and import destructuring. Independent review confirmed only four functions changed: linearSearchEfficiencyFrames and linearEfficiencyMessage/Feedback/Lesson. All24 other model functions and44 other UI/helper functions, including the direct-address visual/dispatcher, are byte-identical. All36 protected lab/PPT files and29 manuscript/download artifacts still match the fresh baseline hashes.
+
+All210 tests, TypeScript, production build and diff whitespace checks passed. KO/EN browser QA at1280/375/320px verified all five states, exactly one new miss per click, sequential order, completion only at four, single row/group/count, native Enter/Space and visible focus, complete and partial restart, five unique polite announcements in one region, inert aria-hidden sizing, two controls/no inputs and no page overflow. Panel/cell/following-topic positions stayed identical across checking/completion/reset. Heights:328px desktop both languages,352px mobile both languages. Live Korean full sequence/restarts and final completed state verified. Viewport reset; Korean page marked deliverable.
+
+Three verified files were synced into the dirty primary website checkout with a checked binary patch. Unrelated work/public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-single-linear-efficiency-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-single-linear-efficiency-live.png`.
+
+
+## 2026-11-11 — Collision-cost linked-list visual
+
+Published Sites version299 from source `687e82df813117e13f30135d50f27006d4ae6256`. Public deployment `appgdep_6af48b0f5fec8191be481c70cc91ce97` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “한 칸에서 여러 번 확인하기” / “One slot, several checks” only beneath calculating-efficiency/chain-work, retaining its topic anchor and tutor/feedback context. One bucket0 leads through four anonymous nodes to End. Intro explains that the stored values and absent wanted value all map to0. Each Check next compares one node, adds ×, retains the last-node outline and increments the comparison count. The fourth comparison also reaches End, underlines its marker, reports Not found and disables Next; there is no fifth End comparison. Restart clears the complete or partial search. Final feedback uses the approved bilingual statement that values sharing one index must be searched one at a time. No values/indices within nodes, selectors, inputs, insertion or playback.
+
+Added frozen COLLISION_COST_CHAIN next links[1,2,3,null], HEAD0, readonly CollisionCostFrame and pure collisionCostFrames(). Actual next-link traversal yields exactly five independently frozen frames: ready0/null/false, checking1/node0, checking2/node1, checking3/node2, not-found4/node3/endReachedtrue. Three focused tests cover exact traversal/counts, deep immutability, independent repeated calls and restart. All25 pre-existing model functions and46 non-dispatcher UI/helper functions remain byte-identical; only the dispatcher gained its branch. Existing13 attachments remain,14 total. Independent review verified36 protected lab/PPT files and29 manuscript/download artifacts unchanged.
+
+All213 tests (40 model tests, including unchanged actual-C oracle), TypeScript, production build and diff whitespace checks passed. KO/EN browser QA at1280/375/320px covered all five states, four checks with no fifth click, only final Not found/End underline, last-node outline, five distinct polite announcements in one region, two native controls, Enter/Space with visible focus, partial/complete restart, inert aria-hidden sizing and no page/chain overflow. Narrow decorative arrows and four equal flexible nodes remain in one horizontal row at320px (node widths34.65px KO/31.86px EN). Panel/node/bucket/link/end/following-topic geometry stayed identical across all checks and resets. Heights:360px desktop both languages; KO408px at375/320px; EN432/456px at375/320px. Live Korean full traversal/restarts and final completion verified. Viewport reset; Korean page marked deliverable.
+
+Only five verified source/test files were synced into the dirty primary website checkout using a checked binary patch. Unrelated edits and public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-collision-cost-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-collision-cost-live.png`.
+
+
+## 2026-11-11 — Hash-only two-sum efficiency visual
+
+Published Sites version300 from source `c6091fed36f880099f7670ac05c96de7d92c7404`. Public deployment `appgdep_6af494ba7a0c81918c6b587a73d9954e` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “숫자마다 한 번 찾기” / “One lookup per number” at calculating-efficiency/pair-comparisons. One fixed row[1,2,3,4], separate target10 and explicit no-pair caption show four complete lookup-then-store operations. Only Next number and Restart appear. The single Table lookups counter advances0→4; each processed number retains the Current number outline/label. Fourth click disables Next and adds the exact approved bilingual completion text. Restart clears selection/count/completion. Qualified time and proportional-space captions remain visible; the new visual has no table diagram, equation, comparison counter, input, selector or playback. Moved the existing detailed TwoSumLesson/AlgorithmTrace intact to c-code/hash-two-sum. All14 existing visuals remain,15 attachments total; topic anchors, labels, tutor/feedback context and historical aliases are retained.
+
+Added separate TWO_SUM_EFFICIENCY_TARGET10, readonly TwoSumEfficiencyFrame and pure twoSumEfficiencyFrames(), reusing the frozen four values without changing the target6/complementFor helpers. Local Set.has/add implements lookup before insertion; immutable ordered snapshots record ready plus complements9/8/7/6, counts1–4, stored prefixes[1]→[1,2,3,4], and completion only on the last step. Three tests cover the exact five-state progression, no pair, before-store lookup, deep freezing, fixture preservation, repeated calls and restart. Independent function/hash review confirmed every old model/UI helper body unchanged except the necessary dispatcher branch, plus all36 protected lab/PPT files and29 manuscript/download artifacts byte-identical.
+
+Final216 tests (43 model tests, including unchanged actual-C oracle), TypeScript, production build and diff whitespace checks passed. Browser KO/EN at1280/375/320px covered all five states, exactly one lookup per number, default no highlight, current labels, final disabling/exact message, complete and partial restart, native Enter/Space/visible focus, one polite region/five unique announcements, inert aria-hidden sizing, one row, no extra controls/diagram and no overflow. Panel/cell/control/following-content positions remained fixed. Panel heights:KO464/528/572px and EN484/564/632px at1280/375/320px. Relocated English and Korean detailed demos verified native slider End/Home/restart, target0 counts11 brute-force versus1 hash comparison, answer{4,5}, and out-of-range target rejection preserving the active trace. Live Korean full cost trace/restarts and completed lookup4 state verified; viewport reset and Korean page marked deliverable.
+
+Only five verified source/test files were synced into the dirty primary website checkout with a checked binary patch; unrelated work/public audience preserved. Isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-two-sum-efficiency-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-two-sum-efficiency-live.png`.
+
+
+## 2026-11-11 — Same key, same index
+
+Published Sites version301 from source `69725d0b7ef2c9e7fded92f93ccd912a5f1a69cc`. Public deployment `appgdep_6af4f066af5c819189869a3aeb35b52c` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “같은 키는 같은 번호로” / “Same key, same index” only beneath invariant/rules, preserving its anchor and tutor/feedback context. The fixed key△ and small table with indices0–2 illustrate range validity and deterministic output. First calculation returns1 and highlights slot1; repeating returns1 in a second external readout and retains the same highlight. Table cells remain empty throughout. Primary action changes Calculate index→Calculate again and disables after the second result; Restart clears both readouts/highlight and restores the initial label. The visual has only two native controls, one polite status and no inputs, selectors, counters, playback, insertion/find or invalid-function scenarios.
+
+Added HASH_RULE_KEY/HASH_RULE_INDICES, readonly HashRulesFrame and pure hashRulesFrames(), yielding exactly three independently deeply frozen states: ready[null,null], first[1,null], repeated[1,1]. Each calculation separately calls the unchanged symbolicHashLookup(triangle).index. Three tests cover exact progression/range, established mapping, deep tuple/frame/trace immutability, fixture preservation, repeated calls and restart. Existing27 model functions and52 non-dispatcher UI/helper bodies are byte-identical; only dispatcher/renderer integrations gained branches. Existing15 visuals remain,16 attachments total. Independent SHA-256 review verified36 protected files, including scanning all presentation extensions, and29 manuscript/download artifacts unchanged; no additional presentation binaries were found.
+
+All219 tests (46 model tests including unchanged actual-C oracle), TypeScript, production build and diff whitespace checks passed. KO/EN at1280/375/320px browser-tested ready/first/repeated states, exact results and index1 highlight, continuously empty cells, primary label change/disabled completion, partial/complete reset, native Enter/Space and visible focus, one polite region/three distinct announcements, two controls, no extra input/overflow and one row of three slots. Inert aria-hidden alternatives reserve result numbers, all feedback variants and both primary labels; the latter use text-only spans inside the real button. Panel/cell/readout/button/following-content positions remain identical across all states and resets. Panel heights444px in KO/EN at1280/375px; at320px458px KO and482px EN. Live Korean full sequence/restarts and final two-result state verified. Viewport reset and Korean page marked deliverable.
+
+Only five verified source/test files were synced via checked binary patch into the dirty primary website checkout. Unrelated work and public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-rules-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-rules-live.png`.
+
+
+## 2026-11-12 — Store, then find again
+
+Published Sites version302 from source `a346d19e9f66a0a4cea131f505774b727b60181e`. Public deployment `appgdep_6af59bf448dc8191b36deba2a3a995de` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “저장하고 다시 찾기” / “Store, then find again” only beneath invariant/benefits, preserving its anchor and tutor/feedback context. A fixed△ and one three-slot table show ready empty→store△at1→recompute1/find the stored△. Find compares the own stored key before showing ✓ beside the retained△. The primary action changes Store△→Find△ and disables after success; Restart clears the whole demonstration. The single-value caption and approved bilingual final takeaway explain returning to the slot where the value was stored. No counters, selectors, inputs, extra result readouts, playback or invalid cases were introduced.
+
+Added readonly HashRetrievalFrame and pure hashRetrievalFrames() with three independently deeply frozen snapshots recording phase/index/slots/matched. Two separate calls use only the existing symbolic mapping’s index; the match is computed against the demonstration’s own stored slot rather than the unrelated lookup fixture’s storedKey/matches fields. Three tests cover state order, exclusive slot1 storage, repeated index equality, own-key comparison, retained values, deep freezing, repeated calls and restart. All28 pre-existing model functions and54 non-dispatcher UI/helper bodies are byte-identical; only dispatcher/renderer integration branches changed. Existing16 visuals remain,17 total. Independent review confirmed36 protected/presentation files and29 manuscript/download artifacts unchanged.
+
+All222 tests (49 model tests including unchanged actual-C oracle), TypeScript, production build and diff whitespace checks passed. KO/EN at1280/375/320px browser-tested all three states, own-key match/✓ only after Find, retained glyph and identical stored/found glyph/badge geometry, primary label/disabled changes, complete/partial reset, native Enter/Space and visible focus, one polite region/three distinct announcements, two native controls, inert sizing alternatives, no extra inputs/overflow, and one row of three slots. Panel/cell/control/following-topic positions stayed identical across states and resets. Panel heights392px desktop both languages; KO416/440px and EN440/464px at375/320px. Live Korean full sequence/restarts and completed match state verified. Viewport reset; Korean page marked deliverable.
+
+Only five verified source/test files were synced through a checked binary patch into the dirty primary website checkout. Unrelated edits and public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-retrieval-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-retrieval-live.png`.
+
+
+## 2026-11-12 — When the index is wrong (visual only)
+
+Published Sites version303 from source `e8406606552e606f21e299a7baefb55788ac052f`. Public deployment `appgdep_6af5a4baa9ac81918b7ab8a2336fcc21` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “번호가 잘못되면” / “When the index is wrong” only beneath invariant/broken-rules. This follows the user's explicit Visual only choice: existing prose, manuscripts and downloads are unchanged. One prepared three-slot table retains△at1 and fixed lookup key△. Initially no example is selected, no lookup index is displayed and no slot is outlined. Two native pressed-state example buttons immediately show deliberately broken lookup results: outside-table3 highlights/accesses no slot and explains that slot3 does not exist; changed-index2 outlines only empty slot2 with× and explains that this missed△already stored at1. Switching clears the old marker; repeated selection is idempotent. No fourth slot, Find, Restart, stepping or playback is added.
+
+Added frozen HASH_FAILURE_SLOTS, HashFailureCase, readonly HashFailureView and pure hashFailureView(). Null gives the ready view; index3 fails the bounds check before any indexed slot read and returns checkedIndexnull; index2 reads/compares only valid slot2. Every view preserves the same frozen prepared table and the valid△→1 mapping remains unchanged. Three tests cover all views/bounds/retained data, deep freezing, repeated selection and switching. Independent hashes confirmed all29 old model functions and57 non-dispatcher UI/helper functions unchanged; only the dispatcher/renderer gained branches. Existing17 visuals remain,18 attachments total. All36 protected/presentation files and29 prose/manuscript/download artifacts match baseline bytes.
+
+All225 tests (52 model tests including unchanged actual-C oracle), TypeScript, production build and whitespace checks passed. KO/EN browser QA at1280/375/320px checked ready, both failure states, repeated Enter/Space activation, back-and-forth switching, mutually exclusive pressed states and visible focus; unchanged△, exactly three cells/one row, no extra actions/inputs, one polite region/three distinct statuses, inert hidden glyph/×/index/feedback sizing, and no page overflow. Panel/cell/index-readout/button/following-topic positions stayed identical across all selections. Panel heights448px desktop both languages; KO448/472px and EN488/488px at375/320px. Live Korean both-case/repetition/switching verification passed and the changed-index state was captured. Viewport reset; Korean page marked deliverable.
+
+Only five verified source/test files were synced using a checked binary patch into the dirty primary website checkout. Unrelated edits/public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-failures-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-failures-live.png`.
+
+
+## 2026-11-12 — Follow the hash code (visual only)
+
+Published Sites version304 from source `8a61dcb210c8e7f10edc27682f38918d63b4b041`. Public deployment `appgdep_6af5adf4ec90819180f303b6e7e21956` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “해시 함수 코드 따라가기” / “Follow the hash code” only beneath invariant/preserve-rules, retaining its anchor and tutor/feedback context. Fixed key−16, TABLE_CAPACITY15 and valid returned range0–14 remain visible beside the actual five-line C body. Three Next actions highlight the assignment, entire conditional block, then return; one value readout changes blank→−1→14→14✓. Both early values use the intermediate label; only Return uses Returned index and ✓. The negative intermediate is neutral and performs no table access. Next disables on Return; complete and partial Restart clear every mark/value/feedback while retaining the fixed input. Exact bilingual final captions, only two native controls, one polite region, background-only code highlights and CSS soft wrapping are included; no prose, manuscripts or downloads changed.
+
+Added frozen HASH_CODE_LINES/HASH_CODE_KEY, readonly HashCodeFrame and pure hashCodeFrames(), producing four frozen states using the existing capacity. Four focused tests cover exact state/arithmetic/range and model agreement, executable-token parity with the actual hash_func body, immutability, repeated calls and restart. All30 previous model functions and59 non-dispatcher UI/helper bodies are byte-identical; only necessary dispatcher/renderer branches changed. Existing18 visuals remain,19 attachments total. Independent review verified all36 protected/presentation files and29 prose/manuscript/download artifacts unchanged, including presentation-extension scans.
+
+All229 tests (56 model tests including the actual-C reference), TypeScript, production build and diff whitespace checks passed. KO/EN at1280/375/320px browser-tested all four states, exact mounted code text, logical stage highlights, intermediate/returned labels, return-only checkmark, disabled completion, complete/partial restart and full replay, native Enter/Space/visible focus, one polite region/four unique statuses, inert aria-hidden sizing and no page/code overflow. Narrow320px code soft-wraps without text/token changes. Panel/code/readout/badge/control/following-topic positions remain identical through steps/reset/replay. Panel heights:536.5px desktop both languages; KO558/634px and EN582/658px at375/320px. Live Korean full sequence/restarts/replay passed and the returned14 state was captured. Viewport reset; Korean page marked deliverable.
+
+Only five verified source/test files were synced through a checked binary patch into the dirty primary website checkout; all five match the published source. Unrelated edits and public audience preserved; isolated checkout clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-code-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-hash-code-live.png`.
+
+
+## 2026-11-12 — Revised Chapter9 prose and eight-step coding plan
+
+User explicitly chose applying the supplied Korean draft to Korean/English web bodies and downloadable manuscripts. Published Sites version305 from source `216ba94e5933a805ad85454e33ef9037226f1479`. Public deployment `appgdep_6af5cda45b548191b916a1cda1139721` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Korean follows the supplied draft through Coding plan, normalizing Markdown/HTML spacing. Updated two-sum efficiency wording, two glossary definitions, and the broken-rules paragraph. Replaced the generic four-topic coding plan with eight authored steps: node design, node array, table capacity/initialization, hash function, insertion, key lookup, brute-force two sum, hash-based two sum. English translations match the Korean sequence and semantics. Removed the superseded invariant/preserve-rules prose heading and moved its unchanged hash-code visual to coding-plan/hash-function. Later C-syntax and C-code manuscript suffixes are byte-identical; all executable lab display tokens remain identical. Web manuscripts and both public downloadable textbooks match; regenerated ZIP keeps the exact member inventory and changes only the two textbook payloads. Separate older root module student manuscripts were not overwritten.
+
+Chapter schema now has47 bilingual semantic topics [8,4,11,3,8,5,8]. Eight new coding-plan IDs/labels were added while every historical label remains unchanged. All18 old aliases remain; five new aliases preserve retired URLs: invariant-preserve-rules→coding-plan-hash-function, coding-plan-storage-plan→coding-plan-node-array, coding-plan-table-plan→coding-plan-head-insertion, coding-plan-pair-plan→coding-plan-hash-two-sum, coding-plan-evidence-plan→c-code-table-initialization. All19 visuals remain attached. Visual implementations, all models and model tests are byte-identical to version304. No database migration or historical analytics edits.
+
+All230 tests, TypeScript, production build and whitespace checks passed, including bilingual schema/topic parity, historical-label retention, annotated C-token parity, protected hashes, ZIP inventory/bytes and extracted C-test buildability. Independent review confirmed exact Korean/English content and all integrations. KO/EN browser QA at1280/375/320px verified47 topics/19 visuals, eight new feedback/tutor scopes, relocated hash-code stages and restart, no overflow and stable panel/control/following-topic positions. Historical invariant-preserve-rules anchor resolves to the new hash-function topic; native language switching preserved that historical hash. Live Korean and English coding plans/broken-rules text verified. Browser-downloaded production EN/KO textbooks and ZIP match verified source bytes exactly. Direct non-browser HTTP checks returned403, so authenticated browser download verification was used instead. Viewport reset and Korean coding-plan page marked deliverable.
+
+All86 snapshotted lab/presentation files remain byte-identical after publication/synchronization. Nine feature files synced via checked binary patch into dirty primary. Eight are byte-identical to isolated source; all Chapter9 entries in subsection-labels.json match while three unrelated existing Chapter3 label differences remain intact. Unrelated work and public audience preserved; isolated source clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-revised-prose-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-revised-prose-live.png`.
+
+
+## 2026-11-12 — One node, three parts (visual only)
+
+Published Sites version306 from source `c814b384297d4d68bce5133f12b337d341bb7fd9`. Public deployment `appgdep_6af5d43faf14819183d3040a10d2cd31` succeeded at https://data-structures.chaebinkim.chatgpt.site/ .
+
+Added “노드 하나에 세 가지 정보” / “One node, three parts” only beneath coding-plan/node-design. An outlined node contains equal contiguous native Key/Data/Next buttons in one row, a narrow permanent decorative arrow, and a neutral Another node box. Key is selected initially. Choosing a field changes its pressed state/outline and exactly one approved localized explanation; only Next colors the arrow. Next has the full localized accessible name Next node location / 다음 노드 위치. No actual values, indices, table, inputs, progress/reset/playback controls, or movement animation were added. One polite status with inert aria-hidden alternatives reserves the longest explanation from the first frame.
+
+Added frozen NODE_FIELDS, NodeField, readonly NodeDesignView and pure nodeDesignView() with a frozen result. Default selection is key; linkHighlighted is true only for next. Three focused tests cover default/all selections, repeated/switch independence and fixture/view freezing. Existing31 model functions and62 non-dispatcher UI/helper bodies remain byte-identical; only dispatcher/renderer integrations gained branches. All19 previous visuals remain,20 attachments total, with47 unchanged bilingual topics and unchanged labels/aliases/tutor/feedback context. Existing chapter paragraphs, web manuscripts, public downloads and ZIP are byte-identical to version305. Independent preservation check matched89/90 snapshot entries, including every protected source/presentation and all isolated manuscripts/downloads; the sole exception was a concurrent user-owned edit to root module_09_hash_table/student/textbook_korean.md, left untouched.
+
+All233 tests (59 model tests including unchanged actual-C oracle), TypeScript, production build and whitespace checks passed. KO/EN browser QA at1280/375/320px verified default Key, every field, repeated Next selection, back-and-forth switching, exact localized descriptions, mutually exclusive pressed states, Enter/Space/visible focus, Next-only arrow color and a neutral destination, one polite region/three distinct statuses, inert sizing, no extra controls/overflow, equal contiguous buttons in one row, and stable panel/diagram/control/following-topic positions. Panel heights190px desktop both languages,214px at375px both languages;320px KO214px and EN238px. Narrowest buttons are47.66–47.67px wide and64px tall. Live Korean and English interaction verification passed; final Korean Next-selected state was captured. Viewport reset and Korean page marked deliverable.
+
+Only five verified source/test files synced with a checked binary patch into the dirty primary website checkout; all five match the published source. Unrelated edits and public audience preserved; isolated checkout clean; owned preview stopped. Archive: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-node-design-site.tar`. Screenshot: `student-textbook-web/outputs/chapter-nine-publication-20261108/chapter-nine-node-design-live.png`.
