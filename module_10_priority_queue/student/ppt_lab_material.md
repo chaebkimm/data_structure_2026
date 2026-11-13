@@ -36,7 +36,7 @@ void init_queue(int (*f)(int x, int y)) {
 
 ## 복습 - 우선순위 큐에 데이터 추가하기
 
-- 가정: 배열의 `0`부터 `cnt - 1` 까지에 우선순위가 높은 순서로 데이터가 있다.
+- 가정: 배열의 `0`부터 `cnt - 1`까지 우선순위가 높은 순서로 데이터가 있다.
 - 우선순위 순서를 유지하려면 어느 위치가 적절할지 차례로 비교해 본다. 
 - 기존 데이터들을 이동해서 자리를 마련한 뒤 데이터를 추가한다.
 
@@ -49,8 +49,7 @@ void enqueue(int data) {
          && comp(data, arr[pos - 1])) { 
     pos--; 
   }
-  for (int i = cnt; i > pos; 
-       i--) {
+  for (int i = cnt; i > pos; i--) {
     arr[i] = arr[i - 1];
   }
   arr[pos] = data;
@@ -60,7 +59,7 @@ void enqueue(int data) {
 
 ## 복습 - 우선순위 큐에서 데이터 꺼내기
 
-- 가정: 배열의 `0`부터 `cnt - 1` 까지에 우선순위가 높은 순서로 데이터가 있다.
+- 가정: 배열의 `0`부터 `cnt - 1`까지 우선순위가 높은 순서로 데이터가 있다.
 - 우선순위가 가장 높은 데이터는 처음 데이터이므로, 배열에서 삭제하고 데이터를 반환한다.
 
 ## 우선순위 큐에서 데이터 꺼내기
@@ -68,14 +67,19 @@ void enqueue(int data) {
 ```c
 int dequeue(void) {
   int most = arr[0];
-  for (int i = 0; i < cnt - 1; 
-       i++) {
-    arr[i] = arr[i + 1];
+  for (int i = 1; i < cnt; i++) {
+    arr[i - 1] = arr[i];
   }
   cnt--;
   return most;
 }
 ```
+
+## 문제 - 모두 접속할 시간 찾기
+
+- 세 유저가 각자 계획한 시간에 로그인과 로그아웃을 반복한다.
+- 세 유저가 모두 접속해 있는 가장 빠른 시간을 찾아 미팅 시간으로 정한다.
+- 그러려면 누가 가장 먼저 로그아웃 하는가를 계속 알아내야 하고, 여기에 앞에서 만든 우선순위 큐를 쓴다.
 
 ## 복습 - 로그인 계획 저장하기
 
@@ -118,7 +122,7 @@ struct User users[USERS];
 
 ```c
 void init_users(void) {
-  for (int id = 0; id < USERS; id++){
+  for (int id = 0; id < USERS; id++) {
     users[id].epoch = 0;
     users[id].in = logs[id][0];
     users[id].out = logs[id][1];
@@ -172,15 +176,7 @@ int earlier_out(int user_x, int user_y) {
 2. 미팅 시간을 정해 본다.
 3. 먼저 로그아웃 하는 유저를 찾는다.
 4. 미팅 시간까지 아무도 로그아웃 하지 않았으면 확정한다.
-5. 누군가 로그아웃 했으면 정보를 업데이트하고 2.부터 반복한다.
-
-## 미팅 시간 정하는 함수 C 코드
-
-```c
-int all_login(void) {
-  /* 1. 로그인 정보 초기화 */
-  init_users();
-```
+5. 누군가 로그아웃 했으면 정보를 업데이트하고 다시 미팅 시간을 정한다.
 
 ## 미팅 시간 구하기
 
@@ -189,12 +185,16 @@ int all_login(void) {
 - 로그인 시간이 항상 `0`보다 크다고 가정하면, 첫 미팅 시간의 초기값을 `0`으로 쓸 수 있다.
 - 나중에 누군가 로그아웃하면 그 유저의 다음 로그인 시간만 확인해보면 된다.
 
-## 미팅 시간 구하는 C 코드
+## 미팅 시간 정하는 함수 C 코드
 
 ```c
+int all_login(void) {
+  /* 1. 로그인 정보 초기화 */
+  init_users();
+
   /* 2. 미팅 시간 후보 */
   int meeting_time = 0;
-  for (int id = 0; id < USERS; id++){
+  for (int id = 0; id < USERS; id++) {
     if (meeting_time 
         < users[id].in) {
       meeting_time = users[id].in;
@@ -219,7 +219,7 @@ int all_login(void) {
 ```c
   /* 3. 로그아웃 유저 */
   init_queue(earlier_out);
-  for (int id = 0; id < USERS; id++){
+  for (int id = 0; id < USERS; id++) {
     enqueue(id);
   }
   int out_id = dequeue();
@@ -230,40 +230,29 @@ int all_login(void) {
 - 미팅 시간까지 아무도 로그아웃 하지 않으면, 미팅 시간을 확정한다.
 - 누군가 먼저 로그아웃 한다면 가능한 시간을 다시 찾는다.
 
-## 미팅 시간 확정하는 C 코드
-
-```c
-  /* 4. 미팅 시간 확정 */
-  while (meeting_time
-         >= users[out_id].out) {
-    ...
-  }
-  return meeting_time;
-}
-```
-
 ## 로그아웃 한 유저 정보 업데이트
 
 - 미팅 시간에 이미 로그아웃 한 유저는 로그인 정보를 다음 회차로 업데이트 한다. 
 - 새로운 로그인 시간을 반영해서 미팅 시간을 업데이트 한다.
 - 우선순위 큐로 가장 먼저 로그아웃 하는 유저를 찾고 미팅이 가능한지 다시 확인한다.
 
-## 반복 내용 C 코드
+## 미팅 시간 확정하기 위해 반복하는 C 코드
 
 ```c
+  /* 4. 미팅 시간 확정 */
+  while (meeting_time
+         >= users[out_id].out) {
     /* 5. 로그인 정보 업데이트 후 반복 */
-    if (next_epoch(out_id) == -1){
+    if (next_epoch(out_id) == -1) {
       return -1;
     }
     if (meeting_time
         < users[out_id].in) {
       meeting_time = users[out_id].in;
     }
-```
-
-## 반복 내용 C 코드
-
-```c
     enqueue(out_id);
     out_id = dequeue();
+  }
+  return meeting_time;
+}
 ```
