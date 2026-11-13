@@ -45,17 +45,17 @@ void init_queue(int (*f)(int x, int y)) {
 void enqueue(int data) {
   int pos = cnt;
   while (pos > 0 && comp(data, arr[pos - 1])) { pos--; }
-  for (int i = size; i > pos; i--) {
+  for (int i = cnt; i > pos; i--) {
     arr[i] = arr[i - 1];
   }
   arr[pos] = data;
-  size++;
+  cnt++;
 }
 ```
 
 ## 우선순위 큐에서 데이터 꺼내기
 
-- 가정: 배열의 0부터 size - 1 까지에 우선순위가 높은 순서로 데이터가 있다.
+- 가정: 배열의 `0`부터 `cnt - 1` 까지에 우선순위가 높은 순서로 데이터가 있다.
 - 우선순위가 가장 높은 데이터는 처음 데이터이므로, 배열에서 삭제하고 데이터를 반환한다.
 
 ## 우선순위 큐에서 데이터 꺼내기
