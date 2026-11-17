@@ -1,39 +1,15 @@
-# Module 11 — Indexed-Heap Dijkstra
+# Chapter 10 Student Release — Priority Queues and Meeting Time
 
-Start with [the lab](student/lab.md) and the supplied
-[`student/lab.c`](student/lab.c). The source is complete. Trace it and extend
-`code/tests/test_lab_student.c`; there are no required implementation TODOs.
+Start with student/inquiry_prompt.md or its linear response format. Preserve predictions, then open the representation reveal, pause, investigation and textbooks. English is student/textbook.md; Korean is student/textbook_korean.md. The required source is student/lab.c. It and the presentations are supplied unchanged. Presentation labels say Week 12; package numbering remains Chapter 10.
 
-The program uses at most ten nodes, strictly positive `int` weights,
-`-1` for undiscovered distances, and a minimum heap of node IDs with an
-inverse position map. It updates queued distances in place. There are no
-lazy duplicates, stable tie promises, predecessor outputs, input validators,
-or overflow guards in this lab. Use valid indices and representable sums.
+Submit one driver/evidence artifact, using student/lab.md, evidence_template.md and rubric.md. The implementation is complete; add one original regression to code/tests/test_lab_student.c. No heap or graph implementation is required.
 
-The included `module_03_graph/student/lab.c` supplies adjacency lists.
-Keep that dependency in its packaged location. Compile a driver that includes
-the lab; do not compile both included C files separately.
-
-From the extracted directory:
+From this extracted directory:
 
 ```sh
 make -C code lab-compile core student-tests comparison
 ```
 
-Or run `code/build.ps1` with PowerShell. See
-[code/README.md](code/README.md) for compiler selection and sanitizers.
+PowerShell users can run ./code/build.ps1 with -Target lab-compile, core, student-tests or comparison. See code/README.md for sanitizer commands. Compile drivers alone because they include the self-contained source; no original repository checkout or external module is needed.
 
-The shared directed A-through-F fixture has edges
-`A->B9,A->C2,A->E14,B->D1,B->E8,C->B3,C->D2,D->E2`.
-Distances from A are `[0,5,2,4,6,-1]`. One run inserts and removes five
-nodes, updates B and E, inspects eight adjacency entries, and peaks at
-three pending nodes. These are manually traced counts, not exported metrics.
-
-Use the [textbook](student/textbook.md), [models](diagrams/dijkstra_models.md),
-[worksheet](student/investigation_worksheet.md), and
-[evidence template](student/evidence_template.md) to build one Practical 2
-submission. The linear inquiry and worksheet carry equivalent targets.
-The [Stage A](release/stage_a_README.md) through
-[Stage E](release/stage_e_README.md) notes are opening-order checkpoints,
-not additional assignments. This archive contains the full current set;
-the instructor manages when each resource is opened.
+MANIFEST.txt lists each included file's SHA-256. The sample result is 12. Login is included and logout excluded; equality fails. Queue slots must cover total insertions since initialization. Current lesson files are the only required materials; no instructor keys, archive, binaries or alternative implementation is included.

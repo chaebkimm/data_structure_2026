@@ -14,8 +14,9 @@ that chosen minimum final.
 A direct A→E edge can cost 14 while A→C→D→E costs6. BFS optimizes edge count;
 Dijkstra optimizes the sum of weights. The required
 [lab.c](../module_11_graph_dijkstra/student/lab.c) reuses Module 03 adjacency
-lists and Module 10 heap ideas. The graph rows store neighbor IDs, a separate
-matrix stores edge lengths, and a minimum heap stores one pending copy of
+lists and Chapter 10 priority-selection ideas. Heap representation and
+inverse-map rules must be introduced separately. The graph rows store neighbor
+IDs, a separate matrix stores edge lengths, and a minimum heap stores one pending copy of
 each discovered node. Its key is read from `node_dist`.
 
 All functions are supplied. Students trace and test the actual source, then

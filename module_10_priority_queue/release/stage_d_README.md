@@ -1,8 +1,5 @@
-# Module 11 — Stage D: Textbook and Models
+# Chapter 10 Stage D — Compare with the Worked Explanation
 
-Compare preserved work with the [textbook](../student/textbook.md) and
-[models](../diagrams/dijkstra_models.md). Explain how a positive route cost
-improves an existing queued node and why a removed node cannot later improve.
-Distinguish node IDs, heap positions, and the inverse map's live-entry
-contract. Equal costs do not imply stable removal order. Add corrections
-beside earlier predictions instead of erasing them.
+Read student/textbook.md or student/textbook_korean.md and diagrams/priority_queue_models.md. Reconcile every trace state, strict endpoint rule, cumulative capacity and return value with preserved predictions.
+
+Stages are opening checkpoints within one 180-minute lesson and one submission, not five assignments. The full archive does not enforce withholding; instructors control opening order. Keep lab.c and presentation sources unchanged.

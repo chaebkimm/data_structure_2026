@@ -1,274 +1,137 @@
-#include <assert.h>
-#include <stdint.h>
 #include <stdio.h>
-#include "lab.c"
+#include "survey_fixtures.h"
 
-/* Include the actual teaching source once. Do not link another lab.c object. */
-static void check_live_heap(void)
+static int smaller(int x, int y) { return x < y; }
+static int larger(int x, int y) { return x > y; }
+static int smaller_last_digit(int x, int y) { return x % 10 < y % 10; }
+
+static void check_queue(void)
 {
-    int seen[10] = {0};
-    assert(size >= 0 && size <= 10);
-    for (int i = 0; i < size; ++i) {
-        int id = heap[i];
-        assert(id >= 0 && id < 10);
-        assert(!seen[id]);
-        seen[id] = 1;
-        assert(node_heap_pos[id] == i);
-        assert(node_dist[id] >= 0);
-        if (i > 0) {
-            int p = (i - 1) / 2;
-            assert(node_dist[heap[p]] <= node_dist[id]);
+    assert(front >= 0 && front <= rear + 1 && rear < CAPACITY);
+    for (int i = front + 1; i <= rear; ++i) {
+        assert(!compare(queue[i], queue[i - 1]));
+    }
+}
+
+static void test_queue(void)
+{
+    init_queue(smaller);
+    assert(front == 0 && rear == -1 && compare == smaller);
+    enqueue(7); enqueue(2); enqueue(5); check_queue();
+    assert(dequeue() == 2);
+    enqueue(1); check_queue();
+    assert(dequeue() == 1 && dequeue() == 5 && dequeue() == 7);
+    enqueue(9); assert(dequeue() == 9); /* Empty after consumption; no reset. */
+    assert(front == 5 && rear == 4);
+
+    init_queue(smaller_last_digit);
+    const int input[] = {21, 11, 32, 1, 22};
+    const int expected[] = {21, 11, 1, 32, 22};
+    for (int i = 0; i < 5; ++i) { enqueue(input[i]); check_queue(); }
+    for (int i = 0; i < 5; ++i) assert(dequeue() == expected[i]);
+
+    init_queue(larger);
+    for (int i = 0; i < CAPACITY; ++i) { enqueue(i); check_queue(); }
+    assert(rear == CAPACITY - 1);
+    for (int i = CAPACITY - 1; i >= 0; --i) assert(dequeue() == i);
+    assert(front == CAPACITY && rear == CAPACITY - 1);
+    /* Consumed storage is not reusable until init_queue resets both indices. */
+    init_queue(smaller);
+    enqueue(42); assert(dequeue() == 42);
+}
+
+static void test_user_state(void)
+{
+    restore_sample(); init_users();
+    assert(latest_login_time() == 5);
+    for (int id = 0; id < N_USERS; ++id) {
+        assert(users[id].epoch == 0);
+        assert(users[id].login == timelogs[id][0]);
+        assert(users[id].logout == timelogs[id][1]);
+    }
+    assert(first_logout_id() == 2);
+    assert(front == 1 && rear == 2 && queue[front] == 1 && queue[rear] == 0);
+    assert(next_epoch(2) == 0 && users[2].login == 5 && users[2].logout == 7);
+    assert(next_epoch(2) == 0 && users[2].login == 9 && users[2].logout == 14);
+    assert(next_epoch(2) == -1);
+    assert(users[2].epoch == N_EPOCHS); /* Failure increments epoch, retains times. */
+    assert(users[2].login == 9 && users[2].logout == 14);
+}
+
+static void test_sample_trace(void)
+{
+    const int next_out[] = {1, 0, 2, 1, 0, 0};
+    const int candidates[] = {5, 7, 8, 9, 12, 12};
+    restore_sample(); init_users();
+    int candidate = latest_login_time();
+    int out = first_logout_id();
+    int insertions = N_USERS, removals = 1, advances = 0;
+    assert(out == 2 && candidate == 5);
+    for (int step = 0; step < 6; ++step) {
+        assert(candidate >= users[out].logout);
+        assert(next_epoch(out) == 0); ++advances;
+        if (users[out].login > candidate) candidate = users[out].login;
+        enqueue(out); ++insertions; check_queue();
+        out = dequeue(); ++removals;
+        assert(out == next_out[step] && candidate == candidates[step]);
+    }
+    assert(candidate < users[out].logout && candidate == 12);
+    assert(insertions == 9 && removals == 7 && advances == 6);
+    assert(front == 7 && rear == 8 && queue[front] == 2 && queue[rear] == 1);
+    assert(survey() == candidate && survey() == candidate); /* Test actual run too. */
+}
+
+static void test_boundaries(void)
+{
+    const int immediate[N_USERS][N_EPOCHS * 2] = {
+        {0, 3, 4, 7, 8, 10}, {0, 3, 4, 7, 8, 10}, {0, 3, 4, 7, 8, 10}
+    };
+    const int endpoints[N_USERS][N_EPOCHS * 2] = {
+        {0, 2, 4, 6, 8, 10}, {2, 4, 6, 8, 10, 12}, {0, 20, 21, 22, 23, 24}
+    };
+    const int exhausted[N_USERS][N_EPOCHS * 2] = {
+        {0, 1, 2, 3, 4, 5}, {6, 7, 8, 9, 10, 11}, {6, 7, 8, 9, 10, 11}
+    };
+    load_logs(&immediate[0][0]); assert_valid_logs(); assert(survey() == 0);
+    load_logs(&endpoints[0][0]); assert_valid_logs(); assert(survey() == -1);
+    load_logs(&exhausted[0][0]); assert_valid_logs(); assert(survey() == -1);
+    /* All users meet just below INT_MAX; no endpoint arithmetic in the lab. */
+    for (int id = 0; id < N_USERS; ++id) {
+        for (int e = 0; e < N_EPOCHS; ++e) {
+            timelogs[id][2 * e] = INT_MAX - 6 + 2 * e;
+            timelogs[id][2 * e + 1] = INT_MAX - 5 + 2 * e;
         }
     }
-    /* Removed IDs' entries may be stale; the inverse map covers live IDs only. */
+    assert_valid_logs(); assert(survey() == INT_MAX - 6);
+    restore_sample(); assert(survey() == 12);
 }
 
-static void reset_heap(void)
+static void test_reference_schedules(void)
 {
-    init_heap();
-    assert(size == 0);
-    for (int id = 0; id < 10; ++id) {
-        assert(node_heap_pos[id] == -1);
-        node_dist[id] = -1;
+    uint32_t state = UINT32_C(20261114);
+    int meetings = 0, misses = 0;
+    for (int trial = 0; trial < 10000; ++trial) {
+        generate_logs(&state); assert_valid_logs();
+        int expected = interval_oracle();
+        int before[N_USERS][N_EPOCHS * 2];
+        memcpy(before, timelogs, sizeof before);
+        assert(survey() == expected);
+        assert(memcmp(before, timelogs, sizeof before) == 0);
+        assert(rear < CAPACITY && rear + 1 <= N_USERS * N_EPOCHS);
+        assert(front <= rear + 1);
+        assert(survey() == expected);
+        if (expected == -1) ++misses; else ++meetings;
     }
-    assert(left(0) == -1 && right(0) == -1);
-    assert(heap_parent(0) == -1);
-}
-
-static void test_insert_and_remove(void)
-{
-    const int ids[] = {8, 3, 6, 1, 9, 4};
-    const int costs[] = {70, 30, 50, 10, 90, 40};
-    const int expected_heap[] = {1, 3, 4, 8, 9, 6};
-    const int expected_order[] = {1, 3, 4, 6, 8, 9};
-    reset_heap();
-    for (int i = 0; i < 6; ++i) {
-        add_node(ids[i], costs[i]);
-        check_live_heap();
-    }
-    for (int i = 0; i < 6; ++i) {
-        assert(heap[i] == expected_heap[i]);
-    }
-    assert(comp(0, 1));           /* Keys 10 and 30, not IDs or positions. */
-    assert(!comp(1, 0));
-    assert(!comp(2, 2));
-    for (int i = 0; i < 6; ++i) {
-        assert(size > 0);
-        assert(remove_root() == expected_order[i]);
-        check_live_heap();
-    }
-    assert(size == 0);
-}
-
-static void test_heap_boundaries_and_ties(void)
-{
-    reset_heap();
-    add_node(7, 10);
-    assert(remove_root() == 7 && size == 0);
-    check_live_heap();
-
-    /* Three nodes become a parent with one left child after removal. */
-    add_node(7, 10);
-    add_node(2, 20);
-    add_node(9, 30);
-    assert(remove_root() == 7);
-    assert(size == 2 && heap[0] == 2 && heap[1] == 9);
-    check_live_heap();
-
-    reset_heap();
-    for (int id = 9; id >= 0; --id) {
-        add_node(id, id + 1);
-        check_live_heap();
-    }
-    assert(size == 10);
-    for (int id = 0; id < 10; ++id) {
-        assert(remove_root() == id);
-        check_live_heap();
-    }
-
-    reset_heap();
-    const int equal_ids[] = {4, 0, 9, 2, 1};
-    int seen[10] = {0};
-    for (int i = 0; i < 5; ++i) {
-        add_node(equal_ids[i], 12);
-        check_live_heap();
-    }
-    while (size > 0) {
-        int id = remove_root();
-        assert(node_dist[id] == 12 && !seen[id]);
-        seen[id] = 1;
-        check_live_heap();
-    }
-    for (int i = 0; i < 5; ++i) {
-        assert(seen[equal_ids[i]]);
-    }
-    /* Equal priorities need heap order, not an arrival-order guarantee. */
-}
-
-static void test_update_both_directions(void)
-{
-    const int ids[] = {8, 2, 5, 1, 7, 6, 3};
-    reset_heap();
-    for (int i = 0; i < 7; ++i) {
-        add_node(ids[i], 10 * (i + 1));
-    }
-    update_value(3, 5);            /* Leaf to root. */
-    assert(heap[0] == 3);
-    check_live_heap();
-    update_value(3, 100);          /* Root down through two levels. */
-    assert(heap[0] == 8);
-    check_live_heap();
-    update_value(2, 90);           /* Increase an interior key. */
-    check_live_heap();
-    update_value(7, 1);
-    assert(heap[0] == 7);
-    check_live_heap();
-    int previous = -1;
-    while (size > 0) {
-        int id = remove_root();
-        assert(node_dist[id] >= previous);
-        previous = node_dist[id];
-        check_live_heap();
-    }
-}
-
-static void reset_graph(int count)
-{
-    assert(count >= 1 && count <= 10);
-    alphabet_nodes_init();
-    nodes_size = count;
-    for (int u = 0; u < 10; ++u) {
-        for (int v = 0; v < 10; ++v) {
-            edge_length[u][v] = 0;
-        }
-    }
-}
-
-static void add_arc(int u, int v, int weight)
-{
-    assert(u >= 0 && u < nodes_size && v >= 0 && v < nodes_size);
-    assert(u != v && weight > 0);
-    assert(nodes[u].adj_size < 10 && edge_length[u][v] == 0);
-    nodes[u].adj_list[nodes[u].adj_size++] = v;
-    edge_length[u][v] = weight;
-}
-
-/* Independent repeated-relaxation oracle over the matrix, not a heap or
-   the adjacency-list run loop. Test weights and path sums are small. */
-static void reference_distances(int source, int expected[10])
-{
-    for (int i = 0; i < 10; ++i) {
-        expected[i] = -1;
-    }
-    expected[source] = 0;
-    for (int pass = 0; pass < nodes_size - 1; ++pass) {
-        for (int u = 0; u < nodes_size; ++u) {
-            if (expected[u] == -1) {
-                continue;
-            }
-            for (int v = 0; v < nodes_size; ++v) {
-                if (edge_length[u][v] > 0) {
-                    int candidate = expected[u] + edge_length[u][v];
-                    if (expected[v] == -1 || candidate < expected[v]) {
-                        expected[v] = candidate;
-                    }
-                }
-            }
-        }
-    }
-}
-
-static void check_shortest_paths(int source)
-{
-    int expected[10];
-    reference_distances(source, expected);
-    min_dist(source);
-    assert(size == 0);
-    for (int i = 0; i < 10; ++i) {
-        assert(node_dist[i] == expected[i]);
-        assert(found[i] == (expected[i] != -1));
-    }
-}
-
-static void test_canonical_and_repeated_runs(void)
-{
-    const int expected[] = {0, 5, 2, 4, 6, -1};
-    reset_graph(6);
-    add_arc(0, 1, 9);
-    add_arc(0, 2, 2);
-    add_arc(0, 4, 14);
-    add_arc(1, 3, 1);
-    add_arc(1, 4, 8);
-    add_arc(2, 1, 3);
-    add_arc(2, 3, 2);
-    add_arc(3, 4, 2);
-    check_shortest_paths(0);
-    for (int i = 0; i < 6; ++i) {
-        assert(node_dist[i] == expected[i]);
-    }
-    check_shortest_paths(2);
-    check_shortest_paths(5);
-    check_shortest_paths(0);
-    /* init_dist must also reset a previously nonempty heap. */
-    add_node(9, 1);
-    check_shortest_paths(0);
-}
-
-static void test_isolated_and_undirected_graphs(void)
-{
-    reset_graph(1);
-    check_shortest_paths(0);
-    reset_graph(10);
-    for (int source = 0; source < 10; ++source) {
-        check_shortest_paths(source);
-    }
-    /* Undirected connections are two explicit adjacency entries. */
-    reset_graph(4);
-    add_arc(0, 1, 4);
-    add_arc(1, 0, 4);
-    add_arc(1, 2, 2);
-    add_arc(2, 1, 2);
-    add_arc(0, 2, 9);
-    add_arc(2, 0, 9);
-    for (int source = 0; source < 4; ++source) {
-        check_shortest_paths(source);
-    }
-}
-
-static uint32_t next_random(uint32_t *state)
-{
-    *state = *state * UINT32_C(1664525) + UINT32_C(1013904223);
-    return *state;
-}
-
-static void test_reference_graphs(void)
-{
-    uint32_t random_state = UINT32_C(2026);
-    for (int trial = 0; trial < 80; ++trial) {
-        int count = 2 + trial % 9;
-        reset_graph(count);
-        for (int u = 0; u < count; ++u) {
-            for (int v = 0; v < count; ++v) {
-                if (u != v && (next_random(&random_state) >> 16) % UINT32_C(4) == 0) {
-                    int weight = 1 + (int)(next_random(&random_state) % UINT32_C(20));
-                    add_arc(u, v, weight);
-                }
-            }
-        }
-        check_shortest_paths(0);
-        check_shortest_paths(count - 1);
-        check_shortest_paths(trial % count);
-    }
+    assert(meetings > 0 && misses > 0);
+    restore_sample(); assert(survey() == 12);
+    printf("10000 independent reference schedules passed (%d meetings, %d misses).\n",
+           meetings, misses);
 }
 
 int main(void)
 {
-    test_insert_and_remove();
-    test_heap_boundaries_and_ties();
-    test_update_both_directions();
-    test_canonical_and_repeated_runs();
-    test_isolated_and_undirected_graphs();
-    test_reference_graphs();
-    puts("Module 11 lab core tests passed (heap invariants and 80 reference graphs).");
+    test_queue(); test_user_state(); test_sample_trace();
+    test_boundaries(); test_reference_schedules();
+    puts("Chapter 10 core passed: sorted queue, stable ties, epochs, trace and survey.");
     return 0;
 }

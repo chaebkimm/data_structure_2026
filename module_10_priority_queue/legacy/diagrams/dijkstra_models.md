@@ -1,7 +1,7 @@
 # Dijkstra Models — Indexed Node Heap
 
 Each visual has a linear text equivalent. No meaning depends on color or
-spatial position. These models describe [student/lab.c](../student/lab.c),
+spatial position. These models describe student/lab.c (historical source reference),
 whose heap stores node IDs and whose distances are separate changing keys.
 
 ## Model 1 — The canonical positive weighted graph

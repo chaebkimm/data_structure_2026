@@ -1,66 +1,29 @@
-# Module 11 Current Student Release
+# Chapter 10 Current Student Release
 
-The required package follows the exact updated [student/lab.c](../student/lab.c).
-It replaces the older five-archive lazy-duplicate distribution. Stage A–E
-remain teaching checkpoints within one 180-minute Practical 2 block, not
-separate implementation assignments. The full archive does not enforce
-withholding; the instructor controls opening order.
-
-From the module directory, create the standalone ZIP with Python 3:
+Generate the standalone priority-queue package from the repository root:
 
 ```sh
-python3 release/prepare_student_release.py
+python3 module_10_priority_queue/release/prepare_student_release.py
 ```
 
-The default output is `dist/module_11_graph_dijkstra.zip`. For a repeated
-verification, choose a new path with `--output /path/to/new/release.zip`.
-The PowerShell wrapper accepts `-OutputPath` for the same option. Existing
-archives are never overwritten.
+Default output is dist/module_10_priority_queue.zip inside the module. Pass --output with a new path for repeated verification. Existing files are never overwritten. PowerShell uses prepare_student_release.ps1 -OutputPath with the same policy.
 
-## Included materials
+## Exact inventory
 
-- The student README, generated SHA-256 inventory `MANIFEST.txt`, and every
-  current `student/*.md` file.
-- The exact `student/lab.c` and its exact
-  `module_03_graph/student/lab.c` dependency at the archive root.
-- `diagrams/dijkstra_models.md` and Stage A–E opening-order notes.
-- Student-only `code/README.md`, `Makefile`, and `build.ps1`.
-- `code/tests/test_lab.c`, `code/tests/test_lab_student.c`, and the supplied
-  same-graph BFS/linear-selection/heap driver `code/tests/compare_lab.c`.
+The packager explicitly lists 16 student files: lab.c, the two presentation references, both textbooks, vocabulary, lab, two inquiry formats, representation reveal, pause, two investigation formats, evidence template, rubric and priority-queue autopsy. It includes four code/tests files (core, student smoke, comparison and shared fixtures), five release/stage opening notes, the student root README, code README/Makefile/build.ps1 and diagrams/priority_queue_models.md. A generated MANIFEST.txt gives the 30 source files' SHA-256 values, for **31 total entries**.
 
-The dependency path lets `lab.c` retain its original include unchanged.
-The released Makefile supplies the student-folder and archive-root include
-paths. No original repository checkout is required.
+The exact source and presentations are included without editing. No graph dependency, instructor directory, legacy file, alternate implementation, release tooling, generated executable or build directory is included. The five opening notes are checkpoints within one artifact, not separate assignments.
 
-The archive excludes instructor keys, the optional lazy-duplicate headers,
-starter/solution/support API, old library tests and overflow autopsy,
-release tooling, binaries, and build directories. The required lab is
-already complete and is deliberately included in full.
+## Determinism and verification
 
-## Teaching checkpoints
+Source bytes are read before writing. Entry names are validated, entries are sorted, timestamps and permissions are fixed, and the resulting ZIP is read back in memory to verify the inventory and every byte. The manifest excludes itself from its hashes. Repeated packaging from identical inputs yields identical archive bytes within the same toolchain.
 
-1. Stage A: preserve an initial route-cost model using either inquiry format.
-2. Stage B: reveal names and preserve the three-target Cognitive Pause.
-3. Stage C: trace distances, node IDs, heap positions, and live inverse maps.
-4. Stage D: compare the textbook/models with preserved predictions.
-5. Stage E: run current-lab tests and assemble one Practical 2 artifact.
+Run the package regression checks:
 
-The shared directed fixture uses only positive costs. Its distances from A
-are `[0,5,2,4,6,-1]`; removals are `A,C,D,B,E`. Observed calls are five
-insertions, five removals, two updates, eight adjacency inspections, and a
-peak live heap size of three. The raw source exports none of these counters.
-It has no predecessor-path output or stale duplicate pops.
+```sh
+python3 -m unittest discover -s module_10_priority_queue/release -p 'test_*.py' -v
+```
 
-## Verification before delivery
+These verify deterministic bytes, manifest/source equality, exclusions, unsafe paths, overwrite refusal, extracted links and standalone compilation/tests. Independently run the repository core suite under sanitizers as documented in code/README.md. No PowerShell execution is claimed when that runtime is unavailable.
 
-Build `lab-compile`, `core`, `student-tests`, and `comparison`, then run core and student
-tests under sanitizers where supported. Verify heap order and maps only in
-the live prefix, singleton removal, equal priorities without a stability
-assumption, repeated runs, nonzero sources, and independent distance checks.
-
-The Python packager reads source bytes before writing, rejects unsafe entry
-names, uses deterministic metadata, and checks the ZIP inventory and every
-entry's bytes in memory. Verify the extracted package independently with
-the same targets, check local links, and confirm that a repeated destination
-is refused without changing the original archive. Optional reference API
-checks do not define the current practical's assessment.
+The old module_11_graph_dijkstra.zip is preserved in legacy/dist as a historical artifact. It is not overwritten or redistributed as the current lesson.

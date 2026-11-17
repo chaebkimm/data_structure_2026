@@ -48,7 +48,7 @@ teaching weeks and is used for the capstone defense or its approved equivalent.
 
 There is at most one required programming submission in any teaching week.
 The Week 8 submission contains queue evidence, a tree-BFS trace, and graph-BFS code and synthesis from Module 8. Week 10 combines
-the fixed integer Heap and dual-Heap interval search inside Module 10. Each
+the sorted-array priority queue and meeting-time search inside Chapter 10. Each
 has one submission, one due date, and one rubric. Week 14's
 capstone integration checkpoint is folded into that week's work rather than
 issued as a second weekly programming submission.
@@ -66,7 +66,7 @@ issued as a second weekly programming submission.
 | 7 | Linked lists with linked stack and queue examples — [textbook](module_07_linked_list/student/textbook.md) and [Module 7 materials](module_07_linked_list/README.md) | Ordinary lab 6: shared-pool reuse, predecessor insertion/detachment, LIFO first-node operations, FIFO endpoints, and traces/tests in one artifact | Allocated-list API, doubly linked lists, and DSU before Week 14 | [Week 7 page](student_question_bank/week_07_linked_list.md) |
 | 8 | Processing data in stored order: queues → tree BFS → graph BFS — [Module 8](module_08_graph_bfs/README.md): array queue comparisons, tree level order, maze discovery/distances, and conceptual path recovery | **Lab 7: one submission** with queue checks, tree and maze traces, driver, and explanation | Checked matrix/list API, predecessor implementation, and larger-maze generalization | [Week 8 page](student_question_bank/week_08_bfs.md) |
 | 9 | Hash Table — [Module 9](module_09_hash_table/README.md): fifteen buckets, ten key/data nodes, whole-table reset, and two sum in the supplied lab.c | Ordinary lab 8: one driver and evidence submission | Older open-addressed map, resizing, and adversarial extensions | [Week 9 page](student_question_bank/week_09_hash_table.md) |
-| 10 | Integer min/max Heaps and shared on-time — [Module 10](module_10_binary_heap/README.md) follows current lab.c | **Lab 9: one submission** of driver, tests, traces, maps, and interval reasoning | Alert-record Heap, dynamic allocation, and unsorted-baseline implementation | [Week 10 page](student_question_bank/week_10_priority_queue_heap.md) |
+| 10 | Priority queues and meeting time — [Chapter 10](module_10_priority_queue/README.md) follows current lab.c and presentation references | **Lab 9: one submission** of driver, tests, queue/interval traces and corrections | Archived Dijkstra and alternative heap examples | [Week 10 page](student_question_bank/week_10_priority_queue_heap.md) |
 | 11 | Dijkstra — [Module 11](module_11_graph_dijkstra/README.md): trace and test the supplied indexed-Heap `student/lab.c` | **Practical 2 only**, including same-graph comparison | Lazy-duplicate parser/path API | [Week 11 page](student_question_bank/week_11_dijkstra.md) |
 | 12 | Binary Search and BSTs — [Module 12](module_12_binary_search_bst/README.md): first-match binary search, BST search/insertion, inorder, height, and skew | Ordinary lab 10: one search/BST evidence artifact | BST deletion, sorting implementations, and package extensions | [Existing Week 12 page — pending alignment](student_question_bank/week_12_avl.md) |
 | 13 | AVL Rotations and Review — [Module 13](module_13_avl_review/README.md): balance, four rotation cases, guided insertion, and course review | Lab artifact 11: AVL evidence and a review memo in one submission | AVL deletion, insertion/merge-sort instruction, and package extensions | [Existing Week 13 page — pending alignment](student_question_bank/week_13_search_sort_consolidation.md) |
@@ -276,28 +276,25 @@ The actual arrays fix ten nodes and fifteen buckets. Direct addressing,
 open addressing, and Robin Hood hashing supply PPT context; implementing
 probing, deletion, resizing, or the older library is optional.
 
-### Week 10 — Integer Heaps and Shared On-Time
+### Week 10 — Priority Queues and Finding a Meeting Time
 
-[Module 10](module_10_binary_heap/README.md) follows its current
-[student/lab.c](module_10_binary_heap/student/lab.c). Students trace and test
-the supplied fixed integer min/max Heap, including bottom-up construction.
-They then trace ten-device closed intervals using a max-on ID Heap, min-off
-ID Heap, current epochs, two inverse position maps, and local key repair.
-The code and driver evidence form **one artifact**, with one rubric and due date.
+[Chapter 10](module_10_priority_queue/README.md) follows its unchanged
+[student/lab.c](module_10_priority_queue/student/lab.c) and concept/code presentation references. The slides say Week 12; this package keeps the Chapter 10 identifier and existing course-week slot. No other week is rescheduled by this alignment.
 
-Use all ten IDs, each with one through five nonnegative, ordered disjoint
-intervals. Callers enforce capacity, nonempty removal, valid IDs, and interval
-bounds. Dynamic allocation, alert arrival sequences, comparison counters,
-and status-return contracts belong to the optional alert-record library and
-[baseline](module_10_binary_heap/priority_queue_baseline/README.md).
-They are not required implementations or a second submission.
+Students trace a sorted-array priority queue with a strict callback, stable ties and front/rear indices, then advance the earliest-logout user to find the earliest common meeting. Intervals include login and exclude logout, so endpoint equality fails. Use three users with three chronological nonempty nonnegative intervals each. The sample returns 12 after six advances. The queue has ten slots for at most nine cumulative insertions and does not reuse consumed positions.
+
+The code, original regression, trace, comparison and correction form **one ordinary lab artifact**, with one rubric and due date. There are no heap, inverse-map, graph or dynamic-allocation implementation requirements. Older implementations are archived and excluded from the current release. This chapter supplies priority-selection ideas; later heap lessons must introduce their own representation and repair rules.
 
 | Activity | Minutes |
-|---|---:|
-| Numeric priority, complete shape, formulas, and min/max order | 35 |
-| Add/remove, up/down repair, bottom-up rebuild, and pause | 65 |
-| Two ID heaps, epochs, callbacks, maps, and interval search | 60 |
-| Tests, costs, evidence, correction, and exit synthesis | 20 |
+| --- | ---: |
+| Recall FIFO and preserve an informal meeting model | 15 |
+| Priority order, sorted insertion, removal, stable ties and capacity | 45 |
+| Current intervals, IDs, function pointers and three-target pause | 30 |
+| Break and build setup | 10 |
+| Canonical survey trace, strict endpoints and exhaustion | 25 |
+| Actual-source tests and one original regression | 25 |
+| Scan comparison, generalized costs and storage | 15 |
+| Evidence, corrections and exit explanation | 15 |
 | **Total** | **180** |
 
 ### Week 11 — Dijkstra and Practical 2
@@ -443,9 +440,9 @@ integration/report/defense rather than scoring the lab's algorithm criteria twic
    the driver when it includes the lab. The older open-addressed map is
    optional and supplies no required implementation TODOs.
 6. In Week 10, release the current Module 10 `student/lab.c` and its driver,
-   trace, and evidence materials. Teach integer min/max repair and construction,
-   then the ten-ID dual-Heap interval search. The alert-record library and
-   unsorted baseline are optional references with separate contracts.
+   trace, and evidence materials, including both textbook languages. Teach sorted
+   insertion, strict logout order, stable ties and the three-user half-open
+   meeting search. Archive old implementations; require no second backend.
 7. In Week 11, release only the preparation and support for Practical 2.
    Week 12 selects binary-search and ordinary-BST references for one evidence
    artifact. Week 13 selects indexed AVL references and earlier artifacts for

@@ -212,74 +212,77 @@ The legacy open-addressing library and delete-to-empty autopsy use a
 different representation. Tombstones, growth, and unique-key updates are
 optional comparisons rather than required answers for the current lab.
 
-## Week 10 — Integer Heaps and Shared On-Time
+## Week 10 — Priority Queues and Finding a Meeting Time
 
 [Weekly vocabulary and scope](week_10_priority_queue_heap.md)
 
-### Meaning and representation
+### Priority and representation
 
-- How does priority selection differ from FIFO arrival order?
-- What complete-tree shape does the active array prefix represent?
-- Why can a valid min Heap have siblings in either numeric order?
-- What does is_min_heap select, and why is it not an invariant checker?
-- How do parent, left, and right distinguish a missing position with -1?
-- Why does proper_parent return a position rather than a stored value?
-- What does the first-argument tie behavior guarantee, and why is FIFO stability not guaranteed?
+1. How does choosing by priority differ from choosing the first arrival?
+2. Does the abstract priority queue require arrival order for equal priorities? What does this source do?
+3. What does queue[position] store during survey: an ID, a position, or a time?
+4. What do front and rear identify when the queue is nonempty?
+5. Why are the initial indices 0 and -1?
+6. How do rear-front+1 and front==rear+1 describe count and emptiness?
+7. Why are consumed positions before front outside the live range?
+8. Why can a successful survey leave queued IDs instead of an empty queue?
 
-### Integer operations and tracing
+### Sorted insertion and removal
 
-- Where does add place a new value before heapify_up begins?
-- Which parent relationships change while adding 1 after 7,3,5?
-- What active prefix results from adding 7,3,5,1,9,4?
-- Which replacement and child choices produce the first root removal?
-- How does heapify_down avoid reading a missing right child?
-- Why does singleton removal safely call heapify_down with size zero?
-- Why must a caller prevent empty removal and insertion into ten live slots?
-- Why must changing the min/max flag on existing values be followed by heapify?
-- Why does bottom-up heapify begin at parent(size-1)?
+9. Where does enqueue first try to place a new item?
+10. Which values move when compare(new,old) reports higher priority?
+11. Why must the insertion loop stop at front rather than index zero?
+12. After inserting 7,2,5 and removing once, what happens when 1 is inserted?
+13. Why does strict comparison preserve arrival order for equal priorities?
+14. Using smaller last-digit priority, in what order do 21,11,32,1,22 leave?
+15. Why does dequeue take constant work without shifting the live items?
+16. After ten total insertions and removals, why is another enqueue invalid without initialization?
 
-### Interval input and Heap callbacks
+### Current intervals and C callbacks
 
-- What do the paired cells in toggle_info[id] contain?
-- How do interval_size and epoch differ?
-- Why must every ID have one through five chronologically ordered valid intervals?
-- What do max_on_heap.array and min_off_heap.array store?
-- Why do full-Heap comparators receive IDs while basic comp receives positions?
-- What function choices are stored in Heap_Full.comp and Heap_Full.swap?
-- Why are the fixed full-Heap child helpers different from the size-based helpers?
+17. How do log indices 2*epoch and 2*epoch+1 select the current pair?
+18. Which fields does init_users set for each user?
+19. What is the difference between timelogs and users?
+20. What type of function does int (*compare)(int,int) point to?
+21. What does &earlier_logout pass to init_queue?
+22. Does the comparator return strict Boolean priority or a negative/zero/positive ordering code?
+23. Why can changing a still-queued user's logout break the stored order?
+24. Which names and sample size differ between the slides and actual lab?
 
-### Maps and local repair
+### Candidate and interval advancement
 
-- What does array[position_map[id]] == id assert?
-- Why does each Heap need its own inverse position map?
-- Which two map entries must __swap__ update?
-- How can stale maps break a later repair even when current Heap order looks valid?
-- Why does one epoch change require repairs in both Heaps?
-- When does _reheapify choose up, and when does it choose down?
-- What assumptions make one-direction repair sufficient after a key change?
+25. Why is the greatest current login the earliest possible meeting for the selected intervals?
+26. Why does equality of candidate and earliest logout fail?
+27. Which interval must be advanced when the current candidate is not feasible?
+28. Why can discarding that blocking interval not discard a possible earlier meeting?
+29. Why can only the returning user's new login be compared with the old candidate?
+30. Why does a new login of 11 leave an existing candidate of 12 unchanged?
+31. Why must the removed ID be reinserted before selecting the next earliest logout?
 
-### Overlap and correctness
+### Canonical trace and endings
 
-- Why do the latest current on-time and earliest current off-time decide overlap?
-- Why does equality count as success for closed intervals?
-- Which ID must advance when latest on is greater than earliest off?
-- Why can advancing an earliest-off interval not skip a valid common time?
-- Which bounds occur in the canonical trace before the answer 8?
-- Why does exhaustion return before reading the next endpoint?
-- Why must callers avoid current-time accessors after an exhaustion return?
-- What does a fresh all_on_time call reset?
+32. What are the sample's initial candidate, sorted IDs and first removed ID?
+33. Which six user advances and candidate values lead to the sample answer?
+34. Which three current intervals contain the returned meeting time 12?
+35. What are the final front, rear, live IDs and selected ID?
+36. How many insertions, removals and successful advances occur, and how were they measured?
+37. Which fields change or stay old when next_epoch returns -1, and what does a fresh survey reset?
 
-### Testing, costs, and transfer
+### Work, storage and comparison
 
-- Which tests check duplicates, max mode, singleton removal, and a left-only child?
-- How can a driver check both Heap order and inverse-map consistency?
-- Which ten-ID fixtures distinguish immediate overlap, delayed overlap, endpoint equality, and exhaustion?
-- Why is bottom-up build O(n) while repeated insertion can take O(n log n)?
-- Why is the generalized search O(n + A log n) with O(n) auxiliary storage?
-- How do fixed ten-ID storage and at most five intervals bound the literal program?
-- How does Heap parent-child order differ from the BST search order taught later?
-- What belongs in the single Week 10 driver, trace, test, and correction submission?
-- Which allocation, stable-tie, and counter claims belong only to the optional alert library?
+38. What is the worst-case work of insertion into k live items, and of removal?
+39. Why can initial population cost O(U²) before A advances cost O(AU)?
+40. How does the linear logout-scan reference cost O(U+AU), and why is no queue speedup claimed?
+41. Why must queue storage cover U+A<=UE cumulative insertions rather than peak live U?
+42. How does enumerating all interval combinations check results independently of the advancement rule?
+
+### Testing and evidence
+
+43. Why compile the test driver alone when it includes lab.c, and is any external module needed?
+44. Which valid fixtures check immediate overlap, endpoint-only contact, exhaustion and repeated calls?
+45. How can an original regression expose accepting equality or lowering a candidate?
+46. How do custom fixture tests preserve and restore the original input without editing lab.c?
+47. What belongs in the single driver, trace, comparison and correction artifact, and why is the supplied smoke test insufficient?
 
 ## Week 11 — Indexed-Heap Dijkstra and Practical 2
 
@@ -354,7 +357,7 @@ optional comparisons rather than required answers for the current lab.
 - Which supplied functions must students trace rather than reimplement for Practical 2?
 - Which driver, output, trace, same-graph comparison, and corrected explanation belong in the single submission?
 - Why do the five teaching checkpoints not create five assignments or extra contact time?
-- Which Week 10 heap and inverse-map ideas transfer to the changing distance keys?
+- Which Chapter 10 priority-selection and changed-key ideas transfer to this lesson? Which heap and inverse-map rules must be introduced separately?
 - Which Priority Queue properties describe the ADT, and which depend on the indexed-heap implementation?
 - How does Dijkstra's source-to-node objective differ from a minimum-spanning-tree objective in Week 14?
 

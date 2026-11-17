@@ -1,53 +1,47 @@
-# Module 11 Student Code — Indexed-Heap Dijkstra
+# Chapter 10 C Package — Sorted Priority Queue
 
-The required implementation is the complete `../student/lab.c`, not a
-starter API. Both drivers include it directly. Its own include loads
-`../module_03_graph/student/lab.c` through the archive-root include path.
-Keep these directories together and compile each driver alone.
+Each driver includes [the exact teaching source](../student/lab.c) once. Compile the driver alone with the student include path. No graph source, library or external module is needed. The source has no main and no required TODOs.
 
-Use a C11 compiler and GNU Make from this directory:
+## Make targets
 
-```sh
-make lab-compile
-make core
-make student-tests
-make comparison
-```
-
-Override the compiler with `make CC=clang core`. To enable runtime checks:
+From the repository root:
 
 ```sh
-make CC=clang BUILD_DIR=build-sanitize CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined -fno-omit-frame-pointer' core student-tests
+make -C module_10_priority_queue/code lab-compile core student-tests comparison
 ```
 
-PowerShell users can run:
+From the module or extracted student-release root:
+
+```sh
+make -C code lab-compile core student-tests comparison
+```
+
+Default make runs core and student-tests. lab-compile builds an object only. core checks queue ordering/ties, indices/capacity, user state, canonical trace, boundaries, repeats and 10,000 schedules against an independent interval-combination oracle. student-tests supplies a smoke check; add one original regression. comparison checks the actual survey against a local-epoch linear logout scan and the independent oracle on identical logs. It claims no asymptotic speedup.
+
+Override CC, CFLAGS, CPPFLAGS, LAB_DIR or BUILD_DIR as needed. To check warnings and runtime bounds with Clang:
+
+```sh
+make -C code CC=clang BUILD_DIR=build-sanitize CFLAGS='-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -g -fsanitize=address,undefined -fno-omit-frame-pointer' lab-compile core student-tests comparison
+```
+
+Run this form from the module/release root; from the repository root use the full module code path. A separate build directory prevents reusing unsanitized binaries. Tests restore the supplied input after fixtures.
+
+## PowerShell
+
+From the module or release root, with Clang, GCC/MinGW-w64 or a Visual Studio developer environment:
 
 ```powershell
-.\build.ps1 -CompileOnly
-.\build.ps1
-.\build.ps1 -StudentTests
-.\build.ps1 -Sanitize
+./code/build.ps1 -Target lab-compile
+./code/build.ps1 -Target core
+./code/build.ps1 -Target student-tests
+./code/build.ps1 -Target comparison
+./code/build.ps1 -Target core -Sanitize
 ```
 
-The script selects an installed C compiler. The supplied source uses
-empty-parameter function declarations; record compiler warnings without
-modifying it to conceal them. Neither invalid input nor overflowing signed
-addition is an allowed test case for this lab.
+The default -Target lab is an alias for core. -StudentTests alone selects the student driver for compatibility. -CompileOnly builds without running; lab-compile always builds only an object. MSVC uses AddressSanitizer when requested; Clang/GCC use address and undefined-behavior sanitizers. Runtime support depends on the compiler installation. Archived starter/solution/autopsy targets are not part of this script.
 
-`tests/compare_lab.c` supplies BFS hop distances and linear-minimum-selection
-Dijkstra on the same fixture, then checks the actual indexed-heap costs.
-The comparison prints measured linear selection work; heap event totals
-come from the source trace, not exported counters.
+## Valid experiments
 
-`tests/test_lab.c` checks the actual heap and shortest-distance behavior,
-including inverse positions only for live entries and an independent
-shortest-distance reference. Add your own focused tests in
-`tests/test_lab_student.c` and submit the driver plus saved output.
+Before enqueue ensure rear+1<CAPACITY; before dequeue ensure front<=rear. Initialize a strict comparator first. Slots are not reused until initialization. Use all three users and three nonempty chronological [login,logout) intervals per user, with nonnegative times and no overlap within a row. Save and restore custom logs. Do not execute invalid operations to test hypothetical rejection statuses. On exhaustion, stop or restart with survey; epoch has already advanced past the final interval while endpoint fields retain their old values.
 
-Pending heap values are node IDs, priorities live in `node_dist`, and
-`node_heap_pos` locates each live ID. Removed map entries are stale. Equal
-priorities have no stable order. The run uses positive `int` edge costs,
-leaves unreachable distances at `-1`, and records finalization in `found`.
-It exposes no predecessor path, parser, status code, allocation contract,
-or range guard. The optional lazy-duplicate library in the repository is
-not included in this student release.
+The supplied answer is 12, with final front=7/rear=8. Live count is two, while cumulative writes are nine. Costs are O(k) insertion, O(1) removal, O(U²+AU) survey, and up to UE queue slots for cumulative insertions. The standalone release contains both textbook languages, source, presentations, worksheets, diagrams and these build/test files; instructor keys and historical materials are excluded.

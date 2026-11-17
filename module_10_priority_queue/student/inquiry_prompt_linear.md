@@ -1,88 +1,53 @@
-# Stage A — Fewest Connections or Least Total Time? (Linear Form)
+# Chapter 10 — When Can Everyone Meet? — Linear Response Format
 
-Name: ____________________________  Date: ____________________________
+Keep your first answers before opening the representation reveal or worked trace. Use a timeline, words, movable cards, speech, or a linear list. The response format does not change the questions.
 
-Use this file before opening the representation or code. It asks the same
-questions as the standard form without a route table. Preserve first
-responses and add labeled corrections later. All places and minutes are
-invented. Add minutes for consecutive parts of a route.
+Three users plan the following sessions. A login starts availability; a logout ends it immediately.
 
-There are six places, A through F. Start at A and consider E as the goal.
-Connections work only in the stated direction:
+- User 0: 5–6, 8–9, 11–13.
+- User 1: 2–5, 7–8, 12–15.
+- User 2: 1–3, 5–7, 9–14.
 
-1. A to B takes 9 minutes.
-2. A to C takes 2 minutes.
-3. A to E takes 14 minutes.
-4. B to D takes 1 minute.
-5. B to E takes 8 minutes.
-6. C to B takes 3 minutes.
-7. C to D takes 2 minutes.
-8. D to E takes 2 minutes.
+## A. Choose what matters next
 
-F has no listed connection from A.
+A queue normally chooses the first arrival. If we need to know who leaves next, does arrival order answer the question? Describe the information needed to choose.
 
-## A. Retrieve the earlier layer rule
+First response (words, numbered steps, or dictated answer):
 
-An earlier method checks places in layers by connection count. Ignore
-minutes. Which route reaches E with the fewest connections? How many
-minutes does that route take?
+________________________________________________________________
 
-Response: ___________________________________________________________
+## B. Propose a time
 
-## B. Compare a longer route
+Start with each user's first session. What is the earliest time by which all three have arrived? Is everyone still present then? Does leaving exactly when someone arrives allow a meeting?
 
-Count connections and add minutes for A to C to D to E. Can more
-connections require less total time? State what each goal measures.
+First response (words, numbered steps, or dictated answer):
 
-Response: ___________________________________________________________
+________________________________________________________________
 
-## C. Keep one current best total per place
+## C. Decide what to replace
 
-Imagine one movable card per place. It records the best total found so far;
-a blank card means no route has been found. Start A at zero and leave all
-other cards blank.
+If a user has already left by the proposed time, which session should we replace? Explain why discarding that session cannot discard a possible meeting. What happens if that user has no later session?
 
-C1. After checking A's connections, what totals appear on B, C, and E?
+First response (words, numbered steps, or dictated answer):
 
-Response: ___________________________________________________________
+________________________________________________________________
 
-C2. Which waiting card has the smallest total?
+## D. Keep only the necessary information
 
-Response: ___________________________________________________________
+After changing one user's session, must we compare every login again? Which old information can be kept? What must be reconsidered about who leaves next?
 
-C3. After checking C's connections, what totals should B and D show?
+First response (words, numbered steps, or dictated answer):
 
-Response: ___________________________________________________________
+________________________________________________________________
 
-C4. Must you create a second B card? Explain how changing and repositioning
-its existing card could work.
+## E. Test your rule
 
-Response: ___________________________________________________________
+Continue until you find a meeting or prove none exists. Record each changed user and proposed time. Invent one schedule with no overlap and explain how your rule stops.
 
-## D. Choose the next unfinished place
+First response (words, numbered steps, or dictated answer):
 
-After C, compare B, D, and E. Which should be checked next? What total can
-its outgoing connection offer E?
-
-Response: ___________________________________________________________
-
-## E. Explain a blank card
-
-What does a blank F card mean when no waiting cards remain? Does this prove
-that travel is impossible outside the invented map?
-
-Response: ___________________________________________________________
-
-## F. Test your rule
-
-Give a selection rule and a rule for replacing an old total. Explain what
-happens on an equal total and why a negative connection time could
-undermine the selection rule.
-
-Response: ___________________________________________________________
+________________________________________________________________
 
 ## Preserve and revisit
 
-Save this response before Stage B. Later identify an original claim, an
-observation that changed it, and the revised claim. Standard, linear,
-spoken, dictated, and typed responses receive the same assessment.
+After the lesson, retain each first answer and add the observation that changed it, your revised rule, and one test that distinguishes the rules. This inquiry is part of one lab artifact, not an additional assignment.

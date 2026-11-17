@@ -9,5 +9,5 @@ $arguments = @($packager)
 if ($OutputPath) { $arguments += @("--output", $OutputPath) }
 & $python.Source @arguments
 if ($LASTEXITCODE -ne 0) {
-    throw "Module 11 packaging failed with exit code $LASTEXITCODE."
+    throw "Chapter 10 packaging failed with exit code $LASTEXITCODE."
 }

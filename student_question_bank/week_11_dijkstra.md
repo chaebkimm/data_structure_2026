@@ -140,7 +140,7 @@ API, not another required implementation or path-reconstruction assignment.
 - Which supplied functions must students trace rather than reimplement for Practical 2?
 - Which driver, output, trace, same-graph comparison, and corrected explanation belong in the single submission?
 - Why do the five teaching checkpoints not create five assignments or extra contact time?
-- Which Week 10 heap and inverse-map ideas transfer to the changing distance keys?
+- Which Chapter 10 priority-selection and changed-key ideas transfer to this lesson? Which heap and inverse-map rules must be introduced separately?
 - Which Priority Queue properties describe the ADT, and which depend on the indexed-heap implementation?
 - How does Dijkstra's source-to-node objective differ from a minimum-spanning-tree objective in Week 14?
 

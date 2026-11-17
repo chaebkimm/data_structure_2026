@@ -29,12 +29,12 @@ insertion-sort and merge-sort instruction are optional.
 | 7 | Linked lists, shared pool, and linked Stack/Queue | 36 | 0 | 42 | [Week 7](student_question_bank/week_07_linked_list.md) |
 | 8 | Processing data in stored order: array queues and BFS | 33 | 2 | 48 | [Week 8](student_question_bank/week_08_bfs.md) |
 | 9 | Chained Hashing and Two Sum | 30 | 0 | 44 | [Week 9](student_question_bank/week_09_hash_table.md) |
-| 10 | Integer Heaps and Shared On-Time | 40 | 5 | 47 | [Week 10](student_question_bank/week_10_priority_queue_heap.md) |
+| 10 | Priority Queues and Finding a Meeting Time | 21 | 0 | 47 | [Week 10](student_question_bank/week_10_priority_queue_heap.md) |
 | 11 | Indexed-Heap Dijkstra and Practical 2 | 33 | 9 | 53 | [Week 11](student_question_bank/week_11_dijkstra.md) |
 | 12 | Binary Search and BSTs — bank pending alignment | 45 | 3 | 47 | [Existing Week 12 page — pending alignment](student_question_bank/week_12_avl.md) |
 | 13 | AVL Rotations and Review — bank pending alignment | 24 | 0 | 40 | [Existing Week 13 page — pending alignment](student_question_bank/week_13_search_sort_consolidation.md) |
 | 14 | Union-Find, Kruskal, and integration | 37 | 0 | 44 | [Week 14](student_question_bank/week_14_dsu_mst_capstone.md) |
-| **Total** | | **477** | **24** | **648** | |
+| **Total** | | **458** | **19** | **648** | |
 
 The separate final-assessment period uses the Week 14 and course-wide pages
 for capstone defense. It does not add another teaching week.

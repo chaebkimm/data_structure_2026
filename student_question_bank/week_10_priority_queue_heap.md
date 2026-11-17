@@ -1,143 +1,116 @@
-# Week 10 — Integer Heaps and Shared On-Time: Vocabulary and Questions
+# Chapter 10 — Priority Queues and Finding a Meeting Time: Vocabulary and Questions
 
 [All-week vocabulary and question bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
 ## Required scope
 
-The required source is [student/lab.c](../module_10_binary_heap/student/lab.c).
-Students trace and test the supplied fixed integer min/max Heap, bottom-up
-construction, and ten-device dual-Heap interval search. They submit one
-driver/evidence artifact. The alert-record Heap and unsorted-array baseline
-are optional references with separate contracts. They do not add required
-allocation, stable-arrival, status, checker, or counter implementation tasks.
-Use nonnegative closed intervals, with 1–5 ordered disjoint intervals for
-each ID 0–9. The supplied code does not validate caller preconditions.
+Use the unchanged [lab.c](../module_10_priority_queue/student/lab.c), concept/code presentations, and matching English/Korean textbooks. Trace sorted insertion, front/rear, strict comparison and stable ties, then the three-user meeting search. Availability is [login,logout); endpoint equality fails. The source has no main or external module dependency and is supplied complete.
 
-## Vocabulary students will learn
+Use three nonnegative nonempty chronological nonoverlapping intervals per user. Prevent full insertion at the end and empty removal. Slots are never reused before initialization, so ten slots must cover up to nine cumulative insertions. The sample returns 12. This is one ordinary lab artifact within 180 minutes; no heap, graph, inverse-map or allocation implementation is required. Superseded materials are archived and excluded from the release.
+
+The filename retains the existing Week 10 question-bank route. Package titles use Chapter 10. The presentations say Week 12; their label does not move other course weeks.
+
+## Required vocabulary — 21 entries
 
 | Term | Working meaning |
-|---|---|
-| Priority Queue | A collection that selects by a comparison rule rather than FIFO arrival. |
-| binary Heap | A complete binary tree whose parent-child order keeps an extreme at the root. |
-| complete binary tree | Levels fill from left to right without gaps in the active array. |
-| active prefix | The positions from 0 through size-1 currently in use. |
-| min Heap | Each parent value is no greater than either child value. |
-| max Heap | Each parent value is no less than either child value. |
-| mode flag | is_min_heap selects <= for nonzero or >= for zero; it is not a checker. |
-| root | Position 0, containing an extreme under the current valid Heap order. |
-| parent index | (i-1)/2 for a valid non-root position i. |
-| left-child index | 2*i+1, if that position exists. |
-| right-child index | 2*i+2, if that position exists. |
-| sentinel | The value -1 marks an absent position in relation helpers. |
-| comparator | A function deciding whether the first value may remain above the second. |
-| proper_parent | The helper selecting a winning position, with absent-position handling. |
-| swap | Exchange the values at two positions. |
-| Heap-order invariant | Every active parent-child pair follows the selected comparison rule. |
-| partial order | Parent-child order does not require sorted siblings or a sorted full array. |
-| sift-up | Repair one changed position along its ancestors; heapify_up in the lab. |
-| sift-down | Repair toward the better existing child; heapify_down in the lab. |
-| bottom-up construction | Build order by repairing internal nodes backward with heapify. |
-| one-child case | A parent has a left child but no right child. |
-| caller precondition | A required valid state that the supplied function does not enforce. |
-| fixed capacity | Storage reserves ten positions and never grows. |
-| closed interval | An on/off range that includes both endpoints. |
-| endpoint | One on-time or off-time of an interval. |
-| device ID | An integer 0–9 identifying one row of interval input. |
-| epoch | The selected interval number for one ID, starting at 0. |
-| interval count | interval_size[id] counts intervals, not endpoint cells. |
-| accessor | A helper such as get_on_time that reads the current endpoint for an ID. |
-| function pointer | A stored function choice, used for a Heap comparator or swap callback. |
-| ID Heap | An array storing IDs whose priorities are obtained from current interval state. |
-| inverse position map | An array mapping each ID back to its position in one Heap. |
-| priority update | A key change requiring repair even though the stored ID stays the same. |
-| direction-aware repair | Use the parent relationship to choose upward or downward repair. |
-| latest on-time | The greatest current on endpoint, supplied by max_on_heap. |
-| earliest off-time | The smallest current off endpoint, supplied by min_off_heap. |
-| overlap | The chosen closed intervals share a time when latest on <= earliest off. |
-| exhaustion | Advancing an ID beyond its last interval causes all_on_time to return -1. |
-| O(log n) | A repair path grows with complete-tree height for generalized n. |
-| O(n + A log n) | Generalized two-Heap construction and A epoch advances. |
+| --- | --- |
+| FIFO | Remove in arrival order; the earlier queue rule being recalled. |
+| Priority queue | Remove an item with highest priority under a comparison rule. |
+| Comparator | A function returning nonzero when its first argument has strictly higher priority. |
+| Sorted insertion | Shift lower-priority live items right to open the correct position. |
+| Stable ties | Equal-priority items retain their order of insertion into the queue. |
+| `front` | Index of the first live item; incremented by removal. |
+| `rear` | Index of the last live item; incremented by insertion. |
+| Live range | Positions front through rear; count rear - front + 1. |
+| Empty state | front == rear + 1; initially 0 and -1. |
+| Cumulative insertion count | All insertions since queue initialization; equals rear + 1. |
+| Caller precondition | A condition callers must ensure because the source does not check it. |
+| User ID | Row number identifying one user; the queue stores this ID. |
+| Half-open interval | [login,logout): online at login, offline at logout. |
+| Epoch | Zero-based selected interval number, stored in users[id].epoch. |
+| Candidate | Greatest current login; meeting_time in survey. |
+| Blocking interval | An interval whose logout is at or before the candidate. |
+| Exhaustion | No next interval exists; next_epoch returns -1 after incrementing epoch. |
+| Function pointer | Stores a function address; compare selects the priority rule. |
+| Function address | &earlier_logout, passed to init_queue. |
+| Invariant | A state relationship preserved by each valid operation. |
+| Independent oracle | A different calculation used to check results, here interval-combination enumeration. |
 
-### Optional reference vocabulary
+No optional vocabulary cluster is required for this package.
 
-| Term | Working meaning |
-|---|---|
-| stable alert record | Optional library record with priority and insertion-sequence tie-breaking. |
-| unsorted baseline | Optional reference library that scans for its next alert. |
-| dynamic allocation | Optional library storage obtained and later released through C allocation. |
-| comparison counter | Optional library instrumentation absent from student/lab.c. |
-| decrease-key interface | A possible extension for changing a selected stored priority. |
+## Questions — 47 prompts
 
-## Anticipated student questions
+### Priority and representation
 
-### Meaning and representation
+1. How does choosing by priority differ from choosing the first arrival?
+2. Does the abstract priority queue require arrival order for equal priorities? What does this source do?
+3. What does queue[position] store during survey: an ID, a position, or a time?
+4. What do front and rear identify when the queue is nonempty?
+5. Why are the initial indices 0 and -1?
+6. How do rear-front+1 and front==rear+1 describe count and emptiness?
+7. Why are consumed positions before front outside the live range?
+8. Why can a successful survey leave queued IDs instead of an empty queue?
 
-- How does priority selection differ from FIFO arrival order?
-- What complete-tree shape does the active array prefix represent?
-- Why can a valid min Heap have siblings in either numeric order?
-- What does is_min_heap select, and why is it not an invariant checker?
-- How do parent, left, and right distinguish a missing position with -1?
-- Why does proper_parent return a position rather than a stored value?
-- What does the first-argument tie behavior guarantee, and why is FIFO stability not guaranteed?
+### Sorted insertion and removal
 
-### Integer operations and tracing
+9. Where does enqueue first try to place a new item?
+10. Which values move when compare(new,old) reports higher priority?
+11. Why must the insertion loop stop at front rather than index zero?
+12. After inserting 7,2,5 and removing once, what happens when 1 is inserted?
+13. Why does strict comparison preserve arrival order for equal priorities?
+14. Using smaller last-digit priority, in what order do 21,11,32,1,22 leave?
+15. Why does dequeue take constant work without shifting the live items?
+16. After ten total insertions and removals, why is another enqueue invalid without initialization?
 
-- Where does add place a new value before heapify_up begins?
-- Which parent relationships change while adding 1 after 7,3,5?
-- What active prefix results from adding 7,3,5,1,9,4?
-- Which replacement and child choices produce the first root removal?
-- How does heapify_down avoid reading a missing right child?
-- Why does singleton removal safely call heapify_down with size zero?
-- Why must a caller prevent empty removal and insertion into ten live slots?
-- Why must changing the min/max flag on existing values be followed by heapify?
-- Why does bottom-up heapify begin at parent(size-1)?
+### Current intervals and C callbacks
 
-### Interval input and Heap callbacks
+17. How do log indices 2*epoch and 2*epoch+1 select the current pair?
+18. Which fields does init_users set for each user?
+19. What is the difference between timelogs and users?
+20. What type of function does int (*compare)(int,int) point to?
+21. What does &earlier_logout pass to init_queue?
+22. Does the comparator return strict Boolean priority or a negative/zero/positive ordering code?
+23. Why can changing a still-queued user's logout break the stored order?
+24. Which names and sample size differ between the slides and actual lab?
 
-- What do the paired cells in toggle_info[id] contain?
-- How do interval_size and epoch differ?
-- Why must every ID have one through five chronologically ordered valid intervals?
-- What do max_on_heap.array and min_off_heap.array store?
-- Why do full-Heap comparators receive IDs while basic comp receives positions?
-- What function choices are stored in Heap_Full.comp and Heap_Full.swap?
-- Why are the fixed full-Heap child helpers different from the size-based helpers?
+### Candidate and interval advancement
 
-### Maps and local repair
+25. Why is the greatest current login the earliest possible meeting for the selected intervals?
+26. Why does equality of candidate and earliest logout fail?
+27. Which interval must be advanced when the current candidate is not feasible?
+28. Why can discarding that blocking interval not discard a possible earlier meeting?
+29. Why can only the returning user's new login be compared with the old candidate?
+30. Why does a new login of 11 leave an existing candidate of 12 unchanged?
+31. Why must the removed ID be reinserted before selecting the next earliest logout?
 
-- What does array[position_map[id]] == id assert?
-- Why does each Heap need its own inverse position map?
-- Which two map entries must __swap__ update?
-- How can stale maps break a later repair even when current Heap order looks valid?
-- Why does one epoch change require repairs in both Heaps?
-- When does _reheapify choose up, and when does it choose down?
-- What assumptions make one-direction repair sufficient after a key change?
+### Canonical trace and endings
 
-### Overlap and correctness
+32. What are the sample's initial candidate, sorted IDs and first removed ID?
+33. Which six user advances and candidate values lead to the sample answer?
+34. Which three current intervals contain the returned meeting time 12?
+35. What are the final front, rear, live IDs and selected ID?
+36. How many insertions, removals and successful advances occur, and how were they measured?
+37. Which fields change or stay old when next_epoch returns -1, and what does a fresh survey reset?
 
-- Why do the latest current on-time and earliest current off-time decide overlap?
-- Why does equality count as success for closed intervals?
-- Which ID must advance when latest on is greater than earliest off?
-- Why can advancing an earliest-off interval not skip a valid common time?
-- Which bounds occur in the canonical trace before the answer 8?
-- Why does exhaustion return before reading the next endpoint?
-- Why must callers avoid current-time accessors after an exhaustion return?
-- What does a fresh all_on_time call reset?
+### Work, storage and comparison
 
-### Testing, costs, and transfer
+38. What is the worst-case work of insertion into k live items, and of removal?
+39. Why can initial population cost O(U²) before A advances cost O(AU)?
+40. How does the linear logout-scan reference cost O(U+AU), and why is no queue speedup claimed?
+41. Why must queue storage cover U+A<=UE cumulative insertions rather than peak live U?
+42. How does enumerating all interval combinations check results independently of the advancement rule?
 
-- Which tests check duplicates, max mode, singleton removal, and a left-only child?
-- How can a driver check both Heap order and inverse-map consistency?
-- Which ten-ID fixtures distinguish immediate overlap, delayed overlap, endpoint equality, and exhaustion?
-- Why is bottom-up build O(n) while repeated insertion can take O(n log n)?
-- Why is the generalized search O(n + A log n) with O(n) auxiliary storage?
-- How do fixed ten-ID storage and at most five intervals bound the literal program?
-- How does Heap parent-child order differ from the BST search order taught later?
-- What belongs in the single Week 10 driver, trace, test, and correction submission?
-- Which allocation, stable-tie, and counter claims belong only to the optional alert library?
+### Testing and evidence
 
-## Sources
+43. Why compile the test driver alone when it includes lab.c, and is any external module needed?
+44. Which valid fixtures check immediate overlap, endpoint-only contact, exhaustion and repeated calls?
+45. How can an original regression expose accepting equality or lowering a candidate?
+46. How do custom fixture tests preserve and restore the original input without editing lab.c?
+47. What belongs in the single driver, trace, comparison and correction artifact, and why is the supplied smoke test insufficient?
 
-- [Current Module 10 lab](../module_10_binary_heap/student/lab.c)
-- [Teaching package](../module_10_binary_heap/README.md)
-- [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)
-- [Module vocabulary](../module_10_binary_heap/student/vocabulary.md)
+## Teaching references
+
+- [Chapter 10 package](../module_10_priority_queue/README.md)
+- [English textbook](../module_10_priority_queue/student/textbook.md) · [한국어 교재](../module_10_priority_queue/student/textbook_korean.md)
+- [Instructor guide](../instructor_guide/chapter_10.md)
+- [Rubric](../module_10_priority_queue/student/rubric.md)

@@ -1,9 +1,5 @@
-# Module 11 — Stage A: Compare Total Route Costs
+# Chapter 10 Stage A — Preserve the Initial Model
 
-Open either [initial inquiry](../student/inquiry_prompt.md) or its
-[linear version](../student/inquiry_prompt_linear.md). Preserve an initial
-rule for comparing routes with different link costs before opening later
-materials. Include a route with more links but a smaller total and a goal
-that cannot be reached. Drawing quality and speed are not assessed.
+Open student/inquiry_prompt.md or student/inquiry_prompt_linear.md. Predict who leaves next, propose a common time and explain which interval to replace. Keep initial responses before the reveal.
 
-This is the first checkpoint within one Practical 2 submission.
+Stages are opening checkpoints within one 180-minute lesson and one submission, not five assignments. The full archive does not enforce withholding; instructors control opening order. Keep lab.c and presentation sources unchanged.

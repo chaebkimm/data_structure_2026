@@ -1,8 +1,5 @@
-# Module 11 — Stage B: Names and Cognitive Pause
+# Chapter 10 Stage B — Reveal Representation and Retrieve Rules
 
-After preserving the initial model, open the
-[representation reveal](../student/representation_reveal.md). Complete the
-exactly three targets in the [Cognitive Pause](../student/cognitive_pause.md)
-before comparing with the instructor model or opening the
-[vocabulary](../student/vocabulary.md). An accessible or extended-time
-response uses the same targets. Keep the original beside the correction.
+Open student/representation_reveal.md and student/cognitive_pause.md. Distinguish IDs, indices and times; read the callback syntax; answer exactly three retrieval targets before adding corrections.
+
+Stages are opening checkpoints within one 180-minute lesson and one submission, not five assignments. The full archive does not enforce withholding; instructors control opening order. Keep lab.c and presentation sources unchanged.

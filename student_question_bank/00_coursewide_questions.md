@@ -13,7 +13,7 @@
 - How do Week 7's linked Stack and node-index Queue use one pool safely, and how does their FIFO rule transfer to Week 8's array queues and BFS?
 - Why are Union-Find and Kruskal combined in Week 14?
 - How does Week 8 progress from FIFO queues through tree level order to minimum-hop graph reachability?
-- Why does Module 10 combine the Priority Queue contract and Binary Heap implementation?
+- How does Chapter 10 connect the Priority Queue contract to sorted insertion and a meeting-time search?
 - Why does Module 9 Hash Table bridge the BFS and priority/weighted-exploration spirals?
 - What does the Linear-to-Tree-to-Graph spiral organization mean for how I should study?
 - Are concepts introduced as previews expected knowledge when they return later?
@@ -47,7 +47,7 @@
 
 - Is there ever more than one required programming submission in a teaching week?
 - What belongs in the single Week 8 queue, tree BFS, and graph BFS submission?
-- What belongs in the single combined Week 10 Priority Queue and Heap submission?
+- What belongs in the single Chapter 10 priority-queue and meeting-time evidence submission?
 - Why is there no separate ordinary lab submission in Weeks 6 and 11?
 - How is the Week 14 MST, synthesis, and capstone-integration work folded into one artifact?
 - Does each capstone milestone require a second weekly submission?

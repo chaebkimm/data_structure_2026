@@ -1,227 +1,346 @@
-# Chapter 11 — Minimum-Cost Routes with an Indexed Heap
+# Chapter 10. Choosing by Priority
 
-This chapter explains the supplied [lab.c](lab.c). The code is complete;
-the required work is to predict states, trace operations, and test the
-actual source. Keep the initial inquiry and investigation predictions
-before reading the worked trace.
+A queue processes data in arrival order. Sometimes the data with the highest priority is needed. We will implement a simple data structure for this. As an example, we will use it to find the earliest time when every user plans to be logged in.
 
-## Why BFS and least cost can disagree
+## Thinking logically
 
-Breadth-first search processes a graph in edge-count layers. It finds the
-fewest connections from a source. When edges have different costs, counting
-connections does not add their weights.
+### What data structure fits if we need to process the highest-priority data next?
 
-```text
-A -> E                 1 edge,  cost 14
-A -> C -> D -> E        3 edges, cost 2 + 2 + 2 = 6
+A data structure similar to a queue or a stack fits: data goes in, waits, and is taken out one at a time. The only thing that changes is the rule for what comes out next, which is now the data with the highest priority.
+
+### How do we implement a simple data structure for this?
+
+Arrival order no longer determines which data comes out next. We keep the data in priority order, so the first data is always the one to take out. 
+
+### Which positions describe the current data?
+
+The waiting data sits in an array in priority order, from the highest-priority data at front to the lowest-priority data at rear. Taking data out increments front, and putting new data in increments rear. 
+
+### Which positions describe the empty data structure?
+
+When only one piece of data is waiting, front and rear are the same position. Taking that data out increments front, so the data structure is empty when front is one position after rear.
+
+### How does new data find its place?
+
+All the data with lower priority than the new data should be to the right of the new data. So we move that data one position to the right, and the new data goes into the vacant position.
+
+### How do we take out the highest-priority data?
+
+The highest-priority data is at front, so we take that data out. 
+
+### Given each user’s planned login and logout times, when can everyone meet?
+
+Everyone can meet at a time when every user has logged in and no user has logged out yet. Each user plans to log in and log out several times, and we look for the earliest time when all of them are logged in. 
+
+### What are the key properties we need to keep track of to solve the problem?
+
+We look at one login and logout of each user at a time, starting with the first ones. Among these, we want to track the latest login time and the earliest logout time. Everyone has logged in by the latest login time, and no one has logged out before the earliest logout time. If the earliest logout time is later than the latest login time, we can set the meeting time to the latest login time.
+
+### What changes if no meeting is possible with the current login and logout of each user?
+
+As time passes, the user with the earliest logout time logs out. Then we move on to that user’s next planned login and logout. The earliest logout time and the latest login time are updated, and we compare them again.
+
+### How do we update the latest login time?
+
+The user with the latest login time cannot be the user who is moving on. If it were the same user, the latest login time would be earlier than the earliest logout time, and the meeting could have been held. So the latest login time is still among the logins we are looking at, and we only have to compare it with the new login time and take the later one.
+
+### How do we update the earliest logout time?
+
+Because the user with the earliest logout time has moved on, we have to find which user has the earliest logout time now. Keeping the users in logout order makes the next earliest logout available, and this is what we built the data structure for. 
+
+## Calculating efficiency
+
+### How much work is putting new data in?
+
+Suppose n pieces of data are waiting. If the new data has the highest priority, it is compared with all n, and all n move. So putting data in takes at most n comparisons and n moves, and the work grows with the amount of waiting data.
+
+### How much work is taking data out?
+
+A fixed amount of work. The highest-priority data is already at front, so nothing is compared and nothing moves, however much data is waiting.
+
+### How much work is finding the latest login?
+
+Every login time in the plan is compared with the latest login time at most once: the first ones at the start, and each later one when its user moves on. So the work is at most one comparison for each login in the plan.
+
+### How much work is finding the earliest logout?
+
+A user is put into the data structure at most once for each logout time in the plan. Each time, it takes fewer comparisons and moves than there are users. So the work is at most the number of logouts in the plan times the number of users.
+
+### How much storage is needed?
+
+Every time a user is put in, the user takes a new position, because the positions before front are not used again. So the array needs one position for each logout time in the plan, although at most all the users are waiting at one time.
+
+## Glossary
+
+### Priority
+
+What decides which data comes out next. In the meeting problem, the user who logs out earlier has the higher priority.
+
+### Priority queue
+
+A data structure in which the data with the highest priority comes out next, whatever the arrival order. It is the “data structure” of this chapter.
+
+### Enqueue
+
+To put new data into a queue or a priority queue. Here new data is put at its place in priority order.
+
+### Dequeue
+
+To take data out of a queue or a priority queue. In a priority queue, the data taken out is the one with the highest priority.
+
+### Front
+
+The position of the data that comes out next. Here it holds the highest-priority data.
+
+### Rear
+
+The position of the last waiting data. Here it holds the lowest-priority data.
+
+### Epoch
+
+The number of the login and logout we are currently looking at for a user, counted from `0`.
+
+## Invariant
+
+### What is always true about the waiting data?
+
+The waiting data is in priority order: no data has higher priority than the data before it. This is true at the start, when there is no data. Putting data in keeps it true, because new data is placed after all the stored data with the same or higher priority. Taking data out keeps it true, because removing the first data leaves the rest in order. This is why the highest-priority data is always at front when data is waiting.
+
+### What is always true about front and rear?
+
+The waiting data sits exactly in the positions from front to rear, so front is never more than one position after rear. Both only increase: putting data in increments rear, and taking data out increments front. Two assumptions keep this true: we put data in only when there is a free position after rear, and we take data out only when there is data.
+
+### What keeps the order valid when logout times change?
+
+A user’s logout time changes only when the user moves on, and by then the user has been taken out. The users still waiting keep their logout times, so their order stays valid.
+
+### What is always true while we look for the meeting time?
+
+No meeting is possible before the latest login time. This is true at the start, because before that time the user who logs in last has not logged in yet. When a user moves on, that user is logged out from the earliest logout time until the new login time, so no meeting is possible before the new login time either. So when the earliest logout time is later than the latest login time, the latest login time is not just a possible meeting time: it is the earliest one.
+
+## Coding plan
+
+### What data does the priority queue need?
+
+An array for the waiting data, and the two positions `front` and `rear`. The array needs one position for each logout time in the plan. The queue also needs the rule that says which data has higher priority. The rule is a function, and the queue keeps that function’s address so that it can call it, which lets the same queue code work with any rule.
+
+### What should we do to initialize the priority queue?
+
+Store the rule, and set `front` to `0` and `rear` to `-1`. The first data should go into position `0`, and putting data in increments `rear`, so `rear` starts at `-1`. The queue starts empty, and it is empty when `front` is one position after `rear`, so `front` starts at `0`.
+
+### What should we do to put new data in?
+
+We assume the array has a free position after `rear`. Start from the data at `rear` and compare it with the new data. If the new data has higher priority, move the stored data to the position after it, and go on to the data before it. Stop when the stored data has the same or higher priority, or when the data at `front` has been passed, so the search never reaches the positions before `front`. Check for `front` before comparing: then, if there is no data, the search stops before the first comparison, and the position left open is the free position after `rear`. Put the new data into the position left open, and increment `rear`. 
+
+### What should we do to take data out?
+
+We assume there is data to take out. Take out the data at `front`, and increment `front`. The position it leaves is not used again until the queue is initialized again, so the array needs room for all the data that goes in, not only for the data waiting at one time.
+
+### What data does the meeting problem need?
+
+A table of the plan, with one row for each user, holding that user’s login and logout times in time order. For each user, store the current login time, logout time, and the number of the selected pair in that user’s row. The queue holds only the users’ numbers.
+
+### What rule do we give the priority queue?
+
+The user who logs out earlier has higher priority, so here the highest priority goes with the smallest time. The rule receives two users’ numbers and looks up their logout times to compare them.
+
+### What should we do to start looking for the meeting time?
+
+Set every user to the first login and logout in the plan. Find the latest login time by comparing all the users’ login times. Initialize the priority queue with the rule, put every user’s number in, and take one out: that user has the earliest logout time.
+
+### How do we check whether a meeting is possible?
+
+When the earliest logout time is later than the latest login time, the meeting time is the latest login time.
+
+### What should we do while no meeting is possible?
+
+Move the user with the earliest logout time on to the next planned login and logout. If there is none, there is no meeting at all, and we stop. If the new login time is later than the latest login time, it becomes the latest login time. Put the user’s number back in, take out the next one, and check again. 
+
+## New C syntax explained
+
+### How do we keep a function’s address in a variable?
+
+With a function pointer. It is declared like the function itself, with `(*name)` in place of the function’s name:
+
+```c
+int (*compare)(int x, int y);
 ```
 
-Both statements can be correct: the first route uses fewer edges and the
-second costs less. A path is a sequence following stored edges; its cost
-is the sum of their weights. In this lesson the numbers are invented
-minutes, so the sum models consecutive work. A cheap modeled route does
-not establish authorization, trust, safety, or real-world availability.
+`compare` can hold the address of any function that takes two `int` values and returns an `int`. The parentheses are needed: without them, the line declares a function that returns a pointer.
 
-## Store the current best cost
+### How do we get a function’s address?
 
-`node_dist[v]` stores the best source-to-node cost discovered so far.
-Before discovery it is `-1`, a reserved marker called a sentinel. A source
-has cost zero because its source-only route uses no edges.
+Put `&` before the function’s name, as for a variable. Here the address of `earlier_logout` is given to `init_queue`, whose parameter is a function pointer:
 
-`init_dist(start_node)` calls `init_heap`, fills all ten distances with
-`-1`, clears `found`, and calls `add_node(start_node,0)`. The graph and its
-weights are supplied separately by the caller.
+```c
+void init_queue(int (*compare_fp)(int x, int y));
 
-The waiting costs are tentative: another route may lower them. When the
-algorithm removes the waiting node with the smallest total cost, that cost
-becomes final. `found[node]=1` records this event. The loop never reads
-`found`; it is useful observed state, not the queue membership mechanism.
-
-## Three arrays answer different questions
-
-The graph imported from Module 3 has `nodes[10]`. Each node stores neighbor
-IDs in `adj_list` and a count in `adj_size`. Module 11 stores a listed
-edge's positive cost separately in `edge_length[u][v]`.
-
-The adjacency list tells the algorithm which edges exist. The cost matrix
-tells it what a listed edge costs. An unused zero matrix cell does not
-create an edge. The canonical fixture is directed; do not call Module 3's
-`edges_init()` to load it, because that helper creates a different,
-undirected graph.
-
-The minimum heap stores IDs rather than copied distances:
-
-```text
-heap position i:          0  1  2
-heap[i], a node ID:       3  4  1
-node_dist[heap[i]]:       4 14  5
+init_queue(&earlier_logout);
 ```
 
-Here D is node 3 at position 0, while B is node 1 at position 2. `comp(i,j)`
-first reads the IDs in the two slots and then compares their distances.
-The heap property requires each parent's cost to be no greater than each
-existing child's cost. It does not sort the entire array.
+### How do we call the function through the pointer?
 
-## Find a waiting node directly
+Write the pointer’s name where the function’s name would go:
 
-`node_heap_pos[v]` locates the slot containing waiting node `v`. For every
-live heap slot `i`:
-
-```text
-node_heap_pos[heap[i]] == i
+```c
+compare(data, queue[pos - 1])
 ```
 
-This is an inverse-map invariant: applying the ID lookup and then the
-position lookup returns the starting slot. `swap(i,j)` exchanges the IDs
-and updates both positions together. A map update is part of a heap swap,
-not optional work after the complete algorithm.
+This calls the function whose address `compare` holds. The queue code never names `earlier_logout`, so the same code works with any rule.
 
-Only positions `0` through `size-1` are live. The actual `remove_root`
-leaves the removed ID's map entry pointing at an inactive slot. Therefore
-`node_heap_pos[v] != -1` is not a reliable membership test after removals.
-Check the inverse map only for live entries. Never call `update_value` for
-an absent node.
+## C code
 
-## Repair locally after a change
+### Priority queue implementation
 
-`heap_parent`, `left`, and `right` return heap positions. `-1` means a
-missing relative. `heap_parent` has a distinct name because the imported
-graph source already uses `parent` for a different array.
+#### Global variables
 
-`heapify_up` compares a node with its parent and moves it upward until the
-local order holds or it reaches the root. `chief_child` chooses the child
-with the smaller current distance. `heapify_down` saves that chosen
-position before swapping, then follows it downward. Choosing the child
-again after a swap could follow a different branch.
+```c
+enum { CAPACITY = 10 };
 
-`add_node(node,value)` sets the node's distance, appends its ID, records
-its position, and repairs upward. The caller must have room and must not
-already have that node in the live heap.
+int queue[CAPACITY];
+int front, rear;
 
-`remove_root()` saves `heap[0]`, swaps slots 0 and `--size`, repairs downward,
-and returns the saved ID. It needs a nonempty heap. After singleton
-removal the heap is empty; both child helpers return `-1`, so the repair
-performs no comparisons or swaps.
-
-`update_value(node,value)` uses the map to locate the node. It repairs
-downward at the root or when the parent already has a smaller cost;
-otherwise it repairs upward. In Dijkstra, this function receives only
-strict decreases. A separate valid-heap test can exercise increases too.
-
-The comparator uses strict `<`. Equal priorities may swap upward or
-downward; the smaller child selector chooses the right child on an equal
-comparison. The source promises neither arrival-order stability nor
-node-ID tie ordering. Equal costs still satisfy the heap property.
-
-## Relax one outgoing edge
-
-To relax an edge is to ask whether that edge supplies a better route:
-
-```text
-new_dist = node_dist[node] + edge_length[node][adj]
+/* Function pointer for comparing elements */
+int (*compare)(int x, int y);
 ```
 
-There are three cases:
+#### Initialize global variables
 
-1. `node_dist[adj] == -1`: this is its first discovery. Insert the node.
-2. `node_dist[adj] > new_dist`: improve its cost and repair its existing slot.
-3. Otherwise: leave the known cost and heap unchanged.
-
-The second case changes an existing priority; it does not insert a second
-copy. Equal candidates cause no distance update. This differs from a
-lazy-duplicate queue that keeps separate old and new cost snapshots.
-
-## Work the canonical fixture
-
-Use A=0, B=1, C=2, D=3, E=4, F=5. Load each adjacency list in the listed
-order:
-
-```text
-A -> B 9, C 2, E 14
-B -> D 1, E 8
-C -> B 3, D 2
-D -> E 2
-E -> no outgoing edges
-F -> no outgoing edges
+```c
+void init_queue(int (*compare_fp)(int x, int y)) {
+	front = 0;
+	rear = -1;
+	compare = compare_fp;
+}
 ```
 
-The next table records state after each removed node's outgoing edges have
-been processed. Heap columns contain IDs, not distances.
+#### Put data into the priority queue
 
-| Event | `node_dist` A through F | Live heap |
-| --- | --- | --- |
-| initialized | `[0,-1,-1,-1,-1,-1]` | `[A]` |
-| process A | `[0,9,2,-1,14,-1]` | `[C,B,E]` |
-| process C | `[0,5,2,4,14,-1]` | `[D,E,B]` |
-| process D | `[0,5,2,4,6,-1]` | `[B,E]` |
-| process B | `[0,5,2,4,6,-1]` | `[E]` |
-| process E | `[0,5,2,4,6,-1]` | `[]` |
+```c
+void enqueue(int data) {
+	int pos = rear + 1;
+	while (pos > front && compare(data, queue[pos - 1])) {
+		queue[pos] = queue[pos - 1];
+		pos--;
+	}
+	queue[pos] = data;
+	rear++;
+}
+```
 
-C improves B from 9 to 5 in place, and D improves E from 14 to 6 in place.
-B later offers D a cost of 6 and E a cost of 13; neither is smaller.
-Finalization order is A, C, D, B, E. F remains undiscovered and `found[F]`
-remains zero.
+#### Take data out of the priority queue
 
-There are five insertions including the source, five removals, two
-`update_value` calls, eight outgoing-edge inspections, and a peak heap size
-of three. These are source-derived counts, not counters returned by the
-lab. Count six successful edge changes: four first discoveries and two
-improvements. The source insertion is separate from those edge changes.
+```c
+int dequeue(void) {
+	int most = queue[front];
+	front++;
+	return most;
+}
+```
 
-The route A,C,D,E manually certifies E's cost 6. The program itself stores
-no predecessor and returns no path, so the route is not a reconstructed
-program output.
+### Meeting time problem
 
-## Why a removed node is final
+#### Keep each user’s current login and logout
 
-Suppose node `u` has the smallest waiting distance. Any alternative route
-that still passes through unfinished work must reach a waiting node at a
-cost at least as large as `u`'s current cost. Following positive edges
-cannot reduce that cost. Such a route cannot later improve `u`.
+```c
+/* Process time logs to get current login status */
+enum { N_USERS = 3, N_EPOCHS = 3 };
 
-Thus every discovered node is inserted once and removed once. An already
-removed node cannot satisfy the strict-improvement branch. This explains
-why the source can leave `found` unread and removed positions stale under
-its valid-input assumptions. It would be unsafe to reuse this reasoning
-for arbitrary priority updates or negative weights.
+int timelogs[N_USERS][N_EPOCHS * 2] = {
+	{5, 6, 8, 9, 11, 13}, 
+	{2, 5, 7, 8, 12, 15}, 
+	{1, 3, 5, 7, 9, 14}
+};
 
-## State what the C source assumes
+struct User {
+	int login;
+	int logout;
+	int epoch;
+};
+struct User users[N_USERS];
+```
 
-The arrays support IDs 0–9 and at most ten neighbors per stored list.
-The caller must load valid neighbor IDs, use positive weights for every
-listed edge, call removals only on nonempty heaps, and keep all candidate
-sums within `int`. The source validates none of these conditions and has
-no signed-overflow guard. Do not execute overflow or out-of-bounds cases
-to demonstrate rejection that the API does not provide.
+#### Set every user to the first login and logout
 
-Dijkstra's mathematical method also works with zero weights, but the
-supplied lab explicitly states a positive-weight contract. Negative costs
-are outside both that contract and this finalization argument.
+```c
+void init_users(void) {
+	for (int id = 0; id < N_USERS; id++) {
+		users[id].epoch = 0;
+		users[id].login = timelogs[id][0];
+		users[id].logout = timelogs[id][1];
+	}
+}
+```
 
-## Analyze the representation actually used
+#### Move a user on to the next login and logout
 
-For a generalized graph with `V` vertices and `E` stored directed edges,
-there are at most `V` insertions and removals and at most `E` priority
-improvements. Each heap repair follows one path of length `O(log V)`.
-The usual bound is `O((V+E) log V)` time with `O(V)` auxiliary heap, map,
-distance, and finalization storage. Full invariant checking is separate
-`O(V)` work and is not part of a single repair's cost.
+```c
+int next_epoch(int id) {
+	int ep = ++users[id].epoch;
+	if (ep >= N_EPOCHS) {
+		return -1;
+	}
+	users[id].login = timelogs[id][ep * 2];
+	users[id].logout = timelogs[id][ep * 2 + 1];
+	return 0;
+}
+```
 
-The graph input includes an `O(V^2)` cost matrix as well as adjacency
-lists. Do not call the whole representation `O(V+E)` storage while ignoring
-that matrix. The actual code fixes every relevant node array at ten,
-so asymptotic claims describe a scalable version of the same design.
+#### Find the latest login time
 
-## Connect to the course
+```c
+int latest_login_time(void) {
+	int latest_time = 0; /* times are never negative */
+	for (int id = 0; id < N_USERS; id++) {
+		if (users[id].login > latest_time) {
+			latest_time = users[id].login;
+		}
+	}
+	return latest_time;
+}
+```
 
-BFS uses FIFO ordering; a linear minimum-priority queue scans for its next
-node; this indexed heap repairs a tree-shaped array. Dijkstra supplies the
-same least-cost rule to either priority-queue implementation. Compare
-returned distances on the same fixture before comparing operations.
+#### Put every user in and take out the earliest logout
 
-Practical 2 is the sole Week 11 submission. It contains the trace, actual-
-source tests, one focused original regression, assumptions, and the supplied
-BFS/linear-priority-queue/heap comparison. The optional lazy-duplicate
-library in `code/include`, `code/starter`, and `code/solution` illustrates a
-different design; its parser, path API, dynamic allocation, and stable
-snapshot rules are not added implementation tasks for this lab.
+```c
+/* x and y are user ids; the user who logs out earlier has higher priority */
+int earlier_logout(int user_x, int user_y) {
+	return users[user_x].logout < users[user_y].logout;
+}
+
+/* Put every user in the queue and return the one who logs out first */
+int first_logout_id(void) {
+	init_queue(&earlier_logout);
+	for (int id = 0; id < N_USERS; id++) {
+		enqueue(id);
+	}
+	return dequeue();
+}
+```
+
+#### Move the earliest logout on until everyone is logged in
+
+```c
+int survey(void) {
+	init_users();
+	int meeting_time = latest_login_time();
+	int out_id = first_logout_id();
+	
+	/* Survey to find the earliest meeting time */
+	while (meeting_time >= users[out_id].logout) {
+		/* Move this user to their next login; stop if there is none */
+		if (next_epoch(out_id) == -1) {
+			return -1;
+		}
+		/* Update the meeting time if this user has a later login time */
+		if (users[out_id].login > meeting_time) {
+			meeting_time = users[out_id].login;
+		}
+		/* Reinsert the user into the priority queue */
+		enqueue(out_id);
+		/* Get the next user with the earliest logout time */
+		out_id = dequeue();
+	}
+	return meeting_time;
+}
+```

@@ -1,155 +1,47 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("lab", "starter", "solution", "autopsy")]
+    [ValidateSet("lab", "lab-compile", "core", "student-tests", "comparison")]
     [string]$Target = "lab",
-
-    [switch]$Extensions,
-
     [switch]$StudentTests,
-
-    [switch]$Sanitize,
-
-    [switch]$CompileOnly
+    [switch]$CompileOnly,
+    [switch]$Sanitize
 )
-
 $ErrorActionPreference = "Stop"
-
 $codeRoot = $PSScriptRoot
-$includeDirectory = Join-Path $codeRoot "include"
 $moduleRoot = Split-Path -Parent $codeRoot
 $labDirectory = Join-Path $moduleRoot "student"
-$graphRoot = Split-Path -Parent $moduleRoot
 $buildDirectory = Join-Path $codeRoot $(if ($Sanitize) { "build-sanitize" } else { "build" })
-
-New-Item -ItemType Directory -Force -Path $buildDirectory |
-    Out-Null
-
-$clangCommand = Get-Command "clang" -ErrorAction SilentlyContinue |
+New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
+$compiler = Get-Command "clang", "gcc", "cl" -ErrorAction SilentlyContinue |
     Select-Object -First 1
-$gccCommand = Get-Command "gcc" -ErrorAction SilentlyContinue |
-    Select-Object -First 1
-$msvcCommand = Get-Command "cl" -ErrorAction SilentlyContinue |
-    Select-Object -First 1
-
-if ($clangCommand) {
-    $compiler = $clangCommand
-    $compilerKind = "clang"
-} elseif ($gccCommand) {
-    $compiler = $gccCommand
-    $compilerKind = "gcc"
-} elseif ($msvcCommand) {
-    $compiler = $msvcCommand
-    $compilerKind = "msvc"
-} else {
-    throw @"
-No supported C compiler was found on PATH.
-Install or activate Clang, GCC/MinGW-w64, or use a Visual Studio Developer
-PowerShell, then rerun this command.
-"@
+if (-not $compiler) { throw "Activate a Clang, GCC, or Visual Studio C compiler." }
+if ($StudentTests) {
+    if ($Target -ne "lab") { throw "Use -Target student-tests or -StudentTests alone." }
+    $Target = "student-tests"
 }
-
-$testingBuild = $false
-
-if ($Target -eq "lab") {
-    if ($Extensions) { throw "The current lab uses core and student tests, not -Extensions." }
-    if ($StudentTests) { $testName = "test_lab_student" } else { $testName = "test_lab" }
-    $sources = @((Join-Path $codeRoot "tests/$testName.c"))
-    $outputName = $testName
-} elseif ($Target -eq "autopsy") {
-    if ($Extensions -or $StudentTests) {
-        throw "Autopsy cannot be combined with a normal test switch."
-    }
-
-    $sources = @(
-        (Join-Path $codeRoot "autopsy\faulty_overflow.c")
-    )
-    $outputName = "dijkstra_overflow_autopsy"
-} else {
-    if ($Extensions -and $StudentTests) {
-        throw "Choose either -Extensions or -StudentTests, not both."
-    }
-
-    $sources = @(
-        (Join-Path $codeRoot "support\weighted_graph.c"),
-        (Join-Path $codeRoot "support\dijkstra_frontier.c"),
-        (Join-Path $codeRoot "$Target\dijkstra.c")
-    )
-
-    if ($StudentTests) {
-        $sources += Join-Path $codeRoot "tests\test_student.c"
-        $outputName = "${Target}_student_tests"
-    } elseif ($Extensions) {
-        $sources += Join-Path $codeRoot "tests\test_extension.c"
-        $outputName = "${Target}_extension"
-        $testingBuild = $true
-    } else {
-        $sources += Join-Path $codeRoot "tests\test_core.c"
-        $outputName = "${Target}_core"
-        $testingBuild = $true
-    }
+$name = switch ($Target) {
+    "comparison" { "compare_lab" }
+    "student-tests" { "test_lab_student" }
+    default { "test_lab" }
 }
-
-$outputExecutable = Join-Path $buildDirectory "$outputName.exe"
-
-if ($compilerKind -eq "msvc") {
-    $arguments = @(
-        "/nologo",
-        "/std:c11",
-        "/W4",
-        "/Zi",
-        "/I$includeDirectory",
-        "/I$labDirectory",
-        "/I$graphRoot",
-        "/Fo:$buildDirectory\"
-    )
-
-    if ($testingBuild) {
-        $arguments += "/DDIJKSTRA_TESTING"
-    }
-    if ($Sanitize) {
-        $arguments += @("/Od", "/fsanitize=address")
-    }
-
-    $arguments += $sources
-    $arguments += "/Fe:$outputExecutable"
+$objectOnly = $Target -eq "lab-compile"
+$source = if ($objectOnly) { Join-Path $labDirectory "lab.c" } else { Join-Path $codeRoot "tests/$name.c" }
+$output = Join-Path $buildDirectory $(if ($objectOnly) { "lab.obj" } else { "$name.exe" })
+if ($compiler.Name -eq "cl.exe" -or $compiler.Name -eq "cl") {
+    $arguments = @("/nologo", "/std:c11", "/W4", "/Zi", "/I$labDirectory")
+    if ($Sanitize) { $arguments += @("/Od", "/fsanitize=address") }
+    if ($objectOnly) { $arguments += @("/c", "/Fo:$output") }
+    else { $arguments += @("/Fo:$buildDirectory\", "/Fe:$output") }
+    $arguments += $source
 } else {
-    $arguments = @(
-        "-std=c11",
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Wconversion",
-        "-Wshadow",
-        "-g",
-        "-I$includeDirectory",
-        "-I$labDirectory",
-        "-I$graphRoot"
-    )
-
-    if ($testingBuild) {
-        $arguments += "-DDIJKSTRA_TESTING"
-    }
-    if ($Sanitize) {
-        $arguments += @(
-            "-fsanitize=address,undefined",
-            "-fno-omit-frame-pointer"
-        )
-    }
-
-    $arguments += $sources
-    $arguments += @("-o", $outputExecutable)
+    $arguments = @("-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Wconversion", "-Wshadow", "-g", "-I$labDirectory")
+    if ($Sanitize) { $arguments += @("-fsanitize=address,undefined", "-fno-omit-frame-pointer") }
+    if ($objectOnly) { $arguments += "-c" }
+    $arguments += @($source, "-o", $output)
 }
-
-Write-Host "Compiler: $($compiler.Source)"
-Write-Host "Building: $outputName"
 & $compiler.Source @arguments
-if ($LASTEXITCODE -ne 0) {
-    throw "Compilation failed with exit code $LASTEXITCODE."
-}
-
-if (-not $CompileOnly) {
-    & $outputExecutable
-    if ($LASTEXITCODE -ne 0) {
-        throw "Program returned exit code $LASTEXITCODE."
-    }
+if ($LASTEXITCODE -ne 0) { throw "Compilation failed: $LASTEXITCODE" }
+if (-not $CompileOnly -and -not $objectOnly) {
+    & $output
+    if ($LASTEXITCODE -ne 0) { throw "Test failed: $LASTEXITCODE" }
 }

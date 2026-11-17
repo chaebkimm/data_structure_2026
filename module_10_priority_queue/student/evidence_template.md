@@ -1,168 +1,63 @@
-# Module 11 — Practical 2 Evidence Record
+# Chapter 10 — One Lab Evidence Record
 
-Name: ____________________________  Date: ____________________________
-Compiler and version: ________________________________________________
+Name / date: _______________________  Driver path: _______________________
 
-Submit one integrated Week 11 artifact. Refer to existing worksheet
-responses instead of copying them again. Stages A–E are checkpoints in the
-same practical, not extra submissions. The supplied `student/lab.c` remains
-unchanged; include your separate test-driver changes and saved output.
+Use one submission for inquiry, pause, investigation and testing. Standard, linear, spoken, dictated and typed responses use the same rubric. Keep the supplied lab and presentation sources unchanged.
 
 ## 1. Preserve prediction and correction
 
-- Initial inquiry location: __________________________________________
-- Three-target pause and labeled corrections: ________________________
-- Investigation Sections A–F: ________________________________________
-- One original claim changed by evidence: ____________________________
-- Observation and revised claim: _____________________________________
+Initial model: ___________________________________________________
 
-## 2. State the input and what it models
+Observed operation or state: _____________________________________
 
-```text
-node IDs and active count:
-source:
-adjacency lists in inspected order:
-positive edge weights:
-meaning and units of the synthetic costs:
-```
+Revised explanation: _____________________________________________
 
-Identify the fixture loader. Explain why adjacency lists, rather than zero
-or nonzero matrix cells alone, define edge existence. Confirm you did not
-load Module 3's unrelated `edges_init()` fixture for the canonical run.
+## 2. Distinguish the representation
 
-Input setup location: ________________________________________________
+Explain user ID versus queue position versus time. Record the initial sorted IDs, logout keys, front, rear, out_id and candidate. State the live count formula and equal-priority rule.
 
-## 3. Record the canonical state
+Evidence: ________________________________________________________
 
-```text
-final node_dist A..F:
-final found A..F:
-final heap size:
-observed finalization order and measurement method:
-add_node calls, including source:
-remove_root calls:
-update_value calls:
-outgoing-edge inspections:
-successful edge changes, excluding source insertion:
-peak live heap size:
-```
+## 3. Record the canonical trace
 
-Attach the state after A, C, D, B, and E. Mark the two in-place improvements
-and distinguish them from first discoveries. The lab returns arrays, not
-trace counters; identify debugger or driver observations accurately.
+Attach the six-row investigation trace with current user epochs/endpoints, candidate, removed ID, live IDs and indices after each round. Confirm time 12 with the three containing intervals, nine insertions, seven removals and six advances. State that counts came from your trace rather than source counters.
 
-Trace location: _____________________________________________________
+Evidence: ________________________________________________________
 
-## 4. Prove that positions and IDs stay connected
+## 4. Explain why the algorithm works
 
-Provide one state in which a node's ID differs from its heap position.
-Explain the costs read by `comp(0,2)` immediately after C. Show one swap's
-two inverse-map updates and a live parent/child order check.
+Explain the greatest-login candidate, strict overlap test, blocked-interval advancement, removed-before-update rule, and exhausted result -1. Explain why updating a login to 11 does not reduce candidate 12.
 
-```text
-live heap IDs:
-corresponding distances:
-node_heap_pos for each live ID:
-checked invariant:
-```
+Evidence: ________________________________________________________
 
-Explain why removed map entries may be stale. Do not claim that a non-`-1`
-map entry proves membership. Describe singleton behavior and the absence
-of a stable tie-order promise.
+## 5. Run the actual source
 
-Heap evidence location: ______________________________________________
+Compiler / commands: _____________________________________________
 
-## 5. Explain the relaxation decisions
+Core / student / comparison output: ______________________________
 
-```text
-first discovery action:
-strictly better known cost action:
-equal or larger candidate action:
-C's proposal to B:
-D's proposal to E:
-B's later proposals to D and E:
-```
+Original fixture and prediction: _________________________________
 
-Why can no finalized node improve under the positive-weight assumptions?
-Where does the source write `found`, and does it read it? Why is there no
-stale-snapshot branch?
+Original assertions and detected defect: _________________________
 
-Explanation location: ________________________________________________
+Confirm source inclusion exactly once and restoration of sample logs: ______
 
-## 6. Run the actual source and one focused regression
+## 6. Record boundaries and repeatability
 
-Record the root command and its output:
+Record initial overlap, endpoint-only contact, no overlap, equal priorities and repeated calls. State exhaustion's epoch mutation and retained endpoints. Do not execute invalid queue operations as if they returned errors.
 
-```sh
-make -C module_11_graph_dijkstra/code lab-compile core student-tests
-```
+Evidence: ________________________________________________________
 
-From the module directory or the root of the extracted standalone archive:
+## 7. Compare work and storage
 
-```sh
-make -C code lab-compile core student-tests
-```
+Compare actual survey, linear earliest-logout scan and interval-combination oracle on identical input. State per-operation costs, O(U² + AU) versus O(U + AU), and cumulative storage U * E rather than peak live U. Identify the actual nine-write/ten-slot bound.
 
-- Supplied-suite output location: ____________________________________
-- Driver includes the actual lab at: _________________________________
-- Independent reference used by the suite: ___________________________
-- Original test input and prediction: ________________________________
-- Assertions and observed result: ____________________________________
-- Specific defect the test would detect: _____________________________
-- Repeated-run or different-source evidence: __________________________
+Evidence: ________________________________________________________
 
-The original test should isolate one core mistake. Do not add an invalid
-input and expect rejection from functions that have no validation API.
-Keep full heap-check scans separate from operation counts.
+## 8. Locate the bounded defect analysis
 
-## 7. Compare BFS, linear selection, and heap selection
-
-```text
-BFS route to E, edge count, and manually summed cost:
-manually verified least-cost route and cost:
-linear-Priority-Queue Dijkstra distances:
-indexed-heap Dijkstra distances:
-how each implementation selects its next item:
-Priority Queue ADT behavior versus storage representation:
-```
-
-The lab supplies distances only. Label any listed route as a manual
-certificate, not a path reconstructed by `min_dist`.
-
-Comparison evidence location: ________________________________________
-
-## 8. State limits and costs
-
-List valid IDs, adjacency lengths, positive listed weights, live-heap
-operation preconditions, and representable candidate sums. State that the
-source does not validate them or guard addition.
-
-```text
-generalized V and E:
-insert/remove/update bounds:
-one-path repair cost:
-full invariant-scan cost:
-algorithm time:
-auxiliary state:
-input cost-matrix storage:
-actual fixed array bounds:
-```
-
-Limits and analysis location: ________________________________________
-
-## 9. Locate the bounded defect analysis
-
-Choose a position/ID error from [the autopsy](dijkstra_autopsy.md). Preserve
-a prediction and name the first divergent comparison or swap, the violated
-invariant, and a test that exposes it. This is a short part of the same
-evidence record.
-
-Autopsy location: ____________________________________________________
+Chosen defect, first wrong state, and regression that exposes it: __________
 
 ## Submission check
 
-The artifact contains the source-based trace, actual-source test output,
-one focused original regression, queue comparison, assumptions, complexity,
-and corrected reasoning. The optional lazy-duplicate parser/path library
-has a separate contract; its unfinished starter tasks are not added Week
-11 work.
+One original regression is required; a copied smoke test does not satisfy it. Include predictions, corrections, driver, output, trace, boundary checks, comparison and costs in this one artifact. No heap implementation or Dijkstra result is required.

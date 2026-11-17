@@ -1,215 +1,60 @@
-# Stage C — Investigation: Indexed-Heap Dijkstra
+# Chapter 10 — Investigate the Actual Priority Queue
 
-Name: ____________________________  Date: ____________________________
+Use the unchanged [lab.c](lab.c). Predict before running; record observations separately. All time ranges include login and exclude logout.
 
-Preserve Sections A through F before opening the worked textbook trace.
-Sections G through I complete the same Practical 2 artifact. The linear
-worksheet has the same numbered prompts and assessment.
+## A. Trace insertion and live positions
 
-## Fixture and source reference
+Initialize with a strict smaller-integer comparator. Insert 7, 2, 5; remove once; insert 1; remove the remaining values. For every operation record front, rear, live positions and values, returned value, and shifted items. What does the condition pos > front prevent after the first removal?
 
-Use A=0, B=1, C=2, D=3, E=4, F=5, with A as source. Inspect each outgoing
-list in the displayed order.
+Prediction: _____________________________________________________
 
-| Node | Outgoing neighbors with weights |
-| --- | --- |
-| A | B:9, C:2, E:14 |
-| B | D:1, E:8 |
-| C | B:3, D:2 |
-| D | E:2 |
-| E | none |
-| F | none |
+Observation and revision: ________________________________________
 
-`node_dist[v]` is the best cost found; `-1` marks no discovered route.
-`heap` stores waiting node IDs. `node_heap_pos` maps a waiting ID to its
-slot. `found` becomes 1 when a node is removed. All listed costs are
-positive. Keep candidate sums within `int`.
+## B. Explain ties and capacity
 
-## A. Contrast connection count with total cost
+Use values 21, 11, 32, 1, 22 with priority given by the last digit (smaller first). Predict removal order. Explain which strict comparison preserves equal-priority arrivals. After ten total insertions without initialization, can a new enqueue be safe merely because most items were removed? State the required index check without executing an invalid call.
 
-**A1.** Ignoring weights, give the BFS route from A to E and its edge count.
+Prediction: _____________________________________________________
 
-Response: ___________________________________________________________
+Observation and revision: ________________________________________
 
-**A2.** Add the weights along that BFS route.
+## C. Trace initialization and IDs
 
-Response: ___________________________________________________________
+With the supplied three-user logs, call init_users, latest_login_time, and first_logout_id. Record all users' epoch/login/logout fields, the initial candidate, the sorted IDs and corresponding logout keys, the removed ID, and the remaining live range. Explain why a queue position is not a user ID.
 
-**A3.** Give the edge count and cost of A,C,D,E. Explain why fewer edges
-need not mean a smaller cost.
+Prediction: _____________________________________________________
 
-Response: ___________________________________________________________
+Observation and revision: ________________________________________
 
-**A4.** State what BFS minimizes and what Dijkstra minimizes. What do the
-invented weights model, and what real-world claims do they not establish?
+## D. Trace the meeting search
 
-Response: ___________________________________________________________
+Fill each row after advancing the removed user, raising the candidate if needed, reinserting that user, and removing the next earliest logout. Also record front, rear, and live IDs. Continue until success or exhaustion.
 
-## B. Predict and trace the actual operations
+| Step | Advanced ID | New epoch / login / logout | Candidate | Next out ID / logout | front / rear / live IDs |
+| --- | --- | --- | --- | --- | --- |
+| 1 | | | | | |
+| 2 | | | | | |
+| 3 | | | | | |
+| 4 | | | | | |
+| 5 | | | | | |
+| 6 | | | | | |
 
-**B1.** Record distances A through F, `found`, and the live heap after
-`init_dist(0)`. What resets, and what graph input remains unchanged?
+Compare your trace's final candidate with an independent call to survey(). Count insertions, removals and successful advances manually; these are not counters exported by the source.
 
-Response: ___________________________________________________________
+## E. Justify the rule
 
-**B2.** Trace all three discoveries from A, including the intermediate
-heaps, comparisons, swaps, and live inverse-map entries.
+Why is the candidate the greatest current login? Why must an interval ending at or before that time be replaced? Why can changing only the removed user's fields preserve the queued order? Explain why a new login of 11 cannot lower an existing candidate of 12.
 
-Response: ___________________________________________________________
+Response: _______________________________________________________
 
-**B3.** Remove C and process its edges. Explain how B's old cost changes,
-which existing slot is repaired, and how D is inserted. Record distances,
-live heap, and live map entries after C.
+## F. Check endings and resets
 
-Response: ___________________________________________________________
+Check initial overlap, contact at an excluded logout endpoint, no overlap, tied logouts, and repeated survey calls. Trace next_epoch on the final interval: which field increments, which fields retain old values, and when must the caller stop? Restore the sample after every custom-log experiment.
 
-**B4.** Finish the run. Record state after every removed node's outgoing
-edges have been processed. Also record final `found` and final heap size.
+Response: _______________________________________________________
 
-| Event | Distances A through F | Live heap IDs | New `found` entry |
-| --- | --- | --- | --- |
-| initialized | | | |
-| process A | | | |
-| process C | | | |
-| next removal | | | |
-| next removal | | | |
-| last removal | | | |
+## G. Compare and submit
 
-**B5.** Count insertions including the source, removals, priority updates,
-outgoing-edge inspections, successful edge changes, and peak live heap
-size. Explain how you obtained counts the source does not return.
+Run core, student-tests, and comparison. Explain the independent interval-combination oracle and the separate scan implementation. State the per-operation costs, total O(U² + AU) work, and the cumulative insertion bound U * E. Add one original regression and identify the plausible defect it catches. Keep predictions and corrections in the same evidence artifact.
 
-Response: ___________________________________________________________
-
-## C. Check IDs, positions, and local order
-
-**C1.** Immediately after C, identify the node IDs and costs compared by
-`comp(0,2)`. Why would comparing `node_dist[0]` and `node_dist[2]` be wrong?
-
-Response: ___________________________________________________________
-
-**C2.** State the inverse-map equation for each live slot. Show both map
-changes for one swap and state the parent/child distance condition.
-
-Response: ___________________________________________________________
-
-**C3.** Trace removal of D: saved ID, exchanged slots, new size, and repairs.
-Which removed-node map entry is now stale? Why must a live-node invariant
-check not demand `-1` for every removed ID?
-
-Response: ___________________________________________________________
-
-**C4.** Predict singleton removal and an equal-key example. Explain why
-empty repair is safe here and why equal priorities have no stable order.
-
-Response: ___________________________________________________________
-
-## D. Explain strict relaxation and finalization
-
-**D1.** State the three actions for an undiscovered neighbor, a strictly
-smaller candidate, and an equal or larger candidate. Why is an existing
-waiting node not inserted twice?
-
-Response: ___________________________________________________________
-
-**D2.** Trace D's proposal to E: old cost, candidate, mapped slot, repair
-direction, and final live heap.
-
-Response: ___________________________________________________________
-
-**D3.** Compute B's later proposals to D and E. For each, explain why the
-algorithm changes or keeps its distance.
-
-Response: ___________________________________________________________
-
-**D4.** Why can a removed node's distance not improve with positive weights?
-Where is `found` written, and where is it read? Why does the source not
-need a stale-snapshot test?
-
-Response: ___________________________________________________________
-
-## E. State the actual contract
-
-**E1.** List valid ID, adjacency-count, weight, heap-operation, and integer-
-addition preconditions. Which are checked by the source?
-
-Response: ___________________________________________________________
-
-**E2.** Why are an eleventh insertion, empty removal, invalid neighbor, and
-overflowing signed sum not valid rejection tests for this lab?
-
-Response: ___________________________________________________________
-
-**E3.** State F's final distance and `found` value. Explain their meaning
-for this graph without claiming more about an external system.
-
-Response: ___________________________________________________________
-
-**E4.** Does this source return a path or store a predecessor? Verify the
-cost of A,C,D,E manually and label that verification accurately.
-
-Response: ___________________________________________________________
-
-## F. Compare implementations and costs
-
-**F1.** On the same graph, compare BFS, a supplied linear-priority-queue
-Dijkstra reference, and indexed-heap Dijkstra. Separate the objective,
-Priority Queue ADT, minimum-selection operation, and storage representation.
-
-Response: ___________________________________________________________
-
-**F2.** For generalized `V` and `E`, bound insertions, removals, updates,
-repair length, and auxiliary storage. Account separately for the input
-cost matrix and the actual fixed ten-node bounds.
-
-Response: ___________________________________________________________
-
-**F3.** Distinguish one-path heap repair from a full invariant scan. How do
-you keep test instrumentation from being reported as algorithm work?
-
-Response: ___________________________________________________________
-
-## G. Test the supplied source
-
-**G1.** Describe one focused original regression: input, predicted output,
-assertions, and the specific defect it would expose.
-
-Response: ___________________________________________________________
-
-**G2.** Record commands and output for the actual-lab compile, core tests,
-and student tests. Identify which results use an independent reference,
-and verify the driver includes the supplied `lab.c`.
-
-Response: ___________________________________________________________
-
-**G3.** Run again from a different source or with a different valid graph.
-What proves that distances, heap state, and `found` are reinitialized?
-
-Response: ___________________________________________________________
-
-## H. Investigate one bounded defect
-
-**H1.** Use the [autopsy](dijkstra_autopsy.md). Preserve a prediction,
-identify the first wrong comparison or swap, and explain the repair using
-IDs, positions, and the live prefix. Use paper or a separate scratch copy;
-keep the supplied lab unchanged.
-
-Response: ___________________________________________________________
-
-## I. Revise and synthesize
-
-**I1.** Quote an original claim, cite an observed state that changed it, and
-write the corrected claim.
-
-Response: ___________________________________________________________
-
-**I2.** Which Module 10 heap and inverse-map ideas transfer directly? What
-new meaning does the distance array give the comparison?
-
-Response: ___________________________________________________________
-
-**I3.** Locate all required evidence in one Practical 2 submission. Explain
-why the optional lazy-duplicate parser/path library is a separate design,
-not extra implementation work for this lab.
-
-Response: ___________________________________________________________
+Response: _______________________________________________________

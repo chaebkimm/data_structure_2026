@@ -1,8 +1,5 @@
-# Module 11 — Stage C: Investigate the Indexed Heap
+# Chapter 10 Stage C — Investigate the Actual Source
 
-Use the [standard worksheet](../student/investigation_worksheet.md) or its
-[equivalent linear format](../student/investigation_worksheet_linear.md).
-Predict and trace the actual `student/lab.c`: distance values, pending node
-IDs, current heap positions, and inverse maps for live entries. Preserve
-predictions before opening the textbook or models. This checkpoint adds no
-separate assignment or hidden implementation work.
+Use student/investigation_worksheet.md or its linear format with student/lab.c. Predict queue operations and the six survey advances. Record live ranges and candidate updates separately from observations.
+
+Stages are opening checkpoints within one 180-minute lesson and one submission, not five assignments. The full archive does not enforce withholding; instructors control opening order. Keep lab.c and presentation sources unchanged.
