@@ -44,18 +44,15 @@ struct Session plans[IDS][EPOCHS] = {
 
 struct User next_epoch(struct User user) {
 	int ep = ++user.epoch;
-	if (ep >= EPOCHS) {
-		user.now.login = user.now.logout = -1;
-	} else {
+	if (ep < EPOCHS) {
 		user.now = plans[user.id][ep];
 	}
 	return user;
 }
 
-void init_survey(void) {
+void init_meeting(void) {
 	init_pqueue();
-	struct User user;
-	user.epoch = 0;
+	struct User user = {.epoch = 0};
 	for (int i = 0; i < IDS; i++) {
 		user.id = i;
 		user.now = plans[i][0];
@@ -66,21 +63,22 @@ void init_survey(void) {
 int latest_login_time(void) {
 	int latest = 0;
 	for (int i = front; i <= rear; i++) {
-		if (pq[i].now.login > latest) {
-			latest = pq[i].now.login;
+		int cur = pq[i].now.login;
+		if (cur > latest) {
+			latest = cur;
 		}
 	}
 	return latest;
 }
 
-int survey(void) {
-	init_survey();
+int meeting_time(void) {
+	init_meeting();
 	int proposal = latest_login_time();
 	struct User out = dequeue();
 
 	while (proposal >= out.now.logout) {
 		out = next_epoch(out);
-		if (out.now.login == -1) { return -1; }
+		if (out.epoch >= EPOCHS) { return -1; }
 		if (out.now.login > proposal) {
 			proposal = out.now.login;
 		}
