@@ -60,8 +60,8 @@ void init_meeting(void) {
 	}
 }
 
-int latest_login_time(void) {
-	int latest = 0;
+int latest_login(void) {
+	int latest = -1;
 	for (int i = front; i <= rear; i++) {
 		int cur = pq[i].now.login;
 		if (cur > latest) {
@@ -73,17 +73,17 @@ int latest_login_time(void) {
 
 int meeting_time(void) {
 	init_meeting();
-	int proposal = latest_login_time();
+	int t = latest_login();
 	struct User out = dequeue();
 
-	while (proposal >= out.now.logout) {
+	while (t >= out.now.logout) {
 		out = next_epoch(out);
 		if (out.epoch >= EPOCHS) { return -1; }
-		if (out.now.login > proposal) {
-			proposal = out.now.login;
+		if (out.now.login > t) {
+			t = out.now.login;
 		}
 		enqueue(out);
 		out = dequeue();
 	}
-	return proposal;
+	return t;
 }
