@@ -122,11 +122,11 @@ No meeting is possible before the latest login time. This is true at the start, 
 
 ### What data does the priority queue need?
 
-An array for the waiting data, and the two positions `front` and `rear`. The array needs one position for each logout time in the plan. The queue also needs the rule that says which data has higher priority. The rule is a function, and the queue keeps that function’s address so that it can call it, which lets the same queue code work with any rule.
+An array for the waiting data, and the two positions `front` and `rear`. The array needs one position for each logout time in the plan. Each piece of data is a whole user: the user’s number, which login and logout we are looking at, and those two times.
 
 ### What should we do to initialize the priority queue?
 
-Store the rule, and set `front` to `0` and `rear` to `-1`. The first data should go into position `0`, and putting data in increments `rear`, so `rear` starts at `-1`. The queue starts empty, and it is empty when `front` is one position after `rear`, so `front` starts at `0`.
+Set `front` to `0` and `rear` to `-1`. The first data should go into position `0`, and putting data in increments `rear`, so `rear` starts at `-1`. The queue starts empty, and it is empty when `front` is one position after `rear`, so `front` starts at `0`.
 
 ### What should we do to put new data in?
 
@@ -138,15 +138,15 @@ We assume there is data to take out. Take out the data at `front`, and increment
 
 ### What data does the meeting problem need?
 
-A table of the plan, with one row for each user, holding that user’s login and logout times in time order. For each user, store the current login time, logout time, and the number of the selected pair in that user’s row. The queue holds only the users’ numbers.
+A table of the plan, with one row for each user, holding that user’s logins and logouts as pairs in time order. Each user in the queue carries its own number, the number of the pair it is on, and a copy of that pair.
 
 ### What rule do we give the priority queue?
 
-The user who logs out earlier has higher priority, so here the highest priority goes with the smallest time. The rule receives two users’ numbers and looks up their logout times to compare them.
+The user who logs out earlier has higher priority, so here the highest priority goes with the smallest time. The rule receives two users and compares the logout times they carry.
 
 ### What should we do to start looking for the meeting time?
 
-Set every user to the first login and logout in the plan. Find the latest login time by comparing all the users’ login times. Initialize the priority queue with the rule, put every user’s number in, and take one out: that user has the earliest logout time.
+Initialize the priority queue, and put every user in with the first login and logout in the plan. Find the latest login time by comparing the login times of all the users in the queue, starting from `-1`, which is smaller than any time. Take one user out: that user has the earliest logout time.
 
 ### How do we check whether a meeting is possible?
 
@@ -154,76 +154,97 @@ When the earliest logout time is later than the latest login time, the meeting t
 
 ### What should we do while no meeting is possible?
 
-Move the user with the earliest logout time on to the next planned login and logout. If there is none, there is no meeting at all, and we stop. If the new login time is later than the latest login time, it becomes the latest login time. Put the user’s number back in, take out the next one, and check again. 
+Move the user with the earliest logout time on to the next planned login and logout. If there is none, there is no meeting at all, and we stop. If the new login time is later than the latest login time, it becomes the latest login time. Put the user back in, take out the next one, and check again.
 
 ## New C syntax explained
 
-### How do we keep a function’s address in a variable?
+### How can a structure hold another structure?
 
-With a function pointer. It is declared like the function itself, with `(*name)` in place of the function’s name:
-
-```c
-int (*compare)(int x, int y);
-```
-
-`compare` can hold the address of any function that takes two `int` values and returns an `int`. The parentheses are needed: without them, the line declares a function that returns a pointer.
-
-### How do we get a function’s address?
-
-Put `&` before the function’s name, as for a variable. Here the address of `earlier_logout` is given to `init_queue`, whose parameter is a function pointer:
+A member of a structure can itself be a structure. A user holds the current login and logout as one `struct Session`, and the times are reached with two dots, as in `out.now.logout`:
 
 ```c
-void init_queue(int (*compare_fp)(int x, int y));
+struct Session {
+	int login;
+	int logout;
+};
 
-init_queue(&earlier_logout);
+struct User {
+	int id;
+	int epoch;
+	struct Session now;
+};
 ```
 
-### How do we call the function through the pointer?
+### What happens when a structure is assigned or passed?
 
-Write the pointer’s name where the function’s name would go:
+The same as with an `int`: the whole value is copied. Passing a user to `compare` or `enqueue`, getting one back from `dequeue` or `next_epoch`, and `u.now = plans[u.id][ep];` all make copies, and none of them changes the plan table.
+
+### How do we set only some members when creating a structure?
+
+Name each member with a dot. Members that are not named become `0`:
 
 ```c
-compare(data, queue[pos - 1])
+struct User u = {.epoch = 0};
 ```
-
-This calls the function whose address `compare` holds. The queue code never names `earlier_logout`, so the same code works with any rule.
 
 ## C code
 
 ### Priority queue implementation
 
-#### Global variables
+#### Users and their current login and logout
 
 ```c
-enum { CAPACITY = 10 };
+enum { IDS = 3, EPOCHS = 3 };
 
-int queue[CAPACITY];
-int front, rear;
+struct Session {
+	int login;
+	int logout;
+};
 
-/* Function pointer for comparing elements */
-int (*compare)(int x, int y);
+struct User {
+	int id;
+	int epoch;
+	struct Session now;
+};
 ```
 
-#### Initialize global variables
+#### Priority queue
 
 ```c
-void init_queue(int (*compare_fp)(int x, int y)) {
+/* Slots are never reused: one slot for every enqueue, one per session */
+struct User pq[IDS * EPOCHS];
+int front, rear;
+```
+
+#### Initialize the priority queue
+
+```c
+void init_pqueue(void) {
 	front = 0;
 	rear = -1;
-	compare = compare_fp;
+}
+```
+
+#### The user who logs out earlier has higher priority
+
+```c
+/* Nonzero if x has higher priority; strict <, so ties keep arrival order */
+int compare(struct User x, struct User y) {
+	return x.now.logout < y.now.logout;
 }
 ```
 
 #### Put data into the priority queue
 
 ```c
-void enqueue(int data) {
-	int pos = rear + 1;
-	while (pos > front && compare(data, queue[pos - 1])) {
-		queue[pos] = queue[pos - 1];
-		pos--;
+void enqueue(struct User user) {
+	int i = rear + 1;
+	/* Test front first, so pq[i - 1] is never read once front is passed */
+	while (i > front && compare(user, pq[i - 1])) {
+		pq[i] = pq[i - 1];
+		i--;
 	}
-	queue[pos] = data;
+	pq[i] = user;
 	rear++;
 }
 ```
@@ -231,116 +252,86 @@ void enqueue(int data) {
 #### Take data out of the priority queue
 
 ```c
-int dequeue(void) {
-	int most = queue[front];
-	front++;
-	return most;
+struct User dequeue(void) {
+	return pq[front++]; /* the data at front, then front moves on */
 }
 ```
 
 ### Meeting time problem
 
-#### Keep each user’s current login and logout
+#### The plan
 
 ```c
-/* Process time logs to get current login status */
-enum { N_USERS = 3, N_EPOCHS = 3 };
-
-int timelogs[N_USERS][N_EPOCHS * 2] = {
-	{5, 6, 8, 9, 11, 13}, 
-	{2, 5, 7, 8, 12, 15}, 
-	{1, 3, 5, 7, 9, 14}
+struct Session plans[IDS][EPOCHS] = {
+	{{5, 6}, {8, 9}, {11, 13}},
+	{{2, 5}, {7, 8}, {12, 15}},
+	{{1, 3}, {5, 7}, {9, 14}}
 };
-
-struct User {
-	int login;
-	int logout;
-	int epoch;
-};
-struct User users[N_USERS];
-```
-
-#### Set every user to the first login and logout
-
-```c
-void init_users(void) {
-	for (int id = 0; id < N_USERS; id++) {
-		users[id].epoch = 0;
-		users[id].login = timelogs[id][0];
-		users[id].logout = timelogs[id][1];
-	}
-}
 ```
 
 #### Move a user on to the next login and logout
 
 ```c
-int next_epoch(int id) {
-	int ep = ++users[id].epoch;
-	if (ep >= N_EPOCHS) {
-		return -1;
+struct User next_epoch(struct User u) {
+	int ep = ++u.epoch;
+	/* After the last session, epoch is EPOCHS and now is left as it was */
+	if (ep < EPOCHS) {
+		u.now = plans[u.id][ep];
 	}
-	users[id].login = timelogs[id][ep * 2];
-	users[id].logout = timelogs[id][ep * 2 + 1];
-	return 0;
+	return u;
+}
+```
+
+#### Put every user in with the first login and logout
+
+```c
+void init_meeting(void) {
+	init_pqueue();
+	struct User u = {.epoch = 0};
+	for (int i = 0; i < IDS; i++) {
+		u.id = i;
+		u.now = plans[i][0];
+		enqueue(u);
+	}
 }
 ```
 
 #### Find the latest login time
 
 ```c
-int latest_login_time(void) {
-	int latest_time = 0; /* times are never negative */
-	for (int id = 0; id < N_USERS; id++) {
-		if (users[id].login > latest_time) {
-			latest_time = users[id].login;
+/* Called once, right after init_meeting(), while every user is queued */
+int latest_login(void) {
+	int latest = -1; /* smaller than any time */
+	for (int i = front; i <= rear; i++) {
+		int cur = pq[i].now.login;
+		if (cur > latest) {
+			latest = cur;
 		}
 	}
-	return latest_time;
-}
-```
-
-#### Put every user in and take out the earliest logout
-
-```c
-/* x and y are user ids; the user who logs out earlier has higher priority */
-int earlier_logout(int user_x, int user_y) {
-	return users[user_x].logout < users[user_y].logout;
-}
-
-/* Put every user in the queue and return the one who logs out first */
-int first_logout_id(void) {
-	init_queue(&earlier_logout);
-	for (int id = 0; id < N_USERS; id++) {
-		enqueue(id);
-	}
-	return dequeue();
+	return latest;
 }
 ```
 
 #### Move the earliest logout on until everyone is logged in
 
 ```c
-int survey(void) {
-	init_users();
-	int meeting_time = latest_login_time();
-	int out_id = first_logout_id();
-	
-	/* Survey to find the earliest meeting time */
-	while (meeting_time >= users[out_id].logout) {
-		/* Move this user to their next login; stop if there is none */
-		if (next_epoch(out_id) == -1) {
+int meeting_time(void) {
+	init_meeting();
+	int t = latest_login();
+	struct User out = dequeue();
+
+	/* A user who logs out at t has already left, hence >= */
+	while (t >= out.now.logout) {
+		out = next_epoch(out);
+		if (out.epoch >= EPOCHS) {
 			return -1;
 		}
-		/* Update the meeting time if this user has a later login time */
-		if (users[out_id].login > meeting_time) {
-			meeting_time = users[out_id].login;
+		if (out.now.login > t) {
+			t = out.now.login;
 		}
-		/* Reinsert the user into the priority queue */
-		enqueue(out_id);
-		/* Get the next user with the earliest logout time */
-		out_id = dequeue();
+		enqueue(out);
+		out = dequeue();
 	}
-	return meeting_time;
+	return t;
 }
 ```

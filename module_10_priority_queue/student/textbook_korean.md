@@ -122,11 +122,11 @@
 
 ### 우선순위 큐에는 어떤 데이터가 필요할까?
 
-기다리는 데이터를 담을 배열과 두 위치 `front`, `rear`가 필요하다. 배열에는 계획에 있는 로그아웃 시간마다 한 칸씩 필요하다. 어느 데이터의 우선순위가 더 높은지 정하는 규칙도 필요하다. 규칙은 함수이며, 큐는 그 함수를 호출할 수 있도록 함수의 주소를 저장한다. 따라서 같은 큐 코드에 어떤 규칙이든 사용할 수 있다.
+기다리는 데이터를 담을 배열과 두 위치 `front`, `rear`가 필요하다. 배열에는 계획에 있는 로그아웃 시간마다 한 칸씩 필요하다. 각 데이터는 유저 전체다. 유저 번호, 현재 살펴보는 로그인과 로그아웃 쌍의 번호, 그리고 그 두 시간을 담는다.
 
 ### 우선순위 큐를 초기화하려면 무엇을 해야 할까?
 
-규칙을 저장하고 `front`를 `0`, `rear`를 `-1`로 설정한다. 첫 데이터는 `0`번 위치에 들어가야 하고, 데이터를 넣으면 `rear`가 증가하므로 `rear`는 `-1`에서 시작한다. 큐는 빈 상태로 시작하며, `front`가 `rear`보다 한 칸 뒤에 있으면 비어 있으므로 `front`는 `0`에서 시작한다.
+`front`를 `0`, `rear`를 `-1`로 설정한다. 첫 데이터는 `0`번 위치에 들어가야 하고, 데이터를 넣으면 `rear`가 증가하므로 `rear`는 `-1`에서 시작한다. 큐는 빈 상태로 시작하며, `front`가 `rear`보다 한 칸 뒤에 있으면 비어 있으므로 `front`는 `0`에서 시작한다.
 
 ### 새 데이터를 넣으려면 무엇을 해야 할까?
 
@@ -138,15 +138,15 @@
 
 ### 미팅 문제에는 어떤 데이터가 필요할까?
 
-유저마다 한 행씩 두고, 각 행에 그 유저의 로그인과 로그아웃 시간을 시간순으로 담은 계획 표가 필요하다. 각 유저에 대해 현재 로그인 시간, 로그아웃 시간, 그 유저의 행에서 선택한 쌍의 번호를 저장한다. 큐에는 유저 번호만 저장한다.
+유저마다 한 행씩 두고, 각 행에 그 유저의 로그인과 로그아웃을 쌍으로 묶어 시간순으로 담은 계획 표가 필요하다. 큐에 있는 각 유저는 자신의 번호, 현재 살펴보는 쌍의 번호, 그리고 그 쌍의 복사본을 담는다.
 
 ### 우선순위 큐에는 어떤 규칙을 줄까?
 
-더 일찍 로그아웃하는 유저의 우선순위가 더 높다. 따라서 여기서는 시간이 가장 작은 유저의 우선순위가 가장 높다. 규칙은 두 유저의 번호를 받아 그 유저들의 로그아웃 시간을 찾아 비교한다.
+더 일찍 로그아웃하는 유저의 우선순위가 더 높다. 따라서 여기서는 시간이 가장 작은 유저의 우선순위가 가장 높다. 규칙은 두 유저를 받아 각 유저가 담고 있는 로그아웃 시간을 비교한다.
 
 ### 미팅 시간 찾기를 시작하려면 무엇을 해야 할까?
 
-모든 유저를 계획의 첫 로그인과 로그아웃으로 설정한다. 모든 유저의 로그인 시간을 비교해서 가장 늦은 로그인 시간을 찾는다. 규칙으로 우선순위 큐를 초기화하고, 모든 유저의 번호를 넣은 뒤 하나를 꺼낸다. 그 유저의 로그아웃 시간이 가장 이르다.
+우선순위 큐를 초기화하고, 계획의 첫 로그인과 로그아웃을 담은 모든 유저를 넣는다. 어떤 시간보다도 작은 `-1`에서 시작해 큐에 있는 모든 유저의 로그인 시간을 비교하여 가장 늦은 로그인 시간을 찾는다. 유저 하나를 꺼낸다. 그 유저의 로그아웃 시간이 가장 이르다.
 
 ### 미팅할 수 있는지는 어떻게 확인할까?
 
@@ -154,76 +154,97 @@
 
 ### 미팅할 수 없는 동안에는 무엇을 해야 할까?
 
-로그아웃 시간이 가장 이른 유저의 다음 로그인과 로그아웃 계획으로 넘어간다. 다음 계획이 없으면 미팅할 수 있는 시간도 없으므로 끝낸다. 새 로그인 시간이 가장 늦은 로그인 시간보다 늦으면, 그 시간이 가장 늦은 로그인 시간이 된다. 유저 번호를 다시 넣고 다음 하나를 꺼낸 뒤 다시 확인한다.
+로그아웃 시간이 가장 이른 유저의 다음 로그인과 로그아웃 계획으로 넘어간다. 다음 계획이 없으면 미팅할 수 있는 시간도 없으므로 끝낸다. 새 로그인 시간이 가장 늦은 로그인 시간보다 늦으면, 그 시간이 가장 늦은 로그인 시간이 된다. 유저를 다시 넣고 다음 하나를 꺼낸 뒤 다시 확인한다.
 
 ## 새로운 C 문법 설명
 
-### 함수의 주소를 변수에 어떻게 저장할까?
+### 구조체 안에 다른 구조체를 어떻게 담을까?
 
-함수 포인터로 저장한다. 함수 선언과 비슷하게 쓰되 함수 이름 대신 `(*name)`을 쓴다.
-
-```c
-int (*compare)(int x, int y);
-```
-
-`compare`에는 `int` 값 두 개를 받고 `int` 값을 반환하는 함수의 주소를 저장할 수 있다. 괄호가 필요하다. 괄호가 없으면 포인터를 반환하는 함수를 선언하게 된다.
-
-### 함수의 주소는 어떻게 구할까?
-
-변수와 마찬가지로 함수 이름 앞에 `&`를 붙인다. 여기서는 `earlier_logout`의 주소를 `init_queue`에 전달한다. 이 함수의 매개변수는 함수 포인터다.
+구조체의 멤버도 구조체일 수 있다. 유저는 현재 로그인과 로그아웃을 하나의 `struct Session`으로 담는다. `out.now.logout`처럼 점 두 개를 써서 시간에 접근한다.
 
 ```c
-void init_queue(int (*compare_fp)(int x, int y));
+struct Session {
+	int login;
+	int logout;
+};
 
-init_queue(&earlier_logout);
+struct User {
+	int id;
+	int epoch;
+	struct Session now;
+};
 ```
 
-### 포인터를 통해 함수는 어떻게 호출할까?
+### 구조체를 대입하거나 전달하면 어떻게 될까?
 
-함수 이름을 쓸 자리에 포인터 이름을 쓴다.
+`int`와 마찬가지로 값 전체가 복사된다. 유저를 `compare`나 `enqueue`에 전달할 때, `dequeue`나 `next_epoch`에서 반환받을 때, 그리고 `u.now = plans[u.id][ep];`를 실행할 때 모두 복사본이 만들어진다. 이 중 어느 것도 계획 표를 바꾸지 않는다.
+
+### 구조체를 만들 때 일부 멤버만 어떻게 설정할까?
+
+점으로 각 멤버의 이름을 지정한다. 지정하지 않은 멤버는 `0`이 된다.
 
 ```c
-compare(data, queue[pos - 1])
+struct User u = {.epoch = 0};
 ```
-
-`compare`에 주소가 저장된 함수를 호출한다. 큐 코드는 `earlier_logout`을 직접 부르지 않으므로, 같은 코드에 어떤 규칙이든 사용할 수 있다.
 
 ## C 코드
 
 ### 우선순위 큐 구현
 
-#### 전역 변수
+#### 유저와 현재 로그인 및 로그아웃
 
 ```c
-enum { CAPACITY = 10 };
+enum { IDS = 3, EPOCHS = 3 };
 
-int queue[CAPACITY];
-int front, rear;
+struct Session {
+	int login;
+	int logout;
+};
 
-/* Function pointer for comparing elements */
-int (*compare)(int x, int y);
+struct User {
+	int id;
+	int epoch;
+	struct Session now;
+};
 ```
 
-#### 전역 변수 초기화하기
+#### 우선순위 큐
 
 ```c
-void init_queue(int (*compare_fp)(int x, int y)) {
+/* Slots are never reused: one slot for every enqueue, one per session */
+struct User pq[IDS * EPOCHS];
+int front, rear;
+```
+
+#### 우선순위 큐 초기화하기
+
+```c
+void init_pqueue(void) {
 	front = 0;
 	rear = -1;
-	compare = compare_fp;
+}
+```
+
+#### 더 일찍 로그아웃하는 유저의 우선순위가 더 높다
+
+```c
+/* Nonzero if x has higher priority; strict <, so ties keep arrival order */
+int compare(struct User x, struct User y) {
+	return x.now.logout < y.now.logout;
 }
 ```
 
 #### 우선순위 큐에 데이터 넣기
 
 ```c
-void enqueue(int data) {
-	int pos = rear + 1;
-	while (pos > front && compare(data, queue[pos - 1])) {
-		queue[pos] = queue[pos - 1];
-		pos--;
+void enqueue(struct User user) {
+	int i = rear + 1;
+	/* Test front first, so pq[i - 1] is never read once front is passed */
+	while (i > front && compare(user, pq[i - 1])) {
+		pq[i] = pq[i - 1];
+		i--;
 	}
-	queue[pos] = data;
+	pq[i] = user;
 	rear++;
 }
 ```
@@ -231,116 +252,86 @@ void enqueue(int data) {
 #### 우선순위 큐에서 데이터 꺼내기
 
 ```c
-int dequeue(void) {
-	int most = queue[front];
-	front++;
-	return most;
+struct User dequeue(void) {
+	return pq[front++]; /* the data at front, then front moves on */
 }
 ```
 
 ### 미팅 시간 문제
 
-#### 각 유저의 현재 로그인과 로그아웃 관리하기
+#### 접속 계획
 
 ```c
-/* Process time logs to get current login status */
-enum { N_USERS = 3, N_EPOCHS = 3 };
-
-int timelogs[N_USERS][N_EPOCHS * 2] = {
-	{5, 6, 8, 9, 11, 13},
-	{2, 5, 7, 8, 12, 15},
-	{1, 3, 5, 7, 9, 14}
+struct Session plans[IDS][EPOCHS] = {
+	{{5, 6}, {8, 9}, {11, 13}},
+	{{2, 5}, {7, 8}, {12, 15}},
+	{{1, 3}, {5, 7}, {9, 14}}
 };
-
-struct User {
-	int login;
-	int logout;
-	int epoch;
-};
-struct User users[N_USERS];
-```
-
-#### 모든 유저를 첫 로그인과 로그아웃으로 설정하기
-
-```c
-void init_users(void) {
-	for (int id = 0; id < N_USERS; id++) {
-		users[id].epoch = 0;
-		users[id].login = timelogs[id][0];
-		users[id].logout = timelogs[id][1];
-	}
-}
 ```
 
 #### 한 유저의 다음 로그인과 로그아웃으로 넘어가기
 
 ```c
-int next_epoch(int id) {
-	int ep = ++users[id].epoch;
-	if (ep >= N_EPOCHS) {
-		return -1;
+struct User next_epoch(struct User u) {
+	int ep = ++u.epoch;
+	/* After the last session, epoch is EPOCHS and now is left as it was */
+	if (ep < EPOCHS) {
+		u.now = plans[u.id][ep];
 	}
-	users[id].login = timelogs[id][ep * 2];
-	users[id].logout = timelogs[id][ep * 2 + 1];
-	return 0;
+	return u;
+}
+```
+
+#### 첫 로그인과 로그아웃을 담은 모든 유저 넣기
+
+```c
+void init_meeting(void) {
+	init_pqueue();
+	struct User u = {.epoch = 0};
+	for (int i = 0; i < IDS; i++) {
+		u.id = i;
+		u.now = plans[i][0];
+		enqueue(u);
+	}
 }
 ```
 
 #### 가장 늦은 로그인 시간 찾기
 
 ```c
-int latest_login_time(void) {
-	int latest_time = 0; /* times are never negative */
-	for (int id = 0; id < N_USERS; id++) {
-		if (users[id].login > latest_time) {
-			latest_time = users[id].login;
+/* Called once, right after init_meeting(), while every user is queued */
+int latest_login(void) {
+	int latest = -1; /* smaller than any time */
+	for (int i = front; i <= rear; i++) {
+		int cur = pq[i].now.login;
+		if (cur > latest) {
+			latest = cur;
 		}
 	}
-	return latest_time;
-}
-```
-
-#### 모든 유저를 넣고 로그아웃 시간이 가장 이른 유저 꺼내기
-
-```c
-/* x and y are user ids; the user who logs out earlier has higher priority */
-int earlier_logout(int user_x, int user_y) {
-	return users[user_x].logout < users[user_y].logout;
-}
-
-/* Put every user in the queue and return the one who logs out first */
-int first_logout_id(void) {
-	init_queue(&earlier_logout);
-	for (int id = 0; id < N_USERS; id++) {
-		enqueue(id);
-	}
-	return dequeue();
+	return latest;
 }
 ```
 
 #### 모두 로그인할 때까지 로그아웃 시간이 가장 이른 유저를 다음 계획으로 옮기기
 
 ```c
-int survey(void) {
-	init_users();
-	int meeting_time = latest_login_time();
-	int out_id = first_logout_id();
+int meeting_time(void) {
+	init_meeting();
+	int t = latest_login();
+	struct User out = dequeue();
 
-	/* Survey to find the earliest meeting time */
-	while (meeting_time >= users[out_id].logout) {
-		/* Move this user to their next login; stop if there is none */
-		if (next_epoch(out_id) == -1) {
+	/* A user who logs out at t has already left, hence >= */
+	while (t >= out.now.logout) {
+		out = next_epoch(out);
+		if (out.epoch >= EPOCHS) {
 			return -1;
 		}
-		/* Update the meeting time if this user has a later login time */
-		if (users[out_id].login > meeting_time) {
-			meeting_time = users[out_id].login;
+		if (out.now.login > t) {
+			t = out.now.login;
 		}
-		/* Reinsert the user into the priority queue */
-		enqueue(out_id);
-		/* Get the next user with the earliest logout time */
-		out_id = dequeue();
+		enqueue(out);
+		out = dequeue();
 	}
-	return meeting_time;
+	return t;
 }
 ```
