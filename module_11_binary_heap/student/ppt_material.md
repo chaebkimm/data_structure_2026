@@ -1,90 +1,84 @@
-# Chapter 10 Concept Slides — Heaps and Common On-Time
+# 자료구조 - 요약
 
-Use one numbered topic per slide or board scene. Ask for a prediction
-before revealing each state. The [textbook](textbook.md),
-[workbook](class_material.md), and [exact board states](../diagrams/binary_heap_models.md)
-follow the same source and examples.
+13주차 – 힙 컨셉
 
-## 1. Can the next request stay ready?
+## 목차
 
-Requests have urgency values `7,3,5,1,9,4`. Smaller values should leave
-first. Compare rescanning an unsorted array with keeping the answer at one
-known position. Attach the name Priority Queue to behavior under a ranking.
-The source compares integers; it stores no stable arrival sequence.
+- 복습 - 우선순위 큐
+- 트리로 우선순위 큐 구현하기
+- 데이터 올리고 내리기
+- 데이터 추가, 꺼내기
+- 힙 만들고, 힙으로 정렬하기
+- 배열로 트리 표현하기
 
-## 2. How much order is enough?
+## 복습 - 우선순위 큐
 
-Fill tree positions top to bottom and left to right. Attach the name
-complete binary tree. Keep every parent no larger than its children.
-Attach the name minimum Heap. Reveal `[1,3,4,7,9,5]`; ask why 5 may follow 9
-in the array without breaking the rule. Contrast parent/child order with
-sorted order and BST order.
+- 데이터를 우선순위 순서로 저장해서 우선순위 큐를 구현할 수 있다. 
+- 데이터를 추가할 때 우선순위가 낮은 데이터들을 한 칸씩 오른쪽으로 이동해서 만든 자리에 저장한다.
 
-## 3. How do positions replace pointers?
+## 트리가 우선순위 큐에 적절한 이유
 
-Show root 0, children 1/2, then 3/4 and 5. Derive parent `(i-1)/2`, left
-`2*i+1`, right `2*i+2`. A child exists only below `size`. The helpers return
-`-1` for a missing position. Distinguish ten reserved slots from live size.
+- 정렬하는 방식은 우선순위가 낮은 모든 데이터가 이동해야 한다. 
+- 트리에서 자식의 우선순위가 부모 이하라는 규칙을 둘 경우, 루트까지의 경로에 있는 데이터만 이동하고, 이동량은 트리의 높이인 log n 정도다. 
 
-## 4. Which path changes after insertion?
+## 힙의 규칙
 
-Reveal additions `7,3,5`, giving `[3,7,5]`. Add 1 at position 3; it swaps
-with positions 1 and 0, giving `[1,3,5,7]`. Add 9, then 4, ending with
-`[1,3,4,7,9,5]`. Attach the source name `heapify_up`.
+- 부모는 자식들보다 우선순위가 높거나 같고, 자식들끼리는 상관없다.
+- 위층부터, 왼쪽부터 채워서 높이는 log n 이하다.
+- 잘못된 위치에 있는 데이터는 조상 쪽으로 올리거나 후손 쪽으로 내린다.
 
-## 5. Which child should replace the root?
+## 데이터 올리기
 
-Save root 1; move final value 5 to position 0; reduce size to 5. Choose
-child 3 over 4. Reveal `[3,5,4,7,9]`. Attach `heapify_down`. Predict the
-wrong-child violation. Explain the lone-left child and singleton stop.
+- 우선순위가 낮은 부모들을 따라 올라가며 적절한 위치를 찾는다.
+- 우선순위가 낮은 부모들은 한 층씩 아래로 내려오고, 데이터는 적절한 위치로 이동한다.
 
-## 6. Why start with the last parent?
+## 데이터 내리기 
 
-Load `[7,3,5,1,9,4]` directly. Repair 2, then 1, then 0; reveal the same
-minimum Heap. Attach bottom-up `heapify`. Change `is_min_heap=0` and
-rebuild to `[9,7,5,1,3,4]`. The flag alone cannot rearrange values.
+- 자식 중 우선순위가 가장 높은 자식을 따라 내려가며 적절한 위치를 찾는다.
+- 우선순위가 높은 자식은 한 층씩 위로 올라오고, 데이터는 적절한 위치로 이동한다. 
 
-## 7. When are all devices on?
+## 힙에 데이터 추가하기
 
-Show ID 0 `[1,3],[7,10]`, ID 1 `[2,5],[8,12]`, IDs 2–9 `[4,9]`.
-Selected intervals share a time exactly when the latest start is no later
-than the earliest end. Closed intervals include equal endpoints. A scan
-can compute both bounds; two Heaps keep those bounds ready after updates.
+- 마지막 리프 다음 자리에서 출발해서 적절한 위치까지 데이터를 올린다.
 
-## 8. Why keep the same IDs in two Heaps?
+## 힙에서 데이터 꺼내기
 
-Store all ten IDs in each `Heap_Full.array`. Compare selected on-times
-largest first in `max_on_heap`, and off-times smallest first in
-`min_off_heap`. Explain function-pointer fields by naming the concrete
-functions they select. Neither fixed-ten Heap uses the simple `size`.
+- 루트를 꺼낸다. 
+- 비어있는 루트 자리에서 출발해서 적절한 위치까지 마지막 리프를 내린다.
+- 마지막 리프를 옮겨야 트리 중간에 빈칸이 생기지 않는다.
 
-## 9. Where did an ID move?
+## 주어진 트리를 힙으로 만들기
 
-A key changes through `epoch[id]`, while swaps change its array position.
-Show `array[pos[id]]==id` and both map writes during one swap. Distinguish
-the positions passed to `_proper_parent` from IDs passed to its comparator.
-`_reheapify` uses the current map position and chooses a repair direction.
+- 마지막 데이터부터 거꾸로 이동하며 데이터를 내리면 자식 힙들이 합쳐진다.
+- 일일이 추가하는 법은 더 비효율적이다.
+- 트리는 아래쪽에 데이터가 더 많고, 아래쪽 데이터는 내려갈 곳이 적지만 올라갈 곳은 많기 때문이다.
 
-## 10. Which interval can be discarded?
+## 힙으로 정렬하기
 
-Reveal bounds `(4,3)`; advance ID 0. Reveal `(7,5)`; advance ID 1. Reveal
-`(8,9)`; return 8. Repair the changed ID in both Heaps after each advance.
-Explain why an interval ending before the latest start cannot contribute a
-shared time, so discarding it preserves the first possible answer.
+- 힙에서 하나씩 데이터를 꺼내면 우선순위 순서로 데이터가 나온다.
 
-## 11. What happens at equality and exhaustion?
+## 배열로 트리를 표현하는 방법
 
-Change ID 1's second interval to `[9,12]`; answer 9 remains valid. For
-exhaustion, ID 0 only `[1,3]`, others `[4,9]`; return `-1`. The final epoch
-is outside its row's selected intervals. Do not read times until valid
-reinitialization. All ten rows need one to five valid nonnegative closed
-intervals in strictly separated chronological order.
+- 루트는 `0`에 있고, 루트의 왼쪽 자식은 `1`에 있고, 오른쪽 자식은 `2`에 있다.
+- `1`의 왼쪽 자식은 `3`에 있고, 오른쪽 자식은 `4`에 있다. 
+- `2`의 왼쪽 자식은 `5`에 있고, 오른쪽 자식은 `6`에 있다.
 
-## 12. Which work grows with the input?
+## 한 층의 인덱스 범위
 
-Count path length before naming `O(log n)` repair. Root inspection is
-`O(1)`, bottom-up construction `O(n)`, full order/map checking `O(n)`.
-Generalized interval work is `O(n+r log n)` for `r` successful advances.
-Then restate the actual fixed limits: ten integer slots, ten device IDs,
-and five intervals per ID. The source has no dynamic growth or comparison
-counter. Close with workbook evidence and one corrected explanation.
+- `0`층은 앞에 0개가 있어서 0부터다. 
+- `1`층은 앞에 1개가 있어서 1부터다. 
+- `2`층은 앞에 1+2=3개가 있어서 3부터다.
+- `n`층은 앞에 1+2+...+2ⁿ⁻¹=2ⁿ-1개가 있어서 2ⁿ-1부터다.
+
+## 자식의 인덱스
+
+- `i`가 `n`층에 있다면, 그 층에서 앞에 i-2ⁿ+1개가 있다.
+- 그 데이터들은 자식이 두 개씩이므로, `n+1`층에서 `i`의 자식들 앞에 2*i-2ⁿ⁺¹+2개가 있다.
+- `n+1`층은 2ⁿ⁺¹-1부터 시작하므로, 자식들은 `2*i+1`부터 시작한다. 
+
+## 부모의 인덱스
+
+- `i`의 자식은 `2*i+1`과 `2*i+2`다. 
+- `2`로 나눈 몫을 구하면 `i`와 `i+1`이 나온다. 
+- `1`을 빼고 `2`로 나눈 몫을 구하면 두 경우 모두 `i`만 나온다. 
+- 따라서 `x`의 부모는 `(x-1)/2`로 구한다. 

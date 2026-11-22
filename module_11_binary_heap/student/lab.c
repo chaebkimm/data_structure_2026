@@ -1,76 +1,104 @@
-enum {CAPACITY = 10};
-int queue[CAPACITY];
-int size = 0;
+/* No full or empty checks: never enqueue into a full queue,
+ * never dequeue from an empty queue. */
+enum { CAPACITY = 5 };
 
-int is_empty_queue(void) { return size == 0; }
+int pq[CAPACITY];
+int size;
 
-int (*comp)(int x, int y);
+void init_pqueue(void) { size = 0; }
 
-int comp_q(int i, int j) {
-    return comp(queue[i], queue[j]);
+/* The smaller value has higher priority, so this is a min-heap */
+int compare(int x, int y) { return x < y; }
+
+/* Positions go level by level from 0, so the children of i are 2i + 1
+ * and 2i + 2, and (i - 1) / 2 rounds down to i's parent from either. */
+int parent(int i) { return (i - 1) / 2; }
+
+/* Moves lower-priority parents down a level each and returns the
+ * position where data belongs. The caller stores data there. */
+int sift_up(int i, int data) {
+	int p = parent(i);
+	while (i > 0 && compare(data, pq[p])) {
+		pq[i] = pq[p];
+		i = p;
+		p = parent(i);
+	}
+	return i;
 }
 
-void swap(int i, int j) {
-    int old_i_val = queue[i];
-    int old_j_val = queue[j];
-    queue[i] = old_j_val;
-    queue[j] = old_i_val;
+int left(int i) { return i * 2 + 1; }
+int right(int i) { return i * 2 + 2; }
+
+int priority_child(int i) {
+	int l = left(i);
+	int r = right(i);
+	int child;
+	if (r < size && compare(pq[r], pq[l])) {
+		child = r;
+	} else {
+		child = l;
+	}
+	return child;
 }
 
-void sift_down(int id) {
-    while (id * 2 + 1 < size) {
-        int l = id * 2 + 1;
-        int r = id * 2 + 2;
-        int child = l;
-        if (r < size && comp_q(r, l)) {
-            child = r;
-        }
-        if (!comp_q(child, id)) { break; }
-        swap(id, child);
-        id = child;
-    }
-}
-
-void sift_up(int id) {
-    while (id > 0) {
-        int p = (id - 1) / 2;
-        if (!comp_q(id, p)) { break; }
-        swap(p, id);
-        id = p;
-    }
+/* Moves higher-priority children up a level each and returns the
+ * position where data belongs. The caller stores data there. */
+int sift_down(int i, int data) {
+	int c = priority_child(i);
+	while (c < size && compare(pq[c], data)) {
+		pq[i] = pq[c];
+		i = c;
+		c = priority_child(i);
+	}
+	return i;
 }
 
 void enqueue(int data) {
-    queue[size++] = data;
-    sift_up(size - 1);
+	int pos = sift_up(size, data);
+	pq[pos] = data;
+	size++;
 }
 
 int dequeue(void) {
-    if (is_empty_queue()) { return -1; }
-    int most = queue[0];
-    queue[0] = queue[--size];
-    sift_down(0);
-    return most;
+	int root = pq[0];
+	int data = pq[--size];
+	int pos = sift_down(0, data);
+	pq[pos] = data;
+	return root;
 }
 
-void init_queue(int (*compare)(int, int)) {
-    comp = compare;
-    size = 0;
-}
-
+/* Positions after parent(size - 1) are leaves, already heaps. Going
+ * backwards, both subtrees of i are heaps when sift_down(i, data) runs. */
 void heapify(void) {
-    for (int i = size / 2 - 1; i >= 0; i--) {
-        sift_down(i);
-    }
+	for (int i = parent(size - 1); i >= 0; i--) {
+		int data = pq[i];
+		int pos = sift_down(i, data);
+		pq[pos] = data;
+	}
 }
 
-int sorted[CAPACITY];
-int pos = 0;
+/* pq must already be a heap. Each root fills sorted from the front,
+ * so the order is ascending. pq ends empty. */
+void heap_sort(int sorted[]) {
+	int old_size = size;
+	for (int i = 0; i < old_size; i++) {
+		sorted[i] = dequeue();
+	}
+}
 
-void heap_sort(void) {
-    heapify();
-    pos = 0;
-    while (!is_empty_queue()) {
-        sorted[pos++] = dequeue();
-    }
+int main(void) {
+	pq[0] = 9;
+	pq[1] = 6;
+	pq[2] = 5;
+	size = 3;
+	heapify(); /* pq is now 5 6 9: 9 moved down 1 level */
+
+	enqueue(3); /* pq is now 3 5 9 6: 3 moved up 2 levels */
+	enqueue(1); /* pq is now 1 3 9 6 5: 1 moved up 2 levels */
+
+	int sorted[CAPACITY];
+	/* Heap sort: empty the heap into sorted */
+	heap_sort(sorted); /* sorted is now 1 3 5 6 9, and pq is empty */
+
+	return 0;
 }
