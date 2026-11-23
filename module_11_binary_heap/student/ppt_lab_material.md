@@ -88,13 +88,13 @@ int right(int i) { return i * 2 + 2; }
 int priority_child(int i) {
   int l = left(i);
   int r = right(i);
+  int child = -1;
   if (r < size && comp(pq[r], pq[l])) {
-    return r;
+    child = r;
   } else if (l < size) {
-    return l;
-  } else {
-    return -1;
+    child = l;
   }
+  return child;
 }
 ```
 
@@ -162,8 +162,8 @@ void heapify(void) {
 
 ```c
 void heap_sort(int sorted[]) {
-  int n = size;
-  for (int i = 0; i < n; i++) {
+  int old_size = size;
+  for (int i = 0; i < old_size; i++) {
     sorted[i] = dequeue();
   }
 }

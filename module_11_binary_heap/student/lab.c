@@ -34,13 +34,13 @@ int right(int i) { return i * 2 + 2; }
 int priority_child(int i) {
 	int l = left(i);
 	int r = right(i);
+	int child = -1;
 	if (r < size && compare(pq[r], pq[l])) {
-		return r;
+		child = r;
 	} else if (l < size) {
-		return l;
-	} else {
-		return -1;
+		child = l;
 	}
+	return child;
 }
 
 /* Moves higher-priority children up a level each and returns the
