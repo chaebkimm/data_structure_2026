@@ -1,70 +1,51 @@
-# Chapter 10 Class Workbook — Heaps and Common On-Time
+# Module 11 Class Workbook — Binary Heaps
 
-Name: ____________________ Date: ____________________
+Name ____________________    Date ____________________
 
-Keep each initial prediction. Use the [textbook](textbook.md),
-[concept slides](ppt_material.md), [lab slides](ppt_lab_material.md), and
-[current source](lab.c). The [investigation worksheet](investigation_worksheet.md)
-provides the complete response record.
+Use the [concept slides](ppt_material.md), [lab slides](ppt_lab_material.md),
+and [source](lab.c). Keep your first prediction, then compare it with the
+operation in the [handout](lab.md). Either version of the
+[investigation worksheet](investigation_worksheet.md) can hold your trace.
 
-## 1. How can nearby comparisons keep the answer ready?
+## 1. Which child should rise?
 
-Place `7,3,5,1,9,4` in six complete-tree positions. Explain a parent/child
-rule that keeps the smallest at position 0. State which relationships
-remain unordered and how the rule changes for the largest value.
+Draw the tree stored as `[9, 6, 5]` at size 3. Before `heapify()`, explain
+why each child already forms a heap. Circle the child that must move and
+show the final position of 9. How could you check the result using only
+parent–child comparisons?
 
-Prediction: ______________________________________________________
-Correction: ______________________________________________________
+Prediction ____________________    Checked trace ____________________
 
-## 2. Which paths do the values follow?
+## 2. Which values actually move during insertion?
 
-Start with `init_heap()` and add the same six values. Record the array
-after each addition. Remove once and record the saved root, replacement,
-better-child choices, and final array. Trace a singleton removal separately.
-State the caller's capacity and nonempty checks.
+Starting from that heap, trace `enqueue(3)` and then `enqueue(1)`.
+For each, draw an arrow for each parent copied down. Mark the slot
+returned by `sift_up` and the statement in `enqueue` that fills it.
 
-Prediction: ______________________________________________________
-Observed states: __________________________________________________
-Correction: ______________________________________________________
+Prediction ____________________    Checked trace ____________________
 
-## 3. Why visit the last parent first?
+## 3. How does one removal preserve the shape?
 
-Load the original six values directly, set size 6 and minimum mode, and
-trace `heapify()` from positions 2, 1, and 0. Change to maximum mode and
-rebuild. Explain why a changed comparison rule alone leaves stale order.
+Start from the full heap you just drew. Circle the saved root and underline
+the former last value. After the size decreases, list the surviving child
+indices at the root. Which child moves, and what stops the replacement
+from going any farther? Give the returned value and remaining live array.
 
-Prediction: ______________________________________________________
-Observed states: __________________________________________________
-Correction: ______________________________________________________
+Prediction ____________________    Checked trace ____________________
 
-## 4. Which pair of endpoint bounds is enough?
+## 4. Where does the sorted order appear?
 
-Load ID 0 `[1,3],[7,10]`; ID 1 `[2,5],[8,12]`; IDs 2–9 `[4,9]`.
-Predict the largest selected start and smallest selected end after each
-advance. Explain why discarding the earliest-ending interval cannot skip
-a possible shared time. Include equality at an endpoint.
+Continue removing until the last value leaves. List the returned values
+in order. On the last removal, which condition stops a child read? Explain
+why the example gives `heap_sort` a separate array and why the sort loop
+saves the starting size.
 
-Prediction: ______________________________________________________
-Observed bounds and answer: _______________________________________
-Correction: ______________________________________________________
+Prediction ____________________    Checked trace ____________________
 
-## 5. Where is the changed device now?
+## 5. What would you test?
 
-List both complete ID arrays and both inverse maps after initialization
-and each successful advance. Show one swap and both map writes. Explain
-why `_reheapify` needs a current position and why both Heaps are repaired.
+Choose one of the three original cases in the [handout](lab.md). Describe
+the input, the first assertion you would write, and a mistake that the
+assertion would catch. State the size conditions for insertion and removal.
 
-Prediction: ______________________________________________________
-Observed invariant checks: ________________________________________
-Correction: ______________________________________________________
-
-## 6. What does the boundary test establish?
-
-Test immediate overlap, endpoint equality, and exhaustion. After `-1`,
-identify the invalid terminal epoch and explain the reset before another
-run. Do not ask unchecked integer operations to reject overflow/underflow.
-
-Command and result: _______________________________________________
-Original tests: ___________________________________________________
-One-path, whole-build, and diagnostic costs: ________________________
-One corrected explanation: ________________________________________
+Test idea __________________________________________________________

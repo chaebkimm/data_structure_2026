@@ -1,45 +1,34 @@
-# Module 10 — Five-Minute Cognitive Pause
+# Module 11 — Five-Minute Cognitive Pause
 
-Read the starting states with the instructor. Then use no notes or coding
-tools for the three targets. Preserve the initial response when correcting.
-A minimum Heap keeps each parent no larger than its children. A child
-position exists only below `size`; `-1` is a missing position.
+Read the three independent starting states. Predict each result without
+running code, then check [lab.c](lab.c). Keep both the first prediction
+and the observation that confirmed or changed it.
 
-## Target 1 — Map and repair upward
+## 1. Which parents move?
 
-Start with `heap=[3,7,5]`, `size=3`, `is_min_heap=1`. Predict `add(1)`.
-Give the initial insertion position, every tested parent position, each
-swap, and the final live array. State the capacity condition the caller
-must check before this call.
+Start with `pq = [5, 6, 9]` and `size = 3`. Predict `enqueue(3)`.
+Give its starting index, each parent value copied down, the index where
+3 is written, and the resulting live array.
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## Target 2 — Choose the better child
+## 2. Which child can move?
 
-Start independently with `heap=[1,3,4,7,9,5]`, `size=6`, `is_min_heap=1`.
-Predict `remove_root()`. Give the return value, replacement value, new
-size, each selected child, and the final live array. Explain why this
-array need not be globally sorted. Then explain how removing a singleton
-reaches size 0 without reading a missing child.
+Start with `pq = [1, 3, 9, 6, 5]` and `size = 5`. Predict one
+`dequeue()`. Record the saved root, replacement, reduced size, and
+child copied to the root. At the next position, which child is still
+live, and what comparison ends the sift?
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## Target 3 — Advance an interval in two Heaps
+## 3. What can an empty sort write?
 
-ID 0 has `[1,3],[7,10]`; ID 1 has `[2,5],[8,12]`; IDs 2 through 9 have
-`[4,9]`. All epochs start at 0. Intervals include their endpoints.
-State the latest start and earliest end, the ID advanced first, and the
-next pair of bounds. Explain why both Heaps require repair even though
-only one epoch changes. State how the ID's current position is found in
-each Heap.
+Start with `size = 0` and a separate output array whose first entry is
+77. Predict that entry and the heap size after `heap_sort` returns.
+Explain your prediction using the sort loop's bound.
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## Correct using evidence
+Name one array index or comparison you checked against the source.
 
-Label corrections `position`, `order`, `child choice`, `missing child`,
-`epoch`, or `inverse map`. Identify the exact code or observed state that
-changed your answer. The source stores no arrival sequence or operation
-comparison counter; do not invent those fields in a trace.
-
-Correction: ______________________________________________________
+Evidence ___________________________________________________________

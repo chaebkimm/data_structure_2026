@@ -1,170 +1,93 @@
-# Module 10 Investigation Worksheet
+# Module 11 Investigation Worksheet — Trace a Min-Heap
 
-Name: ____________________ Date: ____________________
+Name ____________________    Date ____________________
 
-Use the current [lab](lab.md) and [source](lab.c). Predict first, run second,
-then add a correction. The [linear version](investigation_worksheet_linear.md)
-has the same targets without response tables.
+Use [lab.c](lab.c) and the [lab handout](lab.md). Predict each state before
+checking the source or your driver. Keep the first prediction and record a
+correction beside it. The [linear worksheet](investigation_worksheet_linear.md)
+covers the same questions in numbered prose.
 
-## A. Which positions are live?
+## A. Build the heap
 
-The array reserves ten integers. Start with `size=6` and values
-`[7,3,5,1,9,4]`. Draw the complete tree using positions before adding values.
+Load `[9, 6, 5]` into `pq` as in `main` and set `size = 3`. For each
+live index, list its existing relatives. Use a dash on paper for an absent
+relative. Which two reserved indices lie outside the live prefix?
 
-| Position | Parent | Left child | Right child |
+| Index | Input value | Parent index | Live child indices |
+| ---: | ---: | --- | --- |
+| 0 | 9 | | |
+| 1 | 6 | | |
+| 2 | 5 | | |
+
+Trace `heapify()`. Where does the backward loop start? Why are its child
+subtrees already heaps? Give the index and value selected by
+`priority_child(0)`, the index returned by `sift_down(0, 9)`, and the
+live array after the caller stores 9.
+
+Prediction ____________________    Checked trace ____________________
+
+## B. Follow the two insertions
+
+Continue from A. Record each parent's value in the order it is copied down.
+Give the index where the caller finally stores the new value.
+
+| Call | Starting index | Values copied down | Final index | Live array and size |
+| --- | --- | --- | --- | --- |
+| `enqueue(3)` | | | | |
+| `enqueue(1)` | | | | |
+
+Which pair of siblings in the full heap could exchange places and preserve
+heap order? Explain how the tree shape bounds the number of parents visited.
+State the caller's size condition for another insertion.
+
+Response ___________________________________________________________
+
+## C. Follow the first removal
+
+Start with B's full heap. Trace the first call to `dequeue()` inside
+`heap_sort`. The saved replacement stays in the local variable `data`
+while children move up.
+
+| Saved root | Replacement | Reduced size | Child copied to the root | Final index of replacement | Live array after repair |
+| --- | --- | --- | --- | --- | --- |
+| | | | | | |
+
+Which child does the sift consider next, and what comparison stops it?
+How would the choice work for two equal children? State the caller's size
+condition for removal.
+
+Response ___________________________________________________________
+
+## D. Finish the sort
+
+Continue the same sort. Use the first removal from C for row 1.
+Record only live heap entries and output slots written so far.
+
+| Removal | Returned root | Live array after removal | Output prefix |
 | ---: | --- | --- | --- |
-| 0 | | | |
 | 1 | | | |
 | 2 | | | |
 | 3 | | | |
 | 4 | | | |
 | 5 | | | |
 
-Explain `-1` and why capacity is different from `size`. Which position has
-only a left child? What remains in inactive slots after `init_heap()`?
+Explain the child-index check on the singleton removal. Why does
+`heap_sort` save `old_size` before the loop? Give the final `size`.
 
-Prediction: ______________________________________________________
-Correction: ______________________________________________________
+Response ___________________________________________________________
 
-## B. Which value belongs at the root?
+## E. Test your predictions
 
-Start independently with `init_heap()`. Add `7,3,5,1,9,4`.
-For each addition, record the appended position, tested parents, swaps,
-and final array. Keep values distinct from positions in every explanation.
+Use the [student driver](../code/tests/test_lab_student.c) for the three
+original cases in the handout. Record the input, expected result, and
+observed result for each in the [evidence record](evidence_template.md).
 
-| Value added | Appended position | Parent route | Final live array |
-| ---: | ---: | --- | --- |
-| 7 | | | |
-| 3 | | | |
-| 5 | | | |
-| 1 | | | |
-| 9 | | | |
-| 4 | | | |
+1. Interleave insertions and a removal using duplicate and negative values.
+2. Heapify four values so the last parent promotes its only child.
+3. Sort empty, singleton, and full heaps into a separate array. Check the
+   output, final size, and preservation of a known output value in the empty case.
 
-Explain the exact result of `proper_parent(-1,-1)`,
-`proper_parent(2,-1)`, and `proper_parent(-1,2)` in a valid state.
-Explain which position wins a tie and why this is not an arrival-order
-promise.
+Attach the build and test output. Identify one comparison or array write
+that confirmed or changed your initial prediction.
 
-__________________________________________________________________
-
-## C. Which child repairs the root?
-
-Use the final minimum Heap from B. Predict `remove_root()`.
-
-| Moment | Returned/saved value | `size` | Live array |
-| --- | --- | ---: | --- |
-| before removal | | | |
-| after replacement, before repair | | | |
-| after first swap | | | |
-| after stopping | | | |
-
-List all child choices, including stop comparisons. Explain why choosing
-the worse child can leave a violation. Check every parent/child pair in
-the final array; do not require sorted sibling order.
-
-In a separate run add one value, then remove it once. Trace the child
-helpers and `proper_parent(0,-1)` when size becomes 0. State why another
-removal would be invalid.
-
-__________________________________________________________________
-
-## D. Why build from the bottom?
-
-Load `[7,3,5,1,9,4]` directly, set size 6 and minimum mode, then call
-`heapify()`. Fill the states after repairs from positions 2, 1, and 0.
-Explain why the children below each visited position are already Heaps.
-Then change to maximum mode and rebuild. Do not assume changing the flag
-moves any values.
-
-| Call or repair | Final array |
-| --- | --- |
-| `heapify_down(2)` | |
-| `heapify_down(1)` | |
-| `heapify_down(0)` | |
-| maximum-mode `heapify()` | |
-
-Compare work for many separate insertions, one bottom-up build, one
-root inspection, and one full diagnostic scan. The source has no supplied
-comparison counter or full-order checker; keep any driver instrumentation
-separate from the unchanged lab.
-
-__________________________________________________________________
-
-## E. Which endpoints decide overlap?
-
-All ten IDs have valid closed intervals. Use ID 0 `[1,3],[7,10]`, ID 1
-`[2,5],[8,12]`, and IDs 2–9 `[4,9]`. Load every row and interval count.
-State why each row has at most five pairs and why prior off-time must be
-strictly before the next on-time in this exercise.
-
-| State | `epoch[0]` | `epoch[1]` | Latest start `L` | Earliest end `R` | Next action |
-| --- | ---: | ---: | ---: | ---: | --- |
-| after initialization | | | | | |
-| after first advance | | | | | |
-| after second advance | | | | | |
-
-Explain why `L<=R` means that every device is on at `L`. When `L>R`, why
-can the ID ending at `R` safely discard that interval? Why does this
-advancement process preserve the earliest possible answer?
-
-__________________________________________________________________
-
-## F. Which number is an ID?
-
-Read `_proper_parent`, `__swap__`, and `_reheapify`. Distinguish array
-positions, stored IDs, and endpoint times. Fill both complete arrays and
-both position maps after `_init_heaps()` and after each epoch advance.
-Attach additional sheets if needed.
-
-```text
-max IDs: __________________________________________________________
-max positions by ID: ______________________________________________
-min IDs: __________________________________________________________
-min positions by ID: ______________________________________________
-```
-
-Check `array[pos[id]]==id` for every ID in both Heaps. Show the two map
-entries changed by one swap. Explain why `_reheapify(&max_on_heap,id)`
-is generally incorrect and give the correct map-based argument.
-
-The fixed-ten helpers give position 4 only left child 9. `_heapify` visits
-5 through 0; explain why the first visit is harmless.
-
-__________________________________________________________________
-
-## G. What happens at the boundaries?
-
-Predict and test only valid calls.
-
-1. Integer duplicates in each mode: explain local tie behavior.
-2. Empty and singleton bottom-up build: explain why no invalid position
-   is visited.
-3. Ten live integer values: stop adding; do not execute an eleventh add.
-4. Interval equality: change ID 1's second interval to `[9,12]`.
-5. Interval exhaustion: ID 0 only `[1,3]`, all other IDs `[4,9]`.
-6. Immediate success: all ten IDs `[4,9]`.
-7. Another call to `all_on_time()` with valid input: explain how epochs
-   and maps restart.
-
-Expected and observed results: ____________________________________
-
-After exhaustion, identify the ID whose epoch equals its count. Explain
-why no time accessor, repair, or `check_all_on()` should use that terminal
-state. It is not an unchanged-state failure contract.
-
-__________________________________________________________________
-
-## H. What evidence supports the explanation?
-
-Complete three original test groups in the [lab](lab.md). Compare interval
-answers with a simple independent scan of all selected endpoints. Record
-order and inverse-map checks after successful repairs.
-
-State generalized costs using `n` IDs and `r` interval advances. Distinguish
-one-path repair, bottom-up building, root inspection, total interval work,
-and full diagnostics. Then state the actual ten-ID/five-interval limits.
-
-Original claim: __________________________________________________
-Observed evidence: ________________________________________________
-Corrected claim: __________________________________________________
+Evidence ___________________________________________________________

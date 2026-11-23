@@ -1,37 +1,27 @@
-# Module 10 Inquiry — Linear Response Format
+# Module 11 Inquiry — Linear Response Format
 
-Use this alternative to [inquiry_prompt.md](inquiry_prompt.md). The learning
-targets are the same. Respond in numbered prose, dictated text, or another
-accessible format. Preserve initial predictions and add corrections.
+Use this alternative to the [inquiry worksheet](inquiry_prompt.md).
+Respond in numbered prose or by dictation. Keep the initial predictions.
 
-1. Requests arrive with values `7,3,5,1,9,4`. Give the removal order when
-   smaller is more urgent, then when larger is more urgent.
-2. An unsorted array scans all live values before each removal. Describe
-   the repeated work. Suggest a nearby-pair rule that keeps the answer at
-   position 0 without fully sorting the array.
-3. Use these parent/child relationships: 0 has children 1 and 2; 1 has 3
-   and 4; 2 has only 5. Place the six values, then explain why your local
-   rule makes the root an answer. Explain what sibling order remains free.
-4. Append one value at the next position. Describe its possible route
-   upward and when repair stops.
-5. Remove the root and move the final value into its position. Describe
-   which existing child should be chosen and why a missing child cannot
-   be treated as an array index.
-6. Ten devices each have selected closed intervals. Decide whether their
-   intervals overlap using the latest start and earliest end. Explain
-   whether equal endpoints count.
-7. Use ID 0 with `[1,3],[7,10]`; ID 1 with `[2,5],[8,12]`; IDs 2 through 9
-   with `[4,9]`. Predict which device needs its next interval first and
-   which needs one next. State the earliest shared time you predict.
-8. A device moves to a different position whenever two array entries swap.
-   Describe how to remember the current position of each device without
-   searching every entry.
-9. The supplied integer-Heap functions do not check full/empty conditions.
-   State the caller's condition before adding and before removing. Keep
-   invalid calls as written predictions.
-10. Read [lab.c](lab.c), run valid tests, and attach a correction supported
-    by an exact state or returned value.
+1. Five requests have priority values 9, 6, 5, 3, and 1. Smaller values
+   leave first. Give the removal order when all five are waiting. What work
+   would an unordered array repeat to find each minimum?
+2. Index 0 has children 1 and 2. Index 1 has children 3 and 4. The three
+   remaining positions are leaves. Place the five values into these slots
+   in two different arrangements so that every parent is less than or
+   equal to each child. What must remain true at index 0?
+3. Start independently with the three unordered values `[9, 6, 5]`.
+   Predict which child to promote. Then insert 3 and 1 in turn. Give each
+   value's starting index and the parent values that move.
+4. Predict the first value removed and the replacement taken from the last
+   slot. Explain how to choose between two children and how to proceed
+   with only a left child.
+5. The array has five slots. State the size condition before insertion
+   and before removal. Give the number of output values and the final
+   heap size when the full heap is drained into a separate array.
+6. Check one prediction using [lab.c](lab.c) and the [lab handout](lab.md).
+   Record the operation, observed state, and what it confirmed or changed.
 
-First response: __________________________________________________
+First response _____________________________________________________
 
-Correction and evidence: __________________________________________
+Evidence ___________________________________________________________

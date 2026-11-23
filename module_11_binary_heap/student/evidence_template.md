@@ -1,95 +1,67 @@
-# Module 10 Evidence Record
+# Module 11 Evidence Record
 
-Name: ____________________ Date: ____________________
-Source: [student/lab.c](lab.c). Keep predictions and corrections.
+Name ____________________    Date ____________________
 
-## Build and source
+Use this sheet or an equivalent written or dictated record for the
+[lab handout](lab.md). If your [investigation worksheet](investigation_worksheet.md)
+already contains a trace, attach it once and refer to it here.
 
-Compiler/version: __________________________________________________
-Commands: ________________________________________________________
-Supplied test result: _____________________________________________
-Student-test result: ______________________________________________
-Warnings or remaining limits: _____________________________________
+## Build and test output
 
-The source was left unchanged: _____________________________________
+Record the command and actual output for each target. Include the
+[student driver](../code/tests/test_lab_student.c) with your original cases.
 
-## Integer-Heap trace
-
-Start with `init_heap()` and add `7,3,5,1,9,4`.
-
-| Step | First prediction | Observed live array | `size` |
-| --- | --- | --- | ---: |
-| add 7 | | | |
-| add 3 | | | |
-| add 5 | | | |
-| add 1 | | | |
-| add 9 | | | |
-| add 4 | | | |
-| remove root | | | |
-
-Return value and better-child decisions: ___________________________
-Lone-left-child example: __________________________________________
-Singleton removal and no-child stop: ______________________________
-Caller conditions before add/remove: ______________________________
-
-## Bottom-up build and comparator change
-
-Load `[7,3,5,1,9,4]`, `size=6`, minimum mode.
-
-| Repaired position | Live array |
-| ---: | --- |
-| 2 | |
-| 1 | |
-| 0 | |
-
-After `is_min_heap=0; heapify();`: _________________________________
-Why the flag alone is insufficient: _______________________________
-Equal-value behavior and its limitation: __________________________
-
-## Interval data and roots
-
-Use ID 0 `[1,3],[7,10]`; ID 1 `[2,5],[8,12]`; IDs 2–9 `[4,9]`.
-State all input preconditions: ____________________________________
-
-| State | Latest on-time | Earliest off-time | Advanced ID or answer |
-| --- | ---: | ---: | --- |
-| epochs all 0 | | | |
-| after first advance | | | |
-| after second advance | | | |
-
-For initialization and each advance, attach both complete ID arrays and
-both position maps. Verify both `array[pos[id]]==id` relations for all IDs.
-
-`max_on_heap` state: ______________________________________________
-`_max_heap_pos` state: ____________________________________________
-`min_off_heap` state: _____________________________________________
-`_min_heap_pos` state: ____________________________________________
-
-ID versus position in `_proper_parent`: ____________________________
-Position passed to `_reheapify`: ___________________________________
-Why both Heaps need repair: _______________________________________
-
-## Original tests and boundaries
-
-| Test group | Independent expected result | Observed result |
+| Target | Command | Result or attached output |
 | --- | --- | --- |
-| Integer-Heap operations | | |
-| Indexed key repairs and inverse maps | | |
-| Interval overlap, equality, and exhaustion | | |
+| `lab-compile` | | |
+| `core` | | |
+| `student-tests` after adding your cases | | |
 
-Closed-endpoint variant and answer: _______________________________
-Exhaustion fixture and answer: ____________________________________
-Why terminal time access is invalid: ______________________________
-Reset before another run: _________________________________________
+## Build and insertion traces
 
-## Work and correction
+Start with `pq = [9, 6, 5]`, `size = 3`. Record which parent or child
+values the sift copies, the index it returns, and the final live prefix.
 
-One-path repair work as live count grows: __________________________
-Bottom-up build work: _____________________________________________
-Full order/map verification work: _________________________________
-Generalized interval-advance work: _________________________________
-Actual fixed storage and generalized storage: _____________________
+| Operation | Prediction | Parent or child values copied | Returned index | Checked live array and size |
+| --- | --- | --- | --- | --- |
+| `heapify()` (one sift) | | | | |
+| `enqueue(3)` | | | | |
+| `enqueue(1)` | | | | |
 
-Original explanation: _____________________________________________
-Evidence that changed it: _________________________________________
-Corrected explanation: ____________________________________________
+## Removal and sorting traces
+
+Use the full heap from the last row. On the first removal record the
+replacement, which child moved up, and the comparison that ended repair.
+
+Replacement __________    Child __________    Stop comparison __________
+
+| Removal inside `heap_sort` | Predicted root | Returned root | Remaining live array | Written output prefix |
+| ---: | --- | --- | --- | --- |
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+
+Why does the loop use the original size? _____________________________
+
+Final heap size __________    Final output ___________________________
+
+## Three original cases
+
+Write the expected values before running your assertions. For case 3,
+record a separate outcome for each starting size.
+
+| Case | Inputs and calls | Expected result | Observed result |
+| --- | --- | --- | --- |
+| 1. Duplicate and negative values, remove once, insert again, then drain | | | |
+| 2. Four-value build where the last parent promotes its only child | | | |
+| 3a. Empty sort with a known value already in the output array | | | |
+| 3b. Singleton sort | | | |
+| 3c. Full five-value sort | | | |
+
+Include final sizes, the remaining removal order for case 1, the heap
+order and size for case 2, and the output contents for case 3. Identify
+one observation that confirmed or changed a prediction.
+
+Observation ________________________________________________________

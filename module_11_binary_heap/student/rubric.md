@@ -1,27 +1,20 @@
-# Module 10 Assessment Rubric
+# Module 11 Assessment Rubric
 
-Total: 100 points. Assess correct reasoning and reproducible evidence.
-Typed, linear, dictated, tactile, and verbal explanations are equivalent.
-The supplied [lab.c](lab.c) is unchanged; implementation of the optional
-alert-record library is not part of this submission.
+The [lab handout](lab.md) defines the submission. Use the traces, original
+test cases, and build output to assess the following areas for a total of
+100 points. Typed, linear, dictated, tactile, and verbal explanations are
+equivalent.
 
-| Area | Points | Evidence |
+| Area | Points | Evidence in the submission |
 | --- | ---: | --- |
-| Integer-Heap model | 15 | Live prefix, complete-tree positions, missing-child sentinel, minimum/maximum rules, and distinction from sorted or BST order. |
-| Add, remove, and bottom-up build | 20 | Exact shared arrays, correct parent/child choices, lone-left case, singleton drain, and rebuild after changing the mode. |
-| Two endpoint Heaps | 15 | ID versus position distinction, function-pointer roles, epochs, and correct maximum-on/minimum-off rankings. |
-| Indexed repairs | 15 | Every swap updates both inverse-map entries; `_reheapify` receives a position and chooses a valid direction; both Heaps repaired after an epoch change. |
-| Interval reasoning and boundaries | 15 | Shared answer 8, closed-endpoint answer 9, correct earliest-end advancement, exhaustion result, and terminal-state limitation. |
-| Three original test groups | 10 | Integer operations, indexed repairs, and interval answers checked by assertions against independent expectations. |
-| Cost and correction | 5 | One-path repair versus bottom-up construction and full verification, storage bounds, and a corrected Cognitive Pause/autopsy explanation. |
-| Reproducible evidence | 5 | Driver, commands, output, initial predictions, and corrections are complete; supplied compiler warnings are reported. |
-
-The required caller conditions are `size<10` before `add`, `size>0`
-before `remove_root`, valid positions for repair, and fully loaded valid
-interval data for all ten IDs. Do not claim unchecked functions reject
-invalid calls or preserve state on such calls. Analyze invalid calls on
-paper. After exhaustion an epoch equals its interval count; do not read
-that terminal interval or call the intersection checker on it.
+| Heap model | 15 | Distinguishes indices from values, capacity from live size, and identifies the parent–child rule that places a minimum at the root. |
+| Bottom-up build | 20 | Traces `heapify()` on `[9, 6, 5]`, identifies the chosen child and returned index, and explains why child subtrees are ready before the parent. |
+| Insertion | 15 | Traces `enqueue(3)` and `enqueue(1)` in order, showing each parent copied down, the final store, and the live array. |
+| Removal | 15 | Identifies the saved root, replacement, reduced size, and child choice. Records the remaining heap after each removal. |
+| Sorting | 15 | Gives the ascending output and final heap size. Explains why `heap_sort` uses a separate output array and the initial size. |
+| Three original cases | 10 | Exercises interleaved operations with duplicates and negatives, four-value heap construction with a lone left child, and empty, singleton, and full sorts. Compares each result with a prediction. |
+| Boundary reasoning | 5 | Gives valid size conditions for `enqueue` and `dequeue`. Checks that the empty sort preserves a known output value. |
+| Reproducible evidence | 5 | Includes the student driver, build commands, test output, and enough input and state information to reproduce the traces. |
 
 Noncompiling work may still earn reasoning credit from preserved traces
 and explanations. Revision remains available under course policy.

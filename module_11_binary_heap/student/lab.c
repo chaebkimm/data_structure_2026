@@ -29,23 +29,25 @@ int sift_up(int i, int data) {
 int left(int i) { return i * 2 + 1; }
 int right(int i) { return i * 2 + 2; }
 
+/* Returns the existing child with higher priority, or -1 if i has
+ * no children. Ties go to the left child. */
 int priority_child(int i) {
 	int l = left(i);
 	int r = right(i);
-	int child;
 	if (r < size && compare(pq[r], pq[l])) {
-		child = r;
+		return r;
+	} else if (l < size) {
+		return l;
 	} else {
-		child = l;
+		return -1;
 	}
-	return child;
 }
 
 /* Moves higher-priority children up a level each and returns the
  * position where data belongs. The caller stores data there. */
 int sift_down(int i, int data) {
 	int c = priority_child(i);
-	while (c < size && compare(pq[c], data)) {
+	while (c != -1 && compare(pq[c], data)) {
 		pq[i] = pq[c];
 		i = c;
 		c = priority_child(i);

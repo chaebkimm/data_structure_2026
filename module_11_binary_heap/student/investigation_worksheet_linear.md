@@ -1,90 +1,65 @@
-# Module 10 Investigation — Linear Response Format
+# Module 11 Investigation — Linear Response Format
 
-Use this alternative to [investigation_worksheet.md](investigation_worksheet.md).
-The targets and evidence requirements are identical. Keep initial predictions
-and add labeled corrections. Follow [lab.c](lab.c), not the optional alert API.
+Use this alternative to the [table worksheet](investigation_worksheet.md).
+Respond in numbered prose or by dictation. Preserve each first prediction,
+then check it with [lab.c](lab.c) and the [lab handout](lab.md).
 
-## A. Map the live prefix
+## A. Build the heap
 
-Start with `[7,3,5,1,9,4]` and size 6 in ten reserved slots. For each position
-0 through 5, list its parent, left child, and right child using `-1` where
-missing. Explain the root, the lone-left parent, capacity versus size, and
-inactive values remaining after `init_heap()`.
+1. Load `[9, 6, 5]` and set `size = 3`. For each live index, give its value,
+   parent if present, and existing children. Name the two inactive slots.
+2. Give the first index visited by `heapify()`. Explain why each child
+   subtree is already a heap. Give the index and value chosen by
+   `priority_child(0)`, the index returned by `sift_down(0, 9)`, and the
+   live array after 9 is stored.
 
-Response: ________________________________________________________
+Prediction ____________________    Checked trace ____________________
 
-## B. Follow upward repair
+## B. Follow the two insertions
 
-Start independently with `init_heap()` and add `7,3,5,1,9,4`. For each call,
-record the appended position, each tested parent, every swap, and final live
-array. Explain `proper_parent(-1,-1)`, `proper_parent(2,-1)`, and
-`proper_parent(-1,2)`. State which argument wins a value tie and why no
-first-arrival guarantee follows.
+1. Continue from A. For `enqueue(3)` and then `enqueue(1)`, record the
+   starting index, parent values copied down in order, final index of the
+   inserted value, resulting array, and size.
+2. Name two siblings in the full heap that could trade places while
+   preserving heap order. Explain how the tree shape bounds the number
+   of parents visited. Give the size condition for another insertion.
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## C. Follow downward repair
+## C. Follow the first removal
 
-Remove the root from B's final state. Record the saved value, replacement,
-new size, each better-child choice, and final array. Verify all parent/child
-relationships without requiring sibling sorting. Explain how a wrong child
-would break the rule. In a separate singleton run, remove once and explain
-why the size-zero repair reads no missing child. Explain why removing again
-is invalid.
+1. Start with B's full heap. Trace the first `dequeue()` inside
+   `heap_sort`. Give the saved root, replacement value, reduced size, child
+   copied to the root, final index of the replacement, and live array.
+2. Which child does the sift consider next? Give the comparison that
+   stops it, the tie rule for two equal children, and the caller's size
+   condition for removal.
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## D. Build from the bottom and switch modes
+## D. Finish the sort
 
-Load `[7,3,5,1,9,4]`, size 6, minimum mode. Record arrays after repairs from
-2, 1, and 0. Explain why each child's subtree is ready before its parent.
-Set maximum mode and rebuild; record the array and guarded drain order.
-Explain why the flag alone does not move values. Compare separate insertion,
-bottom-up construction, root inspection, and a full diagnostic scan. The lab
-has no supplied comparison counter or full-order checker.
+1. Continue the same sort. For removals 1 through 5, starting with the
+   removal in C, list the returned root, remaining live heap, and written
+   output prefix.
+2. Explain the child-index check on the singleton removal. Explain why
+   `heap_sort` records `old_size`, and give the final `size`.
 
-Response: ________________________________________________________
+Response ___________________________________________________________
 
-## E. Compare two endpoint bounds
+## E. Test your predictions
 
-Load all ten IDs: ID 0 `[1,3],[7,10]`; ID 1 `[2,5],[8,12]`; IDs 2–9 `[4,9]`.
-State nonnegative endpoint, one-to-five-pair, within-pair, and strictly
-separated chronological input conditions. After initialization and after
-each advance, list epochs 0 and 1, latest start, earliest end, and next
-action. Explain the closed-interval test and why earliest-end advancement
-preserves the first possible shared time.
+Use the [student driver](../code/tests/test_lab_student.c) for the three
+original cases in the handout. For each, give your input, prediction, and
+observed result in the [evidence record](evidence_template.md) or in prose.
 
-Response: ________________________________________________________
+1. Interleave insertions and a removal with duplicate and negative values.
+2. Heapify four values so the last parent promotes its only child.
+3. Sort empty, singleton, and full heaps into a separate array. Check the
+   output and final size. Check that sorting an empty heap preserves a
+   known value in the output array.
 
-## F. Distinguish IDs and positions
+Attach the build and test output. Identify one comparison or array write
+that confirmed or changed an initial prediction.
 
-After initialization and each successful advance, list each complete ID
-array and each map indexed by ID. Verify both `array[pos[id]]==id` relations
-for every ID. Explain the arguments to `_proper_parent`, the arguments its
-comparator receives, both map writes in a swap, and the map-based position
-passed to `_reheapify`. Explain why repairing only one Heap is insufficient.
-Explain the fixed-ten lone-left child and harmless `_heapify` visit at 5.
-
-Response: ________________________________________________________
-
-## G. Check valid boundaries
-
-Test integer ties in both modes, empty/singleton builds, and ten guarded
-integer insertions. Stop before an eleventh insertion. Test immediate
-interval success with all IDs `[4,9]`; equality by changing ID 1's second
-interval to `[9,12]`; and exhaustion with only `[1,3]` for ID 0 and `[4,9]`
-for all others. State the terminal out-of-range epoch after exhaustion and
-why time readers or repairs must wait until valid reinitialization. Explain
-how another `all_on_time()` call starts epochs and maps again.
-
-Response: ________________________________________________________
-
-## H. Connect evidence and cost
-
-Complete three original test groups from [lab.md](lab.md). Use independent
-endpoint scans to check interval answers. State generalized costs for `n`
-IDs and `r` interval advances, then distinguish those bounds from the actual
-ten-ID/five-interval storage. Attach commands, output, original explanation,
-first mismatch, and corrected explanation to the [evidence record](evidence_template.md).
-
-Response: ________________________________________________________
+Evidence ___________________________________________________________

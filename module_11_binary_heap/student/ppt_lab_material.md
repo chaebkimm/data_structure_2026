@@ -64,7 +64,7 @@ int priority_child(int i);
 
 int sift_down(int i, int data) {
   int c = priority_child(i);
-  while (c < size && comp(pq[c], data)) {
+  while (c != -1 && comp(pq[c], data)) {
     pq[i] = pq[c];
     i = c;
     c = priority_child(i);
@@ -77,7 +77,7 @@ int sift_down(int i, int data) {
 
 - 인덱스 `i`의 왼쪽 자식은 `i * 2 + 1`이고, 오른쪽 자식은 `i * 2 + 2`다. 
 - 오른쪽 자식이 존재하면 왼쪽 자식과 비교해 우선순위가 높은 쪽을 반환한다.
-- 그 외에는 왼쪽 자식을 반환하며, 자식이 없으면 반환값이 `size` 이상이다.
+- 그 외에는 왼쪽 자식을 반환하며, 자식이 없으면 `-1`을 반환한다.
 
 ## 우선순위가 높은 자식 찾기 C 코드
 
@@ -88,13 +88,13 @@ int right(int i) { return i * 2 + 2; }
 int priority_child(int i) {
   int l = left(i);
   int r = right(i);
-  int child;
   if (r < size && comp(pq[r], pq[l])) {
-    child = r;
+    return r;
+  } else if (l < size) {
+    return l;
   } else {
-    child = l;
+    return -1;
   }
-  return child;
 }
 ```
 
