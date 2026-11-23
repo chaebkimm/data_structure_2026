@@ -180,7 +180,7 @@ In `c != -1 && compare(pq[c], data)`, C checks the left side first and evaluates
 
 ### Which position does a pre-decrement read?
 
-The expression `--size` first reduces `size`, then gives the new value as the index. The statement reads `pq[--size]`, the former last value. Positions 0 through new size - 1 remain in the heap.
+The expression `--size` first reduces `size`, then gives the new value as the index. The new `size` is the old last position, so the statement reads the former last value. Positions 0 through `size - 1` remain in the heap.
 
 ```c
 int data = pq[--size];
@@ -206,7 +206,7 @@ void init_pqueue(void) { size = 0; }
 int compare(int x, int y) { return x < y; }
 ```
 
-#### Find the parent and move larger parents down
+#### Find the parent and move lower-priority parents down
 
 ```c
 /* Positions go level by level from 0, so the children of i are 2i + 1
@@ -232,27 +232,29 @@ int sift_up(int i, int data) {
 int left(int i) { return i * 2 + 1; }
 int right(int i) { return i * 2 + 2; }
 
+/* Returns the existing child with higher priority, or -1 if i has
+ * no children. Ties go to the left child. */
 int priority_child(int i) {
 	int l = left(i);
 	int r = right(i);
-	int child;
+	int child = -1;
 	if (r < size && compare(pq[r], pq[l])) {
 		child = r;
-	} else {
+	} else if (l < size) {
 		child = l;
 	}
 	return child;
 }
 ```
 
-#### Move smaller children up
+#### Move higher-priority children up
 
 ```c
 /* Moves higher-priority children up a level each and returns the
  * position where data belongs. The caller stores data there. */
 int sift_down(int i, int data) {
 	int c = priority_child(i);
-	while (c < size && compare(pq[c], data)) {
+	while (c != -1 && compare(pq[c], data)) {
 		pq[i] = pq[c];
 		i = c;
 		c = priority_child(i);
