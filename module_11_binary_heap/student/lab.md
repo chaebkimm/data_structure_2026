@@ -59,7 +59,7 @@ and takes the former last value as the replacement. At index `i`, the
 candidate child indices are `2*i + 1` and `2*i + 2`. A child exists
 when its index is below the new size. With two children, `priority_child`
 selects the smaller one, choosing the left child on a tie. With no children,
-it returns the candidate left index and the `c < size` check stops the sift.
+it returns `-1`, so the `c != -1` check stops the sift before it reads `pq[c]`.
 
 Trace the first removal from the five-element heap above. Record the
 returned value, the replacement, the child copied to the root, and the live

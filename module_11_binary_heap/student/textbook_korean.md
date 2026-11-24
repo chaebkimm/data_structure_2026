@@ -168,7 +168,7 @@ root가 아닌 자식의 인덱스가 c라면 부모의 인덱스는 (c − 1) /
 
 ### 정수 나눗셈으로 어떻게 부모 인덱스를 구할까?
 
-인덱스 `i`의 두 자식은 `2*i + 1`과 `2*i + 2`다. 어느 쪽이든 1을 빼고 2로 나눈다. 음이 아닌 정수끼리 나눌 때 C는 소수 부분을 버리므로 두 경우 모두 `i`가 나온다. 이 결과는 부모가 있는 자리에서만 쓴다. root에는 부모가 없다.
+부모의 인덱스가 `p`라면 자식의 인덱스 `i`는 `p * 2 + 1` 또는 `p * 2 + 2`다. 어느 쪽이든 1을 빼고 2로 나눈다. C의 정수 나눗셈은 소수 부분을 버리므로 음이 아닌 몫은 내림한 값이 되고, 두 경우 모두 `p`가 나온다. root에는 부모가 없으므로 `sift_up`은 이 결과를 쓰기 전에 현재 자리가 root인지 확인한다.
 
 ```c
 int parent(int i) { return (i - 1) / 2; }
@@ -176,11 +176,11 @@ int parent(int i) { return (i - 1) / 2; }
 
 ### 자식 자리의 값을 언제 읽어도 될까?
 
-`c < size && compare(pq[c], data)`에서 C는 왼쪽 조건을 먼저 검사한다. 인덱스가 힙의 범위 안에 있을 때만 오른쪽 비교를 실행한다. 마찬가지로 `r < size && compare(pq[r], pq[l])`에서는 오른쪽 자식이 있는지 확인한 뒤에만 두 값을 읽는다.
+`c != -1 && compare(pq[c], data)`에서 C는 왼쪽 조건을 먼저 검사한다. 그 조건이 참일 때만 오른쪽을 평가하므로 자식이 없어 `c`가 `-1`이면 `pq[-1]`을 읽지 않는다. 마찬가지로 `r < size && compare(pq[r], pq[l])`에서는 오른쪽 자식이 있는지 확인한 뒤에 두 자식의 값을 읽는다. 힙은 같은 층을 왼쪽부터 채우므로 오른쪽 자식이 있으면 왼쪽 자식도 있다.
 
 ### 인덱스에서 먼저 1을 빼면 어느 값을 읽을까?
 
-`--size`는 먼저 `size`를 하나 줄이고 그 결과를 인덱스로 쓴다. 크기가 5였다면 마지막 값이 있던 `pq[4]`를 읽는다. 인덱스 0부터 3까지의 자리가 힙에 남는다.
+`--size`는 먼저 `size`를 하나 줄이고 그 결과를 인덱스로 쓴다. 새 `size`는 줄이기 전 마지막 값의 인덱스이므로 이 문장은 그 값을 읽는다. 인덱스 0부터 `size - 1`까지의 자리가 힙에 남는다.
 
 ```c
 int data = pq[--size];
@@ -206,7 +206,7 @@ void init_pqueue(void) { size = 0; }
 int compare(int x, int y) { return x < y; }
 ```
 
-#### 부모를 찾아 더 큰 부모 내리기
+#### 부모를 찾아 우선순위가 낮은 부모 값 내리기
 
 ```c
 /* Positions go level by level from 0, so the children of i are 2i + 1
@@ -232,27 +232,29 @@ int sift_up(int i, int data) {
 int left(int i) { return i * 2 + 1; }
 int right(int i) { return i * 2 + 2; }
 
+/* Returns the existing child with higher priority, or -1 if i has
+ * no children. Ties go to the left child. */
 int priority_child(int i) {
 	int l = left(i);
 	int r = right(i);
-	int child;
+	int child = -1;
 	if (r < size && compare(pq[r], pq[l])) {
 		child = r;
-	} else {
+	} else if (l < size) {
 		child = l;
 	}
 	return child;
 }
 ```
 
-#### 더 작은 자식 올리기
+#### 우선순위가 높은 자식 값 올리기
 
 ```c
 /* Moves higher-priority children up a level each and returns the
  * position where data belongs. The caller stores data there. */
 int sift_down(int i, int data) {
 	int c = priority_child(i);
-	while (c < size && compare(pq[c], data)) {
+	while (c != -1 && compare(pq[c], data)) {
 		pq[i] = pq[c];
 		i = c;
 		c = priority_child(i);

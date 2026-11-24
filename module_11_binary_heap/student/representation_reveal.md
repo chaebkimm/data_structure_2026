@@ -23,8 +23,9 @@ a left child. `init_pqueue()` resets the live count to zero.
 For a live non-root index `i`, `parent(i)` gives `(i - 1) / 2`.
 `left(i)` and `right(i)` compute candidate indices. `priority_child(i)`
 returns the right index only if it exists and its value is strictly
-smaller than the left child's value. Otherwise it returns the left index.
-When both children are absent, `c < size` in `sift_down` stops the read.
+smaller than the left child's value. Otherwise it returns the left index
+if the left child exists. When both children are absent, it returns `-1`.
+The `c != -1` check in `sift_down` then stops the sift before it reads `pq[c]`.
 
 ## What travels along the path?
 

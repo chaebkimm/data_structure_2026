@@ -50,7 +50,7 @@ static void test_child_selection(void)
 {
     init_pqueue();
     enqueue(1);
-    assert(priority_child(0) >= size);
+    assert(priority_child(0) == -1);
 
     enqueue(4);
     assert(priority_child(0) == 1);
@@ -58,7 +58,7 @@ static void test_child_selection(void)
     assert(priority_child(0) == 1);  /* Equal children favor the left. */
     pq[2] = 3;
     assert(priority_child(0) == 2);
-    assert(priority_child(1) >= size);
+    assert(priority_child(1) == -1);
 
     init_pqueue();
     assert(size == 0);
