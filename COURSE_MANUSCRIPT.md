@@ -4,11 +4,7 @@ Students read the textbook. The instructor uses the teaching guide in the same r
 
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](module_00_datastructure/textbook.md).
 
-**Modules 12–13 planning status — 2026-11-10.** The teaching guides now
-outline Binary Search and BSTs in Week 12 and AVL Rotations and Review in
-Week 13. Existing student textbooks, worksheets, and lab materials await
-alignment; the links retain their existing locations and content. Use the
-revised delivery guide for required scope rather than either old full lab.
+Week 12 covers binary search and ordinary BSTs. Week 13 covers left-leaning red–black (LLRB) tree search, insertion, and course review.
 
 | Week | Chapter | Student Textbook | Teaching Guide |
 | --- | --- | --- | --- |
@@ -23,9 +19,9 @@ revised delivery guide for required scope rather than either old full lab.
 | 9 | 9 | [Storing and Finding Data by Key](module_09_hash_table/student/textbook.md) · [Korean](module_09_hash_table/student/textbook_korean.md) | [Chapter 9 Guide](instructor_guide/chapter_09.md) |
 | 10 | 10 | [Priority Queues and Finding a Meeting Time](module_10_priority_queue/student/textbook.md) · [Korean](module_10_priority_queue/student/textbook_korean.md) | [Chapter 10 Guide](instructor_guide/chapter_10.md) |
 | 11 | 11 | [Minimum-Cost Routes with an Indexed Heap](module_11_graph_dijkstra/student/textbook.md) | [Chapter 11 Guide](instructor_guide/chapter_11.md) |
-| 12 | 12 | Binary Search and BSTs — [existing BST/AVL textbook, pending alignment](module_12_binary_search_bst/student/textbook.md) | [Chapter 12 planning summary](instructor_guide/chapter_12.md) |
-| 13 | 13 | AVL Rotations and Review — [existing search/sort textbook, pending alignment](module_13_avl_review/student/textbook.md) · [Korean, pending alignment](module_13_avl_review/student/textbook_korean.md) | [Chapter 13 planning summary](instructor_guide/chapter_13.md) · [Existing workbook, pending alignment](module_13_avl_review/student/class_material.md) |
-| 14 | 14 | [Union-Find, Prim, and Kruskal](module_14_prim_kruskal/week_14/README.md) | [Chapter 14 Guide](instructor_guide/chapter_14.md) · [Week 14 plan — prerequisite reference pending alignment](module_14_prim_kruskal/week_14/instructor.md) |
+| 12 | 12 | [Binary Search and BSTs](module_12_binary_search/student/textbook.md) | [Chapter 12 guide](instructor_guide/chapter_12.md) |
+| 13 | 13 | [Left-Leaning Red–Black Trees and Review](module_13_llrb/student/textbook.md) · [한국어](module_13_llrb/student/textbook_korean.md) | [Chapter 13 guide](instructor_guide/chapter_13.md) · [Guided lab](module_13_llrb/student/lab.md) |
+| 14 | 14 | [Union-Find, Prim, and Kruskal](module_14_prim_kruskal/week_14/README.md) | [Chapter 14 Guide](instructor_guide/chapter_14.md) · [Week 14 plan](module_14_prim_kruskal/week_14/instructor.md) |
 
 The 14 teaching chapters and packages are numbered consecutively from 1 to 14. Module 7 covers acyclic linked lists, shared-pool recycling, and linked stack/queue applications. Module 8 compares array queues, traces tree level order, and uses a direct coordinate array queue for maze BFS in one lesson. Its Korean textbook was frozen on 2026-11-03; the English edition and course materials follow that approved manuscript and the supplied PPTs. Chapter 10 follows its sorted-array priority queue and three-user meeting-time lab. English and Korean editions use the unchanged lab and presentation references. Superseded Dijkstra and heap examples are archived. The presentations say Week 12; Chapter 10 retains its current course placement.
 

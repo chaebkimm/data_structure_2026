@@ -4,10 +4,7 @@ DSU is new this week. Introduce it through the cycle decision in Kruskal,
 then use the [combined lesson and lab](README.md). Do not assume an earlier
 DSU assignment or add the optional Module 7 list-repair extension.
 
-Retrieve Module 13's distinction between searching for an item and sorting
-candidates. Kruskal sorts edges by weight before selecting them, but sorted
-order alone cannot detect a cycle. The supplied comparator and sorting step
-let this lesson focus on DSU and edge decisions.
+Recall the cost of preparing an ordered snapshot from Week 13. Show how the supplied comparator orders edges by weight. Ask how DSU decides whether the next edge would close a cycle.
 
 | Activity | Minutes |
 |---|---:|

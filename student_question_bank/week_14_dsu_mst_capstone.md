@@ -4,7 +4,7 @@
 
 ## Required scope for the 14-week course
 
-Retrieve Week 13's ordered-range and sorting work. Introduce DSU here, then implement find, union by size, and Kruskal selection in one supplied scaffold. Make-set, loading, sorting, totals, validation, and Prim are supplied. Prim implementation and the original List/DSU and two-MST labs are optional. Brief synthesis and the integration checkpoint belong to the same artifact; defense is in the separate final period.
+Retrieve Week 13's ordered lookup and preparation-cost review. Introduce DSU here, then implement find, union by size, and Kruskal selection in one supplied scaffold. Make-set, loading, sorting, totals, validation, and Prim are supplied. Prim implementation and the original List/DSU and two-MST labs are optional. Brief synthesis and the integration checkpoint belong to the same artifact; defense is in the separate final period.
 
 ## Vocabulary students will learn
 
@@ -99,7 +99,7 @@ Retrieve Week 13's ordered-range and sorting work. Introduce DSU here, then impl
 - Are make-set, sorting, graph loading, checked totals, and Prim supplied?
 - Do I submit another list repair, Prim implementation, or full package lab?
 - Which DSU trace, edge ledger, tests, and compiler output accompany the two C files?
-- How does the brief individual synthesis retrieve hash/AVL selection?
+- How does the brief individual synthesis retrieve the choice between hash and LLRB lookup?
 - How is the capstone integration checkpoint folded into the one weekly artifact?
 - Which connected and disconnected runs show integration with existing graph IDs?
 - How are lab correctness criteria separated from later capstone integration and defense?

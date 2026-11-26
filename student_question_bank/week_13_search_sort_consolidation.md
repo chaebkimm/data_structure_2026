@@ -1,10 +1,12 @@
-# Week 13 — Searching, Sorting, and Consolidation: Vocabulary and Questions
+# Archived questions — Searching, Sorting, and Consolidation
+
+The current Week 13 uses the [LLRB question bank](week_13_llrb.md).
 
 [All-week bank](../Data_Structures_Course_2026_Student_Question_Bank.md)
 
-## Required scope for the 14-week course
+## Former search/sort lesson
 
-Use [Module 13](../module_13_avl_review/README.md) to compare
+Use the [search/sort materials](../module_12_binary_search/student/textbook.md) to compare
 linear search with first-match binary search, then trace stable insertion
 sort and stable merge sort. Consolidate the structure and algorithm choices
 from Modules 1–12. Sorting prepares the ordered-edge idea used by
@@ -111,6 +113,6 @@ justified structure/algorithm choice.
 
 ## Sources
 
-- [Module 13 lesson and lab](../module_13_avl_review/README.md)
-- [Lab source](../module_13_avl_review/student/lab.c)
+- [Earlier search/sort lesson](../module_12_binary_search/student/textbook.md)
+- [Search/sort code references](../module_12_binary_search/code/README.md)
 - [14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md)

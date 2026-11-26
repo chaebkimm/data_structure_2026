@@ -1,81 +1,41 @@
-# Chapter 13. AVL Rotations and Review
+# Chapter 13. Left-Leaning Red–Black Trees and Review
 
-**Planning summary — 2026-11-10.** Use the
-[Module 13 overview](../module_13_avl_review/README.md) and
-[14-week delivery guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
-The existing [AVL textbook](../module_12_binary_search_bst/student/textbook.md),
-[AVL lab guide](../module_12_binary_search_bst/student/lab.md), and
-[AVL investigation](../module_12_binary_search_bst/student/investigation_worksheet.md)
-remain in Module 12 and await alignment to Week 13. The existing
-[Module 13 textbook](../module_13_avl_review/student/textbook.md),
-[Korean edition](../module_13_avl_review/student/textbook_korean.md),
-[workbook](../module_13_avl_review/student/class_material.md),
-[lab guide](../module_13_avl_review/student/lab.md),
-[detailed lesson plan](../module_13_avl_review/instructor/lesson_plan.md),
-and [Week 13 questions](../student_question_bank/week_13_search_sort_consolidation.md)
-also await alignment. Neither old complete weekly assignment is required.
-Student materials and sources are unchanged.
+> Inserting 10 through 70 in order gave us a chain. How can we change insertion and keep the same binary search?
 
-## Starting question and goals
+Use the [English chapter](../module_13_llrb/student/textbook.md) or [한국어 교재](../module_13_llrb/student/textbook_korean.md), then run the [guided lab](../module_13_llrb/student/lab.md). Sketch one key per binary node. Mark its incoming link R or B. Show the 2–3–4 representation using 10, 20, 30 in ascending order. After 10, circle one key (2-node). After 20, circle the two keys joined by a red left link (3-node). Pause after attaching 30 and before flipping at 20. Both red links now belong inside the circle (4-node). A 2–3–4 tree may keep that group. The supplied bottom-up LLRB splits it before insertion finishes. [Sedgewick’s LLRB paper](https://sedgewick.io/wp-content/themes/sedgewick/papers/2008LLRB.pdf)
 
-> How can we shorten last week's skewed tree without losing its ordering
-> rule, and when is that structure the right choice?
-
-Students compute height and balance, recognize four repair cases, preserve
-inorder and transferred subtrees, trace supplied AVL insertion, and justify
-structure choices using evidence from the course.
-
-## Teaching outline
-
-1. Retrieve the Week 12 chain. Establish empty height `-1`, leaf height `0`,
-   left-minus-right balance, and the AVL range `[-1,1]`.
-2. Trace LL with C,B,A and RR with A,B,C, then LR with C,A,B and RL with A,C,B.
-   Preserve nondecreasing inorder and every reachable node. Include a repair
-   with a nonempty middle subtree rather than only three-node cases.
-3. Trace the supplied indexed AVL source still stored in Module 12. Its
-   rotation helpers rewire links; `_add` refreshes lower heights before the
-   new root and returns a possibly changed subtree root. Retain that return.
-   LR/RL helpers perform direct rewiring in this source, rather than calling
-   two single-rotation helpers.
-4. Check links, independent heights, balance, and BST/AVL comparison evidence.
-   Respect valid detached IDs and the ten-slot capacity. Equal labels on
-   fresh IDs descend left at insertion; rotation can place equals on either
-   side while preserving nondecreasing inorder.
-5. Stop new AVL instruction at minute 120. Use the final 60 minutes for course
-   review, the workload-selection memo, corrections, and submission.
-
-## Time and assessment outline
-
-| Required contact activity | Minutes |
+| Contact activity | Minutes |
 |---|---:|
-| Retrieve the skewed-tree problem; establish height and balance | 20 |
-| LL/RR followed by LR/RL rotations, preserving ordering and middle subtrees | 55 |
-| Guided AVL insertion: returned roots and bottom-up height updates | 30 |
-| Rotation and insertion checks | 15 |
-| Course review, workload selection, corrections, and submission | 60 |
+| Retrieve the skewed BST and read incoming link colors | 20 |
+| Draw left and right rotations, subtree transfer, and color flips | 55 |
+| Trace the supplied C insertion on ascending and descending keys | 30 |
+| Check ordering, red links, black height, and lookup paths | 15 |
+| Course review, workload choices, corrections, and one submission | 60 |
 | **Total** | **180** |
 
-One submission contains four rotation traces, insertion/link/height/balance
-checks, comparison evidence, a review memo, and a corrected prediction.
-No from-scratch AVL implementation or AVL deletion is required.
+## Board walkthrough and answers
 
-## Review and Module 14 bridge
+Count black keyed nodes from the root to a missing child, including the black root and excluding the missing child. Edge height counts links to the deepest keyed node. Ask students to draw the next state before revealing a row.
 
-Use earlier artifacts to compare arrays/lists, hash versus BST/AVL lookup,
-Heap priority, DFS/BFS frontier control, and minimum-hop versus weighted routes.
-Do not require new implementations of those structures. The memo states
-query/update frequency, ordering needs, preparation work, and relevant costs.
+| Insert into the ascending sequence | Repairs on return, in order | Root after insertion | Black height | Edge height |
+|---:|---|---:|---:|---:|
+| 10 | Color the first root black | 10B | 1 | 0 |
+| 20 | Rotate left at 10 | 20B | 1 | 1 |
+| 30 | Flip at 20, then color the root black | 20B | 2 | 1 |
+| 40 | Rotate left at 30 | 20B | 2 | 2 |
+| 50 | Flip at 40, then rotate left at 20 | 40B | 2 | 2 |
+| 60 | Rotate left at 50 | 40B | 2 | 2 |
+| 70 | Flip at 60, flip at 40, then color the root black | 40B | 3 | 2 |
 
-Briefly explain the cost of preparing and updating a sorted snapshot.
-Insertion-sort and merge-sort instruction and implementation are optional.
-Module 14 supplies edge sorting and its comparator and explains increasing
-weight order and ties there, without assuming a sorting lesson. DSU and MST
-selection remain new learning in Week 14.
+- After 20, the missing right child of 20 and the missing children under 10 have different binary depths. Each path has one black key. Joining the red pair yields the 3-node `[10 | 20]`. Its child ranges are below 10, between 10 and 20, and above 20.
+- For 30, 20, 10 in a fresh tree, inserting 10 rotates right at 30, placing red children 10 and 30 below 20B. This is the same 4-node `[10 | 20 | 30]` that appeared in the ascending run. Flip to 20R with black children and color the root black. A flip keeps the child indices. For the transfer exercise 10, 30, 20, first rotate left at 10, then right at 30, then flip at 20 and blacken the root. Both inputs end at 20B above 10B and 30B.
+- At 50 in the ascending run, follow the link to 30. After the left rotation it belongs to the right of 20. Lookups for 30 and 35 visit 40, 20, 30. Only 30 succeeds. A drawing that loses this subtree can still have the correct root.
+- At 70 the second flip reaches the root. Black height grows from two to three. Edge height stays two. Searching for 70 now visits three nodes in the LLRB and seven in the ascending ordinary BST.
 
-## Final check
+## Final hour and assessment
 
-> Which ordering and balance rules make AVL lookup predictable, and when
-> would an array, linked list, hash table, Heap, or graph traversal fit better?
+Use 20 minutes to retrieve array/list updates, hash lookup, heap priority, and BFS/weighted-route objectives. Use 20 minutes to select a structure for exact membership and for ordered output under repeated updates. Allow 20 minutes for corrections and submission.
 
-Require a stated workload and evidence for the choice. Distinguish local
-rotation correctness from broader input validation and system guarantees.
+Accept one artifact. Check that both rotations keep BST order, the new subtree root inherits the old incoming color, and the student saves the returned root. Require a black root, left-leaning red links, no consecutive reds, and equal black counts to every missing child after each completed insertion. Check one original assertion, the two search paths, and a workload choice with evidence. Hash lookup can fit exact membership under suitable distribution. An LLRB supports logarithmic updates and sorted traversal. A sorted array is reasonable for a rarely changed snapshot when the memo accounts for its preparation cost.
+
+[Module overview](../module_13_llrb/README.md) · [Week 13 question bank](../student_question_bank/week_13_llrb.md)

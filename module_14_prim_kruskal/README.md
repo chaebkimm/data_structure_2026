@@ -7,12 +7,12 @@ total weight?
 ## 14-week delivery role — Week 14
 
 Use the [combined Union-Find and Kruskal unit](week_14/README.md) and its
-[180-minute plan — opening prerequisite reference pending alignment](week_14/instructor.md). DSU is new learning in this week:
+[180-minute plan](week_14/instructor.md). DSU is new learning in this week:
 find/compression and union by size lead directly into the Kruskal loop.
 Make-set, graph construction, sorting, totals, and validation are supplied.
 Prim is an instructor demonstration with no student implementation TODOs.
 
-[Module 13](../module_13_avl_review/README.md) covers AVL repair
+[Module 13](../module_13_llrb/README.md) covers LLRB insertion
 and course review, including preparation costs and workload selection.
 Explain increasing edge-weight order and the supplied tie rule here without
 assuming insertion-sort or merge-sort instruction. Kruskal receives a supplied

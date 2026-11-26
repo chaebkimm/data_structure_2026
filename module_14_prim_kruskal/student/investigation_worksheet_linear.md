@@ -285,7 +285,7 @@ Response: ___________________________________________________________
 ### F2. Connect the final spiral - 4 points
 
 Define the distinct roles of the Heap, DSU, Dijkstra distance, Prim key, and
-AVL invariant. Then state how local decisions in Prim and Kruskal preserve a
+LLRB invariant. Then state how local decisions in Prim and Kruskal preserve a
 global minimum-connection goal without proving trust or resilience.
 
 Response: ___________________________________________________________

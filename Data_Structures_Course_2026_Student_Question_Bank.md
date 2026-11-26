@@ -1,22 +1,15 @@
 # Data Structures Course 2026 — Weekly Vocabulary and Question Bank
 
 This bank follows the 14-week curriculum. It contains 251 course-wide
-questions and 648 weekly question prompts (899 total).
+questions and 620 weekly question prompts (871 total).
 Repeated terms count as vocabulary placements, not globally unique words.
 Optional clusters remain optional and do not enlarge weekly assignments.
 
-**Weeks 12–13 — pending alignment.** The revised course plan assigns Binary
-Search and BSTs to Week 12 and AVL Rotations and Review to Week 13. Existing
-weekly pages, consolidated prompts, and course-wide questions still follow
-the previous sequence and await alignment for these topics. Counts below
-describe the existing resource inventory, not revised required vocabulary
-or assessment quotas. Select applicable prompts using the
-[14-week delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md);
-insertion-sort and merge-sort instruction are optional.
+Week 13 follows the [left-leaning red–black tree lesson](module_13_llrb/README.md). Week 12's older bank also contains AVL reference prompts. Select its binary-search and ordinary-BST work using the [delivery guide](Data_Structures_Course_2026_14_Week_Delivery_Guide.md).
 
 - [Course-wide questions](student_question_bank/00_coursewide_questions.md): 251.
 - [Consolidated Weeks 1–7](student_question_bank/01_weeks_01_07_questions.md): 325.
-- [Consolidated Weeks 8–14](student_question_bank/02_weeks_08_14_questions.md): 323.
+- [Consolidated Weeks 8–14](student_question_bank/02_weeks_08_14_questions.md): 295.
 
 | Week | Required focus | Required vocabulary | Optional vocabulary | Questions | Weekly page |
 |---:|---|---:|---:|---:|---|
@@ -32,9 +25,9 @@ insertion-sort and merge-sort instruction are optional.
 | 10 | Priority Queues and Finding a Meeting Time | 21 | 0 | 47 | [Week 10](student_question_bank/week_10_priority_queue_heap.md) |
 | 11 | Indexed-Heap Dijkstra and Practical 2 | 33 | 9 | 53 | [Week 11](student_question_bank/week_11_dijkstra.md) |
 | 12 | Binary Search and BSTs — bank pending alignment | 45 | 3 | 47 | [Existing Week 12 page — pending alignment](student_question_bank/week_12_avl.md) |
-| 13 | AVL Rotations and Review — bank pending alignment | 24 | 0 | 40 | [Existing Week 13 page — pending alignment](student_question_bank/week_13_search_sort_consolidation.md) |
+| 13 | Left-Leaning Red–Black Trees and Review | 5 | 0 | 12 | [Week 13](student_question_bank/week_13_llrb.md) |
 | 14 | Union-Find, Kruskal, and integration | 37 | 0 | 44 | [Week 14](student_question_bank/week_14_dsu_mst_capstone.md) |
-| **Total** | | **458** | **19** | **648** | |
+| **Total** | | **439** | **19** | **620** | |
 
 The separate final-assessment period uses the Week 14 and course-wide pages
 for capstone defense. It does not add another teaching week.

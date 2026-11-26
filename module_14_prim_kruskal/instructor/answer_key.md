@@ -313,7 +313,7 @@ Roles:
 - DSU: track changing Kruskal components;
 - Dijkstra distance: total cost from one source;
 - Prim key: one candidate crossing-edge weight; and
-- AVL invariant: ordered search plus bounded balance.
+- LLRB trees preserve BST order, have a black root and only left-leaning red links, forbid consecutive red links, and give all paths to missing children the same black height.
 
 Local safe-edge/root decisions preserve a global minimum model but establish
 neither trust nor resilience.

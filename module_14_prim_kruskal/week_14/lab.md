@@ -17,8 +17,7 @@ submission is assumed. Work from the combined release in [the manifest](README.m
 
 Make-set, graph construction/loading, sorting, totals, diagnostic validation,
 and Prim are supplied. Do not implement them or submit a separate list repair.
-Use Module 13's sorting reasoning to explain the edge order; no new sorting
-implementation is part of this artifact.
+Read the supplied comparator and explain the edge order, including its tie rule.
 
 From `code/` run:
 
@@ -54,8 +53,8 @@ parent/size trace before and after compression, and an edge-decision ledger.
 Explain V−c, the distinction from Dijkstra, and one supplied Prim observation.
 
 Fold in a short individual synthesis: identify the invariant linking DSU
-membership to accepted edges, then select hash or AVL lookup for one stated
-workload. Do not repeat a full AVL/Hash lab.
+membership to accepted edges, then select hash or LLRB lookup for one stated
+workload. Do not repeat a full tree or hash lab.
 
 For the capstone checkpoint, integrate this backend into the existing project,
 run one connected and one disconnected synthetic fixture, and record interface,

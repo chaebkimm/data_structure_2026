@@ -4,12 +4,7 @@ Chapter numbers identify resources; the teaching sequence follows the 14-week de
 
 Before starting the course, first read about what data structures and efficiency mean in [How to Store Data Well](module_00_datastructure/textbook.md).
 
-**Modules 12–13 — pending textbook alignment.** The course plan now assigns
-Binary Search and BSTs to Week 12 and AVL Rotations and Review to Week 13.
-The textbooks linked below still contain the previous combined BST/AVL and
-search/sort lessons. Use the [Chapter 12](instructor_guide/chapter_12.md) and
-[Chapter 13](instructor_guide/chapter_13.md) planning summaries for revised
-goals; the student editions have not yet been rewritten.
+Week 12 covers binary search and ordinary BSTs. Week 13 covers left-leaning red–black (LLRB) tree search, insertion, and course review.
 
 | Chapter | Student textbook |
 |---:|---|
@@ -24,8 +19,8 @@ goals; the student editions have not yet been rewritten.
 | 9 | [Storing and Finding Data by Key](module_09_hash_table/student/textbook.md) · [Korean](module_09_hash_table/student/textbook_korean.md) |
 | 10 | [Priority Queues and Finding a Meeting Time](module_10_priority_queue/student/textbook.md) · [Korean](module_10_priority_queue/student/textbook_korean.md) |
 | 11 | [Minimum-Cost Routes with an Indexed Heap](module_11_graph_dijkstra/student/textbook.md) |
-| 12 | Binary Search and BSTs — [existing BST/AVL textbook, pending alignment](module_12_binary_search_bst/student/textbook.md) |
-| 13 | AVL Rotations and Review — [existing search/sort textbook, pending alignment](module_13_avl_review/student/textbook.md) · [Korean, pending alignment](module_13_avl_review/student/textbook_korean.md) |
+| 12 | Binary Search and BSTs — [search textbook](module_12_binary_search/student/textbook.md) · [한국어](module_12_binary_search/student/textbook_korean.md) |
+| 13 | [Left-Leaning Red–Black Trees and Review](module_13_llrb/student/textbook.md) · [한국어](module_13_llrb/student/textbook_korean.md) |
 | 14 | [Union-Find, Prim, and Kruskal — Week 14](module_14_prim_kruskal/week_14/README.md) |
 
 Teaching chapters and packages are numbered consecutively from 1 to 14, with introductory Chapter 0 before them.

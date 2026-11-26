@@ -37,10 +37,7 @@ Do not start a new section right away with terms, code names, math formulas, tab
 
 ## 4. Vocabulary Rules
 
-Rows 12–14 reflect the 2026-11-10 course-plan revision. The existing Module
-12–13 student lessons and question banks await alignment; these rows define
-the intended concept order for that later rewrite. Sorting implementations
-are optional and are not prerequisites for the supplied Week 14 edge ordering.
+Rows 12–14 follow the 14-week course plan. Sorting implementations remain optional.
 
 | Chapter | Core concepts already learned that can be used | Core concepts to be introduced for the first time here |
 | --- | --- | --- |
@@ -56,7 +53,7 @@ are optional and are not prerequisites for the supplied Week 14 edge ordering.
 | 10 | Fixed arrays, array indices, caller preconditions, FIFO queues, structs and two-dimensional arrays | Priority selection, sorted insertion, front/rear live ranges, strict comparator and stable ties, cumulative capacity without slot reuse, half-open login/logout intervals, epochs, function pointers and function addresses, greatest-login candidate, earliest-logout selection, interval advancement and exhaustion, O(k) insertion/O(1) removal and O(U²+AU) survey work |
 | 11 | Weighted graphs, previous vertices and path reconstruction in graph BFS, priority queues, min-heaps | Non-negative cost condition, temporary distance, updating to cheaper paths, old candidates, Dijkstra's algorithm |
 | 12 | ArrayList access and first-match linear search, indexed binary trees, inorder traversal, edge height, comparison, caller preconditions, and exact lookup | First-match binary search on supplied sorted arrays, sorted-input precondition, half-open search interval, overflow-safe midpoint, BST ordering and supplied ordinary search/insertion baseline, insertion-order effects, and shape-dependent search costs |
-| 13 | Module 12 binary search, BST ordering/search/insertion and skewed paths; arrays, lists, recursion, hashing, Heap priority, DFS/BFS, and Dijkstra's route objective | Stored height, left-minus-right balance factor, AVL rules, LL/RR then LR/RL repair, transferred middle subtrees, returned subtree roots, bottom-up height updates, guided supplied AVL insertion, and workload review including preparation/update costs |
+| 13 | BST search, insertion, skewed paths, edge height, and earlier workload comparisons | Left-leaning red links, incoming link colors, rotations, color flips, equal black height, and bottom-up insertion, and workload review |
 | 14 | Weighted graphs, old candidate handling in Dijkstra's, min-heaps, dense IDs, connected components, graph cycles, and Module 13's workload/preparation-cost review | Disjoint sets, parent arrays, representative roots, iterative two-pass find, path compression, union by size, logical edge IDs, supplied edge lists and comparator with increasing weight order and explicit ties, minimum spanning trees and forests, Prim's and Kruskal's algorithms |
 
 For terms not in the table, explain their meaning immediately the first time they appear. A glossary does not replace explanations in the main text.

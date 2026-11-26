@@ -450,61 +450,27 @@ optional comparisons rather than required answers for the current lab.
 - How would the separate pointer API reject duplicates and preserve failed insertions under adversarial inputs?
 
 
-## Week 13 — Searching, Sorting, and Consolidation
+## Week 13 — Left-Leaning Red–Black Trees and Review
 
-[Weekly vocabulary and scope](week_13_search_sort_consolidation.md)
+[Weekly vocabulary and scope](week_13_llrb.md)
 
-### Search contracts and candidate intervals
+### Search and insertion
 
-- What index does linear search return for 17 in `[31,23,17,8,17,42]`, and why does it stop before the second 17?
-- Why does first-match binary search return index 1 after the same values are sorted?
-- Why is a sorted-array result not necessarily the original record's index?
-- Why must the binary-search array be nondecreasing before the first comparison?
-- Which positions remain possible in the half-open interval `[lo,hi)`?
-- Why does a middle value below the key permit `lo = mid + 1`?
-- Why does a middle value equal to the key move the upper boundary instead of returning immediately?
-- Why must the final lower-bound position be checked for equality before reporting a match?
-- How do missing keys below all values, between values, and above all values end in `-1`?
-- Why do empty and singleton inputs need explicit expected results even though the search code is short?
+1. Which 2–3–4 node does 20B with a single red left child 10R represent? Where are its three child ranges?
+2. Why can a new red leaf be attached without immediately increasing a path’s black count?
+3. Insert 10, 20. Which link leans right before the repair? Which key becomes the subtree root?
+4. In a fresh tree, insert 30, 20, 10. What condition triggers a right rotation? Which condition becomes true immediately afterward?
+5. During a rotation, which node inherits the old root’s color? Where does the subtree between the two keys go?
+6. Just before the flip, 20B has red children 10R and 30R. Which 2–3–4 node do they encode? Which keys are grouped together after the root is recolored?
+7. In the ascending sequence from 10 to 50, where does 30 move when 20 rotates left? Which path finds it afterward?
+8. In the same sequence, continue with 60 and 70. Where do the two flips occur on insertion of 70? Why do we set the final root to black?
 
-### Sorting actions and invariants
+### Cost and workload
 
-- What ordered prefix remains after inserting 23 into the canonical array's first two positions?
-- Why must insertion sort save the current value before shifting larger values?
-- Why does shifting only strictly larger values preserve the order of equal keys?
-- Which eight shifts occur across the canonical insertion-sort run?
-- Why does a zero- or one-element merge-sort range require no further split?
-- How do two already-ordered halves make the next smallest merged value available at one of their fronts?
-- Why does choosing the left value on an equal-key merge preserve stability?
-- Why must merge sort's scratch buffer have at least `n` writable integer slots and not overlap the input?
-- Why must the sorted merged range be copied back before its caller merges a larger range?
-- Why can identical integer output fail to reveal whether the two original 17 records exchanged places?
-
-### Tests, costs, and evidence
-
-- Which assertions distinguish sorted order from preservation of every original value and duplicate count?
-- Which independent oracle can check a search result without repeating the binary-search implementation?
-- Which empty, singleton, duplicate-heavy, sorted, reverse, and signed-extreme fixtures exercise different behavior?
-- Why are invalid sizes or overlapping merge buffers outside this lab's unchecked caller contract?
-- How can paper labels `17A` and `17B` establish the equal-key order that integer-only output hides?
-- Why does the canonical binary search use three interval comparisons and one final equality test rather than automatically beating every short linear query?
-- When do repeated queries justify paying a sorting cost once?
-- Why can insertion sort need quadratic shifts in reverse order while an already-ordered input needs no shifts?
-- Why does merge sort combine logarithmically many levels of linear merging work?
-- Why are merge scratch `O(n)` and active recursive calls `O(log n)` separate additional-storage terms?
-
-### Consolidation and transfer
-
-- When is a sorted array with binary search suitable for many queries over rarely changed data?
-- When do frequent exact-key updates favor a hash index, and which distribution assumptions affect its expected cost?
-- When do ordered range queries justify an AVL index rather than a hash table?
-- Why does a Heap support repeated minimum selection without keeping its whole array sorted?
-- Why do linked-list insertion after a known predecessor and searching for that predecessor have different costs?
-- How does Module 8 store and return whole coordinates in its linear array queue, and why does capacity follow total discoveries rather than peak pending work?
-- Why does FIFO unweighted BFS answer a different path question from indexed-Heap Dijkstra?
-- How can sorting prepare Kruskal's edge scan without deciding which edges form cycles?
-- Which trace, original assertions, costs, and corrected explanation belong in the single Week 13 artifact?
-- How does a structure-choice claim change when query frequency, mutation frequency, memory, or ordering requirements change?
+9. After inserting 10 and 20, find two root-to-missing-child paths of different lengths. How many black keys does each contain?
+10. In the completed ascending seven-key tree, how many nodes does a lookup for 70 visit? How does an ordinary BST built in the same order compare?
+11. If a path contains b black keys, why can it contain at most 2b keyed nodes? How does grouping the keys after all temporary 4-nodes have split bound b?
+12. For an index with frequent insertions, how would a requirement for sorted output affect your choice between a hash table, a sorted array, and an LLRB?
 
 ## Week 14 — Union-Find, Kruskal, and Capstone Integration
 
@@ -560,7 +526,7 @@ optional comparisons rather than required answers for the current lab.
 - Are make-set, sorting, graph loading, checked totals, and Prim supplied?
 - Do I submit another list repair, Prim implementation, or full package lab?
 - Which DSU trace, edge ledger, tests, and compiler output accompany the two C files?
-- How does the brief individual synthesis retrieve hash/AVL selection?
+- How does the brief individual synthesis retrieve the choice between hash and LLRB lookup?
 - How is the capstone integration checkpoint folded into the one weekly artifact?
 - Which connected and disconnected runs show integration with existing graph IDs?
 - How are lab correctness criteria separated from later capstone integration and defense?

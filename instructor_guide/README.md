@@ -32,18 +32,12 @@ Check if the student can explain all three of these parts in their own words:
 | 10 | Chapter 10 | Fixed integer min/max Heap, bottom-up construction, and two indexed ID Heaps for common on-time; one lab-driver submission. |
 | 11 | Chapter 11 | Indexed-Heap Dijkstra traces and tests in Practical 2. |
 | 12 | Chapter 12 | Binary Search and BSTs: first-match binary search on supplied sorted arrays, BST search/insertion, inorder, height, and skew; one evidence artifact. |
-| 13 | Chapter 13 | AVL Rotations and Review: balance, LL/RR then LR/RL, guided supplied insertion, and one AVL/review artifact; final 60 minutes reserved for review. |
+| 13 | Chapter 13 | Left-Leaning Red–Black Trees and Review. Trace search, rotations, color flips, and black height. Reserve the final 60 minutes for review and one submission. |
 | 14 | DSU reference from Module 7 + Chapter 14 | Introduce DSU and Kruskal in one lab; Prim demonstration only. |
 
 The 14 teaching packages and chapters are numbered consecutively from 1 to 14, matching the teaching weeks. Module 7 applies linked lists to a stack and a queue. Module 8 compares array queues, traces tree BFS, and implements maze BFS with a coordinate array queue.
 
-The Chapter 12–13 summaries reflect the 2026-11-10 course-plan revision.
-Their existing student textbooks, worksheets, lab guides, detailed lesson
-plans, tests, releases, and question banks await alignment. The module folders
-are now `module_12_binary_search_bst` and `module_13_avl_review`; sources retain
-their existing module grouping. Insertion-sort and merge-sort instruction
-are optional; Module 14 supplies and explains its edge ordering without a
-sorting-lesson prerequisite. BST and AVL deletion are outside required scope.
+Week 13 uses the [left-leaning red–black tree lesson](../module_13_llrb/README.md). Module 14 supplies the edge ordering used in Kruskal.
 
 The total class time for a single week must not go over 180 minutes. The board walkthroughs in these files are just one piece of the core explanation. Manage the time so it stays under 180 minutes by adding in your separate coding practice and test times.
 
@@ -63,7 +57,7 @@ The total class time for a single week must not go over 180 minutes. The board w
 | 10 | [Binary Heaps and Common On-Times](chapter_10.md) |
 | 11 | [Finding the Path with the Smallest Cost](chapter_11.md) |
 | 12 | [Binary Search and BSTs](chapter_12.md) |
-| 13 | [AVL Rotations and Review](chapter_13.md) |
+| 13 | [Left-Leaning Red–Black Trees and Review](chapter_13.md) |
 | 14 | [Connecting All Vertices at the Lowest Cost](chapter_14.md) |
 
 The required scope of what to teach is decided by the [14-Week Delivery Guide](../Data_Structures_Course_2026_14_Week_Delivery_Guide.md). The order of the vocabulary terms follows the [Korean Textbook Style Guide](../TEXTBOOK_STYLE_GUIDE.md).
